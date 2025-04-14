@@ -1,0 +1,45 @@
+.sidebar {
+    position: fixed;
+    top: 50px; /* below navbar */
+    left: -200px;
+    width: 200px;
+    height: 100%;
+    background-color: #66754C;
+    color: white;
+    transition: left 0.3s ease;
+    padding-top: 20px;
+    z-index: 999;
+    
+    
+  }
+  
+  .sidebar.open {
+    left: 0;
+  }
+  
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .sidebar li {
+    padding: 15px 20px;
+    cursor: pointer;
+    display: block; 
+    
+  }
+
+  .sidebar a {
+    text-decoration: none;
+    color: inherit;
+    display: block; 
+  }
+  
+/*   
+  .sidebar li:hover {
+    background-color: #cac4b4;
+  } */
+  .sidebar li.active {
+    background-color: #F6EEDB; 
+    color: black;
+  }

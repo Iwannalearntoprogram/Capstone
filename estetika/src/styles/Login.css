@@ -1,0 +1,182 @@
+:root{
+    background-color: #F6EEDB;
+}
+
+body {
+    background-color: #F6EEDB; /* Fixed semicolon */
+}
+/* Title name */
+.title-box {
+    text-align: center;
+    margin-bottom: -100px;
+    padding: 0px;
+    font-size: 15px;
+  }
+
+/* Flexbox for side-by-side layout */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #F6EEDB; /* Fixed semicolon */
+}
+
+/* Login & signup Box (Left Side) */
+.login-box {
+    background-color: #F6EEDB;
+    padding: 40px;
+    border-radius: 8px 0 0 8px;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 80%;
+    height: 60%;
+    max-width: 400px;
+}
+.signup-box {
+    background-color: #F6EEDB;
+    padding: 40px;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 80%;
+    height: 60%;
+    max-width: 400px;
+}
+
+/* prompt Box (Right Side) */
+.prompt-box1 {
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    background-color: #8F9B6D;
+    color: white;
+    padding: 40px;
+    border-radius: 0 8px 8px 0;
+    text-align: center;
+    width: 80%;
+    height: 60%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.prompt-box2 {
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    background-color: #8F9B6D;
+    color: white;
+    padding: 40px;
+    border-radius: 8px 0 0 8px;
+    text-align: center;
+    width: 80%;
+    height: 60%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Titles */
+.login-title, .signup-title, .prompt-title {
+    font-size: 30px;
+    margin-bottom: 20px;
+}
+
+/* Input fields */
+.login-input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px; 
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    font-size: 16px;
+    box-sizing: border-box; 
+  }
+  .signup-input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px; 
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    font-size: 16px;
+    box-sizing: border-box; 
+  }
+  .layout-container{
+    background-color: #F6EEDB;
+  }
+  
+  /* Buttons */
+  .login-button, .signup-button, .prompt-button {
+    width: 100%;  
+    padding: 12px;
+    margin-bottom: 12px; 
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+    box-sizing: border-box; 
+  }
+  
+  .link-button {
+    text-decoration: none;  /* Remove underline from Link */
+    display: inline-block;   /* Make sure it's inline-block to not affect the button */
+    width: 100%; /* Ensure Link takes up the full width */
+  }
+.login-button {
+    background-color: #8F9B6D;
+    color: white;
+}
+.signup-button {
+    background-color: #8F9B6D;
+    color: white;
+}
+
+.prompt-button {
+    background-color: white;
+    color: #8F9B6D;
+}
+
+.login-button:hover {
+    background-color: #66754C;
+    color: #ffffff;
+    border: none;
+}
+.signup-button:hover {
+    background-color: #66754C;
+    color: #ffffff;
+    border: none;
+}
+
+.prompt-button:hover {
+    background-color: #d2d3d4;
+    color: #8F9B6D;
+    border: none;
+}
+/* Remove default styling from the Link */
+  
+.forgot-password{
+    font-size: 16px;
+}
+.forgot-password:hover{
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .login-box, .prompt-box {
+        width: 100%;
+        max-width: none;
+        border-radius: 8px;
+    }
+
+    .prompt-box {
+        border-radius: 0 0 8px 8px;
+    }
+}
