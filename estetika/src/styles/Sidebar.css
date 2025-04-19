@@ -1,45 +1,58 @@
 .sidebar {
-    position: fixed;
-    top: 50px; /* below navbar */
-    left: -200px;
-    width: 200px;
-    height: 100%;
-    background-color: #66754C;
-    color: white;
-    transition: left 0.3s ease;
-    padding-top: 20px;
-    z-index: 999;
-    
-    
-  }
-  
-  .sidebar.open {
-    left: 0;
-  }
-  
-  .sidebar ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .sidebar li {
-    padding: 15px 20px;
-    cursor: pointer;
-    display: block; 
-    
-  }
+  position: fixed;
+  top: 50px; /* below navbar */
+  left: -200px;
+  width: 200px;
+  height: 100%;
+  background-color: #1d3c34;
+  color: white;
+  transition: left 0.3s ease;
+  padding-top: 20px;
+  z-index: 999;
+  text-align: left;
+}
 
-  .sidebar a {
-    text-decoration: none;
-    color: inherit;
-    display: block; 
-  }
+.sidebar.open {
+  left: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  padding: 15px 20px;
+  cursor: pointer;
+  display: block;
+  width: 100%; /* Default width */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Transition for slide effect */
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+/* Active state */
+.sidebar li.active {
+  background-color: #f2ebe7;
+  color: black;
+  padding: 15px 20px; /* Keep padding consistent */
+  border-radius: 20px; /* Rounded shape */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Apply shadow for active state */
+  width: 120px;
   
-/*   
-  .sidebar li:hover {
-    background-color: #cac4b4;
-  } */
-  .sidebar li.active {
-    background-color: #F6EEDB; 
-    color: black;
-  }
+  /* Sliding effect to the center */
+  transform: translateX(30px); /* Moves the active item slightly to the right */
+  
+  /* Transition for smooth entry and exit */
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+/* Inactive state (when not active) */
+.sidebar li:not(.active) {
+  transform: translateX(0); /* Position the menu item at the left when not active */
+  transition: transform 0.3s ease-out,  color 0.3s ease-out; /* Smoother exit */
+}
