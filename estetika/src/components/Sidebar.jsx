@@ -17,14 +17,15 @@ const Sidebar = ({ isOpen }) => {
         <li className={location.pathname === '/projects' ? 'active' : ''}>
           <Link to="/projects">Projects</Link>
         </li>
-        <li className={location.pathname === '' ? 'active' : ''}>
-          <Link to="">Inbox</Link>
+        <li className={location.pathname === '/inbox' ? 'active' : ''}>
+          <Link to="/inbox">Inbox</Link>
         </li>
-        <li className={location.pathname === '' ? 'active' : ''}>
-          <Link to="">Notification</Link>
+        <li className={location.pathname === '/notification' ? 'active' : ''}>
+          <Link to="/notification">Notification</Link>
         </li>
-        <li className={location.pathname === '' ? 'active' : ''}>
-          <Link to="">Calendar</Link>
+        <li className={location.pathname === '/calendar' ? 'active' : ''}>
+          <Link to="/calendar">Calendar</Link>
+          
         </li>
       </ul>
     </div>
