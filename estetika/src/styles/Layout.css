@@ -1,15 +1,21 @@
 :root {
-  background-color: #F6EEDB;
+  /* background-color: #ffb300; */
     font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;
     font-weight: 400;
    
     color-scheme: light dark;
-    background-size: cover;
+    
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+
+
+  background-image: url('../assets/images/Marble-bg.png');
+  background-size: cover;        /* Scales image to cover the element */
+  background-position: center;   /* Center the image */
+  background-repeat: no-repeat;  /* Prevent tiling */
   }
   
 
