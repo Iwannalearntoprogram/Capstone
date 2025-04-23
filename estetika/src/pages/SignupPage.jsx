@@ -1,6 +1,7 @@
 import React from 'react'
 import '../styles/Login.css';
 import { Link } from 'react-router-dom';
+import logo from '../assets/images/logo-moss-2.png';
 
  function SignupPage() {
     return (
@@ -8,7 +9,7 @@ import { Link } from 'react-router-dom';
         <div className="System-Name">
           {/* Title */}
           <div className="title-box">
-            <h1 className="Title">Estetika</h1>
+            {/* <h1 className="Title">Estetika</h1> */}
           </div>
           
     
@@ -23,6 +24,9 @@ import { Link } from 'react-router-dom';
 
       {/*  right side - sign up Form */}
       <div className="signup-box">
+      <div>
+            <img src={logo} alt="logo" className='logo' />
+            </div>
             <h2 className="signup-title">Create Account</h2>
             <input type="text" placeholder="Name" className="signup-input" />
             <input type="text" placeholder="Username" className="signup-input" />
