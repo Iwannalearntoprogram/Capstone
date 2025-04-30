@@ -1,68 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React from "react";
+import { useAuth } from '../context/AuthContext';
+import Navbar from '../components/Navbar';
+import Sidebar from '../components/Sidebar';
 
-const ProfilePage = () => {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState('');
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        setErrorMsg('No token found. Please log in.');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await axios.get('/routes/auth/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        if (response.data && response.data.username && response.data.role) {
-          setProfile(response.data);
-        } else {
-          setErrorMsg('Incomplete profile data received.');
-        }
-      } catch (error) {
-        console.error('Failed to load profile', error);
-        setErrorMsg(
-          error.response?.data?.message || 'Error loading profile. Please try again.'
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, []);
-
-  if (loading) return <div>Loading profile...</div>;
-  if (errorMsg) return <div style={{ color: 'red' }}>{errorMsg}</div>;
-  if (!profile) return <div>No profile data available</div>;
+function ProfilePage() {
+  const { user } = useAuth();
 
   return (
-    <div className="profile-page">
-      <h2>User Profile</h2>
-      <p><strong>Username:</strong> {profile.username || 'N/A'}</p>
-      <p><strong>Role:</strong> {profile.role || 'N/A'}</p>
-
-      {profile.role === 'admin' && (
-        <>
-          <hr />
-          <h3>Admin Links</h3>
-          <ul>
-            <li><a href="/dashboard">Dashboard</a></li>
-            <li><a href="/reports">Reports</a></li>
-          </ul>
-        </>
+    <>
+      {/* You can add Navbar and Sidebar here if needed */}
+      <h1>Profile Page</h1>
+      {user ? (
+        <div>
+          <p><strong>Name:</strong> {user.username || 'N/A'}</p>
+          <p><strong>Role:</strong> {user.role || 'N/A'}</p>
+        </div>
+      ) : (
+        <p>User not logged in.</p>
       )}
-    </div>
+    </>
   );
-};
+}
 
 export default ProfilePage;

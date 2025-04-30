@@ -4,7 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const authRoutes = require('./routes/auth');
-const { authenticateToken, authorizeAdmin } = require('./middleware/authMiddleware');
+const authMiddleware = require('./middleware/authMiddleware');
+const { adminOnly } = require('./middleware/roleMiddleware');
 
 const app = express();
 app.use(express.json());
@@ -16,8 +17,8 @@ app.use('/api/auth', authRoutes);
 // Placeholder budget routes protected by admin middleware
 const budgetRouter = express.Router();
 
-budgetRouter.use(authenticateToken);
-budgetRouter.use(authorizeAdmin);
+budgetRouter.use(authMiddleware);
+budgetRouter.use(adminOnly);
 
 budgetRouter.get('/', (req, res) => {
   res.json({ message: 'Welcome to the admin-only budget API' });
@@ -31,8 +32,8 @@ mongoose.connect(process.env.MONGO_URI, {
 })
 .then(() => {
   console.log('✅ MongoDB connected');
-  app.listen(process.env.PORT || 3000, () => {
-    console.log(`🚀 Server running on port ${process.env.PORT}`);
-  });
+  app.listen(process.env.PORT || 4000, () => {
+    console.log(`🚀 Server running on port ${process.env.PORT || 4000}`);
+  });   
 })
 .catch(err => console.error('❌ MongoDB connection error:', err));

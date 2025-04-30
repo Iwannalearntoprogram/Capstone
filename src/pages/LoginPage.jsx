@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import '../styles/Login.css';
 import { Link, Navigate } from 'react-router-dom';
 import logo from '../assets/images/logo-moss-2.png';
+import { useAuth } from '../context/AuthContext';
 
 function LoginPage() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState('');
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,6 +33,7 @@ function LoginPage() {
 
       if (response.ok) {
         localStorage.setItem('token', data.token); // save token for protected routes
+        login(data.user); // update AuthContext user state
         setIsLoggedIn(true);
       } else {
         setError(data.message || 'Invalid credentials');
