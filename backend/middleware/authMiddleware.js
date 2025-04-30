@@ -1,25 +1,20 @@
+// middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'Access token missing' });
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ message: 'Missing token' });
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: 'Invalid token' });
-    req.user = user;
+  const token = authHeader.split(' ')[1]; // Bearer <token>
+  if (!token) return res.status(401).json({ message: 'Invalid token format' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // contains id and role
     next();
-  });
-};
-
-const authorizeAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Admin access required' });
+  } catch (err) {
+    res.status(401).json({ message: 'Invalid or expired token' });
   }
-  next();
 };
 
-module.exports = {
-  authenticateToken,
-  authorizeAdmin,
-};
+module.exports = authMiddleware;

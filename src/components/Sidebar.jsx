@@ -28,13 +28,12 @@ const Sidebar = ({ isOpen }) => {
         <li className={location.pathname === '/calendar' ? 'active' : ''}>
           <Link to="/calendar">Calendar</Link>
         </li>
-            <li className={location.pathname === './dashboard' ? 'active' : ''}>
-              <Link to="./dashboard">Dashboard</Link>
-            </li>
-            <li className={location.pathname === '/reports' ? 'active' : ''}>
-              <Link to="/reports">Reports</Link>
-            </li>
-        
+        {userRole === 'admin' && (
+          <>
+            <li><Link to="/dashboard">Dashboard</Link></li>
+            <li><Link to="/reports">Reports</Link></li>
+          </>
+        )}
       </ul>
     </div>
   );

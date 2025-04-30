@@ -33,19 +33,12 @@ router.post('/register', async (req, res) => {
 });
 
 // Login
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+const authMiddleware = require('../middleware/authMiddleware'); // JWT middleware
 
+router.get('/profile', authMiddleware, async (req, res) => {
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findById(req.user.id).select('username role');
     if (!user) return res.status(404).json({ message: 'User not found' });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
-
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: '1d'
-    });
 
     res.json({
       token,
@@ -61,5 +54,3 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-module.exports = router;

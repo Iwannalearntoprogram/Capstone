@@ -1,19 +1,45 @@
+// hooks/useAuth.js
 import { useState, useEffect } from 'react';
 
 const useAuth = () => {
-  const [userRole, setUserRole] = useState(null);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    try {
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
-    // Assuming user info is stored in localStorage after login
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user && user.role) {
-      setUserRole(user.role);
-    } else {
-      setUserRole(null);
-    }
+    const handleStorageChange = () => {
+      const updatedUser = localStorage.getItem('user');
+      try {
+        setUser(updatedUser ? JSON.parse(updatedUser) : null);
+      } catch {
+        setUser(null);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  return { userRole };
+  const logout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token'); // remove token too
+    setUser(null);
+  };
+
+  const userRole = user?.role || null;
+
+  return {
+    user,
+    userRole,
+    isAuthenticated: !!user,
+    logout
+  };
 };
 
 export default useAuth;
+
