@@ -32,6 +32,7 @@ const Sidebar = ({ isOpen }) => {
           <>
             <li><Link to="/dashboard">Dashboard</Link></li>
             <li><Link to="/reports">Reports</Link></li>
+            <li><Link to="/materialspage">Materials</Link></li>
           </>
         )}
       </ul>

@@ -56,6 +56,7 @@ import ProfilePage from './pages/ProfilePage';
 import Inbox from './pages/Inbox';
 import Calendar from './pages/CalendarPage';
 import NotificationPage from './pages/NotificationPage';
+import MaterialsPage from './pages/MaterialsPage';
 import { BudgetProvider } from './context/BudgetContext';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -100,6 +101,13 @@ const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={['admin']} />,
         children: [
           { index: true, element: <Reports /> }
+        ]
+      },
+      {
+        path: 'materialspage',
+        element: <ProtectedRoute allowedRoles={['admin']} />,
+        children: [
+          { index: true, element: <MaterialsPage /> }
         ]
       },
     ],
