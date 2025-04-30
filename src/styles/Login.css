@@ -1,0 +1,228 @@
+:root{
+    font-family: 'Avenir Next Cyr';
+}
+
+/* body {
+    background-color: #ff5e00; 
+} */
+
+/* Title name */
+/* .title-box {
+    text-align: left;
+    margin-bottom: -100px;
+    padding: 0px;
+    font-size: 15px;
+    font-family: 'Avenir Next Cyr';
+    font-weight: bold;
+    font-style: normal;
+  } */
+
+  .logo {
+    height: 60px;        /* Or whatever height you prefer */
+    width: auto;         /* Keeps aspect ratio */
+    display: block;
+    margin: 0 auto;      /* Center it if needed */
+    object-fit: contain; /* Optional, helps fit in a container */
+  }
+  
+  .logo:hover{
+    filter: none;
+  }
+.Title{
+    font-size: 50px;
+    font-family: 'Bodoni Moda';
+    font-weight: normal;
+}
+
+/* Flexbox for side-by-side layout */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Login & signup Box (Left Side) */
+.login-box{
+    background-color: #ffffff;
+    padding: 40px;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    font-family: 'Avenir Next Cyr';
+    font-weight: 300;
+    font-style: normal;
+    color: #1d3c34;
+    border-radius: 8px;
+    border-radius: 10px 0px 0px 10px;
+}
+.signup-box{
+    background-color: #ffffff;
+    padding: 40px;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    font-family: 'Avenir Next Cyr';
+    font-weight: 300;
+    font-style: normal;
+    color: #1d3c34;
+    border-radius: 8px;
+    border-radius: 0 10px 10px 0;
+}
+.prompt-box1{
+    background-color: #1d3c34;
+    padding: 40px;
+    padding-top: 147px;
+    padding-bottom: 147px;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    font-family: 'Avenir Next Cyr';
+    font-weight: 300;
+    font-style: normal;
+    color: #ffffff;
+    border-radius: 0 10px 10px 0;
+}
+
+
+ .prompt-box2 {
+    background-color: #1d3c34;
+    padding: 40px;
+    padding-top: 160px;
+    padding-bottom: 160px;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    font-family: 'Avenir Next Cyr';
+    font-weight: 300;
+    font-style: normal;
+    color: #ffffff;
+    border-radius: 10px 0px 0px 10px;
+
+}
+
+/* Titles */
+.login-title, .signup-title, .prompt-title {
+    font-size: 30px;
+    margin-bottom: 20px;
+}
+
+/* Input fields */
+.login-input, .signup-input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    font-size: 16px;
+    box-sizing: border-box;
+    font-family: 'Avenir Next Cyr';
+}
+
+/* Buttons */
+.login-button, .signup-button, .prompt-button {
+    width: 100%;  
+    padding: 12px;
+    margin-bottom: 12px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+    box-sizing: border-box;
+}
+
+.login-button {
+    background-color: #1d3c34;
+    color: white;
+}
+.signup-button {
+    background-color: #1d3c34;
+    color: white;
+}
+.prompt-button {
+    background-color: white;
+    color: #1d3c34;
+}
+
+.forgot-password {
+    font-size: 16px;
+}
+
+.forgot-password:hover {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    /* Adjust the layout for medium screens */
+    .login-container {
+        flex-direction: column;
+        height: auto;
+        padding: 20px;
+    }
+
+    .login-box, .signup-box, .prompt-box1, .prompt-box2 {
+        width: 90%;  /* Adjust box width to fit smaller screens */
+        max-width: 600px; /* Set a new max width for larger boxes on medium screens */
+    }
+
+    .login-button, .signup-button, .prompt-button {
+        font-size: 14px; /* Adjust button font size for smaller screens */
+        padding: 10px;   /* Adjust button padding */
+    }
+}
+
+@media (max-width: 768px) {
+    /* Adjust layout for smaller screens like tablets and phones */
+    .login-container {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+    }
+
+    .login-box, .signup-box, .prompt-box1, .prompt-box2 {
+        width: 100%; /* Make the boxes take up full width */
+        max-width: 500px;  /* Limit the width of the box */
+    }
+
+    .login-button, .signup-button, .prompt-button {
+        font-size: 14px; /* Adjust button font size */
+        padding: 10px;  /* Adjust button padding for smaller screens */
+    }
+
+    .login-input, .signup-input {
+        padding: 10px;  /* Adjust input field padding */
+    }
+
+    .layout-container {
+        padding: 20px; /* Adjust container padding */
+    }
+}
+
+@media (max-width: 480px) {
+    /* Adjust for very small screens like mobile phones */
+    .login-container {
+        padding: 5px; /* Reduced padding */
+    }
+
+    .login-box, .signup-box, .prompt-box1, .prompt-box2 {
+        width: 100%;  /* Make boxes fill the width of the screen */
+        max-width: 100%;  /* Remove max-width for mobile */
+    }
+
+    .login-button, .signup-button, .prompt-button {
+        font-size: 12px;  /* Smaller font size for buttons */
+        padding: 8px;   /* Reduce button padding */
+    }
+
+    .login-input, .signup-input {
+        font-size: 14px;  /* Adjust input field font size for small screens */
+        padding: 8px;  /* Reduce input field padding */
+    }
+}
