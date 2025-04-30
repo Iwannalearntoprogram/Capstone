@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import '../styles/Sidebar.css';
+import useAuth from '../hooks/useAuth';
 
 const Sidebar = ({ isOpen }) => {
   const location = useLocation(); // React Router hook to get current path
+  const { userRole } = useAuth();
 
   return (
     <div className={`sidebar ${isOpen ? 'open' : ''}`}>
       <ul>
-      <li className={location.pathname === '/profile' ? 'active' : ''}>
+        <li className={location.pathname === '/profile' ? 'active' : ''}>
           <Link to="/profile">Profile</Link>
         </li>
         <li className={location.pathname === '/home' ? 'active' : ''}>
@@ -25,8 +27,14 @@ const Sidebar = ({ isOpen }) => {
         </li>
         <li className={location.pathname === '/calendar' ? 'active' : ''}>
           <Link to="/calendar">Calendar</Link>
-          
         </li>
+            <li className={location.pathname === './dashboard' ? 'active' : ''}>
+              <Link to="./dashboard">Dashboard</Link>
+            </li>
+            <li className={location.pathname === '/reports' ? 'active' : ''}>
+              <Link to="/reports">Reports</Link>
+            </li>
+        
       </ul>
     </div>
   );

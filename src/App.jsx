@@ -57,15 +57,15 @@ import Inbox from './pages/Inbox';
 import Calendar from './pages/CalendarPage';
 import NotificationPage from './pages/NotificationPage';
 import { BudgetProvider } from './context/BudgetContext';
-import AdminRoute from './components/AdminRoute';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
-// Budget Tracker Components
+// Lazy-loaded components
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
-const ProjectDetail = React.lazy(() => import('./pages/ProjectDetails'));
 const Reports = React.lazy(() => import('./pages/Reports'));
 
-const routes = [
-  // Routes for Login and Signup (no layout)
+// Define routes before using them
+const router = createBrowserRouter([
   {
     path: '/',
     element: <LoginPage />,
@@ -74,8 +74,10 @@ const routes = [
     path: '/signup',
     element: <SignupPage />,
   },
-
-  // Routes for pages that should use the layout
+  {
+    path: '/unauthorized',
+    element: <div>You don't have permission to access this page</div>,
+  },
   {
     path: '/',
     element: <Layout />,
@@ -86,48 +88,31 @@ const routes = [
       { path: 'inbox', element: <Inbox /> },
       { path: 'notification', element: <NotificationPage /> },
       { path: 'calendar', element: <Calendar /> },
-
-      // Admin protected budget routes
       {
-        element: <AdminRoute />,
+        path: 'dashboard',
+        element: <ProtectedRoute allowedRoles={['admin']} />,
         children: [
-          { 
-            path: 'budget', 
-            element: (
-              <React.Suspense fallback={<div>Loading Budget Dashboard...</div>}>
-                <Dashboard />
-              </React.Suspense>
-            ),
-          },
-          { 
-            path: 'budget/project/:projectId', 
-            element: (
-              <React.Suspense fallback={<div>Loading Project Details...</div>}>
-                <ProjectDetail />
-              </React.Suspense>
-            ),
-          },
-          { 
-            path: 'budget/reports', 
-            element: (
-              <React.Suspense fallback={<div>Loading Reports...</div>}>
-                <Reports />
-              </React.Suspense>
-            ),
-          },
-        ],
+          { index: true, element: <Dashboard /> }
+        ]
+      },
+      {
+        path: 'reports',
+        element: <ProtectedRoute allowedRoles={['admin']} />,
+        children: [
+          { index: true, element: <Reports /> }
+        ]
       },
     ],
   },
-];
-
-const router = createBrowserRouter(routes);
+]);
 
 function App() {
   return (
-    <BudgetProvider>
-      <RouterProvider router={router} />
-    </BudgetProvider>
+    <AuthProvider>
+      <BudgetProvider>
+        <RouterProvider router={router} />
+      </BudgetProvider>
+    </AuthProvider>
   );
 }
 

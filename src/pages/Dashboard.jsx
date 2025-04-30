@@ -6,23 +6,26 @@ import BudgetChart from '../components/BudgetChart';
 
 const Dashboard = () => {
   return (
-    <div className="dashboard">
-      <div className="dashboard-header">
-        <h2>Project Dashboard</h2>
+    <main className="dashboard">
+      <header className="dashboard-header">
+        <div>
+          <h2>Project Dashboard</h2>
+        </div>
         <ProjectSelector />
-      </div>
-      
+      </header>
+
       <div className="dashboard-content">
         <div className="dashboard-row">
           <BudgetOverview />
           <BudgetChart />
         </div>
-        
-        <div className="dashboard-row">
+
+        <section className="expense-section">
+          <h3>Expense Details</h3>
           <ExpenseList />
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 };
 
