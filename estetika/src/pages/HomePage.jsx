@@ -18,15 +18,15 @@ import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 
 const HomePage = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const toggleSidebar = () => setSidebarOpen(prev => !prev);
+  // const [sidebarOpen, setSidebarOpen] = useState(true);
+  // const toggleSidebar = () => setSidebarOpen(prev => !prev);
 
   return (
     <div>
-      <Navbar toggleSidebar={toggleSidebar} />
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+      {/* <Navbar toggleSidebar={toggleSidebar} />
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} /> */}
       <main className="content">
-        <h1>Home Page</h1>
+        <h1>Homee</h1>
         <p>Estetika's Home Page</p>
       </main>
     </div>
