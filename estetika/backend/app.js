@@ -6,7 +6,10 @@ const hpp = require("hpp");
 
 // routes import
 // user
-const authRoutes = require("./routes/User/authRoute");
+const authRoute = require("./routes/User/authRoute");
+
+// project
+const materialRoute = require("./routes/Project/materialRoute");
 
 // utility
 const aliveRoute = require("./routes/aliveRoute");
@@ -43,7 +46,10 @@ app.use("/api", limiter); //Protection Against DDOS Attack
 
 // routes
 // user
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoute);
+
+// project
+app.use("/api/material", checkAuth, materialRoute);
 
 // utility
 app.use("/api/alive", aliveRoute);
