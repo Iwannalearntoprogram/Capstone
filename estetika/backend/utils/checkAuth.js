@@ -27,7 +27,7 @@ const verifyToken = catchAsync(async (req, res, next) => {
     // check token if valid
     const decoded = jwt.verify(token, JWT_SECRET);
     req.role = decoded.role;
-    req.userId = decoded.id;
+    req.id = decoded.id;
     next();
   }
 });
