@@ -6,7 +6,7 @@ const hpp = require("hpp");
 
 // routes import
 // user
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/User/authRoute");
 
 // utility
 const aliveRoute = require("./routes/aliveRoute");
