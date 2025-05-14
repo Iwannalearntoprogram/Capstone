@@ -1,4 +1,3 @@
-
 // import React, { useState, useEffect } from 'react';
 // import Modal from 'react-modal';
 // import { Calendar, Views, dateFnsLocalizer } from 'react-big-calendar';
@@ -215,15 +214,15 @@
 // };
 
 // export default CalendarPage;
-import React, { useState } from 'react';
-import Modal from 'react-modal';
-import { Calendar, Views, dateFnsLocalizer } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay } from 'date-fns';
-import enUS from 'date-fns/locale/en-US';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import '../styles/Calendar.css';
+import React, { useState } from "react";
+import Modal from "react-modal";
+import { Calendar, Views, dateFnsLocalizer } from "react-big-calendar";
+import { format, parse, startOfWeek, getDay } from "date-fns";
+import enUS from "date-fns/locale/en-US";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+// import '../styles/Calendar.css';
 
-const locales = { 'en-US': enUS };
+const locales = { "en-US": enUS };
 
 const localizer = dateFnsLocalizer({
   format,
@@ -233,7 +232,7 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-Modal.setAppElement('#root'); // For accessibility
+Modal.setAppElement("#root"); // For accessibility
 
 const CalendarPage = () => {
   const [events, setEvents] = useState([]);
@@ -244,11 +243,11 @@ const CalendarPage = () => {
   const [closing, setClosing] = useState(false); // <-- Animation state
 
   const [newEvent, setNewEvent] = useState({
-    title: '',
+    title: "",
     start: null,
     end: null,
-    location: '',
-    notes: '',
+    location: "",
+    notes: "",
     alarm: null,
     repeat: false,
     attachment: null,
@@ -257,9 +256,11 @@ const CalendarPage = () => {
 
   // Helper function to format date for datetime-local input
   const formatToDateTimeLocal = (date) => {
-    if (!date) return '';
+    if (!date) return "";
     const localDate = new Date(date);
-    localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+    localDate.setMinutes(
+      localDate.getMinutes() - localDate.getTimezoneOffset()
+    );
     return localDate.toISOString().slice(0, 16); // Format as YYYY-MM-DDTHH:MM
   };
 
@@ -280,7 +281,7 @@ const CalendarPage = () => {
 
   // Save event
   const handleSaveEvent = () => {
-    if (!newEvent.title) return alert('Please enter a title!');
+    if (!newEvent.title) return alert("Please enter a title!");
 
     const parsedEvent = {
       ...newEvent,
@@ -316,11 +317,11 @@ const CalendarPage = () => {
       setModalOpen(false);
       setClosing(false);
       setNewEvent({
-        title: '',
+        title: "",
         start: null,
         end: null,
-        location: '',
-        notes: '',
+        location: "",
+        notes: "",
         alarm: null,
         repeat: false,
         attachment: null,
@@ -348,16 +349,21 @@ const CalendarPage = () => {
         style={{ height: 500 }}
       />
 
-      {modalOpen && <div className={`event-overlay ${closing ? 'overlay-closing' : ''}`} onClick={closeModal} />}
+      {modalOpen && (
+        <div
+          className={`event-overlay ${closing ? "overlay-closing" : ""}`}
+          onClick={closeModal}
+        />
+      )}
 
       <Modal
         isOpen={modalOpen || closing}
         onRequestClose={closeModal}
-        className={`event-modal${closing ? ' closed' : ''}`}
+        className={`event-modal${closing ? " closed" : ""}`}
         overlayClassName="event-overlay"
         shouldCloseOnOverlayClick={false}
       >
-        <h2>{newEvent.id ? 'Edit Event' : 'Add Event'}</h2>
+        <h2>{newEvent.id ? "Edit Event" : "Add Event"}</h2>
 
         <input
           type="text"
@@ -370,8 +376,10 @@ const CalendarPage = () => {
           Alarm:
           <input
             type="datetime-local"
-            value={newEvent.alarm || ''}
-            onChange={(e) => setNewEvent({ ...newEvent, alarm: e.target.value })}
+            value={newEvent.alarm || ""}
+            onChange={(e) =>
+              setNewEvent({ ...newEvent, alarm: e.target.value })
+            }
           />
         </label>
 
@@ -380,7 +388,9 @@ const CalendarPage = () => {
           <input
             type="datetime-local"
             value={formatToDateTimeLocal(newEvent.start)}
-            onChange={(e) => setNewEvent({ ...newEvent, start: new Date(e.target.value) })}
+            onChange={(e) =>
+              setNewEvent({ ...newEvent, start: new Date(e.target.value) })
+            }
           />
         </label>
 
@@ -388,8 +398,14 @@ const CalendarPage = () => {
           To:
           <input
             type="datetime-local"
-            value={newEvent.end ? new Date(newEvent.end).toISOString().slice(0, 16) : ''}
-            onChange={(e) => setNewEvent({ ...newEvent, end: new Date(e.target.value) })}
+            value={
+              newEvent.end
+                ? new Date(newEvent.end).toISOString().slice(0, 16)
+                : ""
+            }
+            onChange={(e) =>
+              setNewEvent({ ...newEvent, end: new Date(e.target.value) })
+            }
           />
         </label>
 
@@ -397,7 +413,9 @@ const CalendarPage = () => {
           type="text"
           placeholder="Location"
           value={newEvent.location}
-          onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+          onChange={(e) =>
+            setNewEvent({ ...newEvent, location: e.target.value })
+          }
         />
 
         <label>
@@ -405,13 +423,17 @@ const CalendarPage = () => {
           <input
             type="checkbox"
             checked={newEvent.repeat}
-            onChange={(e) => setNewEvent({ ...newEvent, repeat: e.target.checked })}
+            onChange={(e) =>
+              setNewEvent({ ...newEvent, repeat: e.target.checked })
+            }
           />
         </label>
 
         <input
           type="file"
-          onChange={(e) => setNewEvent({ ...newEvent, attachment: e.target.files[0] })}
+          onChange={(e) =>
+            setNewEvent({ ...newEvent, attachment: e.target.files[0] })
+          }
         />
 
         <textarea
@@ -422,11 +444,14 @@ const CalendarPage = () => {
 
         <div className="modal-buttons">
           <button onClick={handleSaveEvent}>
-            {newEvent.id ? 'Save Changes' : 'Add Event'}
+            {newEvent.id ? "Save Changes" : "Add Event"}
           </button>
           <button onClick={closeModal}>Cancel</button>
           {newEvent.id && (
-            <button onClick={handleDeleteEvent} style={{ backgroundColor: 'red' }}>
+            <button
+              onClick={handleDeleteEvent}
+              style={{ backgroundColor: "red" }}
+            >
               Delete Event
             </button>
           )}

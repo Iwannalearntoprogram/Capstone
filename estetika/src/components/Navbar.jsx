@@ -1,45 +1,16 @@
-// import React from 'react';
-// import { Link } from 'react-router-dom';
-// import '../styles/Navbar.css';
-// import logo from '../assets/react.svg';
-// import Button from './Button';
-
-// function Navbar() {
-//   return (
-//     <nav>
-//       <div className="logo">
-//         <img src={logo} alt="Logo" />
-//       </div>
-//       <ul className='horizontal-list'>
-//         <li>
-//           <Link to='/'>Home</Link>
-//         </li>
-//         <li>
-//           <Link to='/about'>About</Link>
-//         </li>
-//         <li>
-//           <Link to='/articles'>Articles</Link>
-//         </li>
-//       </ul>
-//       <Button className='btn'>Login</Button>
-//     </nav>
-//   );
-// }
-
-// export default Navbar;
-import React from 'react';
-import '../styles/Navbar.css';
-import logo from '../assets/images/logo-moss.png';
+import React from "react";
+import logo from "../assets/images/logo-moss.png";
 
 const Navbar = ({ toggleSidebar }) => {
   return (
-    <div className="navbar">
-      <button onClick={toggleSidebar} className="menu-toggle">
+    <div className="fixed top-0 left-0 w-full h-[50px] bg-[#1D3C34] text-white flex items-center px-5 shadow-md z-50">
+      <button
+        onClick={toggleSidebar}
+        className="text-[20px] bg-transparent text-white border-none cursor-pointer mr-4 focus:outline-none"
+      >
         ☰
       </button>
-      
-        <img src={logo} alt="logo" className='logo' />
-      
+      <img src={logo} alt="logo" className="h-auto max-h-full w-auto m-auto" />
     </div>
   );
 };
