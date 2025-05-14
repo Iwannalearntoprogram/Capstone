@@ -11,6 +11,17 @@ const register = catchAsync(async (req, res, next) => {
   const { firstName, lastName, username, email, password, phoneNumber, role } =
     req.body;
 
+  if (
+    !firstName ||
+    !lastName ||
+    !username ||
+    !email ||
+    !password ||
+    !phoneNumber
+  ) {
+    return next(new AppError("Please provide all required fields", 400));
+  }
+
   // Check if email already exists
   const userExists = await User.findOne({ email });
   if (userExists) next(new AppError("Email already in use", 400));

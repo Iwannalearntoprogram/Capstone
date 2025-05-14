@@ -5,7 +5,7 @@ const {
   login,
   verifyEmail,
   verifyOTP,
-} = require("../controllers/User/AuthController");
+} = require("../../controllers/User/AuthController");
 
 router.post("/register", register);
 router.post("/login", login);
