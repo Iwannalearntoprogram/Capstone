@@ -4,6 +4,11 @@ import '../styles/Sidebar.css';
 
 const Sidebar = ({ isOpen }) => {
   const location = useLocation(); // React Router hook to get current path
+  const handleEscapePress = (event) => {
+    if (event.key === 'Escape') {
+      setIsOpen(false); // Close sidebar on ESC press
+    }
+  };
 
   return (
     <div className={`sidebar ${isOpen ? 'open' : ''}`}>
@@ -25,6 +30,7 @@ const Sidebar = ({ isOpen }) => {
         </li>
         <li className={location.pathname === '/calendar' ? 'active' : ''}>
           <Link to="/calendar">Calendar</Link>
+
           
         </li>
       </ul>
