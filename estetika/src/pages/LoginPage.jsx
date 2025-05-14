@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import logo from "../assets/images/logo-moss-2.png";
+import marbleBg from "../assets/images/white-marble-bg.png";
 
 function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -46,7 +47,10 @@ function LoginPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+    <div
+      className="flex flex-col items-center justify-center h-screen bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${marbleBg})` }}
+    >
       <div className="flex flex-col md:flex-row shadow-lg rounded-lg overflow-hidden max-w-4xl">
         <div className="flex flex-col items-center justify-center p-12 md:w-1/2 bg-white shadow-md rounded-l-lg">
           <div className="mb-8">

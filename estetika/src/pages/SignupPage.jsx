@@ -4,6 +4,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import logo from "../assets/images/logo-moss-2.png";
+import marbleBg from "../assets/images/white-marble-bg.png";
 
 function SignupPage() {
   const navigate = useNavigate();
@@ -126,7 +127,10 @@ function SignupPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <div
+      className="flex flex-col items-center justify-center min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${marbleBg})` }}
+    >
       <div className="flex flex-col md:flex-row bg-white shadow-lg rounded-lg overflow-hidden max-w-4xl">
         <div className="flex flex-col items-center justify-center bg-[#1D3C34] text-white p-8 md:w-1/2 rounded-l-lg">
           <h2 className="text-2xl font-semibold mb-4">Welcome Back!</h2>

@@ -14,7 +14,7 @@ const Sidebar = ({ isOpen }) => {
         <li
           className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
             location.pathname === "/profile"
-              ? "bg-[#f2ebe7] text-black rounded-xl shadow-md "
+              ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
               : "hover:translate-x-2"
           }`}
         >
