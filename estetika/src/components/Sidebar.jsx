@@ -62,7 +62,10 @@ const Sidebar = ({ isOpen }) => {
               : "hover:translate-x-2"
           }`}
         >
-          <Link to="/notification" className="block text-inherit no-underline">
+          <Link
+            to="/notification"
+            className="block text-inherit no-underline mb-4"
+          >
             Notification
           </Link>
         </li>
