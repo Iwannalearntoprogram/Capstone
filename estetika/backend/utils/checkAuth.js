@@ -1,10 +1,18 @@
 const jwt = require("jsonwebtoken");
 const InvalidToken = require("../models/User/InvalidToken");
 const AppError = require("./appError");
+const catchAsync = require("./catchAsync");
 
-const verifyToken = async (req, res, next) => {
-  const JWT_KEY = process.env.JWT_KEY;
-  const token = req.header("Authorization"); // get token from header
+const verifyToken = catchAsync(async (req, res, next) => {
+  const JWT_SECRET = process.env.JWT_SECRET;
+  const authHeader = req.header("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res
+      .status(401)
+      .json({ message: "Access denied. No token provided." });
+  }
+
+  const token = authHeader.split(" ")[1];
   if (!token) {
     // send back user if no token is provided
     return res
@@ -15,24 +23,13 @@ const verifyToken = async (req, res, next) => {
     if (isInvalid) {
       return next(new AppError("Access denied. Invalid Token", 403));
     }
-    // check token if it is valid
-    try {
-      const decoded = jwt.verify(token, JWT_KEY);
-      req.role = decoded.user.role;
-      req.userId = decoded.user._id;
-      next();
-    } catch (err) {
-      // token expired or invalid
-      if (err.name === "TokenExpiredError")
-        return res
-          .status(401)
-          .json({ message: "Access denied. Token Expired." });
-      else
-        return res
-          .status(403)
-          .json({ message: "Access denied. Invalid Token." });
-    }
+
+    // check token if valid
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.role = decoded.role;
+    req.userId = decoded.id;
+    next();
   }
-};
+});
 
 module.exports = verifyToken;
