@@ -152,7 +152,7 @@ const CalendarPage = () => {
         <h2 className="text-lg font-semibold mb-4">
           {newEvent.id ? "Edit Event" : "Add Event"}
         </h2>
-
+        <label className="block mb-2">Title:</label>
         <input
           type="text"
           placeholder="Title"
@@ -192,7 +192,7 @@ const CalendarPage = () => {
           }
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
-
+        <label className="block mb-2">Location:</label>
         <input
           type="text"
           placeholder="Location"
@@ -203,14 +203,15 @@ const CalendarPage = () => {
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
 
-        <label className="block mb-2">Repeat:</label>
+        <label htmlFor="repeat">Repeat:</label>
         <input
+          id="repeat"
           type="checkbox"
           checked={newEvent.repeat}
           onChange={(e) =>
             setNewEvent({ ...newEvent, repeat: e.target.checked })
           }
-          className="mb-4"
+          className="ml-2 mb-4 accent-[#1D3C34]"
         />
 
         <input

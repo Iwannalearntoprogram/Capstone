@@ -10,15 +10,18 @@ import Inbox from "./pages/Inbox";
 import CalendarPage from "./pages/CalendarPage";
 import NotificationPage from "./pages/NotificationPage";
 
-// Import the new project detail pages
+//project detail pages
 import DesignerProjectsPage from "./pages/DesignerProjectsPage";
 import ProjectDetailsPage from "./pages/ProjectDetailsPage";
 import AdminProjectsPage from "./pages/AdminProjectsPage";
 
-// Import tab content components
+//tab content components
 import TasksTab from "./components/TasksTab";
 import ProgressTab from "./components/ProgressTab";
 import FilesTab from "./components/FilesTab";
+
+//utils
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -29,19 +32,89 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
 
         {/* layout */}
-        <Route path="/" element={<Layout />}>
-          <Route path="home" element={<HomePage />} />
-          <Route path="profile" element={<ProfilePage />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            path="home"
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="inbox" element={<Inbox />} />
-          <Route path="notification" element={<NotificationPage />} />
-          <Route path="calendar" element={<CalendarPage />} />
+          <Route
+            path="notification"
+            element={
+              <ProtectedRoute>
+                <NotificationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="calendar"
+            element={
+              <ProtectedRoute>
+                <CalendarPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* projects */}
-          <Route path="projects" element={<AdminProjectsPage />} />
-          <Route path="projects/:projectId" element={<ProjectDetailsPage />}>
-            <Route path="tasks" element={<TasksTab />} />
-            <Route path="progress" element={<ProgressTab />} />
-            <Route path="files" element={<FilesTab />} />
+          <Route
+            path="projects"
+            element={
+              <ProtectedRoute>
+                <AdminProjectsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="projects/:projectId"
+            element={
+              <ProtectedRoute>
+                <ProjectDetailsPage />
+              </ProtectedRoute>
+            }
+          >
+            <Route
+              path="tasks"
+              element={
+                <ProtectedRoute>
+                  <TasksTab />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="progress"
+              element={
+                <ProtectedRoute>
+                  <ProgressTab />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="files"
+              element={
+                <ProtectedRoute>
+                  <FilesTab />
+                </ProtectedRoute>
+              }
+            />
           </Route>
         </Route>
       </Routes>
