@@ -31,18 +31,20 @@ const register = catchAsync(async (req, res, next) => {
 
   const newUser = new User({
     fullName: `${firstName} ${lastName}`,
+    firstName,
+    lastName,
     username,
     email,
     password: hashedPassword,
     phoneNumber,
-    userType: role || "client",
+    role: role || "client",
   });
 
   await newUser.save();
 
   return res
     .status(201)
-    .json({ message: `${newUser.userType} registered successfully` });
+    .json({ message: `${newUser.role} registered successfully` });
 });
 
 //OTP Route
@@ -98,7 +100,7 @@ const login = catchAsync(async (req, res, next) => {
 
   // Create JWT token
   const token = jwt.sign(
-    { id: user._id, role: user.userType },
+    { id: user._id, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
@@ -110,7 +112,7 @@ const login = catchAsync(async (req, res, next) => {
       username: user.username,
       email: user.email,
       phoneNumber: user.phoneNumber,
-      role: user.userType,
+      role: user.role,
     },
   });
 });
