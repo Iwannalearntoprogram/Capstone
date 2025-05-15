@@ -5,6 +5,7 @@ const catchAsync = require("../../utils/catchAsync");
 const { generateEmbedding } = require("../../utils/embed");
 const { openai } = require("../../utils/openaiClient");
 
+
 // Get Material by Id or DesignerId
 const material_get = catchAsync(async (req, res, next) => {
   const { id, designerId } = req.query;
@@ -58,7 +59,7 @@ const material_post = catchAsync(async (req, res, next) => {
   }
 
   const embedding = await generateEmbedding(`${name} ${description}`);
-
+  
   const newMaterial = new Material({
     designerId,
     name,
@@ -203,6 +204,7 @@ const vector_search = catchAsync(async (req, res) => {
     candidates: sanitized,
   });
 });
+
 
 module.exports = {
   material_get,
