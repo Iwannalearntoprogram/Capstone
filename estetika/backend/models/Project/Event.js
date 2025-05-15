@@ -10,11 +10,11 @@ const eventSchema = new mongoose.Schema(
     startDate: Date,
     endDate: Date,
     location: String,
-    repeat: { type: Boolean, default: false },
     color: String,
     file: String,
     notes: String,
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    recepient: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
   },
   {
     timestamps: true,

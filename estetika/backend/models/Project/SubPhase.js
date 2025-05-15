@@ -4,7 +4,7 @@ const subPhaseSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, "Material name is required"],
+      required: [true, "Sub phase title is required"],
     },
     status: {
       type: String,
