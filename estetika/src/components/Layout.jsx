@@ -17,7 +17,7 @@ const Layout = () => {
       <Navbar toggleSidebar={toggleSidebar} />
       <div className="flex flex-1">
         <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-        <main className="flex-1 text-black p-12 px-32 pt-[calc(50px+3rem)]">
+        <main className="flex-1 text-black p-12  pt-[calc(50px+3rem)]">
           <Outlet />
         </main>
       </div>
