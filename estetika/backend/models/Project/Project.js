@@ -4,10 +4,10 @@ const projectSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, "Sub phase title is required"],
+      required: [true, "Project title is required"],
     },
     description: String,
-    budget: String,
+    budget: Number,
     startDate: Date,
     endDate: Date,
     members: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
