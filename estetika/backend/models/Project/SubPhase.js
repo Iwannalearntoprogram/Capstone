@@ -15,6 +15,7 @@ const subPhaseSchema = new mongoose.Schema(
     endDate: Date,
     phaseId: { type: [mongoose.Schema.Types.ObjectId], ref: "Phase" },
     projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   {
     timestamps: true,

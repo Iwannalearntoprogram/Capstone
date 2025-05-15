@@ -16,6 +16,7 @@ const taskSchema = new mongoose.Schema(
     endDate: Date,
     assigned: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
     projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   {
     timestamps: true,

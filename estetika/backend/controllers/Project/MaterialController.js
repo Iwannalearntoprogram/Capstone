@@ -16,8 +16,14 @@ const material_get = catchAsync(async (req, res, next) => {
     return next(new AppError("Material identifier not found", 400));
 
   id
-    ? (material = await Material.findById(id).populate("designerId"))
-    : (material = await Material.find({ designerId }).populate("designerId"));
+    ? (material = await Material.findById(id).populate(
+        "designerId",
+        "-password"
+      ))
+    : (material = await Material.find({ designerId }).populate(
+        "designerId",
+        "-password"
+      ));
 
   if (!material)
     return next(

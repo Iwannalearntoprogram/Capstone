@@ -11,10 +11,9 @@ const projectSchema = new mongoose.Schema(
     startDate: Date,
     endDate: Date,
     members: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
+    tasks: { type: [mongoose.Schema.Types.ObjectId], ref: "Task" },
+    timeline: { type: [mongoose.Schema.Types.ObjectId], ref: "Phase" },
     projectCreator: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    tasks: { type: mongoose.Schema.Types.ObjectId, ref: "Task" },
-    progress: { type: mongoose.Schema.Types.ObjectId, ref: "Progress" },
-    timeline: { type: [mongoose.Schema.Types.ObjectId], ref: "Phases" },
   },
   {
     timestamps: true,
