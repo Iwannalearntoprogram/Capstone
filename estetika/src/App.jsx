@@ -20,6 +20,12 @@ import TasksTab from "./components/TasksTab";
 import ProgressTab from "./components/ProgressTab";
 import FilesTab from "./components/FilesTab";
 
+//materials
+import MaterialsPage from "./pages/MaterialsPage";
+import MaterialDetailsPage from "./pages/MaterialDetailsPage";
+//material list
+import MaterialList from "./components/materials/MaterialList";
+
 //utils
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -112,6 +118,33 @@ function App() {
               element={
                 <ProtectedRoute>
                   <FilesTab />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+
+          {/* materials */}
+          <Route
+            path="materials"
+            element={
+              <ProtectedRoute>
+                <MaterialsPage />
+              </ProtectedRoute>
+            }
+          >
+            <Route
+              path="items"
+              element={
+                <ProtectedRoute>
+                  <MaterialList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path=":id"
+              element={
+                <ProtectedRoute>
+                  <MaterialDetailsPage />
                 </ProtectedRoute>
               }
             />

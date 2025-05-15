@@ -76,8 +76,22 @@ const Sidebar = ({ isOpen }) => {
               : "hover:translate-x-2"
           }`}
         >
-          <Link to="/calendar" className="block text-inherit no-underline">
+          <Link to="/calendar" className="block text-inherit no-underline mb-4">
             Calendar
+          </Link>
+        </li>
+        <li
+          className={`px-5 py-3 cursor-pointer transition-transform duration-300 ${
+            location.pathname === "/calendar"
+              ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
+              : "hover:translate-x-2"
+          }`}
+        >
+          <Link
+            to="/materials/items"
+            className="block text-inherit no-underline"
+          >
+            Materials
           </Link>
         </li>
       </ul>
