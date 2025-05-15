@@ -10,6 +10,7 @@ const projectSchema = new mongoose.Schema(
     budget: Number,
     startDate: Date,
     endDate: Date,
+    files: [String],
     members: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
     tasks: { type: [mongoose.Schema.Types.ObjectId], ref: "Task" },
     timeline: { type: [mongoose.Schema.Types.ObjectId], ref: "Phase" },
