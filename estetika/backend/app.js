@@ -10,6 +10,7 @@ const authRoute = require("./routes/User/authRoute");
 
 // project
 const eventRoute = require("./routes/Project/eventRoute");
+const fileRoute = require("./routes/Project/fileRoute");
 const materialRoute = require("./routes/Project/materialRoute");
 const phaseRoute = require("./routes/Project/phaseRoute");
 const projectRoute = require("./routes/Project/projectRoute");
@@ -55,6 +56,7 @@ app.use("/api/auth", authRoute);
 
 // project
 app.use("/api/event", checkAuth, eventRoute);
+app.use("/api/upload", checkAuth, fileRoute);
 app.use("/api/material", checkAuth, materialRoute);
 app.use("/api/phase", checkAuth, phaseRoute);
 app.use("/api/project", checkAuth, projectRoute);

@@ -23,7 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# env files
+# exclude all env files
 *.env
 
 # node modules
