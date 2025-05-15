@@ -12,6 +12,7 @@ const phaseSchema = new mongoose.Schema(
     subPhaseId: { type: [mongoose.Schema.Types.ObjectId], ref: "SubPhase" },
     projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
     progress: Number,
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   {
     timestamps: true,

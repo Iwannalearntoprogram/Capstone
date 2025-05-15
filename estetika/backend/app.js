@@ -9,7 +9,12 @@ const hpp = require("hpp");
 const authRoute = require("./routes/User/authRoute");
 
 // project
+const eventRoute = require("./routes/Project/eventRoute");
 const materialRoute = require("./routes/Project/materialRoute");
+const phaseRoute = require("./routes/Project/phaseRoute");
+const projectRoute = require("./routes/Project/projectRoute");
+const subPhaseRoute = require("./routes/Project/subPhaseRoute");
+const taskRoute = require("./routes/Project/taskRoute");
 
 // utility
 const aliveRoute = require("./routes/aliveRoute");
@@ -49,7 +54,12 @@ app.use("/api", limiter); //Protection Against DDOS Attack
 app.use("/api/auth", authRoute);
 
 // project
+app.use("/api/event", checkAuth, eventRoute);
 app.use("/api/material", checkAuth, materialRoute);
+app.use("/api/phase", checkAuth, phaseRoute);
+app.use("/api/project", checkAuth, projectRoute);
+app.use("/api/subphase", checkAuth, subPhaseRoute);
+app.use("/api/task", checkAuth, taskRoute);
 
 // utility
 app.use("/api/alive", aliveRoute);

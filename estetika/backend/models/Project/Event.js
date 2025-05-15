@@ -14,6 +14,7 @@ const eventSchema = new mongoose.Schema(
     color: String,
     file: String,
     notes: String,
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   {
     timestamps: true,
