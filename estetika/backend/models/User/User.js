@@ -2,6 +2,16 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    firstName: {
+      type: String,
+      required: [true, "First name is required"],
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      required: [true, "Last name is required"],
+      trim: true,
+    },
     fullName: {
       type: String,
       required: [true, "Full name is required"],
@@ -18,13 +28,16 @@ const userSchema = new mongoose.Schema(
       required: [true, "Username is required"],
       unique: true,
     },
+    aboutMe: String,
     password: { type: String, required: [true, "Password is required"] },
-    phoneNumber: { type: String },
-    userType: {
+    phoneNumber: String,
+    profileImage: String,
+    role: {
       type: String,
       enum: ["admin", "designer", "client"],
       default: "client",
     },
+    projectsId: { type: [mongoose.Schema.Types.ObjectId], ref: "Project" },
     emailVerified: { type: Boolean, default: false },
     otp: { type: String },
     otpExpiresAt: { type: Date },
