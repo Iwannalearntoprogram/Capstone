@@ -2,6 +2,9 @@ const Material = require("../../models/Project/Material");
 const User = require("../../models/User/User");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
+const { generateEmbedding } = require("../../utils/embed");
+const { openai } = require("../../utils/openaiClient");
+
 
 // Get Material by Id or DesignerId
 const material_get = catchAsync(async (req, res, next) => {
@@ -49,6 +52,8 @@ const material_post = catchAsync(async (req, res, next) => {
     return next(new AppError("Cannot create material, missing fields.", 400));
   }
 
+  const embedding = await generateEmbedding(`${name} ${description}`);
+  
   const newMaterial = new Material({
     designerId,
     name,
@@ -58,6 +63,7 @@ const material_post = catchAsync(async (req, res, next) => {
     image,
     options,
     category,
+    embedding,
   });
 
   await newMaterial.save();
@@ -139,9 +145,65 @@ const material_delete = catchAsync(async (req, res, next) => {
     .json({ message: "Material Successfully Deleted", deletedMaterial });
 });
 
+const vector_search = catchAsync(async (req, res) => {
+  const { query } = req.query;
+
+  if (!query) return res.status(400).json({ error: "Query is required." });
+
+  const vector = await generateEmbedding(query);
+
+  const results = await Material.aggregate([
+    {
+      $vectorSearch: {
+        queryVector: vector,
+        path: "embedding",
+        numCandidates: 100,
+        limit: 20,
+        index: "materials_search",
+      },
+    },
+  ]);
+
+  if (!results.length) {
+    return res.json({ message: "No results found.", results: [] });
+  }
+
+  const sanitized = results.map(({ embedding, ...rest }) => rest);
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an AI assistant that filters search results. Only keep items clearly relevant to the query. Remove anything unrelated or weakly related.",
+      },
+      {
+        role: "user",
+        content: `Query: "${query}"\n\nResults:\n${JSON.stringify(
+          sanitized,
+          null,
+          2
+        )}\n\nReturn only the relevant ones as a JSON array.`,
+      },
+    ],
+    temperature: 0.2,
+  });
+
+  const filteredResults = JSON.parse(response.choices[0].message.content);
+
+  return res.json({
+    message: `Filtered ${filteredResults.length} relevant results from ${sanitized.length} candidates.`,
+    results: filteredResults,
+    candidates: sanitized,
+  });
+});
+
+
 module.exports = {
   material_get,
   material_post,
   material_put,
   material_delete,
+  vector_search,
 };
