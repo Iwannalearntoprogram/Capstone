@@ -56,33 +56,30 @@ const Sidebar = ({ isOpen }) => {
           </Link>
         </li>
         <li
-          className={`px-5 py-3 cursor-pointer transition-transform duration-300 ${
+          className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
             location.pathname === "/notification"
               ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
               : "hover:translate-x-2"
           }`}
         >
-          <Link
-            to="/notification"
-            className="block text-inherit no-underline mb-4"
-          >
+          <Link to="/notification" className="block text-inherit no-underline ">
             Notification
           </Link>
         </li>
         <li
-          className={`px-5 py-3 cursor-pointer transition-transform duration-300 ${
+          className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
             location.pathname === "/calendar"
               ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
               : "hover:translate-x-2"
           }`}
         >
-          <Link to="/calendar" className="block text-inherit no-underline mb-4">
+          <Link to="/calendar" className="block text-inherit no-underline ">
             Calendar
           </Link>
         </li>
         <li
-          className={`px-5 py-3 cursor-pointer transition-transform duration-300 ${
-            location.pathname === "/calendar"
+          className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
+            location.pathname.includes("/materials")
               ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
               : "hover:translate-x-2"
           }`}
