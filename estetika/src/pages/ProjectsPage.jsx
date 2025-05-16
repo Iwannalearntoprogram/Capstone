@@ -1,57 +1,15 @@
-// import React from "react";
-
-// function AboutPage (){
-//     return (
-//         <div>
-
-//             <h1>About Us </h1>
-//             <p>
-//         Welcome to Eli's Website, where innovation meets purpose. We are a passionate team dedicated to creating solutions that enhance everyday
-//         life through technology. Our mission is to develop intuitive, user-friendly web and mobile applications that address real-world
-//         challenges and empower individuals and businesses alike. At React, we value creativity, integrity, and excellence. Whether it's
-//         improving efficiency, promoting sustainability, or fostering seamless digital experiences, we strive to make a meaningful impact
-//          with every project we build.</p>
-//         </div>
-
-//     );
-// }
-
-// export default AboutPage;
-
-// import React, { useState } from 'react';
-// import Navbar from '../components/Navbar';
-// import Sidebar from '../components/Sidebar';
-
-// const AboutPage = () => {
-//   const [sidebarOpen, setSidebarOpen] = useState(true);
-//   const toggleSidebar = () => setSidebarOpen(prev => !prev);
-
-//   return (
-//     <div>
-//       {/* <Navbar toggleSidebar={toggleSidebar} />
-//       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} /> */}
-
-//       <main className="">
-//         <h1 className="">Projects page</h1>
-//         <p>Estetika's Projects</p>
-//       </main>
-//     </div>
-//   );
-// };
-
-// export default AboutPage;
-
-import React, { useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import SubNavbarProjects from "../components/SubNavbarProjects"; // Import SubNavbar
-// import '../styles/Projects.css';
 
 const ProjectsPage = () => {
-  // Sample project data (you can replace this with data from your backend later)
+  // Sample project data
   const [projects] = useState([
     {
       id: 1,
       title: "Redesign Website",
-      description: "A complete redesign of the company website.",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
       status: "In Progress",
       deadline: "May 31, 2025",
       assignedTo: "Jane Doe",
@@ -59,7 +17,8 @@ const ProjectsPage = () => {
     {
       id: 2,
       title: "Mobile App UI/UX",
-      description: "Design the UI/UX for a mobile application.",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
       status: "Pending",
       deadline: "June 15, 2025",
       assignedTo: "John Smith",
@@ -67,7 +26,8 @@ const ProjectsPage = () => {
     {
       id: 3,
       title: "Landing Page Design",
-      description: "Design a landing page for a new product launch.",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
       status: "Completed",
       deadline: "April 30, 2025",
       assignedTo: "Alice Brown",
@@ -75,54 +35,53 @@ const ProjectsPage = () => {
     {
       id: 4,
       title: "Landing Page Design",
-      description: "Design a landing page for a new product launch.",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
       status: "Completed",
       deadline: "April 30, 2025",
       assignedTo: "Alice Brown",
     },
   ]);
 
+  const navigate = useNavigate();
+
+  const handleProjectClick = (projectId) => {
+    navigate(`/projects/${projectId}`);
+  };
+
   return (
-    <div>
-      {/* <SubNavbarProjects /> SubNavbar component */}
-
-      {/* Page Heading */}
-      <div className="projects-header">
-        <h1>Projects</h1>
-        <p>Estetika's Ongoing and Completed Projects</p>
-      </div>
-
-      {/* Projects Overview Section */}
-      <div className="projects-overview">
-        <h2>Projects Overview</h2>
-        <div className="projects-list">
+    <div className="px-4 py-8 mx-auto">
+      {/* projects */}
+      <div className="projects-overview flex-1 flex flex-col">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-fr">
           {projects.map((project) => (
-            <div key={project.id} className="project-card">
-              <h3>{project.title}</h3>
-              <p>{project.description}</p>
-              <div className="project-details">
-                <span>
-                  <strong>Status:</strong> {project.status}
-                </span>
-                <span>
-                  <strong>Deadline:</strong> {project.deadline}
-                </span>
-                <span>
-                  <strong>Assigned To:</strong> {project.assignedTo}
-                </span>
+            <div
+              key={project.id}
+              className=" bg-white rounded-xl p-6 shadow-lg overflow-visible flex flex-col h-full before:content-[''] before:absolute before:top-2 before:left-2 before:w-full before:h-full before:bg-gray-100 before:rounded-xl before:-z-10 after:content-[''] after:absolute after:top-4 after:left-4 after:w-full after:h-full after:bg-gray-200 after:rounded-xl after:-z-20"
+            >
+              <div className="relative border-b-[1px] border-gray-200 pb-2 mb-2">
+                <h3 className="text-lg font-bold ">{project.title}</h3>
+                <button
+                  className="absolute top-1/4 right-0 -translate-y-1/2 text-sm bg-[#C28383]/20 text-[#BD1E1E] rounded-lg p-4 py-2 cursor-pointer hover:bg-[#C28383]/30 transition duration-300"
+                  onClick={handleProjectClick}
+                >
+                  View
+                </button>
               </div>
-              <button
-                className="view-project-button"
-                onClick={() => alert(`View details of ${project.title}`)}
-              >
-                View Project Details
-              </button>
+
+              <p className="text-sm text-gray-600 mt-1">
+                {project.description}
+              </p>
+              <div className="mt-4 text-sm text-gray-700">
+                <span className="block mb-1 text-[#BD1E1E] font-bold">
+                  {project.deadline}
+                </span>
+                <span className="block">{project.assignedTo}</span>
+              </div>
             </div>
           ))}
         </div>
       </div>
-
-      {/* Add a section for any other content you'd like, such as project actions */}
     </div>
   );
 };

@@ -2,7 +2,7 @@ import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
-import ProjectsPage from "./pages/ProjectsPage";
+
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -11,6 +11,7 @@ import CalendarPage from "./pages/CalendarPage";
 import NotificationPage from "./pages/NotificationPage";
 
 //project detail pages
+import ProjectsPage from "./pages/ProjectsPage";
 import DesignerProjectsPage from "./pages/DesignerProjectsPage";
 import ProjectDetailsPage from "./pages/ProjectDetailsPage";
 import AdminProjectsPage from "./pages/AdminProjectsPage";
@@ -85,7 +86,7 @@ function App() {
             path="projects"
             element={
               <ProtectedRoute>
-                <AdminProjectsPage />
+                <ProjectsPage />
               </ProtectedRoute>
             }
           />
