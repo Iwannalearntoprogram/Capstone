@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Column from "./kanban/Column";
+import { DndContext } from "@dnd-kit/core";
 
 const columns = [
   { id: "backlog", title: "Backlog" },
@@ -37,14 +38,32 @@ const initialTasks = [
 function TasksTab() {
   const [tasks, setTasks] = useState(initialTasks);
 
+  const handleDragEnd = (e) => {
+    const { active, over } = e;
+
+    if (!over) return;
+
+    const activeTask = active.id;
+    const newStatus = over.id;
+
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === activeTask ? { ...task, status: newStatus } : task
+      )
+    );
+  };
+
   return (
     <div className="flex gap-4">
-      {columns.map((column) => (
-        <Column
-          column={column}
-          tasks={tasks.filter((task) => column.id === task.status)}
-        />
-      ))}
+      <DndContext onDragEnd={handleDragEnd}>
+        {columns.map((column) => (
+          <Column
+            key={column.id}
+            column={column}
+            tasks={tasks.filter((task) => column.id === task.status)}
+          />
+        ))}
+      </DndContext>
     </div>
   );
 }

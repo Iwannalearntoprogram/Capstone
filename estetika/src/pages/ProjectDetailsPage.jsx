@@ -58,9 +58,6 @@ function ProjectDetailsPage() {
         <h1 className="text-3xl text-center font-bold mb-2">
           {selectedProject?.title || "Project Not Found"}
         </h1>
-        <p className="text-gray-600 text-center">
-          {selectedProject?.description || "No description available."}
-        </p>
         {/* {selectedProject && (
           <div className="flex flex-wrap gap-4 mt-4 text-sm">
             <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-700">
