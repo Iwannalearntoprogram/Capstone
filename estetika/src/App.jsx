@@ -17,9 +17,9 @@ import ProjectDetailsPage from "./pages/ProjectDetailsPage";
 import AdminProjectsPage from "./pages/AdminProjectsPage";
 
 //tab content components
-import TasksTab from "./components/TasksTab";
-import ProgressTab from "./components/ProgressTab";
-import FilesTab from "./components/FilesTab";
+import TasksTab from "./components/projectdetails/TasksTab";
+import ProgressTab from "./components/projectdetails/ProgressTab";
+import FilesTab from "./components/projectdetails/FilesTab";
 
 //materials
 import MaterialsPage from "./pages/MaterialsPage";
@@ -91,7 +91,7 @@ function App() {
             }
           />
           <Route
-            path="projects/:projectId"
+            path="projects/:id"
             element={
               <ProtectedRoute>
                 <ProjectDetailsPage />

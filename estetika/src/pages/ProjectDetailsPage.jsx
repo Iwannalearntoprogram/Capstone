@@ -40,11 +40,9 @@ const projects = [
 ];
 
 function ProjectDetailsPage() {
-  const { projectId } = useParams();
+  const { id } = useParams();
 
-  const selectedProject = projects.find(
-    (project) => project.id === Number(projectId)
-  );
+  const selectedProject = projects.find((project) => project.id === Number(id));
 
   const tabs = [
     { label: "Tasks", path: "tasks" },
@@ -54,10 +52,10 @@ function ProjectDetailsPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className=" mx-auto px-4 py-8">
       {/* Project Header */}
       <div className="mb-8">
-        <h1 className="text-3xl text-center font-bold text-[#1d3c34] mb-2">
+        <h1 className="text-3xl text-center font-bold mb-2">
           {selectedProject?.title || "Project Not Found"}
         </h1>
         <p className="text-gray-600 text-center">
@@ -84,7 +82,7 @@ function ProjectDetailsPage() {
           {tabs.map((tab) => (
             <NavLink
               key={tab.path}
-              to={`/projects/${projectId}/${tab.path}`}
+              to={`/projects/${id}/${tab.path}`}
               className={({ isActive }) =>
                 `py-2 px-1 border-b-2 transition-colors duration-200 ${
                   isActive
@@ -100,7 +98,7 @@ function ProjectDetailsPage() {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white rounded-xl shadow p-6 min-h-[200px]">
+      <div className="px-20 rounded-xl  min-h-[200px]">
         <Outlet />
       </div>
     </div>
