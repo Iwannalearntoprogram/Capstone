@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SubNavbarProjects from "../components/SubNavbarProjects"; // Import SubNavbar
 
 const ProjectsPage = () => {
-  // Sample project data
-  const [projects] = useState([
+  const projects = [
     {
       id: 1,
       title: "Redesign Website",
@@ -41,12 +40,12 @@ const ProjectsPage = () => {
       deadline: "April 30, 2025",
       assignedTo: "Alice Brown",
     },
-  ]);
+  ];
 
   const navigate = useNavigate();
 
   const handleProjectClick = (projectId) => {
-    navigate(`/projects/${projectId}`);
+    navigate(`/projects/${projectId}/tasks`);
   };
 
   return (
@@ -63,7 +62,7 @@ const ProjectsPage = () => {
                 <h3 className="text-lg font-bold ">{project.title}</h3>
                 <button
                   className="absolute top-1/4 right-0 -translate-y-1/2 text-sm bg-[#C28383]/20 text-[#BD1E1E] rounded-lg p-4 py-2 cursor-pointer hover:bg-[#C28383]/30 transition duration-300"
-                  onClick={handleProjectClick}
+                  onClick={() => handleProjectClick(project.id)}
                 >
                   View
                 </button>
