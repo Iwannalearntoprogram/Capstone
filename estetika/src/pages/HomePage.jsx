@@ -2,6 +2,34 @@ import { useState } from "react";
 import CustomerSatisfactionChart from "../components/dashboard/CustomerSatisfactionChart";
 import ProjectCompletionChart from "../components/dashboard/ProjectCompletionChart";
 
+// Separated Top Materials Data
+const topMaterials = [
+  {
+    name: "Wall Art",
+    popularity: 85,
+    sales: 80, // percent
+    supplier: "Artify Home",
+  },
+  {
+    name: "Throw Pillows",
+    popularity: 75,
+    sales: 70, // percent
+    supplier: "CozyNest",
+  },
+  {
+    name: "Curtains",
+    popularity: 90,
+    sales: 85, // percent
+    supplier: "DrapeDesigns",
+  },
+  {
+    name: "Rugs",
+    popularity: 65,
+    sales: 60, // percent
+    supplier: "SoftStep",
+  },
+];
+
 const HomePage = () => {
   return (
     <div className="w-full min-h-screen grid grid-rows-3 grid-cols-8 gap-4 grid-auto-rows-[minmax(0, 1fr)]">
@@ -44,7 +72,6 @@ const HomePage = () => {
       </div>
       {/* customer satisfaction */}
       <div className="col-span-3 bg-white rounded-xl p-4 shadow-md">
-        {" "}
         <h2 className="font-bold mb-4">Customer Satisfaction</h2>
         <div className="h-52 w-full">
           <CustomerSatisfactionChart />
@@ -58,7 +85,55 @@ const HomePage = () => {
         </div>
       </div>
       {/* project top materials */}
-      <div className="col-span-4 bg-white rounded-xl p-4 shadow-md"></div>
+      <div className="col-span-4 bg-white rounded-xl p-4 shadow-md">
+        <h2 className="font-bold mb-4">Top Materials</h2>
+        <div className="flex gap-4">
+          <table className="min-w-full text-sm table-fixed">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 text-left font-semibold w-[10%]">#</th>
+                <th className="px-4 py-2 text-left font-semibold w-[20%]">
+                  Name
+                </th>
+                <th className="px-4 py-2 text-left font-semibold w-[55%]">
+                  Popularity
+                </th>
+                <th className="px-4 py-2 text-left font-semibold w-[15%]">
+                  Sales
+                </th>
+              </tr>
+            </thead>
+            <tbody className="overflow-y-auto">
+              {topMaterials.map((item, idx) => (
+                <tr key={item.name} className="border-b border-gray-200 h-12">
+                  <td className="px-4 py-2 w-[10%]">{idx + 1}</td>
+                  <td className="px-4 py-2 w-[20%]">{item.name}</td>
+                  <td className="px-4 py-2 w-[55%] pr-12">
+                    <div className="flex items-center gap-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div
+                          className={`bg-purple-400 h-2 rounded-full`}
+                          style={{ width: `${item.popularity}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-xs font-semibold">
+                        {item.popularity}%
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-2 w-[15%] ">
+                    <div
+                      className={`text-xs font-semibold bg-purple-400/20 bg-opacity-30 border-2 border-purple-400 leading-8 text-center rounded-md w-16`}
+                    >
+                      {item.sales}%
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
       {/* projects */}
       <div className="col-span-8 bg-white rounded-xl p-4 shadow-md"></div>
     </div>
