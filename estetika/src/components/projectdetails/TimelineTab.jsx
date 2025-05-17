@@ -87,6 +87,9 @@ const taskRowColor = "bg-gray-50";
 
 const TimelineTab = () => {
   const [hoveredTask, setHoveredTask] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [hoveredPhase, setHoveredPhase] = useState(null);
+  const [phaseTooltipPos, setPhaseTooltipPos] = useState({ x: 0, y: 0 });
 
   return (
     <div className="p-4 bg-white rounded-xl shadow-md">
@@ -111,6 +114,27 @@ const TimelineTab = () => {
           <React.Fragment key={phaseIndex}>
             <div
               className={`grid grid-cols-[200px_repeat(${months.length},1fr)] items-center h-16 ${phaseRowColor}`}
+              onMouseEnter={(e) => {
+                setHoveredPhase({
+                  ...phase,
+                  phaseIndex,
+                  phaseStart,
+                  phaseEnd,
+                  phaseProgress,
+                });
+                setPhaseTooltipPos({
+                  x: e.clientX + 12,
+                  y: e.clientY + 12,
+                });
+              }}
+              onMouseMove={(e) => {
+                setPhaseTooltipPos({
+                  x: e.clientX + 12,
+                  y: e.clientY + 12,
+                });
+              }}
+              onMouseLeave={() => setHoveredPhase(null)}
+              style={{ position: "relative" }}
             >
               <div className="p-2">
                 <h1 className="font-bold">{phase.name}</h1>
@@ -161,15 +185,58 @@ const TimelineTab = () => {
                 }
                 return <div key={i} className="h-full flex items-center"></div>;
               })}
+              {/* Phase Tooltip */}
+              {hoveredPhase && hoveredPhase.phaseIndex === phaseIndex && (
+                <div
+                  className="z-50 bg-white border border-gray-300 rounded shadow-lg px-4 py-2 text-xs min-w-[200px] pointer-events-none"
+                  style={{
+                    position: "fixed",
+                    left: phaseTooltipPos.x,
+                    top: phaseTooltipPos.y,
+                    transition: "left 0.05s, top 0.05s",
+                  }}
+                >
+                  <div className="font-bold mb-1">{phase.name}</div>
+                  <div>
+                    <span className="font-semibold">Label:</span> {phase.label}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Start:</span>{" "}
+                    {format(addMonths(months[0], phaseStart), "MMM yyyy")}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Deadline:</span>{" "}
+                    {format(addMonths(months[0], phaseEnd), "MMM yyyy")}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Progress:</span>{" "}
+                    {Math.round(phaseProgress)}%
+                  </div>
+                  <div>
+                    <span className="font-semibold">Tasks:</span>{" "}
+                    {phase.tasks.length}
+                  </div>
+                </div>
+              )}
             </div>
             {/* Subtasks */}
             {phase.tasks.map((task, taskIndex) => (
               <div
                 key={taskIndex}
                 className={`grid grid-cols-[200px_repeat(${months.length},1fr)] items-center h-8 ${taskRowColor}`}
-                onMouseEnter={() =>
-                  setHoveredTask({ ...task, phase, phaseIndex })
-                }
+                onMouseEnter={(e) => {
+                  setHoveredTask({ ...task, phase, phaseIndex });
+                  setTooltipPos({
+                    x: e.clientX + 12,
+                    y: e.clientY + 12,
+                  });
+                }}
+                onMouseMove={(e) => {
+                  setTooltipPos({
+                    x: e.clientX + 12,
+                    y: e.clientY + 12,
+                  });
+                }}
                 onMouseLeave={() => setHoveredTask(null)}
                 style={{ position: "relative" }}
               >
@@ -221,11 +288,19 @@ const TimelineTab = () => {
                     <div key={i} className="h-full flex items-center"></div>
                   );
                 })}
-                {/* Tooltip */}
+                {/* Task Tooltip */}
                 {hoveredTask &&
                   hoveredTask.name === task.name &&
                   hoveredTask.phaseIndex === phaseIndex && (
-                    <div className="absolute left-40 top-2 z-10 bg-white border border-gray-300 rounded shadow-lg px-4 py-2 text-xs min-w-[180px]">
+                    <div
+                      className="z-50 bg-white border border-gray-300 rounded shadow-lg px-4 py-2 text-xs min-w-[180px] pointer-events-none"
+                      style={{
+                        position: "fixed",
+                        left: tooltipPos.x,
+                        top: tooltipPos.y,
+                        transition: "left 0.05s, top 0.05s",
+                      }}
+                    >
                       <div className="font-bold mb-1">{task.name}</div>
                       <div>
                         <span className="font-semibold">Phase:</span>{" "}
