@@ -1,3 +1,13 @@
 import { io } from "socket.io-client";
-const socket = io("http://localhost:3000"); // Change to your backend URL if needed
+
+const token = localStorage.getItem("token");
+
+const serverUrl = import.meta.env.VITE_REACT_APP_SERVER_URL;
+
+const socket = io(serverUrl, {
+  auth: {
+    token: token,
+  },
+});
+
 export default socket;

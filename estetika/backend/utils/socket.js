@@ -6,7 +6,7 @@ const Message = require("../models/User/Message");
 const initSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:3001",
+      origin: process.env.CLIENT_URL,
       methods: ["GET", "POST"],
     },
   });
@@ -32,15 +32,9 @@ const initSocket = (server) => {
   io.on("connection", (socket) => {
     socket.user.socketId = socket.id;
 
-    socket.on("register_user", async (userId) => {
+    socket.on("online", async (userId) => {
       try {
-        let user = await User.findById(userId);
-        if (!user) {
-          throw new Error("User not found");
-        }
-        user.socketId = socket.id;
-        await User.findByIdAndUpdate(userId, { socketId: socket.id });
-
+        await User.findByIdAndUpdate(userId, { socketId: socket.id }); // Always update
         const users = await User.find({});
         io.emit("update_user_list", users);
       } catch (err) {
@@ -62,7 +56,7 @@ const initSocket = (server) => {
 
         if (recipientUser.socketId) {
           io.to(recipientUser.socketId).emit("receive_private_message", {
-            sender: sender.username,
+            sender: sender._id,
             content,
             timestamp: message.timestamp,
           });

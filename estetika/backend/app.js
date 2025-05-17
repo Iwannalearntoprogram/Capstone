@@ -72,7 +72,7 @@ app.use("/api/alive", aliveRoute);
 
 // route catch
 app.all("/{*splat}", (req, res, next) => {
-  console.log(req.originalUrl);
+  console.log(`Can't find ${req.originalUrl} on this server!`);
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 app.use(globalErrorHandler);

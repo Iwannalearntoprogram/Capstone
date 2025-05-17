@@ -5,7 +5,8 @@ import UserList from "../components/inbox/UserList";
 import ChatWindow from "../components/inbox/ChatWindow";
 
 function Inbox() {
-  const [username, setUsername] = useState("");
+  const storedUserId = localStorage.getItem("id");
+  const [userId, setUserId] = useState(storedUserId);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -13,44 +14,37 @@ function Inbox() {
 
   // Use refs to access latest values inside socket listeners
   const selectedUserRef = useRef(selectedUser);
-  const usernameRef = useRef(username);
+  const userIdRef = useRef(userId);
 
   useEffect(() => {
     selectedUserRef.current = selectedUser;
-    usernameRef.current = username;
-  }, [selectedUser, username]);
+    userIdRef.current = userId;
+  }, [selectedUser, userId]);
+
+  useEffect(() => {
+    socket.on("connect", () => {
+      if (userId) {
+        socket.emit("online", userId);
+      }
+    });
+    fetchUsers();
+  }, []);
 
   // Fetch users from backend
   const fetchUsers = async () => {
-    if (!username) return;
-    console.log("GET /users?exclude=", username);
+    if (!userId) return;
     const res = await axios.get(
-      `http://localhost:3000/users?exclude=${username}`
+      `http://localhost:3000/api/user?exclude=${userId}`
     );
-    console.log("Response /users:", res.data);
     setUsers(res.data);
   };
 
   // Fetch messages from backend
   const fetchMessages = async (user) => {
-    console.log("GET /messages?user1=", username, "&user2=", user.username);
     const res = await axios.get(
-      `http://localhost:3000/messages?user1=${username}&user2=${user.username}`
+      `http://localhost:3000/api/message?user1=${userId}&user2=${user._id}`
     );
-    console.log("Response /messages:", res.data);
     setMessages(res.data);
-  };
-
-  // Register user in backend and socket
-  const register = async () => {
-    if (!username) return;
-    console.log("POST /users", { username });
-    await axios
-      .post("http://localhost:3000/users", { username })
-      .then((res) => console.log("Response /users POST:", res.data))
-      .catch((err) => console.log("Error /users POST:", err));
-    socket.emit("register_user", username);
-    fetchUsers();
   };
 
   // When user is selected, fetch messages
@@ -63,70 +57,40 @@ function Inbox() {
   const sendMessage = () => {
     if (!content || !selectedUser) return;
     socket.emit("send_private_message", {
-      sender: username,
-      recipientId: selectedUser.socketId,
+      sender: userId,
+      recipientId: selectedUser._id,
       content,
     });
     setMessages((prev) => [
       ...prev,
-      { sender: username, content, timestamp: new Date() },
+      { sender: userId, content, timestamp: new Date() },
     ]);
     setContent("");
   };
 
   useEffect(() => {
-    const handleReceiveMessage = (msg) => {
-      if (
-        msg.sender === selectedUserRef.current?.username ||
-        msg.sender === usernameRef.current
-      ) {
+    const handleMessage = (msg) => {
+      const selected = selectedUserRef.current;
+
+      // Append message if it's from the currently selected user
+      if (msg.sender === selected?._id) {
         setMessages((prev) => [...prev, msg]);
       }
     };
 
-    const handleUpdateUserList = fetchUsers;
-
-    socket.on("receive_private_message", handleReceiveMessage);
-    socket.on("update_user_list", handleUpdateUserList);
-
-    if (!selectedUser) return;
-
-    messages.forEach((msg) => {
-      if (
-        msg.status !== "read" &&
-        msg.recipient === username &&
-        msg.sender === selectedUser.username
-      ) {
-        socket.emit("mark_as_read", { messageId: msg._id });
-      }
-    });
+    socket.on("receive_private_message", handleMessage);
 
     return () => {
-      socket.off("receive_private_message", handleReceiveMessage);
-      socket.off("update_user_list", handleUpdateUserList);
+      socket.off("receive_private_message", handleMessage);
     };
-  }, [messages, selectedUser, username]);
+  }, []);
 
   return (
     <div className="flex h-screen font-sans">
       {/* Sidebar */}
       <div className="w-1/4 p-6 border-r border-gray-200">
-        <h3 className="font-bold mb-2">Set Username</h3>
-        <input
-          className="border rounded p-2 w-full mb-2"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username"
-        />
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
-          onClick={register}
-        >
-          Enter
-        </button>
         <UserList
           users={users}
-          currentUser={username}
           selectedUser={selectedUser}
           onSelect={handleUserSelect}
         />
@@ -135,10 +99,10 @@ function Inbox() {
       {/* Main Chat */}
       <div className="flex-1 p-6 flex flex-col">
         <h3 className="font-bold mb-2">
-          Chat with {selectedUser?.username || "..."}
+          Chat with {selectedUser?.userId || "..."}
         </h3>
         <div className="flex-1">
-          <ChatWindow messages={messages} username={username} />
+          <ChatWindow messages={messages} userId={userId} />
         </div>
         <div className="flex gap-2 mt-2 w-1/2 mx-auto">
           <input
