@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { format, addMonths, eachMonthOfInterval } from "date-fns";
 
 // Example: Marketing Campaign Project
@@ -82,10 +82,12 @@ const months = eachMonthOfInterval({
   end: addMonths(startDate, monthsToShow - 1),
 });
 
-const phaseRowColor = "bg-blue-200";
-const taskRowColor = "bg-blue-50";
+const phaseRowColor = "bg-blue-100";
+const taskRowColor = "bg-gray-50";
 
 const TimelineTab = () => {
+  const [hoveredTask, setHoveredTask] = useState(null);
+
   return (
     <div className="p-4 bg-white rounded-xl shadow-md">
       <div
@@ -94,7 +96,7 @@ const TimelineTab = () => {
         <div className="border-b pb-2">Task</div>
         {months.map((month, index) => (
           <div key={index} className="text-center border-b pb-2">
-            {format(month, "MMM")}
+            {format(month, "MMM yyyy")}
           </div>
         ))}
       </div>
@@ -165,6 +167,11 @@ const TimelineTab = () => {
               <div
                 key={taskIndex}
                 className={`grid grid-cols-[200px_repeat(${months.length},1fr)] items-center h-8 ${taskRowColor}`}
+                onMouseEnter={() =>
+                  setHoveredTask({ ...task, phase, phaseIndex })
+                }
+                onMouseLeave={() => setHoveredTask(null)}
+                style={{ position: "relative" }}
               >
                 <div className="text-sm p-2">{task.name}</div>
                 {months.map((_, i) => {
@@ -214,6 +221,38 @@ const TimelineTab = () => {
                     <div key={i} className="h-full flex items-center"></div>
                   );
                 })}
+                {/* Tooltip */}
+                {hoveredTask &&
+                  hoveredTask.name === task.name &&
+                  hoveredTask.phaseIndex === phaseIndex && (
+                    <div className="absolute left-40 top-2 z-10 bg-white border border-gray-300 rounded shadow-lg px-4 py-2 text-xs min-w-[180px]">
+                      <div className="font-bold mb-1">{task.name}</div>
+                      <div>
+                        <span className="font-semibold">Phase:</span>{" "}
+                        {phase.name}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Start:</span>{" "}
+                        {format(
+                          addMonths(months[0], task.startMonth),
+                          "MMM yyyy"
+                        )}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Deadline:</span>{" "}
+                        {format(
+                          addMonths(months[0], task.endMonth),
+                          "MMM yyyy"
+                        )}
+                      </div>
+                      {typeof task.progress === "number" && (
+                        <div>
+                          <span className="font-semibold">Progress:</span>{" "}
+                          {task.progress}%
+                        </div>
+                      )}
+                    </div>
+                  )}
               </div>
             ))}
           </React.Fragment>
