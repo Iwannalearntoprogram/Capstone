@@ -3,6 +3,7 @@ const Project = require("../../models/Project/Project");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
 const User = require("../../models/User/User");
+const Phase = require("../../models/Project/Phase");
 
 // Get Task by Id or ProjectId
 const task_get = catchAsync(async (req, res, next) => {
@@ -17,11 +18,13 @@ const task_get = catchAsync(async (req, res, next) => {
     task = await Task.findById(id)
       .populate("assigned", "-password")
       .populate("projectId")
+      .populate("phaseId")
       .populate("userId", "-password");
   } else {
     task = await Task.find({ projectId })
       .populate("assigned", "-password")
       .populate("projectId")
+      .populate("phaseId")
       .populate("userId", "-password");
   }
 
@@ -42,6 +45,7 @@ const task_post = catchAsync(async (req, res, next) => {
     endDate,
     assigned,
     projectId,
+    phaseId,
   } = req.body;
 
   if (!title || !projectId)
@@ -64,6 +68,7 @@ const task_post = catchAsync(async (req, res, next) => {
     endDate,
     assigned,
     projectId,
+    phaseId,
     userId,
   });
 
@@ -71,6 +76,12 @@ const task_post = catchAsync(async (req, res, next) => {
 
   await Project.findByIdAndUpdate(
     projectId,
+    { $push: { tasks: newTask._id } },
+    { new: true }
+  );
+
+  await Phase.findByIdAndUpdate(
+    phaseId,
     { $push: { tasks: newTask._id } },
     { new: true }
   );
@@ -128,6 +139,12 @@ const task_delete = catchAsync(async (req, res, next) => {
 
   await Project.findByIdAndUpdate(
     deletedTask.projectId,
+    { $pull: { tasks: deletedTask._id } },
+    { new: true }
+  );
+
+  await Phase.findByIdAndUpdate(
+    deletedTask.phaseId,
     { $pull: { tasks: deletedTask._id } },
     { new: true }
   );
