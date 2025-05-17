@@ -25,7 +25,7 @@ function Inbox() {
     if (!username) return;
     console.log("GET /users?exclude=", username);
     const res = await axios.get(
-      `http://localhost:3000/users?exclude=${username}`
+      `http://localhost:3000/api/users?exclude=${username}`
     );
     console.log("Response /users:", res.data);
     setUsers(res.data);
@@ -35,7 +35,7 @@ function Inbox() {
   const fetchMessages = async (user) => {
     console.log("GET /messages?user1=", username, "&user2=", user.username);
     const res = await axios.get(
-      `http://localhost:3000/messages?user1=${username}&user2=${user.username}`
+      `http://localhost:3000/api/messages?user1=${username}&user2=${user.username}`
     );
     console.log("Response /messages:", res.data);
     setMessages(res.data);
@@ -46,7 +46,7 @@ function Inbox() {
     if (!username) return;
     console.log("POST /users", { username });
     await axios
-      .post("http://localhost:3000/users", { username })
+      .post("http://localhost:3000/api/users", { username })
       .then((res) => console.log("Response /users POST:", res.data))
       .catch((err) => console.log("Error /users POST:", err));
     socket.emit("register_user", username);
