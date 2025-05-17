@@ -1,37 +1,143 @@
-// import React from "react";
+import { useState } from "react";
+import CustomerSatisfactionChart from "../components/dashboard/CustomerSatisfactionChart";
+import ProjectCompletionChart from "../components/dashboard/ProjectCompletionChart";
 
-// function HomePage (){
-//     return (
-//         <> 
-//         <h1>Welcome to Our Website! </h1>
-//         <p>
-
-//             Welcome to Eli's Website, where innovation and creativity come together to provide you with top-notch digital experiences. We are dedicated to creating intuitive and dynamic web and mobile applications that cater to your needs.
-//             Whether you are looking for a reliable service, an engaging experience, or simply a way to connect with others, we are here to help you every step of the way. Our team is passionate about using the latest technologies to build solutions that solve real-world problems and help individuals and businesses thrive.</p></>
-//     );
-// }
-
-// export default HomePage;
-
-import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
+// Separated Top Materials Data
+const topMaterials = [
+  {
+    name: "Wall Art",
+    popularity: 85,
+    sales: 80, // percent
+    supplier: "Artify Home",
+  },
+  {
+    name: "Throw Pillows",
+    popularity: 75,
+    sales: 70, // percent
+    supplier: "CozyNest",
+  },
+  {
+    name: "Curtains",
+    popularity: 90,
+    sales: 85, // percent
+    supplier: "DrapeDesigns",
+  },
+  {
+    name: "Rugs",
+    popularity: 65,
+    sales: 60, // percent
+    supplier: "SoftStep",
+  },
+];
 
 const HomePage = () => {
-  // const [sidebarOpen, setSidebarOpen] = useState(true);
-  // const toggleSidebar = () => setSidebarOpen(prev => !prev);
-
   return (
-    <div>
-      {/* <Navbar toggleSidebar={toggleSidebar} />
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} /> */}
-      <main className="content">
-        <h1>Homee</h1>
-        <p>Estetika's Home Page</p>
-      </main>
+    <div className="w-full min-h-screen grid grid-rows-3 grid-cols-8 gap-4 grid-auto-rows-[minmax(0, 1fr)]">
+      {/* project overview */}
+      <div className="col-span-5 row-span-1 bg-white rounded-xl p-4 shadow-md">
+        <div className="mb-8">
+          <h2 className="font-bold">Projects Overview</h2>
+          <p className="text-sm">Projects Summary</p>
+        </div>
+        <div className="flex gap-4 justify-center">
+          <div className="h-40 w-40 bg-red-100 rounded-xl relative">
+            <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
+              14
+            </p>
+            <p className="w-full text-center absolute bottom-4 ">
+              Active Projects
+            </p>
+          </div>
+          <div className="h-40 w-40 bg-amber-100 rounded-xl relative">
+            <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
+              34
+            </p>
+            <p className="w-full text-center absolute bottom-4 ">
+              Completed Projects
+            </p>
+          </div>
+          <div className="h-40 w-40 bg-green-100 rounded-xl relative">
+            <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
+              5
+            </p>
+            <p className="w-full text-center absolute bottom-4 ">Delayed</p>
+          </div>
+          <div className="h-40 w-40 bg-purple-100 rounded-xl relative">
+            <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
+              7
+            </p>
+            <p className="w-full text-center absolute bottom-4 ">Cancelled</p>
+          </div>
+        </div>
+      </div>
+      {/* customer satisfaction */}
+      <div className="col-span-3 bg-white rounded-xl p-4 shadow-md">
+        <h2 className="font-bold mb-4">Customer Satisfaction</h2>
+        <div className="h-52 w-full">
+          <CustomerSatisfactionChart />
+        </div>
+      </div>
+      {/* project completion */}
+      <div className="col-span-4 bg-white rounded-xl p-8 shadow-md">
+        <h2 className="font-bold mb-4">Project Completion</h2>
+        <div className="h-52 w-full">
+          <ProjectCompletionChart />
+        </div>
+      </div>
+      {/* project top materials */}
+      <div className="col-span-4 bg-white rounded-xl p-4 shadow-md">
+        <h2 className="font-bold mb-4">Top Materials</h2>
+        <div className="flex gap-4">
+          <table className="min-w-full text-sm table-fixed">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 text-left font-semibold w-[10%]">#</th>
+                <th className="px-4 py-2 text-left font-semibold w-[20%]">
+                  Name
+                </th>
+                <th className="px-4 py-2 text-left font-semibold w-[55%]">
+                  Popularity
+                </th>
+                <th className="px-4 py-2 text-left font-semibold w-[15%]">
+                  Sales
+                </th>
+              </tr>
+            </thead>
+            <tbody className="overflow-y-auto">
+              {topMaterials.map((item, idx) => (
+                <tr key={item.name} className="border-b border-gray-200 h-12">
+                  <td className="px-4 py-2 w-[10%]">{idx + 1}</td>
+                  <td className="px-4 py-2 w-[20%]">{item.name}</td>
+                  <td className="px-4 py-2 w-[55%] pr-12">
+                    <div className="flex items-center gap-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div
+                          className={`bg-purple-400 h-2 rounded-full`}
+                          style={{ width: `${item.popularity}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-xs font-semibold">
+                        {item.popularity}%
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-2 w-[15%] ">
+                    <div
+                      className={`text-xs font-semibold bg-purple-400/20 bg-opacity-30 border-2 border-purple-400 leading-8 text-center rounded-md w-16`}
+                    >
+                      {item.sales}%
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {/* projects */}
+      <div className="col-span-8 bg-white rounded-xl p-4 shadow-md"></div>
     </div>
   );
 };
 
 export default HomePage;
-
