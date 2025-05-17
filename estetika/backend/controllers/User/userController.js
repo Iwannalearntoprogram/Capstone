@@ -1,14 +1,17 @@
 const catchAsync = require("../../utils/catchAsync");
-const User = require("./userModel");
+const AppError = require("../../utils/appError");
+const User = require("../../models/User/User");
 
-const createUser = catchAsync(async (req, res, next) => {
-  try {
-    const newUser = new User(req.body);
-    await newUser.save();
-    return res.status(200).json({ message: "User created!", user: newUser });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+const users_index = catchAsync(async (req, res) => {
+  const { exclude } = req.query;
+
+  const users = await User.find({ username: { $ne: exclude } });
+
+  if (!users || users.length === 0) {
+    return next(new AppError("No users found", 404));
   }
+
+  return res.status(200).json(users);
 });
 
-module.exports = { createUser };
+module.exports = { users_index };

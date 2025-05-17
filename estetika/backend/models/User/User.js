@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema(
     emailVerified: { type: Boolean, default: false },
     otp: { type: String },
     otpExpiresAt: { type: Date },
+    socketId: { type: String },
   },
   {
     timestamps: true,
