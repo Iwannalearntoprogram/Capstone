@@ -31,7 +31,8 @@ function LoginPage() {
 
       if (response.ok) {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
+        localStorage.setItem("id", data.user.id);
+        localStorage.setItem("role", data.user.role);
         setIsLoggedIn(true);
       } else {
         setError(data.message || "Invalid credentials");
