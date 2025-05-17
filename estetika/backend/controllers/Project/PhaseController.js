@@ -17,11 +17,13 @@ const phase_get = catchAsync(async (req, res, next) => {
     phase = await Phase.findById(id)
       .populate("projectId")
       .populate("subPhaseId")
+      .populate("tasks")
       .populate("userId", "-password");
   } else {
     phase = await Phase.find({ projectId })
       .populate("projectId")
       .populate("subPhaseId")
+      .populate("tasks")
       .populate("userId", "-password");
   }
 
@@ -30,7 +32,36 @@ const phase_get = catchAsync(async (req, res, next) => {
       new AppError("Phase not found. Invalid Phase Identifier.", 404)
     );
 
-  return res.status(200).json({ message: "Phase Successfully Fetched", phase });
+  if (id && phase.tasks.length > 0) {
+    let weight = 100 / phase.tasks.length;
+    let total = 0;
+
+    phase.tasks.forEach((task) => {
+      if (task.status === "completed") {
+        total += weight;
+      }
+    });
+
+    phase.progress = total;
+  } else {
+    phase.forEach((ph) => {
+      let weight = 100 / ph.tasks.length;
+      let total = 0;
+
+      ph.tasks.forEach((task) => {
+        if (task.status === "completed") {
+          total += weight;
+        }
+      });
+
+      ph.progress = total;
+    });
+  }
+
+  return res.status(200).json({
+    message: `${id ? "" : "Project"} Phase Successfully Fetched`,
+    phase,
+  });
 });
 
 // Create Phase
@@ -148,6 +179,10 @@ const phase_delete = catchAsync(async (req, res, next) => {
     { $pull: { timeline: deletedPhase._id } },
     { new: true }
   );
+
+  await Promise.all([
+    Project.db.model("Task").deleteMany({ _id: { $in: deletedPhase.tasks } }),
+  ]);
 
   return res
     .status(200)
