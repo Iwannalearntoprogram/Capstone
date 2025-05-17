@@ -47,7 +47,7 @@ function ProjectDetailsPage() {
   const tabs = [
     { label: "Tasks", path: "tasks" },
     { label: "Progress", path: "progress" },
-    { label: "Files", path: "files" },
+    { label: "Timeline", path: "timeline" },
     // Add more tabs as needed
   ];
 

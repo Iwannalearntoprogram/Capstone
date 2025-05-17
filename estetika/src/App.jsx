@@ -19,7 +19,7 @@ import AdminProjectsPage from "./pages/AdminProjectsPage";
 //tab content components
 import TasksTab from "./components/projectdetails/TasksTab";
 import ProgressTab from "./components/projectdetails/ProgressTab";
-import FilesTab from "./components/projectdetails/FilesTab";
+import TimelineTab from "./components/projectdetails/TimelineTab";
 
 //materials
 import MaterialsPage from "./pages/MaterialsPage";
@@ -115,10 +115,10 @@ function App() {
               }
             />
             <Route
-              path="files"
+              path="timeline"
               element={
                 <ProtectedRoute>
-                  <FilesTab />
+                  <TimelineTab />
                 </ProtectedRoute>
               }
             />
