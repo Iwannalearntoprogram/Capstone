@@ -9,8 +9,11 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   console.log(token);
   console.log(role);
 
+  if (token && location.pathname === "/") {
+    return <Navigate to="/home" />;
+  }
+
   if (!token) {
-    // If not logged in, redirect to login page
     return <Navigate to="/" state={{ from: location }} />;
   }
 
