@@ -4,6 +4,7 @@ import Cookies from "js-cookie";
 const ProtectedRoute = ({ children, requiredRole }) => {
   const location = useLocation();
   const token = Cookies.get("token");
+  // const token = true;
   const role = localStorage.getItem("role");
 
   console.log(role);
