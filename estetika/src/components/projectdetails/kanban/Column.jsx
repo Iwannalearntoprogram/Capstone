@@ -103,6 +103,24 @@ export default function Column({ column, tasks }) {
           onChange={(e) =>
             setNewTask({ ...newTask, description: e.target.value })
           }
+          className="w-full p-2 mb-4 border resize-none border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+        />
+
+        <label className="block mb-2">Task Start:</label>
+        <input
+          type="date"
+          value={newTask.startDate || ""}
+          onChange={(e) =>
+            setNewTask({ ...newTask, startDate: e.target.value })
+          }
+          className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+        />
+
+        <label className="block mb-2">Task End:</label>
+        <input
+          type="date"
+          value={newTask.endDate || ""}
+          onChange={(e) => setNewTask({ ...newTask, endDate: e.target.value })}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
 
