@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import MessageBubble from "./MessageBubble";
 
-const ChatWindow = ({ messages, username }) => {
+const ChatWindow = ({ messages, userId }) => {
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -11,11 +11,7 @@ const ChatWindow = ({ messages, username }) => {
   return (
     <div className="flex flex-col h-full overflow-y-auto p-2 border border-gray-200 rounded mb-2 bg-white">
       {messages.map((msg, idx) => (
-        <MessageBubble
-          key={idx}
-          message={msg}
-          isSelf={msg.sender === username}
-        />
+        <MessageBubble key={idx} message={msg} isSelf={msg.sender === userId} />
       ))}
       <div ref={bottomRef} />
     </div>

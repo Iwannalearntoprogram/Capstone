@@ -23,4 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-.env
+# exclude all env files
+*.env
+
+# node modules
+backend/node_modules
