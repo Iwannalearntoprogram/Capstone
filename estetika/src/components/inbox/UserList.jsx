@@ -1,6 +1,6 @@
 import React from "react";
 
-const UserList = ({ users, currentUser, selectedUser, onSelect }) => {
+const UserList = ({ users, selectedUser, onSelect }) => {
   const sorted = [...users].sort((a, b) => {
     if (a.socketId && !b.socketId) return -1;
     if (!a.socketId && b.socketId) return 1;
