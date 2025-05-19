@@ -6,7 +6,6 @@ const phaseSchema = new mongoose.Schema(
       type: String,
       required: [true, "Phase title is required"],
     },
-
     startDate: Date,
     endDate: Date,
     subPhaseId: { type: [mongoose.Schema.Types.ObjectId], ref: "SubPhase" },
@@ -14,6 +13,10 @@ const phaseSchema = new mongoose.Schema(
     projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
     progress: Number,
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    notified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

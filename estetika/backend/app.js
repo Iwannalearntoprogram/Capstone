@@ -25,7 +25,10 @@ const aliveRoute = require("./routes/utils/aliveRoute");
 const AppError = require("./utils/appError");
 const checkAuth = require("./utils/checkAuth");
 const globalErrorHandler = require("./controllers/utils/ErrorController");
-const checkOverdueTasks = require("./utils/cronJobNotification");
+const {
+  checkOverdueTasks,
+  checkPhaseStart,
+} = require("./utils/cronJobNotification");
 
 // initializations
 const app = express();
@@ -85,12 +88,9 @@ app.all("/{*splat}", (req, res, next) => {
 app.use(globalErrorHandler);
 
 // cron job
-// cron.schedule("0 * * * *", () => {
-//   checkOverdueTasks();
-// });
-
 cron.schedule("* * * * *", () => {
   checkOverdueTasks();
+  checkPhaseStart();
 });
 
 module.exports = app;
