@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import sofaImg from "../assets/images/sofa.jpg"; // <-- Import the sofa image
+import sofaImg from "../assets/images/sofa.jpg";
+import Cookies from "js-cookie"; // <-- Import js-cookie
 
 function ProfilePage() {
   // // Define the state to control the sidebar's open/close state
@@ -7,6 +8,12 @@ function ProfilePage() {
 
   // // Function to toggle the sidebar visibility
   // const toggleSidebar = () => setSidebarOpen(prevState => !prevState);
+
+  // Logout handler
+  const handleLogout = () => {
+    Cookies.remove("token");
+    window.location.reload();
+  };
 
   return (
     <>
@@ -16,8 +23,8 @@ function ProfilePage() {
 
       <div className="flex w-full min-h-full gap-4 px-32">
         <div className="w-1/4 ">
-          <div className="flex justify-center bg-white p-4 rounded-lg shadow-md">
-            <div className="">
+          <div className="flex flex-col items-center bg-white p-4 rounded-lg shadow-md">
+            <div>
               <img
                 src={sofaImg}
                 alt="Profile"
@@ -26,6 +33,12 @@ function ProfilePage() {
               <h2 className="text-center font-bold">Name</h2>
               <p className="text-center">role</p>
             </div>
+            <button
+              onClick={handleLogout}
+              className="mt-4 px-4 py-2 bg-red-400/80 text-white rounded-lg w-full font-semibold hover:bg-pink-600 transition"
+            >
+              Logout
+            </button>
           </div>
         </div>
         <div className="flex-1 ">

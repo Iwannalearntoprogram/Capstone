@@ -89,7 +89,7 @@ const ProjectsPage = () => {
             return (
               <div
                 key={project.id}
-                className=" bg-white rounded-xl p-6 shadow-lg overflow-visible flex flex-col h-full before:content-[''] before:absolute before:top-2 before:left-2 before:w-full before:h-full before:bg-gray-100 before:rounded-xl before:-z-10 after:content-[''] after:absolute after:top-4 after:left-4 after:w-full after:h-full after:bg-gray-200 after:rounded-xl after:-z-20"
+                className=" bg-white rounded-xl p-6 shadow-lg overflow-visible flex flex-col h-full"
               >
                 <div className="relative border-b-[1px] border-gray-200 pb-2 mb-2">
                   <h3 className="text-lg font-bold ">{project.title}</h3>

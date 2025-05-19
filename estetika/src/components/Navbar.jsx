@@ -10,7 +10,9 @@ const Navbar = ({ toggleSidebar }) => {
       >
         ☰
       </button>
-      <img src={logo} alt="logo" className="h-auto max-h-full w-auto m-auto" />
+      <div className="flex-1 flex justify-center">
+        <img src={logo} alt="logo" className="h-8 w-auto" />
+      </div>
     </div>
   );
 };
