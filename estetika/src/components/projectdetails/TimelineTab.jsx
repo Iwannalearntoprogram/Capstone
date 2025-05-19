@@ -87,12 +87,29 @@ const taskRowColor = "bg-gray-50";
 
 const TimelineTab = () => {
   const [hoveredTask, setHoveredTask] = useState(null);
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
-  const [hoveredPhase, setHoveredPhase] = useState(null);
-  const [phaseTooltipPos, setPhaseTooltipPos] = useState({ x: 0, y: 0 });
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    data: null,
+  });
+
+  // Helper to show tooltip at cursor
+  const handleMouseMove = (e, data) => {
+    setTooltip({
+      visible: true,
+      x: e.clientX + 12,
+      y: e.clientY + 12,
+      data,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip({ visible: false, x: 0, y: 0, data: null });
+  };
 
   return (
-    <div className="p-4 bg-white rounded-xl shadow-md">
+    <div className="p-4 bg-white rounded-xl shadow-md relative">
       <div
         className={`grid grid-cols-[200px_repeat(${months.length},1fr)] text-sm font-medium mb-4`}
       >
@@ -112,29 +129,20 @@ const TimelineTab = () => {
 
         return (
           <React.Fragment key={phaseIndex}>
+            {/* PHASE ROW */}
             <div
-              className={`grid grid-cols-[200px_repeat(${months.length},1fr)] items-center h-16 ${phaseRowColor}`}
-              onMouseEnter={(e) => {
-                setHoveredPhase({
-                  ...phase,
-                  phaseIndex,
-                  phaseStart,
-                  phaseEnd,
-                  phaseProgress,
-                });
-                setPhaseTooltipPos({
-                  x: e.clientX + 12,
-                  y: e.clientY + 12,
-                });
-              }}
-              onMouseMove={(e) => {
-                setPhaseTooltipPos({
-                  x: e.clientX + 12,
-                  y: e.clientY + 12,
-                });
-              }}
-              onMouseLeave={() => setHoveredPhase(null)}
-              style={{ position: "relative" }}
+              className={`grid grid-cols-[200px_repeat(${months.length},1fr)] items-center h-16 ${phaseRowColor} cursor-pointer`}
+              onMouseMove={(e) =>
+                handleMouseMove(e, {
+                  type: "phase",
+                  name: phase.name,
+                  label: phase.label,
+                  progress: Math.round(phaseProgress),
+                  start: format(addMonths(months[0], phaseStart), "MMM yyyy"),
+                  end: format(addMonths(months[0], phaseEnd), "MMM yyyy"),
+                })
+              }
+              onMouseLeave={handleMouseLeave}
             >
               <div className="p-2">
                 <h1 className="font-bold">{phase.name}</h1>
@@ -185,59 +193,29 @@ const TimelineTab = () => {
                 }
                 return <div key={i} className="h-full flex items-center"></div>;
               })}
-              {/* Phase Tooltip */}
-              {hoveredPhase && hoveredPhase.phaseIndex === phaseIndex && (
-                <div
-                  className="z-50 bg-white border border-gray-300 rounded shadow-lg px-4 py-2 text-xs min-w-[200px] pointer-events-none"
-                  style={{
-                    position: "fixed",
-                    left: phaseTooltipPos.x,
-                    top: phaseTooltipPos.y,
-                    transition: "left 0.05s, top 0.05s",
-                  }}
-                >
-                  <div className="font-bold mb-1">{phase.name}</div>
-                  <div>
-                    <span className="font-semibold">Label:</span> {phase.label}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Start:</span>{" "}
-                    {format(addMonths(months[0], phaseStart), "MMM yyyy")}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Deadline:</span>{" "}
-                    {format(addMonths(months[0], phaseEnd), "MMM yyyy")}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Progress:</span>{" "}
-                    {Math.round(phaseProgress)}%
-                  </div>
-                  <div>
-                    <span className="font-semibold">Tasks:</span>{" "}
-                    {phase.tasks.length}
-                  </div>
-                </div>
-              )}
             </div>
-            {/* Subtasks */}
+            {/* TASK ROWS */}
             {phase.tasks.map((task, taskIndex) => (
               <div
                 key={taskIndex}
-                className={`grid grid-cols-[200px_repeat(${months.length},1fr)] items-center h-8 ${taskRowColor}`}
-                onMouseEnter={(e) => {
-                  setHoveredTask({ ...task, phase, phaseIndex });
-                  setTooltipPos({
-                    x: e.clientX + 12,
-                    y: e.clientY + 12,
-                  });
-                }}
-                onMouseMove={(e) => {
-                  setTooltipPos({
-                    x: e.clientX + 12,
-                    y: e.clientY + 12,
-                  });
-                }}
-                onMouseLeave={() => setHoveredTask(null)}
+                className={`grid grid-cols-[200px_repeat(${months.length},1fr)] items-center h-8 ${taskRowColor} cursor-pointer`}
+                onMouseMove={(e) =>
+                  handleMouseMove(e, {
+                    type: "task",
+                    name: task.name,
+                    phase: phase.name,
+                    start: format(
+                      addMonths(months[0], task.startMonth),
+                      "MMM yyyy"
+                    ),
+                    end: format(
+                      addMonths(months[0], task.endMonth),
+                      "MMM yyyy"
+                    ),
+                    progress: task.progress,
+                  })
+                }
+                onMouseLeave={handleMouseLeave}
                 style={{ position: "relative" }}
               >
                 <div className="text-sm p-2">{task.name}</div>
@@ -288,51 +266,63 @@ const TimelineTab = () => {
                     <div key={i} className="h-full flex items-center"></div>
                   );
                 })}
-                {/* Task Tooltip */}
-                {hoveredTask &&
-                  hoveredTask.name === task.name &&
-                  hoveredTask.phaseIndex === phaseIndex && (
-                    <div
-                      className="z-50 bg-white border border-gray-300 rounded shadow-lg px-4 py-2 text-xs min-w-[180px] pointer-events-none"
-                      style={{
-                        position: "fixed",
-                        left: tooltipPos.x,
-                        top: tooltipPos.y,
-                        transition: "left 0.05s, top 0.05s",
-                      }}
-                    >
-                      <div className="font-bold mb-1">{task.name}</div>
-                      <div>
-                        <span className="font-semibold">Phase:</span>{" "}
-                        {phase.name}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Start:</span>{" "}
-                        {format(
-                          addMonths(months[0], task.startMonth),
-                          "MMM yyyy"
-                        )}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Deadline:</span>{" "}
-                        {format(
-                          addMonths(months[0], task.endMonth),
-                          "MMM yyyy"
-                        )}
-                      </div>
-                      {typeof task.progress === "number" && (
-                        <div>
-                          <span className="font-semibold">Progress:</span>{" "}
-                          {task.progress}%
-                        </div>
-                      )}
-                    </div>
-                  )}
               </div>
             ))}
           </React.Fragment>
         );
       })}
+      {/* Tooltip */}
+      {tooltip.visible && tooltip.data && (
+        <div
+          className="fixed z-50 bg-white border border-gray-300 rounded shadow-lg px-4 py-2 text-xs min-w-[180px] pointer-events-none"
+          style={{
+            left: tooltip.x,
+            top: tooltip.y,
+            transition: "left 0.05s, top 0.05s",
+          }}
+        >
+          {tooltip.data.type === "phase" ? (
+            <>
+              <div className="font-bold mb-1">{tooltip.data.name}</div>
+              <div>
+                <span className="font-semibold">Label:</span>{" "}
+                {tooltip.data.label}
+              </div>
+              <div>
+                <span className="font-semibold">Start:</span>{" "}
+                {tooltip.data.start}
+              </div>
+              <div>
+                <span className="font-semibold">End:</span> {tooltip.data.end}
+              </div>
+              <div>
+                <span className="font-semibold">Progress:</span>{" "}
+                {tooltip.data.progress}%
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="font-bold mb-1">{tooltip.data.name}</div>
+              <div>
+                <span className="font-semibold">Phase:</span>{" "}
+                {tooltip.data.phase}
+              </div>
+              <div>
+                <span className="font-semibold">Start:</span>{" "}
+                {tooltip.data.start}
+              </div>
+              <div>
+                <span className="font-semibold">Deadline:</span>{" "}
+                {tooltip.data.end}
+              </div>
+              <div>
+                <span className="font-semibold">Progress:</span>{" "}
+                {tooltip.data.progress}%
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };
