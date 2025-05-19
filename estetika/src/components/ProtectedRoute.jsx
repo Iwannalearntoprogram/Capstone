@@ -2,18 +2,18 @@ import { Navigate, useLocation } from "react-router-dom";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const location = useLocation();
-  // const token = localStorage.getItem("token");
-  const token = "token";
+  const token = true;
   const role = localStorage.getItem("role");
 
   console.log(token);
   console.log(role);
 
-  if (token && location.pathname === "/") {
+  if (token && (location.pathname === "/" || location.pathname === "/signup")) {
     return <Navigate to="/home" />;
   }
 
-  if (!token) {
+  // If not logged in, only allow access to login or signup
+  if (!token && location.pathname !== "/" && location.pathname !== "/signup") {
     return <Navigate to="/" state={{ from: location }} />;
   }
 
