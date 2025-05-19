@@ -4,7 +4,7 @@ const User = require("../../models/User/User");
 const sendEmail = require("../../utils/sendEmail");
 const catchAsync = require("../../utils/catchAsync");
 const AppError = require("../../utils/appError");
-const InvalidToken = require("../../models/User/InvalidToken");
+const InvalidToken = require("../../models/utils/InvalidToken");
 
 // ✅ Register route
 const register = catchAsync(async (req, res, next) => {
