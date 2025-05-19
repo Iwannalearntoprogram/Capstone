@@ -1,6 +1,8 @@
 import { io } from "socket.io-client";
+import Cookies from "js-cookie";
 
-const token = localStorage.getItem("token");
+
+const token = Cookies.get("token");
 
 const serverUrl = import.meta.env.VITE_REACT_APP_SERVER_URL;
 

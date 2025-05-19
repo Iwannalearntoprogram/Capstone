@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import logo from "../assets/images/logo-moss-2.png";
 import marbleBg from "../assets/images/white-marble-bg.png";
+import axios from "axios";
 
 function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -21,21 +22,20 @@ function LoginPage() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/login",
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
 
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("id", data.user.id);
-        localStorage.setItem("role", data.user.role);
+      if (response.status === 200) {
+        localStorage.setItem("id", response.data.user.id);
+        localStorage.setItem("role", response.data.user.role);
         setIsLoggedIn(true);
       } else {
-        setError(data.message || "Invalid credentials");
+        setError(response.data.message || "Invalid credentials");
       }
     } catch (err) {
       console.error("Login error:", err);
@@ -44,7 +44,7 @@ function LoginPage() {
   };
 
   if (isLoggedIn) {
-    return <Navigate to="/home" />;
+    return <Navigate to="/home" replace />;
   }
 
   return (

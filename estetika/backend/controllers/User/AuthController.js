@@ -7,7 +7,6 @@ const AppError = require("../../utils/appError");
 
 // ✅ Register route
 const register = catchAsync(async (req, res, next) => {
-  // Destructure incoming fields from frontend
   const { firstName, lastName, username, email, password, phoneNumber, role } =
     req.body;
 
@@ -105,8 +104,11 @@ const login = catchAsync(async (req, res, next) => {
     { expiresIn: "1d" }
   );
 
+  res.cookie("token", token, {
+    secure: true,
+  });
+
   return res.json({
-    token,
     user: {
       id: user._id,
       username: user.username,

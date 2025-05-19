@@ -43,7 +43,12 @@ app.use(
   })
 ); // Body Parser
 app.use(hpp()); // prevent paramater pollution
-app.use(cors()); // Cross Origin Resource Sharing
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+); // Cross Origin Resource Sharing
 app.use(express.json());
 app.use(express.urlencoded());
 app.use((req, res, next) => {
@@ -55,8 +60,8 @@ app.use("/api", limiter); //Protection Against DDOS Attack
 // routes
 // user
 app.use("/api/auth", authRoute);
-app.use("/api/user", userRoute);
-app.use("/api/message", messageRoute);
+app.use("/api/user", checkAuth, userRoute);
+app.use("/api/message", checkAuth, messageRoute);
 
 // project
 app.use("/api/event", checkAuth, eventRoute);

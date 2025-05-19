@@ -3,9 +3,11 @@ import axios from "axios";
 import socket from "../utils/socket";
 import UserList from "../components/inbox/UserList";
 import ChatWindow from "../components/inbox/ChatWindow";
+import Cookies from "js-cookie";
 
 function Inbox() {
   const storedUserId = localStorage.getItem("id");
+  const token = Cookies.get("token");
   const [userId, setUserId] = useState(storedUserId);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -34,7 +36,12 @@ function Inbox() {
   const fetchUsers = async () => {
     if (!userId) return;
     const res = await axios.get(
-      `http://localhost:3000/api/user?exclude=${userId}`
+      `http://localhost:3000/api/user?exclude=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
     setUsers(res.data);
   };
@@ -42,7 +49,12 @@ function Inbox() {
   // Fetch messages from backend
   const fetchMessages = async (user) => {
     const res = await axios.get(
-      `http://localhost:3000/api/message?user1=${userId}&user2=${user._id}`
+      `http://localhost:3000/api/message?user1=${userId}&user2=${user._id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
     setMessages(res.data);
   };

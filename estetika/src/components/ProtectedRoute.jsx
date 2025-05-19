@@ -1,11 +1,11 @@
 import { Navigate, useLocation } from "react-router-dom";
+import Cookies from "js-cookie";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const location = useLocation();
-  const token = true;
+  const token = Cookies.get("token");
   const role = localStorage.getItem("role");
 
-  console.log(token);
   console.log(role);
 
   if (token && (location.pathname === "/" || location.pathname === "/signup")) {
