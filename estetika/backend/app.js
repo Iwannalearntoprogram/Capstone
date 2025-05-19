@@ -88,7 +88,7 @@ app.all("/{*splat}", (req, res, next) => {
 app.use(globalErrorHandler);
 
 // cron job
-cron.schedule("* * * * *", () => {
+cron.schedule("0 * * * *", () => {
   checkOverdueTasks();
   checkPhaseStart();
 });
