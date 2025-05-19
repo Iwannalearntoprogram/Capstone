@@ -5,7 +5,6 @@ import axios from "axios";
 export const useAuthStore = create((set) => ({
   user: null,
   token: null,
-  isLoading: false,
 
   login: async (email, password) => {
     const formData = { email, password };
@@ -14,13 +13,22 @@ export const useAuthStore = create((set) => ({
       set({ isLoading: true });
       const response = await axios.post(
         "http://localhost:3000/api/auth/login",
-        formData
+        formData,
+        {
+          withCredentials: true,
+        }
       );
       console.log("Login response: ", response);
-      const { token, user } = response.data;
-      Cookies.set("token", token, { expires: 7 });
-      Cookies.set("user", JSON.stringify(user), { expires: 7 });
-      set({ user, token, isLoading: false });
+      const data = response.data;
+      const token = Cookies.get("token");
+      Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
+      localStorage.setItem("id", data.user.id);
+      localStorage.setItem("role", data.user.role);
+
+      set({
+        user: data.user,
+        token: token,
+      });
       return { success: true };
     } catch (e) {
       set({ isLoading: false });
@@ -31,17 +39,8 @@ export const useAuthStore = create((set) => ({
   logout: async () => {
     Cookies.remove("token");
     Cookies.remove("user");
+    localStorage.removeItem("id");
+    localStorage.removeItem("role");
     set({ token: null, user: null });
-  },
-
-  checkAuth: async () => {
-    try {
-      const token = Cookies.get("token");
-      const userJson = Cookies.get("user");
-      const user = userJson ? JSON.parse(userJson) : null;
-      set({ user: user ? user : null, token: token ? token : null });
-    } catch (e) {
-      console.error("Error checking auth: ", e);
-    }
   },
 }));
