@@ -2,8 +2,8 @@ import React from "react";
 
 const MessageBubble = ({ message, isSelf }) => (
   <div
-    className={`max-w-[70%] mb-2 p-2 rounded-lg shadow text-sm ${
-      isSelf ? "bg-green-100 self-end" : "bg-gray-100 self-start"
+    className={`max-w-[70%] mb-2 p-2 rounded-2xl shadow text-sm ${
+      isSelf ? "bg-gray-200 self-end" : "bg-gray-100 self-start"
     }`}
   >
     <div>{message.content}</div>
