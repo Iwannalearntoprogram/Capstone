@@ -4,6 +4,7 @@ const User = require("../../models/User/User");
 const sendEmail = require("../../utils/sendEmail");
 const catchAsync = require("../../utils/catchAsync");
 const AppError = require("../../utils/appError");
+const InvalidToken = require("../../models/User/InvalidToken");
 
 // ✅ Register route
 const register = catchAsync(async (req, res, next) => {
@@ -119,9 +120,26 @@ const login = catchAsync(async (req, res, next) => {
   });
 });
 
+// Logout route
+const logout = catchAsync(async (req, res, next) => {
+  const authHeader = req.header("Authorization");
+  const token = authHeader.split(" ")[1];
+
+  const invalidToken = new InvalidToken({
+    token: token,
+  });
+
+  await invalidToken.save();
+
+  return res
+    .status(200)
+    .json({ message: "Logged Out Successfully", invalidToken });
+});
+
 module.exports = {
   register,
   login,
   verifyEmail,
   verifyOTP,
+  logout,
 };
