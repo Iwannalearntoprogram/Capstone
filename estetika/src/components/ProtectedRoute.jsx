@@ -12,7 +12,6 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/home" />;
   }
 
-  // If not logged in, only allow access to login or signup
   if (!token && location.pathname !== "/" && location.pathname !== "/signup") {
     return <Navigate to="/" state={{ from: location }} />;
   }

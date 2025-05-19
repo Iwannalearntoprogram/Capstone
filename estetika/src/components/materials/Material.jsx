@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import sofaImg from "../../assets/images/sofa.jpg";
 
 export default function Material({ materialDetails }) {
   const { id, title, company, price } = materialDetails;
@@ -11,7 +12,13 @@ export default function Material({ materialDetails }) {
       onClick={() => navigate(`/materials/${id}`)}
     >
       {/* image here */}
-      <div className="min-w-60 h-60 bg-white rounded-xl mb-4"></div>
+      <div className="min-w-60 h-60 bg-white rounded-xl mb-4 flex items-center justify-center overflow-hidden">
+        <img
+          src={sofaImg}
+          alt={title}
+          className="object-cover w-full h-full rounded-xl"
+        />
+      </div>
       {/* info here */}
       <div>
         <h2 className="font-bold ">{title}</h2>

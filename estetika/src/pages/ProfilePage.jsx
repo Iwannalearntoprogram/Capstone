@@ -15,7 +15,11 @@ function ProfilePage() {
       {/* <Navbar toggleSidebar={toggleSidebar} />
             <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} /> */}
 
-      <h1>This is the Profile page.</h1>
+      <div className="flex w-full h-full bg-blue-50 gap-4 px-20">
+        <div className="w-1/4 bg-white"></div>
+        <div className="flex-1 bg-white"></div>
+        <div className="w-1/4 bg-white"></div>
+      </div>
     </>
   );
 }
