@@ -203,17 +203,6 @@ const CalendarPage = () => {
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
 
-        <label htmlFor="repeat">Repeat:</label>
-        <input
-          id="repeat"
-          type="checkbox"
-          checked={newEvent.repeat}
-          onChange={(e) =>
-            setNewEvent({ ...newEvent, repeat: e.target.checked })
-          }
-          className="ml-2 mb-4 accent-[#1D3C34]"
-        />
-
         <input
           type="file"
           onChange={(e) =>

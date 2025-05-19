@@ -59,13 +59,18 @@ const project_post = catchAsync(async (req, res, next) => {
     return next(new AppError("Cannot create project, missing title.", 400));
   }
 
+  const membersArray = Array.isArray(members) ? members : [];
+  if (!membersArray.includes(projectCreator)) {
+    membersArray.push(projectCreator);
+  }
+
   const newProject = new Project({
     title,
     description,
     budget,
     startDate,
     endDate,
-    members,
+    members: membersArray,
     tasks,
     timeline,
     projectCreator,
