@@ -4,6 +4,7 @@ import socket from "../utils/socket";
 import UserList from "../components/inbox/UserList";
 import ChatWindow from "../components/inbox/ChatWindow";
 import Cookies from "js-cookie";
+import { FiSend } from "react-icons/fi";
 
 function Inbox() {
   const storedUserId = localStorage.getItem("id");
@@ -100,7 +101,7 @@ function Inbox() {
   return (
     <div className="flex h-screen font-sans">
       {/* Sidebar */}
-      <div className="w-1/4 p-6 border-r border-gray-200">
+      <div className="w-1/4 pt-6 border-r border-gray-200">
         <UserList
           users={users}
           selectedUser={selectedUser}
@@ -113,22 +114,23 @@ function Inbox() {
         <h3 className="font-bold mb-2">
           Chat with {selectedUser?.userId || "..."}
         </h3>
-        <div className="flex-1">
+        <div className="flex-1 ">
           <ChatWindow messages={messages} userId={userId} />
         </div>
         <div className="flex gap-2 mt-2 w-1/2 mx-auto">
           <input
-            className="flex-1 border rounded-full p-2"
+            className="flex-1 border-1 px-4 border-black/20 rounded-full p-2"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Type message..."
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           />
           <button
-            className="bg-blue-500 text-white px-4 rounded-full"
+            className="bg-blue-500 p-2 w-10 h-10 text-white rounded-full pointer-cursor"
             onClick={sendMessage}
+            aria-label="Send"
           >
-            Send
+            <FiSend size={22} />
           </button>
         </div>
       </div>

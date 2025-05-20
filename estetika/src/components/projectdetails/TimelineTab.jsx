@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import { format, addMonths, eachMonthOfInterval } from "date-fns";
 
 // Example: Marketing Campaign Project

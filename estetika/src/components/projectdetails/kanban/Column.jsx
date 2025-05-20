@@ -2,33 +2,65 @@ import TaskCard from "./TaskCard";
 import { useDroppable } from "@dnd-kit/core";
 import { useState } from "react";
 import Modal from "react-modal"; // Make sure react-modal is installed
+import axios from "axios";
+import Cookies from "js-cookie";
 
 const users = ["Alice", "Bob", "Charlie"]; // Example users
 
-export default function Column({ column, tasks }) {
+export default function Column({ column, tasks, project }) {
   const { setNodeRef } = useDroppable({
     id: column.id,
   });
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     assignedTo: users[0],
+    phaseId: project?.timeline?.[0]?._id || "",
   });
 
-  // Add task handler (you may want to lift this up if you want to update parent state)
-  const handleSaveTask = () => {
-    // You should call a prop function here to actually add the task to the parent state
-    // For demo, just close modal
-    setClosing(true);
-    setTimeout(() => {
-      setModalOpen(false);
-      setClosing(false);
-      setNewTask({ title: "", description: "", assignedTo: users[0] });
-    }, 300);
+  const handleSaveTask = async () => {
+    console.log("project", project);
+    const body = {
+      title: newTask.title,
+      description: newTask.description,
+      status: column.id,
+      startDate: newTask.startDate
+        ? new Date(newTask.startDate).toISOString()
+        : undefined,
+      endDate: newTask.endDate
+        ? new Date(newTask.endDate).toISOString()
+        : undefined,
+      projectId: project._id,
+      phaseId: newTask.phaseId,
+    };
+
+    try {
+      await axios.post("http://localhost:3000/api/task", body, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+
+      setClosing(true);
+      setTimeout(() => {
+        setModalOpen(false);
+        setClosing(false);
+        setNewTask({
+          title: "",
+          description: "",
+          assignedTo: users[0],
+          phaseId: project?.timeline?.[0]?._id || "",
+          startDate: "",
+          endDate: "",
+        });
+      }, 300);
+      location.reload();
+    } catch (err) {
+      alert("Failed to add task.");
+    }
   };
 
   const closeModal = () => {
@@ -123,7 +155,7 @@ export default function Column({ column, tasks }) {
           onChange={(e) => setNewTask({ ...newTask, endDate: e.target.value })}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
-
+        {/* 
         <label className="block mb-2">Assign To:</label>
         <select
           value={newTask.assignedTo}
@@ -137,6 +169,24 @@ export default function Column({ column, tasks }) {
               {user}
             </option>
           ))}
+        </select> */}
+        <label className="block mb-2">Phase:</label>
+        <select
+          value={newTask.phaseId}
+          onChange={(e) => setNewTask({ ...newTask, phaseId: e.target.value })}
+          className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+        >
+          {Array.isArray(project?.timeline) && project.timeline.length > 0 ? (
+            project.timeline.map((phase) => (
+              <option key={phase._id} value={phase._id}>
+                {phase.title}
+              </option>
+            ))
+          ) : (
+            <option value="">
+              Please create a Phase first in progress tab
+            </option>
+          )}
         </select>
 
         <div className="flex justify-end gap-2">

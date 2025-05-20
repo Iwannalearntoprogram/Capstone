@@ -1,13 +1,16 @@
 import React, { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import logo from "../assets/images/logo-moss-2.png";
 import marbleBg from "../assets/images/white-marble-bg.png";
-import axios from "axios";
+import { useAuthStore } from "../store/AuthStore"; // Import your AuthStore
 
 function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+
+  const { login, token } = useAuthStore();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,30 +23,23 @@ function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setIsSubmitting(true);
 
-    try {
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
-        formData,
-        {
-          withCredentials: true,
-        }
+    const result = await login(formData.email, formData.password);
+
+    setIsSubmitting(false);
+    console.log(result);
+    if (result.success) {
+      navigate("/home");
+    } else {
+      setError(
+        result.error?.response?.data?.message ||
+          "Something went wrong. Please try again."
       );
-
-      if (response.status === 200) {
-        localStorage.setItem("id", response.data.user.id);
-        localStorage.setItem("role", response.data.user.role);
-        setIsLoggedIn(true);
-      } else {
-        setError(response.data.message || "Invalid credentials");
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      setError("Something went wrong. Please try again.");
     }
   };
 
-  if (isLoggedIn) {
+  if (token) {
     return <Navigate to="/home" replace />;
   }
 
@@ -86,8 +82,9 @@ function LoginPage() {
             <button
               type="submit"
               className="mb-8 w-full bg-[#1D3C34] text-white py-2 rounded-full hover:bg-[#16442A] transition"
+              disabled={isSubmitting}
             >
-              Login
+              {isSubmitting ? "Logging in..." : "Login"}
             </button>
           </form>
           {error && <p className="text-red-500 mt-4">{error}</p>}
