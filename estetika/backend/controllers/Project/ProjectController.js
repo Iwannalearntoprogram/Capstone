@@ -132,7 +132,7 @@ const project_put = catchAsync(async (req, res, next) => {
 
   return res
     .status(200)
-    .json({ message: "Project Updated Successfully", updatedProject });
+    .json({ message: "Project Updated Successfully", updatedProject, project });
 });
 
 // Delete Project

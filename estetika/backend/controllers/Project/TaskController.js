@@ -4,6 +4,7 @@ const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
 const User = require("../../models/User/User");
 const Phase = require("../../models/Project/Phase");
+const Notification = require("../../models/utils/Notification");
 
 // Get Task by Id or ProjectId
 const task_get = catchAsync(async (req, res, next) => {
@@ -86,6 +87,19 @@ const task_post = catchAsync(async (req, res, next) => {
     { new: true }
   );
 
+  if (assigned && assigned.length > 0) {
+    const assignedUsers = Array.isArray(assigned) ? assigned : [assigned];
+
+    const notifications = assignedUsers.map((userId) => ({
+      recipient: userId,
+      message: `You have been assigned a new task: ${title}`,
+      type: "assigned",
+      task: newTask._id,
+    }));
+
+    await Notification.insertMany(notifications);
+  }
+
   return res
     .status(200)
     .json({ message: "Task Successfully Created", newTask });
@@ -112,6 +126,19 @@ const task_put = catchAsync(async (req, res, next) => {
   const updatedTask = await Task.findByIdAndUpdate(id, updates, { new: true });
 
   if (!updatedTask) return next(new AppError("Task not found", 404));
+
+  if (assigned) {
+    const newAssigned = Array.isArray(assigned) ? assigned : [assigned];
+
+    const notifications = newAssigned.map((userId) => ({
+      recipient: userId,
+      message: `You have been assigned to task: ${updatedTask.title}`,
+      type: "assigned",
+      task: updatedTask._id,
+    }));
+
+    await Notification.insertMany(notifications);
+  }
 
   return res
     .status(200)

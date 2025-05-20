@@ -3,6 +3,7 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const hpp = require("hpp");
+const cron = require("node-cron");
 
 // routes import
 // user
@@ -20,10 +21,14 @@ const subPhaseRoute = require("./routes/Project/subPhaseRoute");
 const taskRoute = require("./routes/Project/taskRoute");
 
 // utility
-const aliveRoute = require("./routes/aliveRoute");
+const aliveRoute = require("./routes/utils/aliveRoute");
 const AppError = require("./utils/appError");
 const checkAuth = require("./utils/checkAuth");
-const globalErrorHandler = require("./controllers/ErrorController");
+const globalErrorHandler = require("./controllers/utils/ErrorController");
+const {
+  checkOverdueTasks,
+  checkPhaseStart,
+} = require("./utils/cronJobNotification");
 
 // initializations
 const app = express();
@@ -81,5 +86,11 @@ app.all("/{*splat}", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 app.use(globalErrorHandler);
+
+// cron job
+cron.schedule("0 * * * *", () => {
+  checkOverdueTasks();
+  checkPhaseStart();
+});
 
 module.exports = app;
