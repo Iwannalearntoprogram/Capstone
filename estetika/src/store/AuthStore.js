@@ -43,4 +43,18 @@ export const useAuthStore = create((set) => ({
     localStorage.removeItem("role");
     set({ token: null, user: null });
   },
+
+  rehydrate: () => {
+    const userCookie = Cookies.get("user");
+    const token = Cookies.get("token");
+    let user = null;
+    if (userCookie) {
+      try {
+        user = JSON.parse(userCookie);
+      } catch {
+        user = null;
+      }
+    }
+    set({ user, token });
+  },
 }));

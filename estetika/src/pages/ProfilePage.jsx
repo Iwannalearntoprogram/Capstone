@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useNavigate } from "react";
 import sofaImg from "../assets/images/sofa.jpg";
-import Cookies from "js-cookie"; // <-- Import js-cookie
+import Cookies from "js-cookie";
+import { useAuthStore } from "../store/authStore"; // Assuming you have a store for authentication
 
 function ProfilePage() {
   // // Define the state to control the sidebar's open/close state
@@ -9,7 +10,9 @@ function ProfilePage() {
   // // Function to toggle the sidebar visibility
   // const toggleSidebar = () => setSidebarOpen(prevState => !prevState);
 
-  // Logout handler
+  const { user, logout } = useAuthStore();
+  console.log("User from auth store:", user);
+
   const handleLogout = () => {
     Cookies.remove("token");
     window.location.reload();
@@ -30,8 +33,10 @@ function ProfilePage() {
                 alt="Profile"
                 className="w-32 h-32 object-cover rounded-full mb-2 ring-2 ring-pink-500 ring-offset-2"
               />
-              <h2 className="text-center font-bold">Name</h2>
-              <p className="text-center">role</p>
+              <h2 className="text-center font-bold">
+                {user?.fullName || user?.username || "Name"}
+              </h2>
+              <p className="text-center">{user?.role || "role"}</p>
             </div>
             <button
               onClick={handleLogout}

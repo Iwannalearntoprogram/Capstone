@@ -4,7 +4,7 @@ import axios from "axios";
 
 function RingProgressBar({
   progress,
-  size = 120,
+  size = 140,
   stroke = 12,
   color = "#1D3C34",
   bg = "#e5e7eb",
@@ -44,7 +44,7 @@ function RingProgressBar({
         fill="#222"
         fontWeight="bold"
       >
-        {progress}%
+        {typeof progress === "number" ? progress.toFixed(2) : "0.00"}%
       </text>
     </svg>
   );
