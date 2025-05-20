@@ -1,48 +1,41 @@
 import { useParams, NavLink, Outlet, useLocation } from "react-router-dom";
-
-// const projects = [
-//   {
-//     id: 1,
-//     title: "Redesign Website",
-//     description:
-//       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-//     status: "In Progress",
-//     deadline: "May 31, 2025",
-//     assignedTo: "Jane Doe",
-//   },
-//   {
-//     id: 2,
-//     title: "Mobile App UI/UX",
-//     description:
-//       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-//     status: "Pending",
-//     deadline: "June 15, 2025",
-//     assignedTo: "John Smith",
-//   },
-//   {
-//     id: 3,
-//     title: "Landing Page Design",
-//     description:
-//       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-//     status: "Completed",
-//     deadline: "April 30, 2025",
-//     assignedTo: "Alice Brown",
-//   },
-//   {
-//     id: 4,
-//     title: "Landing Page Design",
-//     description:
-//       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-//     status: "Completed",
-//     deadline: "April 30, 2025",
-//     assignedTo: "Alice Brown",
-//   },
-// ];
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 function ProjectDetailsPage() {
   const { id } = useParams();
   const location = useLocation();
-  const project = location.state?.project;
+  const [project, setProject] = useState(location.state?.project || null);
+
+  useEffect(() => {
+    // If project is not passed via state, fetch it by id
+    if (!project && id) {
+      const fetchProject = async () => {
+        try {
+          const projectCreator = localStorage.getItem("id");
+          const token = Cookies.get("token");
+          const response = await axios.get(
+            `http://localhost:3000/api/project?projectCreator=${projectCreator}&id=${id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          console.log("Project response: ", response);
+          setProject(
+            Array.isArray(response.data.project)
+              ? response.data.project[0]
+              : response.data.project
+          );
+        } catch {
+          setProject(null);
+        }
+      };
+      fetchProject();
+    }
+  }, [id, project]);
 
   const tabs = [
     { label: "Tasks", path: "tasks" },
@@ -58,19 +51,6 @@ function ProjectDetailsPage() {
         <h1 className="text-3xl text-center font-bold mb-2">
           {project?.title || "Project Not Found"}
         </h1>
-        {/* {selectedProject && (
-          <div className="flex flex-wrap gap-4 mt-4 text-sm">
-            <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-700">
-              <strong>Status:</strong> {selectedProject.status}
-            </span>
-            <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-700">
-              <strong>Deadline:</strong> {selectedProject.deadline}
-            </span>
-            <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-700">
-              <strong>Assigned To:</strong> {selectedProject.assignedTo}
-            </span>
-          </div>
-        )} */}
       </div>
 
       {/* Tabs */}

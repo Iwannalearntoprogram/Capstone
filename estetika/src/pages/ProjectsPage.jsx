@@ -19,8 +19,8 @@ const ProjectsPage = () => {
 
   const navigate = useNavigate();
 
-  const handleProjectClick = (project) => {
-    navigate(`/projects/${project._id}/tasks`, { state: { project } });
+  const handleProjectClick = (projectId) => {
+    navigate(`/projects/${projectId}/tasks`);
   };
 
   useEffect(() => {
@@ -44,11 +44,9 @@ const ProjectsPage = () => {
       await axios.post(
         "http://localhost:3000/api/project",
         {
-          title: newProject.title,
-          description: newProject.description,
+          ...newProject,
           budget: Number(newProject.budget),
-          startDate: new Date(newProject.startDate).toISOString(),
-          endDate: new Date(newProject.endDate).toISOString(),
+          projectCreator: id,
         },
         {
           headers: {
@@ -64,6 +62,7 @@ const ProjectsPage = () => {
         startDate: "",
         endDate: "",
       });
+      // Refetch projects
       const response = await axios.get(
         `http://localhost:3000/api/project?projectCreator=${id}`,
         {
@@ -202,7 +201,7 @@ const ProjectsPage = () => {
                   <h3 className="text-lg font-bold ">{project.title}</h3>
                   <button
                     className="absolute top-1/4 right-0 -translate-y-1/2 text-sm bg-[#C28383]/20 text-[#BD1E1E] rounded-lg p-4 py-2 cursor-pointer hover:bg-[#C28383]/30 transition duration-300"
-                    onClick={() => handleProjectClick(project)}
+                    onClick={() => handleProjectClick(project._id)}
                   >
                     View
                   </button>

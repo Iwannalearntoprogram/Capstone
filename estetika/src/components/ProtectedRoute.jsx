@@ -7,8 +7,6 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   // const token = true;
   const role = localStorage.getItem("role");
 
-  console.log(role);
-
   if (token && (location.pathname === "/" || location.pathname === "/signup")) {
     return <Navigate to="/home" />;
   }

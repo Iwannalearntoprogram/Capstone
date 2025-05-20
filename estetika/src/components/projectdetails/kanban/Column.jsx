@@ -7,46 +7,44 @@ import Cookies from "js-cookie";
 
 const users = ["Alice", "Bob", "Charlie"]; // Example users
 
-export default function Column({ column, tasks }) {
+export default function Column({ column, tasks, project }) {
   const { setNodeRef } = useDroppable({
     id: column.id,
   });
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     assignedTo: users[0],
+    phaseId: project?.timeline?.[0]?._id || "",
   });
 
   const handleSaveTask = async () => {
-    try {
-      const projectId = column.projectId;
-      const phaseId = column.id;
+    console.log("project", project);
+    const body = {
+      title: newTask.title,
+      description: newTask.description,
+      status: column.id,
+      startDate: newTask.startDate
+        ? new Date(newTask.startDate).toISOString()
+        : undefined,
+      endDate: newTask.endDate
+        ? new Date(newTask.endDate).toISOString()
+        : undefined,
+      projectId: project._id,
+      phaseId: newTask.phaseId,
+    };
 
-      await axios.post(
-        "http://localhost:3000/api/task",
-        {
-          title: newTask.title,
-          description: newTask.description,
-          status: column.title,
-          startDate: newTask.startDate
-            ? new Date(newTask.startDate).toISOString()
-            : undefined,
-          endDate: newTask.endDate
-            ? new Date(newTask.endDate).toISOString()
-            : undefined,
-          projectId: projectId,
-          phaseId: phaseId,
+    console.log("Task POST body:", body);
+
+    try {
+      await axios.post("http://localhost:3000/api/task", body, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${Cookies.get("token")}`,
-          },
-        }
-      );
+      });
       // Optionally, refresh tasks here
       setClosing(true);
       setTimeout(() => {
@@ -56,6 +54,7 @@ export default function Column({ column, tasks }) {
           title: "",
           description: "",
           assignedTo: users[0],
+          phaseId: project?.timeline?.[0]?._id || "",
           startDate: "",
           endDate: "",
         });
@@ -171,6 +170,20 @@ export default function Column({ column, tasks }) {
               {user}
             </option>
           ))}
+        </select>
+
+        <label className="block mb-2">Phase:</label>
+        <select
+          value={newTask.phaseId}
+          onChange={(e) => setNewTask({ ...newTask, phaseId: e.target.value })}
+          className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+        >
+          {Array.isArray(project?.timeline) &&
+            project.timeline.map((phase) => (
+              <option key={phase._id} value={phase._id}>
+                {phase.title}
+              </option>
+            ))}
         </select>
 
         <div className="flex justify-end gap-2">

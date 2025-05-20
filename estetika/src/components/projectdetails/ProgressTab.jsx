@@ -1,79 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-
-const phases = [
-  {
-    name: "Phase 1",
-    label: "Planning & Design",
-    tasks: [
-      {
-        name: "Requirement Gathering",
-        startMonth: 0,
-        endMonth: 1,
-        progress: 100,
-      },
-      { name: "Wireframing", startMonth: 1, endMonth: 2, progress: 60 },
-      { name: "UI Design", startMonth: 2, endMonth: 3, progress: 40 },
-      {
-        name: "Technical Specification",
-        startMonth: 3,
-        endMonth: 3,
-        progress: 0,
-      },
-    ],
-  },
-  {
-    name: "Phase 2",
-    label: "Development",
-    tasks: [
-      {
-        name: "Frontend Development",
-        startMonth: 4,
-        endMonth: 6,
-        progress: 30,
-      },
-      { name: "Backend Development", startMonth: 4, endMonth: 7, progress: 10 },
-      { name: "API Integration", startMonth: 6, endMonth: 8, progress: 0 },
-      { name: "Unit Testing", startMonth: 7, endMonth: 8, progress: 0 },
-    ],
-  },
-  {
-    name: "Phase 3",
-    label: "Testing & QA",
-    tasks: [
-      { name: "System Testing", startMonth: 8, endMonth: 9, progress: 0 },
-      {
-        name: "User Acceptance Testing",
-        startMonth: 9,
-        endMonth: 10,
-        progress: 0,
-      },
-      { name: "Bug Fixing", startMonth: 9, endMonth: 10, progress: 0 },
-    ],
-  },
-  {
-    name: "Phase 4",
-    label: "Deployment",
-    tasks: [
-      { name: "Staging Deployment", startMonth: 10, endMonth: 10, progress: 0 },
-      {
-        name: "Production Deployment",
-        startMonth: 11,
-        endMonth: 11,
-        progress: 0,
-      },
-    ],
-  },
-  {
-    name: "Phase 5",
-    label: "Maintenance & Support",
-    tasks: [
-      { name: "Monitoring", startMonth: 11, endMonth: 11, progress: 0 },
-      { name: "Support", startMonth: 11, endMonth: 11, progress: 0 },
-    ],
-  },
-];
+import { useOutletContext } from "react-router-dom";
 
 function RingProgressBar({
   progress,
@@ -124,12 +52,13 @@ function RingProgressBar({
 }
 
 function getPhaseProgress(tasks) {
-  if (!tasks.length) return 0;
-  const total = tasks.reduce((sum, t) => sum + t.progress, 0);
+  if (!tasks || !tasks.length) return 0;
+  const total = tasks.reduce((sum, t) => sum + (t.progress || 0), 0);
   return Math.round(total / tasks.length);
 }
 
-function ProgressTab({ projectId = "6825d4702fbf8ffc15b924e8" }) {
+function ProgressTab() {
+  const { project } = useOutletContext();
   const [showModal, setShowModal] = useState(false);
   const [phaseForm, setPhaseForm] = useState({
     title: "",
@@ -156,7 +85,7 @@ function ProgressTab({ projectId = "6825d4702fbf8ffc15b924e8" }) {
           title: phaseForm.title,
           startDate: new Date(phaseForm.startDate).toISOString(),
           endDate: new Date(phaseForm.endDate).toISOString(),
-          projectId: projectId,
+          projectId: project._id,
         },
         {
           headers: {
@@ -166,12 +95,14 @@ function ProgressTab({ projectId = "6825d4702fbf8ffc15b924e8" }) {
       );
       setShowModal(false);
       setPhaseForm({ title: "", startDate: "", endDate: "" });
-      // Optionally, refetch phases here
     } catch (err) {
       alert("Failed to add phase.");
     }
     setIsSubmitting(false);
   };
+
+  // Use project.timeline as phases, fallback to empty array
+  const phases = Array.isArray(project?.timeline) ? project.timeline : [];
 
   return (
     <div className="space-y-8">
@@ -180,7 +111,7 @@ function ProgressTab({ projectId = "6825d4702fbf8ffc15b924e8" }) {
         <div className="fixed inset-0 bg-black/30 h-full flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-md relative">
             <button
-              className="absolute top-2 right-4 text-gray-500 text-2xl"
+              className="absolute top-2 right-4 text-gray-500 text-2xl cursor-pointer"
               onClick={() => setShowModal(false)}
             >
               &times;
@@ -193,7 +124,7 @@ function ProgressTab({ projectId = "6825d4702fbf8ffc15b924e8" }) {
                   type="text"
                   name="title"
                   placeholder="Phase Title"
-                  className="border rounded p-2 mt-1 w-full"
+                  className="border rounded p-2 mt-1 w-full outline-black"
                   value={phaseForm.title}
                   onChange={handlePhaseChange}
                   required
@@ -204,7 +135,7 @@ function ProgressTab({ projectId = "6825d4702fbf8ffc15b924e8" }) {
                 <input
                   type="date"
                   name="startDate"
-                  className="border rounded p-2 mt-1 w-full"
+                  className="border rounded p-2 mt-1 w-full outline-black"
                   value={phaseForm.startDate}
                   onChange={handlePhaseChange}
                   required
@@ -215,7 +146,7 @@ function ProgressTab({ projectId = "6825d4702fbf8ffc15b924e8" }) {
                 <input
                   type="date"
                   name="endDate"
-                  className="border rounded p-2 mt-1 w-full"
+                  className="border rounded p-2 mt-1 w-full outline-black"
                   value={phaseForm.endDate}
                   onChange={handlePhaseChange}
                   required
@@ -223,7 +154,7 @@ function ProgressTab({ projectId = "6825d4702fbf8ffc15b924e8" }) {
               </label>
               <button
                 type="submit"
-                className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition"
+                className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition cursor-pointer"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Adding..." : "Add Phase"}
@@ -235,21 +166,40 @@ function ProgressTab({ projectId = "6825d4702fbf8ffc15b924e8" }) {
 
       <div className="flex justify-end mb-4">
         <button
-          className="bg-[#1D3C34] text-white px-4 py-2 rounded font-semibold hover:bg-[#16442A] transition"
+          className="bg-[#1D3C34] text-white px-4 py-2 rounded font-semibold hover:bg-[#16442A] transition cursor-pointer"
           onClick={() => setShowModal(true)}
         >
           Add Phase
         </button>
       </div>
+      {phases.length === 0 && (
+        <div className="text-center text-gray-500">No phases yet.</div>
+      )}
       {phases.map((phase, idx) => (
-        <div key={phase.name} className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-bold mb-2">{phase.label}</h2>
-          <RingProgressBar progress={getPhaseProgress(phase.tasks)} />
+        <div key={phase._id || idx} className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-bold mb-2">{phase.title}</h2>
+          <div className="text-sm text-gray-500 mb-2">
+            {phase.startDate
+              ? `Start: ${new Date(phase.startDate).toLocaleDateString()}`
+              : ""}
+            {phase.endDate
+              ? ` | End: ${new Date(phase.endDate).toLocaleDateString()}`
+              : ""}
+          </div>
+          <RingProgressBar progress={getPhaseProgress(phase.tasks || [])} />
           <ul className="mt-4 space-y-2">
-            {phase.tasks.map((task) => (
-              <li key={task.name} className="flex justify-between items-center">
-                <span>{task.name}</span>
-                <span className="text-sm text-gray-600">{task.progress}%</span>
+            {(phase.tasks || []).length === 0 && (
+              <li className="text-gray-400 italic">No tasks for this phase.</li>
+            )}
+            {(phase.tasks || []).map((task) => (
+              <li
+                key={task._id || task.name}
+                className="flex justify-between items-center"
+              >
+                <span>{task.title || task.name}</span>
+                <span className="text-sm text-gray-600">
+                  {task.progress ?? 0}%
+                </span>
               </li>
             ))}
           </ul>
