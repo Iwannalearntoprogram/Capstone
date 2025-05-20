@@ -18,7 +18,7 @@ export default function Column({ column, tasks, project }) {
     title: "",
     description: "",
     assignedTo: users[0],
-    phaseId: project?.timeline?.[0]?._id || "",
+    phaseId: project?.timeline?.[0]?._id || "", // default to first phase if exists
   });
 
   const handleSaveTask = async () => {

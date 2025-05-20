@@ -4,7 +4,7 @@ import { useDraggable } from "@dnd-kit/core";
 export default function TaskCard({ task }) {
   const { attributes, listeners, setNodeRef, isDragging, transform } =
     useDraggable({
-      id: task.id,
+      id: task._id || task.id, // Use MongoDB _id or fallback to id
     });
 
   const style = transform

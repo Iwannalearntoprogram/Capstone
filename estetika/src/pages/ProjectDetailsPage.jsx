@@ -23,7 +23,7 @@ function ProjectDetailsPage() {
               },
             }
           );
-          console.log("Project response: ", response);
+          // console.log("Project response: ", response);
           setProject(
             Array.isArray(response.data.project)
               ? response.data.project[0]
