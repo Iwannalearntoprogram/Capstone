@@ -8,31 +8,31 @@ function ProjectDetailsPage() {
   const location = useLocation();
   const [project, setProject] = useState(location.state?.project || null);
 
+  const fetchProject = async () => {
+    try {
+      const projectCreator = localStorage.getItem("id");
+      const token = Cookies.get("token");
+      const response = await axios.get(
+        `http://localhost:3000/api/project?projectCreator=${projectCreator}&id=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setProject(
+        Array.isArray(response.data.project)
+          ? response.data.project[0]
+          : response.data.project
+      );
+    } catch {
+      setProject(null);
+    }
+  };
+
   useEffect(() => {
     // If project is not passed via state, fetch it by id
     if (!project && id) {
-      const fetchProject = async () => {
-        try {
-          const projectCreator = localStorage.getItem("id");
-          const token = Cookies.get("token");
-          const response = await axios.get(
-            `http://localhost:3000/api/project?projectCreator=${projectCreator}&id=${id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          // console.log("Project response: ", response);
-          setProject(
-            Array.isArray(response.data.project)
-              ? response.data.project[0]
-              : response.data.project
-          );
-        } catch {
-          setProject(null);
-        }
-      };
       fetchProject();
     }
   }, [id, project]);
@@ -76,7 +76,7 @@ function ProjectDetailsPage() {
 
       {/* Tab Content */}
       <div className="px-20 rounded-xl  min-h-[200px]">
-        <Outlet context={{ project }} />
+        <Outlet context={{ project, refreshProject: fetchProject }} />
       </div>
     </div>
   );

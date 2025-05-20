@@ -18,7 +18,7 @@ export default function Column({ column, tasks, project }) {
     title: "",
     description: "",
     assignedTo: users[0],
-    phaseId: project?.timeline?.[0]?._id || "", // default to first phase if exists
+    phaseId: project?.timeline?.[0]?._id || "",
   });
 
   const handleSaveTask = async () => {
@@ -37,15 +37,13 @@ export default function Column({ column, tasks, project }) {
       phaseId: newTask.phaseId,
     };
 
-    console.log("Task POST body:", body);
-
     try {
       await axios.post("http://localhost:3000/api/task", body, {
         headers: {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-      // Optionally, refresh tasks here
+
       setClosing(true);
       setTimeout(() => {
         setModalOpen(false);
@@ -59,6 +57,7 @@ export default function Column({ column, tasks, project }) {
           endDate: "",
         });
       }, 300);
+      location.reload();
     } catch (err) {
       alert("Failed to add task.");
     }

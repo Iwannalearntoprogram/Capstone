@@ -12,7 +12,7 @@ const columns = [
 ];
 
 function TasksTab() {
-  const { project } = useOutletContext();
+  const { project, refreshProject } = useOutletContext();
   const [tasks, setTasks] = useState(
     Array.isArray(project?.tasks) ? project.tasks : []
   );
@@ -26,18 +26,15 @@ function TasksTab() {
     const { active, over } = e;
     if (!over) return;
 
-    // Find the dragged task
     const taskId = active.id;
     const newStatus = over.id;
 
-    // Optimistically update UI
     setTasks((prev) =>
       prev.map((task) =>
         (task._id || task.id) === taskId ? { ...task, status: newStatus } : task
       )
     );
 
-    // Send PUT request to update status in backend
     try {
       const token = Cookies.get("token");
       await axios.put(
@@ -49,6 +46,7 @@ function TasksTab() {
           },
         }
       );
+      if (refreshProject) refreshProject(); // <--- Refresh project/tasks from backend
     } catch (err) {
       alert("Failed to update task status.");
     }
