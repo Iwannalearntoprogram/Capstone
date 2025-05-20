@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import SubNavbarProjects from "../components/SubNavbarProjects"; // Import SubNavbar
+import SubNavbarProjects from "../components/SubNavbarProjects";
 import Cookies from "js-cookie";
 import axios from "axios";
 
@@ -8,50 +8,19 @@ const ProjectsPage = () => {
   const token = Cookies.get("token");
   const id = localStorage.getItem("id");
   const [projects, setProjects] = useState([]);
-
-  // let projects = [
-  //   {
-  //     id: 1,
-  //     title: "Redesign Website",
-  //     description:
-  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-  //     status: "In Progress",
-  //     deadline: "May 31, 2025",
-  //     assignedTo: "Jane Doe",
-  //   },
-  //   {
-  //     id: 2,
-  //     title: "Mobile App UI/UX",
-  //     description:
-  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-  //     status: "Pending",
-  //     deadline: "June 15, 2025",
-  //     assignedTo: "John Smith",
-  //   },
-  //   {
-  //     id: 3,
-  //     title: "Landing Page Design",
-  //     description:
-  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-  //     status: "Completed",
-  //     deadline: "April 30, 2025",
-  //     assignedTo: "Alice Brown",
-  //   },
-  //   {
-  //     id: 4,
-  //     title: "Landing Page Design",
-  //     description:
-  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-  //     status: "Completed",
-  //     deadline: "April 30, 2025",
-  //     assignedTo: "Alice Brown",
-  //   },
-  // ];
+  const [showModal, setShowModal] = useState(false);
+  const [newProject, setNewProject] = useState({
+    title: "",
+    description: "",
+    budget: "",
+    startDate: "",
+    endDate: "",
+  });
 
   const navigate = useNavigate();
 
-  const handleProjectClick = (projectId) => {
-    navigate(`/projects/${projectId}/tasks`);
+  const handleProjectClick = (project) => {
+    navigate(`/projects/${project._id}/tasks`, { state: { project } });
   };
 
   useEffect(() => {
@@ -64,14 +33,152 @@ const ProjectsPage = () => {
           },
         }
       );
-
       setProjects(response.data.project);
     };
     fetchProjects();
   }, []);
 
+  const handleAddProject = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(
+        "http://localhost:3000/api/project",
+        {
+          title: newProject.title,
+          description: newProject.description,
+          budget: Number(newProject.budget),
+          startDate: new Date(newProject.startDate).toISOString(),
+          endDate: new Date(newProject.endDate).toISOString(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setShowModal(false);
+      setNewProject({
+        title: "",
+        description: "",
+        budget: "",
+        startDate: "",
+        endDate: "",
+      });
+      const response = await axios.get(
+        `http://localhost:3000/api/project?projectCreator=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setProjects(response.data.project);
+    } catch (err) {
+      alert("Failed to add project.");
+    }
+  };
+
   return (
     <div className="px-4 py-8 mx-auto">
+      {showModal && (
+        <div className="fixed inset-0 bg-black/20 bg-opacity-40 flex items-center justify-center z-50 backdrop-blur-xs">
+          <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-md relative">
+            <button
+              className="absolute top-2 right-4 text-gray-500 text-2xl"
+              onClick={() => setShowModal(false)}
+            >
+              &times;
+            </button>
+            <h2 className="text-xl font-bold mb-4">Add New Project</h2>
+            <form onSubmit={handleAddProject} className="flex flex-col gap-4">
+              <label className="">
+                Project Title
+                <input
+                  type="text"
+                  placeholder="Project Title"
+                  className="border rounded p-2 mt-1 w-full"
+                  value={newProject.title}
+                  onChange={(e) =>
+                    setNewProject((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+              <label className="">
+                Description
+                <textarea
+                  placeholder="Description"
+                  className="border rounded p-2 mt-1 w-full"
+                  value={newProject.description}
+                  onChange={(e) =>
+                    setNewProject((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+              <label className="">
+                Budget
+                <input
+                  type="number"
+                  placeholder="Budget"
+                  className="border rounded p-2 mt-1 w-full"
+                  value={newProject.budget}
+                  onChange={(e) =>
+                    setNewProject((prev) => ({
+                      ...prev,
+                      budget: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+              <label className="">
+                Start Date
+                <input
+                  type="date"
+                  className="border rounded p-2 mt-1 w-full"
+                  value={newProject.startDate}
+                  onChange={(e) =>
+                    setNewProject((prev) => ({
+                      ...prev,
+                      startDate: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+              <label className="">
+                End Date
+                <input
+                  type="date"
+                  className="border rounded p-2 mt-1 w-full"
+                  value={newProject.endDate}
+                  onChange={(e) =>
+                    setNewProject((prev) => ({
+                      ...prev,
+                      endDate: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+              <button
+                type="submit"
+                className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition"
+              >
+                Add Project
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* projects */}
       <div className="projects-overview flex-1 flex flex-col">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-fr">
@@ -95,7 +202,7 @@ const ProjectsPage = () => {
                   <h3 className="text-lg font-bold ">{project.title}</h3>
                   <button
                     className="absolute top-1/4 right-0 -translate-y-1/2 text-sm bg-[#C28383]/20 text-[#BD1E1E] rounded-lg p-4 py-2 cursor-pointer hover:bg-[#C28383]/30 transition duration-300"
-                    onClick={() => handleProjectClick(project._id)}
+                    onClick={() => handleProjectClick(project)}
                   >
                     View
                   </button>
@@ -122,6 +229,13 @@ const ProjectsPage = () => {
               </div>
             );
           })}
+          <div
+            className=" bg-white/40 rounded-xl p-6 shadow-lg overflow-visible flex flex-col h-full items-center justify-center cursor-pointer hover:bg-white/50 transition duration-300"
+            onClick={() => setShowModal(true)}
+          >
+            <p>Add a Project</p>
+            <div>+</div>
+          </div>
         </div>
       </div>
     </div>

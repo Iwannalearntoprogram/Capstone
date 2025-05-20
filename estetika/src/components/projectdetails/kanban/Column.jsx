@@ -2,6 +2,8 @@ import TaskCard from "./TaskCard";
 import { useDroppable } from "@dnd-kit/core";
 import { useState } from "react";
 import Modal from "react-modal"; // Make sure react-modal is installed
+import axios from "axios";
+import Cookies from "js-cookie";
 
 const users = ["Alice", "Bob", "Charlie"]; // Example users
 
@@ -19,16 +21,48 @@ export default function Column({ column, tasks }) {
     assignedTo: users[0],
   });
 
-  // Add task handler (you may want to lift this up if you want to update parent state)
-  const handleSaveTask = () => {
-    // You should call a prop function here to actually add the task to the parent state
-    // For demo, just close modal
-    setClosing(true);
-    setTimeout(() => {
-      setModalOpen(false);
-      setClosing(false);
-      setNewTask({ title: "", description: "", assignedTo: users[0] });
-    }, 300);
+  const handleSaveTask = async () => {
+    try {
+      const projectId = column.projectId;
+      const phaseId = column.id;
+
+      await axios.post(
+        "http://localhost:3000/api/task",
+        {
+          title: newTask.title,
+          description: newTask.description,
+          status: column.title,
+          startDate: newTask.startDate
+            ? new Date(newTask.startDate).toISOString()
+            : undefined,
+          endDate: newTask.endDate
+            ? new Date(newTask.endDate).toISOString()
+            : undefined,
+          projectId: projectId,
+          phaseId: phaseId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+        }
+      );
+      // Optionally, refresh tasks here
+      setClosing(true);
+      setTimeout(() => {
+        setModalOpen(false);
+        setClosing(false);
+        setNewTask({
+          title: "",
+          description: "",
+          assignedTo: users[0],
+          startDate: "",
+          endDate: "",
+        });
+      }, 300);
+    } catch (err) {
+      alert("Failed to add task.");
+    }
   };
 
   const closeModal = () => {

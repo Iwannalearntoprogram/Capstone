@@ -4,7 +4,7 @@ import { DndContext } from "@dnd-kit/core";
 
 const columns = [
   { id: "backlog", title: "Backlog" },
-  { id: "inProgress", title: "In Progress" },
+  { id: "in-progress", title: "In Progress" },
   { id: "completed", title: "Completed" },
 ];
 
