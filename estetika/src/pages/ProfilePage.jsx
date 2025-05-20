@@ -1,29 +1,23 @@
-import React, { useState, useNavigate } from "react";
+import React from "react";
 import sofaImg from "../assets/images/sofa.jpg";
 import Cookies from "js-cookie";
-import { useAuthStore } from "../store/authStore"; // Assuming you have a store for authentication
 
 function ProfilePage() {
-  // // Define the state to control the sidebar's open/close state
-  // const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  // // Function to toggle the sidebar visibility
-  // const toggleSidebar = () => setSidebarOpen(prevState => !prevState);
-
-  const { user, logout } = useAuthStore();
-  console.log("User from auth store:", user);
+  // Get user directly from cookie
+  const userCookie = Cookies.get("user");
+  const user = userCookie ? JSON.parse(userCookie) : null;
+  console.log("User from cookie:", user);
 
   const handleLogout = () => {
-    logout();
+    Cookies.remove("token");
+    Cookies.remove("user");
+    localStorage.removeItem("id");
+    localStorage.removeItem("role");
     window.location.reload();
   };
 
   return (
     <>
-      {/* Passing down the state and toggle function to Navbar and Sidebar */}
-      {/* <Navbar toggleSidebar={toggleSidebar} />
-            <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} /> */}
-
       <div className="flex w-full min-h-full gap-4 px-32">
         <div className="w-1/4 ">
           <div className="flex flex-col items-center bg-white p-4 rounded-lg shadow-md">
