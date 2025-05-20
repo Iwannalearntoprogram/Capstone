@@ -88,4 +88,4 @@ const user_update = catchAsync(async (req, res, next) => {
   return res.status(200).json({ message: "Account Successfully Updated" });
 });
 
-module.exports = { users_index, user_update };
+module.exports = { users_index };
