@@ -16,13 +16,23 @@ const project_get = catchAsync(async (req, res, next) => {
     project = await Project.findById(id)
       .populate("members", "-password")
       .populate("tasks")
-      .populate("timeline")
+      .populate({
+        path: "timeline",
+        populate: {
+          path: "tasks",
+        },
+      })
       .populate("projectCreator", "-password");
   } else {
     project = await Project.find({ projectCreator })
       .populate("members", "-password")
       .populate("tasks")
-      .populate("timeline")
+      .populate({
+        path: "timeline",
+        populate: {
+          path: "tasks",
+        },
+      })
       .populate("projectCreator", "-password");
   }
 
@@ -30,6 +40,75 @@ const project_get = catchAsync(async (req, res, next) => {
     return next(
       new AppError("Project not found. Invalid Project Identifier.", 404)
     );
+
+  if (id) {
+    project = project.toObject ? project.toObject() : project;
+    if (project.timeline && Array.isArray(project.timeline)) {
+      project.timeline.forEach((ph) => {
+        let weight =
+          ph.tasks && ph.tasks.length > 0 ? 100 / ph.tasks.length : 0;
+        let total = 0;
+
+        if (ph.tasks && Array.isArray(ph.tasks)) {
+          ph.tasks.forEach((task) => {
+            if (task.status === "completed") {
+              total += weight;
+            }
+          });
+        }
+
+        ph.progress = total;
+      });
+
+      let totalPhases = project.timeline.length;
+      let overallProgress = 0;
+      if (totalPhases > 0) {
+        overallProgress =
+          project.timeline.reduce((sum, ph) => sum + (ph.progress || 0), 0) /
+          totalPhases;
+      }
+      project.progress = overallProgress;
+    } else {
+      project.progress = 0;
+    }
+  } else {
+    project.forEach((proj, idx) => {
+      if (proj.toObject) project[idx] = proj = proj.toObject();
+      if (proj.timeline && Array.isArray(proj.timeline)) {
+        proj.timeline.forEach((ph) => {
+          let weight =
+            ph.tasks && ph.tasks.length > 0 ? 100 / ph.tasks.length : 0;
+          let total = 0;
+
+          if (ph.tasks && Array.isArray(ph.tasks)) {
+            ph.tasks.forEach((task) => {
+              if (task.status === "completed") {
+                total += weight;
+              }
+            });
+          }
+
+          ph.progress = total;
+        });
+      }
+    });
+
+    project.forEach((proj, idx) => {
+      if (
+        proj.timeline &&
+        Array.isArray(proj.timeline) &&
+        proj.timeline.length > 0
+      ) {
+        const totalPhases = proj.timeline.length;
+        const overallProgress =
+          proj.timeline.reduce((sum, ph) => sum + (ph.progress || 0), 0) /
+          totalPhases;
+        proj.progress = overallProgress;
+      } else {
+        proj.progress = 0;
+      }
+    });
+  }
 
   return res
     .status(200)
