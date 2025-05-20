@@ -14,7 +14,7 @@ function ProfilePage() {
   console.log("User from auth store:", user);
 
   const handleLogout = () => {
-    Cookies.remove("token");
+    logout();
     window.location.reload();
   };
 
