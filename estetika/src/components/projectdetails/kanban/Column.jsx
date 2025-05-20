@@ -155,7 +155,7 @@ export default function Column({ column, tasks, project }) {
           onChange={(e) => setNewTask({ ...newTask, endDate: e.target.value })}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
-
+        {/* 
         <label className="block mb-2">Assign To:</label>
         <select
           value={newTask.assignedTo}
@@ -169,20 +169,24 @@ export default function Column({ column, tasks, project }) {
               {user}
             </option>
           ))}
-        </select>
-
+        </select> */}
         <label className="block mb-2">Phase:</label>
         <select
           value={newTask.phaseId}
           onChange={(e) => setNewTask({ ...newTask, phaseId: e.target.value })}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         >
-          {Array.isArray(project?.timeline) &&
+          {Array.isArray(project?.timeline) && project.timeline.length > 0 ? (
             project.timeline.map((phase) => (
               <option key={phase._id} value={phase._id}>
                 {phase.title}
               </option>
-            ))}
+            ))
+          ) : (
+            <option value="">
+              Please create a Phase first in progress tab
+            </option>
+          )}
         </select>
 
         <div className="flex justify-end gap-2">
