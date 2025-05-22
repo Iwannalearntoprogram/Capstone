@@ -19,7 +19,11 @@ const users_index = catchAsync(async (req, res) => {
 // Update User
 const user_update = catchAsync(async (req, res, next) => {
   const KEY = process.env.JWT_SECRET;
-  const { userId } = req.query;
+  let { userId } = req.query;
+
+  if (!userId) {
+    userId = req.id;
+  }
 
   const user = await User.findById(userId);
 
@@ -88,4 +92,4 @@ const user_update = catchAsync(async (req, res, next) => {
   return res.status(200).json({ message: "Account Successfully Updated" });
 });
 
-module.exports = { users_index };
+module.exports = { users_index, user_update };
