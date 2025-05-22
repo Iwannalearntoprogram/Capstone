@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const { users_index } = require("../../controllers/User/UserController");
+const {
+  users_index,
+  user_update,
+} = require("../../controllers/User/UserController");
 const {
   notification_get,
   notification_post,
@@ -9,6 +12,7 @@ const {
 } = require("../../controllers/utils/NotificationController");
 
 router.get("/", users_index);
+router.put("/", user_update);
 
 router.get("/notification", notification_get);
 router.post("/notification", notification_post);
