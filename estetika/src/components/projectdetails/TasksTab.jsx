@@ -1,56 +1,55 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Column from "./kanban/Column";
 import { DndContext } from "@dnd-kit/core";
+import { useOutletContext } from "react-router-dom";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 const columns = [
   { id: "backlog", title: "Backlog" },
-  { id: "inProgress", title: "In Progress" },
+  { id: "in-progress", title: "In Progress" },
   { id: "completed", title: "Completed" },
 ];
 
-const initialTasks = [
-  {
-    id: 1,
-    title: "Task 1",
-    description: "Description for Task 1",
-    status: "backlog",
-    assignedTo: "Alice",
-    dueDate: "2023-10-01",
-  },
-  {
-    id: 2,
-    title: "Task 2",
-    description: "Description for Task 2",
-    status: "inProgress",
-    assignedTo: "Bob",
-    dueDate: "2023-10-02",
-  },
-  {
-    id: 3,
-    title: "Task 3",
-    description: "Description for Task 3",
-    status: "completed",
-    assignedTo: "Charlie",
-    dueDate: "2023-10-03",
-  },
-];
-
 function TasksTab() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const { project, refreshProject } = useOutletContext();
+  const [tasks, setTasks] = useState(
+    Array.isArray(project?.tasks) ? project.tasks : []
+  );
 
-  const handleDragEnd = (e) => {
+  // Update tasks state if project.tasks changes
+  useEffect(() => {
+    setTasks(Array.isArray(project?.tasks) ? project.tasks : []);
+  }, [project?.tasks]);
+
+  const handleDragEnd = async (e) => {
     const { active, over } = e;
-
     if (!over) return;
 
-    const activeTask = active.id;
+    const taskId = active.id;
     const newStatus = over.id;
 
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === activeTask ? { ...task, status: newStatus } : task
+    setTasks((prev) =>
+      prev.map((task) =>
+        (task._id || task.id) === taskId ? { ...task, status: newStatus } : task
       )
     );
+
+    try {
+      const token = Cookies.get("token");
+      await axios.put(
+        `http://localhost:3000/api/task?id=${taskId}`,
+        { status: newStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (refreshProject) refreshProject(); // <--- Refresh project/tasks from backend
+    } catch (err) {
+      alert("Failed to update task status.");
+    }
   };
 
   return (
@@ -60,6 +59,7 @@ function TasksTab() {
           <Column
             key={column.id}
             column={column}
+            project={project}
             tasks={tasks.filter((task) => column.id === task.status)}
           />
         ))}

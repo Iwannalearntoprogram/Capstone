@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import MaterialList from "../components/materials/MaterialList";
+import { FiSearch } from "react-icons/fi"; // <-- Add this import
 
 const materialsData = [
   { id: 1, title: "Material 1", company: "Company A", price: 100 },
@@ -20,12 +21,18 @@ const materialsData = [
 const MaterialsPage = () => {
   return (
     <div className="flex flex-col items-center">
-      <div className="mb-8 w-full">
-        <input
-          type="text"
-          placeholder="Search materials..."
-          className="w-full max-w-md p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
-        />
+      <div className="mb-8 w-full flex ">
+        <div className="relative w-full max-w-md">
+          <input
+            type="text"
+            placeholder="Search materials..."
+            className="w-full p-2 pl-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          />
+          <FiSearch
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            size={20}
+          />
+        </div>
       </div>
       <Outlet context={{ materialsData }} />
     </div>
