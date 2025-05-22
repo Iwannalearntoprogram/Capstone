@@ -23,5 +23,6 @@ const notificationSchema = new mongoose.Schema(
 
 // index
 notificationSchema.index({ recipient: 1, task: 1, type: 1 }, { unique: true });
+notificationSchema.index({ recipient: 1, phase: 1, type: 1 }, { unique: true });
 
 module.exports = mongoose.model("Notification", notificationSchema);

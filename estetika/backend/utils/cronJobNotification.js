@@ -13,7 +13,7 @@ const checkOverdueTasks = async () => {
 
   for (const task of overdueTasks) {
     for (const userId of task.assigned) {
-      // Check if notification already exists
+      // Check if notification already exists for this user, task, and type
       const existing = await Notification.findOne({
         recipient: userId,
         task: task._id,
@@ -45,15 +45,24 @@ const checkPhaseStart = async () => {
 
     if (!project || !project.members || project.members.length === 0) continue;
 
-    const notifications = project.members.map((userId) => ({
-      recipient: userId,
-      message: `Phase "${phase.title}" has started in project "${project.title}".`,
-      type: "phase-started",
-      phase: phase._id,
-      project: project._id,
-    }));
+    for (const userId of project.members) {
+      // Check if notification already exists for this user, phase, and type
+      const existing = await Notification.findOne({
+        recipient: userId,
+        phase: phase._id,
+        type: "phase-started",
+      });
 
-    await Notification.insertMany(notifications);
+      if (!existing) {
+        await Notification.create({
+          recipient: userId,
+          message: `Phase "${phase.title}" has started in project "${project.title}".`,
+          type: "phase-started",
+          phase: phase._id,
+          project: project._id,
+        });
+      }
+    }
 
     phase.notified = true;
     await phase.save();
