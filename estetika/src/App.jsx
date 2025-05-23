@@ -1,5 +1,8 @@
+import React, { useEffect } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useAuthStore } from "./store/AuthStore";
+
 import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
 
@@ -31,6 +34,10 @@ import MaterialList from "./components/materials/MaterialList";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
+  useEffect(() => {
+    useAuthStore.getState().rehydrate();
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

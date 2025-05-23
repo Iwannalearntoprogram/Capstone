@@ -80,7 +80,7 @@ export default function Column({ column, tasks, project }) {
         <div ref={setNodeRef} className="flex flex-col gap-4 p-4">
           <button
             onClick={() => setModalOpen(true)}
-            className="border-[1px] border-dashed border-gray-300 p-4 rounded-lg shadow-sm bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-center text-gray-500 font-medium transition"
+            className="border-[1px] border-dashed border-[#145c4b] p-4 py-2 rounded-lg shadow-sm bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-center text-gray-500 font-medium transition"
             type="button"
           >
             + Add Task

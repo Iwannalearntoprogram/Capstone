@@ -44,7 +44,7 @@ function RingProgressBar({
         fill="#222"
         fontWeight="bold"
       >
-        {typeof progress === "number" ? progress.toFixed(2) : "0.00"}%
+        {typeof progress === "number" ? progress.toFixed(1) : "0.0"}%
       </text>
     </svg>
   );
@@ -56,8 +56,9 @@ function getPhaseProgress(tasks) {
   return Math.round(total / tasks.length);
 }
 
-function PhaseCard({ phase, tasks }) {
+function PhaseCard({ phase, tasks, projectId }) {
   const [phaseProgress, setPhaseProgress] = useState(undefined);
+  const [overallProgress, setOverallProgress] = useState(undefined);
 
   useEffect(() => {
     const fetchPhase = async () => {
@@ -82,7 +83,7 @@ function PhaseCard({ phase, tasks }) {
   const phaseTasks = tasks.filter((task) => task.phaseId === phase._id);
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-lg shadow-lg border border-gray-300 p-6">
       <h2 className="text-lg font-bold mb-2">{phase.title}</h2>
       <div className="text-sm text-gray-500 mb-2">
         {phase.startDate
@@ -95,6 +96,11 @@ function PhaseCard({ phase, tasks }) {
       <RingProgressBar
         progress={typeof phaseProgress === "number" ? phaseProgress : 0}
       />
+      {overallProgress !== undefined && overallProgress !== null && (
+        <div className="mt-2 text-green-700 font-semibold text-center">
+          Overall Project Progress: {overallProgress.toFixed(2)}%
+        </div>
+      )}
       <ul className="mt-4 space-y-2">
         {phaseTasks.length === 0 && (
           <li className="text-gray-400 italic">No tasks for this phase.</li>
