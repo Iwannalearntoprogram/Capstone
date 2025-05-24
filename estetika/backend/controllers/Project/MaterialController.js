@@ -11,23 +11,24 @@ const material_get = catchAsync(async (req, res, next) => {
 
   let material;
 
-  if (!id && !designerId)
-    return next(new AppError("Material identifier not found", 400));
-
-  id
-    ? (material = await Material.findById(id).populate(
-        "designerId",
-        "-password"
-      ))
-    : (material = await Material.find({ designerId }).populate(
-        "designerId",
-        "-password"
-      ));
-
-  if (!material)
-    return next(
-      new AppError("Material not found. Invalid Material Identifier.", 404)
+  if (id) {
+    material = await Material.findById(id).populate("designerId", "-password");
+    if (!material)
+      return next(
+        new AppError("Material not found. Invalid Material Identifier.", 404)
+      );
+  } else if (designerId) {
+    material = await Material.find({ designerId }).populate(
+      "designerId",
+      "-password"
     );
+    if (!material || material.length === 0)
+      return next(
+        new AppError("Material not found. Invalid Material Identifier.", 404)
+      );
+  } else {
+    material = await Material.find().populate("designerId", "-password");
+  }
 
   return res
     .status(200)
@@ -55,6 +56,16 @@ const material_post = catchAsync(async (req, res, next) => {
     !category
   ) {
     return next(new AppError("Cannot create material, missing fields.", 400));
+  }
+
+  if (
+    !Array.isArray(price) ||
+    !Array.isArray(options) ||
+    price.length !== options.length
+  ) {
+    return next(
+      new AppError("Price must be an array matching options length.", 400)
+    );
   }
 
   const embedding = await generateEmbedding(`${name} ${description}`);
@@ -108,11 +119,25 @@ const material_put = catchAsync(async (req, res, next) => {
 
   if (name) updates.name = name;
   if (company) updates.company = company;
-  if (price) updates.price = price;
   if (description) updates.description = description;
   if (image) updates.image = image;
-  if (options) updates.options = options;
   if (category) updates.category = category;
+
+  if (options || price) {
+    const newOptions = options || material.options;
+    const newPrice = price || material.price;
+    if (
+      !Array.isArray(newOptions) ||
+      !Array.isArray(newPrice) ||
+      newOptions.length !== newPrice.length
+    ) {
+      return next(
+        new AppError("Price must be an array matching options length.", 400)
+      );
+    }
+    updates.options = newOptions;
+    updates.price = newPrice;
+  }
 
   const updatedMaterial = await Material.findByIdAndUpdate(id, updates, {
     new: true,
