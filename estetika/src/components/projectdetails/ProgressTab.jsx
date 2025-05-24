@@ -4,6 +4,55 @@ import Cookies from "js-cookie";
 import { useOutletContext } from "react-router-dom";
 import PhaseCard from "./phases/PhaseCard";
 
+// Progress ring component
+function RingProgressBar({
+  progress,
+  size = 140,
+  stroke = 12,
+  color = "#1D3C34",
+  bg = "#e5e7eb",
+}) {
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (progress / 100) * circumference;
+
+  return (
+    <svg width={size} height={size} className="block mx-auto my-8">
+      <circle
+        stroke={bg}
+        fill="transparent"
+        strokeWidth={stroke}
+        r={radius}
+        cx={size / 2}
+        cy={size / 2}
+      />
+      <circle
+        stroke={color}
+        fill="transparent"
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        r={radius}
+        cx={size / 2}
+        cy={size / 2}
+        style={{ transition: "stroke-dashoffset 0.5s" }}
+      />
+      <text
+        x="50%"
+        y="50%"
+        textAnchor="middle"
+        dy=".3em"
+        fontSize={size * 0.22}
+        fill="#222"
+        fontWeight="bold"
+      >
+        {typeof progress === "number" ? progress.toFixed(1) : "0"}%
+      </text>
+    </svg>
+  );
+}
+
 function ProgressTab() {
   const { project } = useOutletContext();
   const [showModal, setShowModal] = useState(false);
@@ -16,6 +65,41 @@ function ProgressTab() {
 
   const phases = Array.isArray(project?.timeline) ? project.timeline : [];
   const tasks = Array.isArray(project?.tasks) ? project.tasks : [];
+
+  // --- Fetch overall project progress here ---
+  const [overallProgress, setOverallProgress] = useState(undefined);
+
+  useEffect(() => {
+    const fetchOverallProgress = async () => {
+      if (!project?._id) return;
+      try {
+        const token = Cookies.get("token");
+        const response = await axios.get(
+          `http://localhost:3000/api/phase?projectId=${project._id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        // Calculate average progress from all phases
+        const phaseArr = response.data.phase || [];
+        if (phaseArr.length > 0) {
+          const total = phaseArr.reduce(
+            (sum, p) => sum + (typeof p.progress === "number" ? p.progress : 0),
+            0
+          );
+          setOverallProgress(total / phaseArr.length);
+        } else {
+          setOverallProgress(0);
+        }
+      } catch (err) {
+        setOverallProgress(null);
+      }
+    };
+    fetchOverallProgress();
+  }, [project?._id]);
+  // ------------------------------------------
 
   const handlePhaseChange = (e) => {
     const { name, value } = e.target;
@@ -52,7 +136,7 @@ function ProgressTab() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-white rounded-xl shadow p-6">
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/30 h-full flex items-center justify-center z-50">
@@ -119,11 +203,24 @@ function ProgressTab() {
           Add Phase
         </button>
       </div>
+
+      {overallProgress !== undefined && overallProgress !== null && (
+        <div className="flex flex-col items-center">
+          <RingProgressBar progress={overallProgress} />
+          <div className=" font-semibold text-lg">Overall Project Progress</div>
+        </div>
+      )}
+
       {phases.length === 0 && (
         <div className="text-center text-gray-500">No phases yet.</div>
       )}
       {phases.map((phase, idx) => (
-        <PhaseCard key={phase._id || idx} phase={phase} tasks={tasks} />
+        <PhaseCard
+          key={phase._id || idx}
+          phase={phase}
+          tasks={tasks}
+          projectId={project._id}
+        />
       ))}
     </div>
   );

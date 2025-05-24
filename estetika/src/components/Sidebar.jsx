@@ -55,7 +55,7 @@ const Sidebar = ({ isOpen }) => {
             Inbox
           </Link>
         </li>
-        <li
+        {/* <li
           className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
             location.pathname === "/notification"
               ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
@@ -65,7 +65,7 @@ const Sidebar = ({ isOpen }) => {
           <Link to="/notification" className="block text-inherit no-underline ">
             Notification
           </Link>
-        </li>
+        </li> */}
         <li
           className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
             location.pathname === "/calendar"
