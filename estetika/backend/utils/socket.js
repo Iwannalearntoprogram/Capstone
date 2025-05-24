@@ -6,7 +6,7 @@ const Message = require("../models/User/Message");
 const initSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: "*",
+      origin: true,
       methods: ["GET", "POST"],
     },
   });
