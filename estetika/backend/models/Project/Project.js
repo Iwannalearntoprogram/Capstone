@@ -15,6 +15,11 @@ const projectSchema = new mongoose.Schema(
     tasks: { type: [mongoose.Schema.Types.ObjectId], ref: "Task" },
     timeline: { type: [mongoose.Schema.Types.ObjectId], ref: "Phase" },
     projectCreator: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    status: {
+      type: String,
+      enum: ["pending", "ongoing", "completed", "cancelled"],
+      default: "pending",
+    },
   },
   {
     timestamps: true,

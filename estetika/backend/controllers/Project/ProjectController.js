@@ -180,6 +180,7 @@ const project_put = catchAsync(async (req, res, next) => {
     members,
     tasks,
     timeline,
+    status
   } = req.body;
 
   if (!id) return next(new AppError("Project identifier not found", 400));
@@ -200,6 +201,8 @@ const project_put = catchAsync(async (req, res, next) => {
   if (members) updates.members = members;
   if (tasks) updates.tasks = tasks;
   if (timeline) updates.timeline = timeline;
+  if (status) updates.status = status;
+
 
   const updatedProject = await Project.findByIdAndUpdate(id, updates, {
     new: true,
