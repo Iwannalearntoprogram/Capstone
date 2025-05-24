@@ -16,13 +16,11 @@ const phase_get = catchAsync(async (req, res, next) => {
   if (id) {
     phase = await Phase.findById(id)
       .populate("projectId")
-      .populate("subPhaseId")
       .populate("tasks")
       .populate("userId", "-password");
   } else {
     phase = await Phase.find({ projectId })
       .populate("projectId")
-      .populate("subPhaseId")
       .populate("tasks")
       .populate("userId", "-password");
   }
@@ -67,7 +65,7 @@ const phase_get = catchAsync(async (req, res, next) => {
 // Create Phase
 const phase_post = catchAsync(async (req, res, next) => {
   const userId = req.id;
-  const { title, startDate, endDate, subPhaseId, projectId, progress } =
+  const { title, startDate, endDate, projectId, progress } =
     req.body;
 
   const isUserValid = await User.findById(userId);
@@ -88,7 +86,6 @@ const phase_post = catchAsync(async (req, res, next) => {
     title,
     startDate,
     endDate,
-    subPhaseId,
     projectId,
     progress,
     userId,
@@ -111,7 +108,7 @@ const phase_post = catchAsync(async (req, res, next) => {
 // Update Phase
 const phase_put = catchAsync(async (req, res, next) => {
   const { id } = req.query;
-  const { title, startDate, endDate, subPhaseId, projectId, progress } =
+  const { title, startDate, endDate, projectId, progress } =
     req.body;
 
   if (!id) return next(new AppError("Phase identifier not found", 400));
@@ -120,7 +117,6 @@ const phase_put = catchAsync(async (req, res, next) => {
     !title &&
     !startDate &&
     !endDate &&
-    !subPhaseId &&
     !projectId &&
     !progress
   ) {
@@ -138,7 +134,6 @@ const phase_put = catchAsync(async (req, res, next) => {
   if (title) updates.title = title;
   if (startDate) updates.startDate = startDate;
   if (endDate) updates.endDate = endDate;
-  if (subPhaseId) updates.subPhaseId = subPhaseId;
   if (projectId) updates.projectId = projectId;
   if (progress !== undefined) updates.progress = progress;
 

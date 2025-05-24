@@ -124,9 +124,14 @@ const project_post = catchAsync(async (req, res, next) => {
     budget,
     startDate,
     endDate,
+    files,
     members,
     tasks,
     timeline,
+    roomType,
+    projectSize,
+    projectLocation,
+    designInspo,
   } = req.body;
 
   const isUserValid = await User.findById(projectCreator);
@@ -149,10 +154,15 @@ const project_post = catchAsync(async (req, res, next) => {
     budget,
     startDate,
     endDate,
+    files,
     members: membersArray,
     tasks,
     timeline,
     projectCreator,
+    roomType,
+    projectSize,
+    projectLocation,
+    designInspo,
   });
 
   await newProject.save();
@@ -177,9 +187,15 @@ const project_put = catchAsync(async (req, res, next) => {
     budget,
     startDate,
     endDate,
+    files,
     members,
     tasks,
     timeline,
+    status,
+    roomType,
+    projectSize,
+    projectLocation,
+    designInspo,
   } = req.body;
 
   if (!id) return next(new AppError("Project identifier not found", 400));
@@ -197,9 +213,15 @@ const project_put = catchAsync(async (req, res, next) => {
   if (budget) updates.budget = budget;
   if (startDate) updates.startDate = startDate;
   if (endDate) updates.endDate = endDate;
+  if (files) updates.files = files;
   if (members) updates.members = members;
   if (tasks) updates.tasks = tasks;
   if (timeline) updates.timeline = timeline;
+  if (status) updates.status = status;
+  if (roomType) updates.roomType = roomType;
+  if (projectSize) updates.projectSize = projectSize;
+  if (projectLocation) updates.projectLocation = projectLocation;
+  if (designInspo) updates.designInspo = designInspo;
 
   const updatedProject = await Project.findByIdAndUpdate(id, updates, {
     new: true,

@@ -15,6 +15,28 @@ const projectSchema = new mongoose.Schema(
     tasks: { type: [mongoose.Schema.Types.ObjectId], ref: "Task" },
     timeline: { type: [mongoose.Schema.Types.ObjectId], ref: "Phase" },
     projectCreator: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    status: {
+      type: String,
+      enum: ["pending", "ongoing", "completed", "cancelled"],
+      default: "pending",
+    },
+    roomType: {
+      type: String,
+      enum: [
+        "Living Room",
+        "Bedroom",
+        "Kitchen",
+        "Bathroom",
+        "Home Office",
+        "Dining Room",
+        "Whole House",
+        "Commercial Space",
+      ],
+      default: "pending",
+    },
+    projectSize: Number,
+    projectLocation: String,
+    designInspo: String,
   },
   {
     timestamps: true,
