@@ -48,7 +48,12 @@ app.use(
   })
 ); // Body Parser
 app.use(hpp()); // prevent paramater pollution
-app.use(cors()); // Cross Origin Resource Sharing
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+); // Cross Origin Resource Sharing
 app.use(express.json());
 app.use(express.urlencoded());
 app.use((req, res, next) => {
@@ -82,7 +87,7 @@ app.all("/{*splat}", (req, res, next) => {
 app.use(globalErrorHandler);
 
 // cron job
-cron.schedule("* * * * *", () => {
+cron.schedule("0 * * * *", () => {
   checkEventAlarms();
   checkOverdueTasks();
   checkPhaseStart();
