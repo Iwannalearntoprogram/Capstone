@@ -11,7 +11,7 @@ const materialSchema = new mongoose.Schema(
       required: [true, "Company name is required"],
     },
     price: {
-      type: Number,
+      type: [Number],
       required: [true, "Material price name is required"],
     },
     description: {
@@ -30,7 +30,12 @@ const materialSchema = new mongoose.Schema(
       type: String,
       required: [true, "Material category is required"],
     },
+
     designerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    embedding: {
+      type: [Number],
+      required: true,
+    },
   },
   {
     timestamps: true,
