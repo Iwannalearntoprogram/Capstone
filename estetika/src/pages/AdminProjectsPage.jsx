@@ -1,32 +1,31 @@
-import { useState } from 'react';
-import '../styles/AdminProjects.css'; // Add this for modal styling
-import { Link } from 'react-router-dom';
-
+import { useState } from "react";
+// import '../styles/AdminProjects.css'; // Add this for modal styling
+import { Link } from "react-router-dom";
 
 function AdminProjectsPage() {
   const [projects, setProjects] = useState([
     {
       id: 1,
-      name: 'Website Redesign',
-      description: 'Update UI/UX for landing page',
-      deadline: '2024-06-30',
-      assignedTo: 'Alice',
+      name: "Website Redesign",
+      description: "Update UI/UX for landing page",
+      deadline: "2024-06-30",
+      assignedTo: "Alice",
     },
     {
       id: 2,
-      name: 'Marketing Banner',
-      description: 'Design banner for summer promo',
-      deadline: '2024-07-10',
-      assignedTo: 'Bob',
+      name: "Marketing Banner",
+      description: "Design banner for summer promo",
+      deadline: "2024-07-10",
+      assignedTo: "Bob",
     },
   ]);
 
   const [showModal, setShowModal] = useState(false);
   const [newProject, setNewProject] = useState({
-    name: '',
-    description: '',
-    deadline: '',
-    assignedTo: '',
+    name: "",
+    description: "",
+    deadline: "",
+    assignedTo: "",
   });
 
   const handleAssign = () => {
@@ -37,7 +36,7 @@ function AdminProjectsPage() {
     setProjects([...projects, project]);
 
     // reset
-    setNewProject({ name: '', description: '', deadline: '', assignedTo: '' });
+    setNewProject({ name: "", description: "", deadline: "", assignedTo: "" });
     setShowModal(false);
   };
 
@@ -55,21 +54,29 @@ function AdminProjectsPage() {
               type="text"
               placeholder="Project Name"
               value={newProject.name}
-              onChange={e => setNewProject({ ...newProject, name: e.target.value })}
+              onChange={(e) =>
+                setNewProject({ ...newProject, name: e.target.value })
+              }
             />
             <textarea
               placeholder="Project Description"
               value={newProject.description}
-              onChange={e => setNewProject({ ...newProject, description: e.target.value })}
+              onChange={(e) =>
+                setNewProject({ ...newProject, description: e.target.value })
+              }
             />
             <input
               type="date"
               value={newProject.deadline}
-              onChange={e => setNewProject({ ...newProject, deadline: e.target.value })}
+              onChange={(e) =>
+                setNewProject({ ...newProject, deadline: e.target.value })
+              }
             />
             <select
               value={newProject.assignedTo}
-              onChange={e => setNewProject({ ...newProject, assignedTo: e.target.value })}
+              onChange={(e) =>
+                setNewProject({ ...newProject, assignedTo: e.target.value })
+              }
             >
               <option value="">Select Designer</option>
               <option value="Alice">Alice</option>
@@ -85,7 +92,7 @@ function AdminProjectsPage() {
 
       {/* Projects List */}
       <div className="project-list">
-        {projects.map(project => (
+        {projects.map((project) => (
           <div key={project.id} className="card">
             <h3>{project.name}</h3>
             <p>{project.description}</p>

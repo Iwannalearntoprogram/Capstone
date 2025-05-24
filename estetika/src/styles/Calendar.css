@@ -1,80 +1,79 @@
 /* CalendarPage.css */
 
 .calendar-container {
-    border-radius: 15px;
-    margin-top: 50px;
-    padding: 30px;
-    background-color: #ffffff;
-    min-height: 100vh;
+  border-radius: 15px;
+  margin-top: 50px;
+  padding: 30px;
+  background-color: #ffffff;
+  min-height: 100vh;
 
-    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
-  }
-  
-  .calendar-title {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    color: #1d3c34;
-    font-family: 'Avenir Next Cyr', sans-serif;
-  }
-  
-  /* Optional: Style events in the calendar */
-  .rbc-event {
-    background-color: #1d3c34;
-    color: white;
-    border: none;
-    padding: 4px 8px;
-    border-radius: 4px;
-  }
-  
-  /* Remove focus outline on click */
-  .rbc-event:focus {
-    outline: none;
-  }
-  
-  /* Customize toolbar buttons (optional) */
-  .rbc-toolbar button {
-    background-color: #1d3c34;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    margin: 0 5px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .rbc-toolbar button:disabled {
-    background-color: #ccc;
-  }
-  .rbc-day-slot {
-    position: relative;
-  }
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
 
-  /* Custom time slot lines */
+.calendar-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #1d3c34;
+  font-family: "Avenir Next Cyr", sans-serif;
+}
 
+/* Optional: Style events in the calendar */
+.rbc-event {
+  background-color: #1d3c34;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
 
-  /* calendar pop up style */
-  .event-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 25px;
-    width: 400px;
-    max-width: 90%;
-    border-radius: 10px;
-    z-index: 1001;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-    border: 1px solid #ddd;
-    opacity: 0;
-    animation: slideFadeIn 0.4s ease forwards;
-    font-family: 'Avenir Next Cyr';
-  }
-  
+/* Remove focus outline on click */
+.rbc-event:focus {
+  outline: none;
+}
+
+/* Customize toolbar buttons (optional) */
+.rbc-toolbar button {
+  background-color: #1d3c34;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin: 0 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.rbc-toolbar button:disabled {
+  background-color: #ccc;
+}
+.rbc-day-slot {
+  position: relative;
+}
+
+/* Custom time slot lines */
+
+/* calendar pop up style */
+.event-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 25px;
+  width: 400px;
+  max-width: 90%;
+  border-radius: 10px;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid #ddd;
+  opacity: 0;
+  animation: slideFadeIn 0.4s ease forwards;
+  font-family: "Avenir Next Cyr";
+}
+
 /* Overlay fade */
 .event-overlay {
   position: fixed;
@@ -86,7 +85,7 @@
   z-index: 999;
   opacity: 0;
   animation: fadeIn 0.3s ease forwards;
-  font-family: 'Avenir Next Cyr';
+  font-family: "Avenir Next Cyr";
 }
 
 /* Button styling */
@@ -99,7 +98,7 @@
   background-color: #1d3c34;
   color: white;
   transition: background-color 0.3s ease;
-  font-family: 'Avenir Next Cyr';
+  font-family: "Avenir Next Cyr";
 }
 
 .modal-buttons button:hover {
@@ -146,5 +145,5 @@
 .event-modal select,
 .event-modal button,
 .event-modal label {
-  font-family: 'Avenir Next Cyr';
+  font-family: "Avenir Next Cyr";
 }

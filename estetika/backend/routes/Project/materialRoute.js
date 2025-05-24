@@ -5,11 +5,14 @@ const {
   material_delete,
   material_get,
   material_put,
+  vector_search,
 } = require("../../controllers/Project/MaterialController");
 
 router.post("/", material_post);
 router.delete("/", material_delete);
 router.get("/", material_get);
+router.get("/", material_put);
+router.get("/search", vector_search);
 router.put("/", material_put);
 
 module.exports = router;

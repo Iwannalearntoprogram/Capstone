@@ -1,82 +1,83 @@
-// import React from 'react';
-// import { Outlet, useParams } from 'react-router-dom';
-// import SubNavbarProjects from '../components/SubNavbarProjects'; // You can reuse or customize this
-
-// const ProjectDetailsPage = () => {
-//   const { projectId } = useParams();
-
-//   return (
-//     <div>
-//       <SubNavbarProjects projectId={projectId} />
-//       <h2>Project #{projectId} Details</h2>
-
-//       {/* Show the selected section (Tasks, Progress, etc.) here */}
-//       <Outlet />
-//     </div>
-//   );
-// };
-
-// export default ProjectDetailsPage;
-// import React from 'react';
-// import { useParams } from 'react-router-dom';
-// import SubNavbarProjects from '../components/SubNavbarProjects';
-
-// const ProjectDetailPage = () => {
-//   const { id } = useParams();
-
-//   return (
-//     <div>
-//       <SubNavbarProjects />
-//       <h1>Project #{id} Details</h1>
-//       {/* Based on active tab in SubNavbarProjects, render the correct section here */}
-//     </div>
-//   );
-// };
-
-// export default ProjectDetailPage;
-import { useParams, Link, Outlet } from 'react-router-dom'; // `Link` to navigate, `Outlet` for nested content
+import { useParams, NavLink, Outlet, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 function ProjectDetailsPage() {
-  const { projectId } = useParams();  // Get projectId from URL
+  const { id } = useParams();
+  const location = useLocation();
+  const [project, setProject] = useState(location.state?.project || null);
 
-  // Example static project data (you can later replace this with real API calls)
-  const project = {
-    1: { name: 'Project A', description: 'Detailed description of Project A' },
-    2: { name: 'Project B', description: 'Detailed description of Project B' },
+  const fetchProject = async () => {
+    try {
+      const projectCreator = localStorage.getItem("id");
+      const token = Cookies.get("token");
+      const response = await axios.get(
+        `http://localhost:3000/api/project?projectCreator=${projectCreator}&id=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setProject(
+        Array.isArray(response.data.project)
+          ? response.data.project[0]
+          : response.data.project
+      );
+    } catch {
+      setProject(null);
+    }
   };
 
-  const selectedProject = project[projectId];
+  useEffect(() => {
+    // If project is not passed via state, fetch it by id
+    if (!project && id) {
+      fetchProject();
+    }
+  }, [id, project]);
+
+  const tabs = [
+    { label: "Tasks", path: "tasks" },
+    { label: "Progress", path: "progress" },
+    { label: "Timeline", path: "timeline" },
+    // Add more tabs as needed
+  ];
 
   return (
-    <div>
-      <h1>{selectedProject?.name}</h1>
-      <p>{selectedProject?.description}</p>
-
-      {/* Sub-navbar (Tabs) */}
-      <div className="tabs">
-        <ul>
-        
-          <li>
-            <Link to={`/projects/${projectId}/tasks`} className="tab-link">
-              Tasks
-            </Link>
-          </li>
-          <li>
-            <Link to={`/projects/${projectId}/progress`} className="tab-link">
-              Progress
-            </Link>
-          </li>
-          <li>
-            <Link to={`/projects/${projectId}/files`} className="tab-link">
-              Files
-            </Link>
-          </li>
-          {/* Add other tabs here, e.g., Timeline, Status Updates, etc. */}
-        </ul>
+    <div className=" mx-auto px-4 py-8">
+      {/* Project Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl text-center font-bold mb-2">
+          {project?.title || "Project Not Found"}
+        </h1>
       </div>
 
-      {/* Display tab content */}
-      <Outlet /> {/* This will render content for the selected tab */}
+      {/* Tabs */}
+      <div className="mb-8 ">
+        <nav className="flex gap-6 justify-center">
+          {tabs.map((tab) => (
+            <NavLink
+              key={tab.path}
+              to={`/projects/${id}/${tab.path}`}
+              className={({ isActive }) =>
+                `py-2 px-1 border-b-2 transition-colors duration-200 ${
+                  isActive
+                    ? "border-[#1d3c34] text-[#1d3c34] font-semibold"
+                    : "border-transparent text-gray-500 hover:text-[#1d3c34]"
+                }`
+              }
+            >
+              {tab.label}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      <div className="px-20 rounded-xl  min-h-[200px]">
+        <Outlet context={{ project, refreshProject: fetchProject }} />
+      </div>
     </div>
   );
 }

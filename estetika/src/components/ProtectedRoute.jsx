@@ -1,21 +1,26 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from "react-router-dom";
+import Cookies from "js-cookie";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const location = useLocation();
-  const token = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
+  const token = Cookies.get("token");
+  // const token = true;
+  const role = localStorage.getItem("role");
 
-  if (!token) {
-    // If not logged in, redirect to login page
-    return <Navigate to="/" state={{ from: location }} />;
-  }
-
-  if (requiredRole && role !== requiredRole) {
-    // If user doesn't have the required role, redirect to home or another page
+  if (token && (location.pathname === "/" || location.pathname === "/signup")) {
     return <Navigate to="/home" />;
   }
 
-  return children; // If all checks pass, render the protected component
+  if (!token && location.pathname !== "/" && location.pathname !== "/signup") {
+    return <Navigate to="/" state={{ from: location }} />;
+  }
+
+  // if (requiredRole && role !== requiredRole) {
+  //   // If user doesn't have the required role, redirect to home or another page
+  //   return <Navigate to="/home" />;
+  // }
+
+  return children;
 };
 
 export default ProtectedRoute;

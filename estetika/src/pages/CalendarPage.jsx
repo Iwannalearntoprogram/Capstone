@@ -1,229 +1,13 @@
+import React, { useState, useEffect } from "react";
+import Modal from "react-modal";
+import { Calendar, Views, dateFnsLocalizer } from "react-big-calendar";
+import { format, parse, startOfWeek, getDay } from "date-fns";
+import enUS from "date-fns/locale/en-US";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import axios from "axios";
+import Cookies from "js-cookie";
 
-// import React, { useState, useEffect } from 'react';
-// import Modal from 'react-modal';
-// import { Calendar, Views, dateFnsLocalizer } from 'react-big-calendar';
-// import { format, parse, startOfWeek, getDay } from 'date-fns';
-// import enUS from 'date-fns/locale/en-US';
-// import 'react-big-calendar/lib/css/react-big-calendar.css';
-// import '../styles/Calendar.css';
-
-// const locales = { 'en-US': enUS };
-
-// const localizer = dateFnsLocalizer({
-//   format,
-//   parse,
-//   startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
-//   getDay,
-//   locales,
-// });
-
-// Modal.setAppElement('#root'); // For accessibility
-
-// const CalendarPage = () => {
-//   const [events, setEvents] = useState([]);
-//   const [view, setView] = useState(Views.MONTH);
-//   const [date, setDate] = useState(new Date());
-
-//   const [modalOpen, setModalOpen] = useState(false);
-//   const [newEvent, setNewEvent] = useState({
-//     title: '',
-//     start: null,
-//     end: null,
-//     location: '',
-//     notes: '',
-//     alarm: '',
-//     repeat: false,
-//     attachment: null,
-//     id: null,
-//   });
-
-//   // Open modal for adding new event
-//   const handleSelectSlot = ({ start, end }) => {
-//     setNewEvent({ ...newEvent, start, end });
-//     setModalOpen(true);
-//   };
-
-//   // Open modal for editing an existing event
-//   const handleEventClick = (event) => {
-//     setNewEvent(event);
-//     setModalOpen(true);
-//   };
-
-//   // Add or update event
-//   const handleSaveEvent = () => {
-//     if (!newEvent.title) return alert('Please enter a title!');
-
-//     if (newEvent.id) {
-//       // If the event has an ID, it's an edit operation
-//       const updatedEvents = events.map((event) =>
-//         event.id === newEvent.id ? newEvent : event
-//       );
-//       setEvents(updatedEvents);
-//     } else {
-//       // Otherwise, it's a new event
-//       const eventWithId = { ...newEvent, id: Date.now() };
-//       setEvents([...events, eventWithId]);
-//     }
-
-//     setModalOpen(false);
-//     setNewEvent({
-//       title: '',
-//       start: null,
-//       end: null,
-//       location: '',
-//       notes: '',
-//       alarm: '',
-//       repeat: false,
-//       attachment: null,
-//       id: null,
-//     });
-//   };
-
-//   // Delete event
-//   const handleDeleteEvent = () => {
-//     setEvents(events.filter((event) => event.id !== newEvent.id));
-//     setModalOpen(false);
-//     setNewEvent({
-//       title: '',
-//       start: null,
-//       end: null,
-//       location: '',
-//       notes: '',
-//       alarm: '',
-//       repeat: false,
-//       attachment: null,
-//       id: null,
-//     });
-//   };
-
-//   // Handle the alarm (trigger when the event time arrives)
-//   useEffect(() => {
-//     if (newEvent.alarm) {
-//       const alarmTime = new Date(newEvent.alarm).getTime();
-//       const currentTime = new Date().getTime();
-
-//       const timeUntilAlarm = alarmTime - currentTime;
-
-//       if (timeUntilAlarm > 0) {
-//         setTimeout(() => {
-//           alert(`Reminder: ${newEvent.title} is due now!`);
-//         }, timeUntilAlarm);
-//       }
-//     }
-//   }, [newEvent]);
-
-//   return (
-//     <div className="calendar-container">
-//       <h2 className="calendar-title">📅 Project Calendar</h2>
-
-//       <Calendar
-//         localizer={localizer}
-//         events={events}
-//         views={[Views.MONTH, Views.WEEK, Views.DAY]}
-//         selectable={true}
-//         onSelectSlot={handleSelectSlot}
-//         onSelectEvent={handleEventClick} // Allows you to click on an event to edit
-//         defaultView={view}
-//         view={view}
-//         date={date}
-//         onView={setView}
-//         onNavigate={setDate}
-//         style={{ height: 500 }}
-//       />
-
-//       {/* Modal Overlay */}
-//       {modalOpen && <div className="event-overlay" onClick={() => setModalOpen(false)} />}
-
-//       {/* Modal */}
-//       <Modal
-//         isOpen={modalOpen}
-//         onRequestClose={() => setModalOpen(false)}
-//         shouldCloseOnOverlayClick={false}
-//         className="event-modal"
-//         overlayClassName="event-overlay"
-//       >
-//         <h2>{newEvent.id ? 'Edit Event' : 'Add Event'}</h2>
-
-//         <input
-//           type="text"
-//           placeholder="Title"
-//           value={newEvent.title}
-//           onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-//         />
-
-//         <label>Alarm</label>
-//         <input
-//           type="datetime-local"
-//           value={newEvent.alarm}
-//           onChange={(e) => setNewEvent({ ...newEvent, alarm: e.target.value })}
-//         />
-
-//         <label>From</label>
-//         <input
-//           type="datetime-local"
-//           value={newEvent.start ? format(newEvent.start, 'yyyy-MM-dd\'T\'HH:mm') : ''}
-//           onChange={(e) => setNewEvent({ ...newEvent, start: new Date(e.target.value) })}
-//         />
-
-//         <label>To</label>
-//         <input
-//           type="datetime-local"
-//           value={newEvent.end ? format(newEvent.end, 'yyyy-MM-dd\'T\'HH:mm') : ''}
-//           onChange={(e) => setNewEvent({ ...newEvent, end: new Date(e.target.value) })}
-//         />
-
-//         <input
-//           type="text"
-//           placeholder="Location"
-//           value={newEvent.location}
-//           onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
-//         />
-
-//         <label>Repeat</label>
-//         <input
-//           type="checkbox"
-//           checked={newEvent.repeat}
-//           onChange={(e) => setNewEvent({ ...newEvent, repeat: e.target.checked })}
-//         />
-
-//         <label>Attachment</label>
-//         <input
-//           type="file"
-//           onChange={(e) => setNewEvent({ ...newEvent, attachment: e.target.files[0] })}
-//         />
-
-//         <textarea
-//           placeholder="Notes"
-//           value={newEvent.notes}
-//           onChange={(e) => setNewEvent({ ...newEvent, notes: e.target.value })}
-//         />
-
-//         <div className="modal-buttons">
-//           <button onClick={handleSaveEvent}>
-//             {newEvent.id ? 'Save Changes' : 'Add Event'}
-//           </button>
-//           <button onClick={() => setModalOpen(false)}>Cancel</button>
-//           {newEvent.id && (
-//             <button onClick={handleDeleteEvent} style={{ backgroundColor: 'red' }}>
-//               Delete Event
-//             </button>
-//           )}
-//         </div>
-//       </Modal>
-//     </div>
-//   );
-// };
-
-// export default CalendarPage;
-import React, { useState } from 'react';
-import Modal from 'react-modal';
-import { Calendar, Views, dateFnsLocalizer } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay } from 'date-fns';
-import enUS from 'date-fns/locale/en-US';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import '../styles/Calendar.css';
-
-const locales = { 'en-US': enUS };
+const locales = { "en-US": enUS };
 
 const localizer = dateFnsLocalizer({
   format,
@@ -233,7 +17,7 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-Modal.setAppElement('#root'); // For accessibility
+Modal.setAppElement("#root"); // For accessibility
 
 const CalendarPage = () => {
   const [events, setEvents] = useState([]);
@@ -241,29 +25,29 @@ const CalendarPage = () => {
   const [date, setDate] = useState(new Date());
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [closing, setClosing] = useState(false); // <-- Animation state
+  const [closing, setClosing] = useState(false);
 
   const [newEvent, setNewEvent] = useState({
-    title: '',
+    title: "",
     start: null,
     end: null,
-    location: '',
-    notes: '',
+    location: "",
+    notes: "",
     alarm: null,
     repeat: false,
     attachment: null,
     id: null,
   });
 
-  // Helper function to format date for datetime-local input
   const formatToDateTimeLocal = (date) => {
-    if (!date) return '';
+    if (!date) return "";
     const localDate = new Date(date);
-    localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
-    return localDate.toISOString().slice(0, 16); // Format as YYYY-MM-DDTHH:MM
+    localDate.setMinutes(
+      localDate.getMinutes() - localDate.getTimezoneOffset()
+    );
+    return localDate.toISOString().slice(0, 16);
   };
 
-  // Handle slot selection (clicking on an empty space)
   const handleSelectSlot = ({ start, end }) => {
     const localStart = new Date(start);
     const localEnd = new Date(end);
@@ -272,66 +56,105 @@ const CalendarPage = () => {
     setModalOpen(true);
   };
 
-  // Handle event click
   const handleEventClick = (event) => {
     setNewEvent(event);
     setModalOpen(true);
   };
 
-  // Save event
-  const handleSaveEvent = () => {
-    if (!newEvent.title) return alert('Please enter a title!');
+  const handleSaveEvent = async () => {
+    if (!newEvent.title) return alert("Please enter a title!");
 
-    const parsedEvent = {
-      ...newEvent,
-      start: new Date(newEvent.start),
-      end: new Date(newEvent.end),
+    const body = {
+      title: newEvent.title,
+      alarm: newEvent.alarm || "",
+      startDate: newEvent.start ? newEvent.start.toISOString() : "",
+      endDate: newEvent.end ? newEvent.end.toISOString() : "",
+      location: newEvent.location || "",
+      repeat: newEvent.repeat || false,
+      color: newEvent.color || "#4287f5",
+      notes: newEvent.notes || "",
     };
 
-    let updatedEvents;
-
-    if (newEvent.id) {
-      updatedEvents = events.map((event) =>
-        event.id === newEvent.id ? parsedEvent : event
+    try {
+      const token = Cookies.get("token");
+      const response = await axios.post(
+        "http://localhost:3000/api/event",
+        body,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-    } else {
-      const eventWithId = { ...parsedEvent, id: Date.now() };
-      updatedEvents = [...events, eventWithId];
+      const savedEvent = response.data.event || {
+        ...newEvent,
+        id: Date.now(),
+      };
+      setEvents([...events, savedEvent]);
+      closeModal();
+    } catch (err) {
+      alert("Failed to save event.");
+      console.error(err);
     }
-
-    setEvents(updatedEvents);
-    closeModal();
   };
 
-  // Delete event
   const handleDeleteEvent = () => {
     setEvents(events.filter((event) => event.id !== newEvent.id));
     closeModal();
   };
 
-  // Close modal and reset form
   const closeModal = () => {
     setClosing(true);
     setTimeout(() => {
       setModalOpen(false);
       setClosing(false);
       setNewEvent({
-        title: '',
+        title: "",
         start: null,
         end: null,
-        location: '',
-        notes: '',
+        location: "",
+        notes: "",
         alarm: null,
         repeat: false,
         attachment: null,
         id: null,
       });
-    }, 300); // match with fade duration
+    }, 300);
   };
 
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const token = Cookies.get("token");
+        const userId = localStorage.getItem("id");
+        const response = await axios.get(
+          `http://localhost:3000/api/event?userId=${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        // Map backend events to calendar events
+        const mappedEvents = (response.data.event || []).map((ev) => ({
+          ...ev,
+          start: new Date(ev.startDate),
+          end: new Date(ev.endDate),
+        }));
+        setEvents(mappedEvents);
+      } catch (err) {
+        console.error("Failed to fetch events:", err);
+        setEvents([]);
+      }
+    };
+    fetchEvents();
+  }, []);
+
   return (
-    <div className="calendar-container">
-      <h2 className="calendar-title">📅 Project Calendar</h2>
+    <div className="rounded-[15px] mt-[50px] p-[30px] bg-white min-h-screen shadow-[0_2px_8px_0_rgba(99,99,99,0.2)]">
+      <h2 className="text-2xl font-semibold mb-5 text-[#1D3C34] font-avenir">
+        📅 Project Calendar
+      </h2>
 
       <Calendar
         localizer={localizer}
@@ -346,91 +169,165 @@ const CalendarPage = () => {
         onView={setView}
         onNavigate={setDate}
         style={{ height: 500 }}
+        eventPropGetter={() => ({
+          style: {
+            backgroundColor: "#1D3C34", // Green accent
+            color: "#fff",
+            borderRadius: "6px",
+            border: "none",
+          },
+        })}
+        className="rbc-calendar"
       />
 
-      {modalOpen && <div className={`event-overlay ${closing ? 'overlay-closing' : ''}`} onClick={closeModal} />}
+      {modalOpen && (
+        <div
+          className={`fixed top-0 left-0 w-full h-full bg-black/20 z-50 ${
+            closing
+              ? "opacity-0 transition-opacity duration-300"
+              : "opacity-100"
+          }`}
+          onClick={closeModal}
+        />
+      )}
 
       <Modal
         isOpen={modalOpen || closing}
         onRequestClose={closeModal}
-        className={`event-modal${closing ? ' closed' : ''}`}
-        overlayClassName="event-overlay"
+        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 w-[90%] max-w-[400px] rounded-lg shadow-lg z-50 ${
+          closing ? "opacity-0 transition-opacity duration-300" : "opacity-100"
+        }`}
+        overlayClassName="fixed top-0 left-0 w-full h-full bg-black/20 z-50 backdrop-blur-xs"
         shouldCloseOnOverlayClick={false}
       >
-        <h2>{newEvent.id ? 'Edit Event' : 'Add Event'}</h2>
+        {newEvent.id ? (
+          <>
+            <h2 className="text-lg font-semibold mb-4">Event Details</h2>
+            <div className="mb-2">
+              <b>Title:</b> {newEvent.title}
+            </div>
+            <div className="mb-2">
+              <b>From:</b> {newEvent.start?.toLocaleString()}
+            </div>
+            <div className="mb-2">
+              <b>To:</b> {newEvent.end?.toLocaleString()}
+            </div>
+            <div className="mb-2">
+              <b>Location:</b> {newEvent.location}
+            </div>
+            <div className="mb-2">
+              <b>Notes:</b> {newEvent.notes}
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition"
+              >
+                Close
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="text-lg font-semibold mb-4">
+              {newEvent.id ? "Edit Event" : "Add Event"}
+            </h2>
+            <label className="block mb-2">Title:</label>
+            <input
+              type="text"
+              placeholder="Title"
+              value={newEvent.title}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, title: e.target.value })
+              }
+              className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+            />
 
-        <input
-          type="text"
-          placeholder="Title"
-          value={newEvent.title}
-          onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-        />
+            <label className="block mb-2">Alarm:</label>
+            <input
+              type="datetime-local"
+              value={newEvent.alarm || ""}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, alarm: e.target.value })
+              }
+              className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+            />
 
-        <label>
-          Alarm:
-          <input
-            type="datetime-local"
-            value={newEvent.alarm || ''}
-            onChange={(e) => setNewEvent({ ...newEvent, alarm: e.target.value })}
-          />
-        </label>
+            <label className="block mb-2">From:</label>
+            <input
+              type="datetime-local"
+              value={formatToDateTimeLocal(newEvent.start)}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, start: new Date(e.target.value) })
+              }
+              className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+            />
 
-        <label>
-          From:
-          <input
-            type="datetime-local"
-            value={formatToDateTimeLocal(newEvent.start)}
-            onChange={(e) => setNewEvent({ ...newEvent, start: new Date(e.target.value) })}
-          />
-        </label>
+            <label className="block mb-2">To:</label>
+            <input
+              type="datetime-local"
+              value={
+                newEvent.end
+                  ? new Date(newEvent.end).toISOString().slice(0, 16)
+                  : ""
+              }
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, end: new Date(e.target.value) })
+              }
+              className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+            />
+            <label className="block mb-2">Location:</label>
+            <input
+              type="text"
+              placeholder="Location"
+              value={newEvent.location}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, location: e.target.value })
+              }
+              className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+            />
 
-        <label>
-          To:
-          <input
-            type="datetime-local"
-            value={newEvent.end ? new Date(newEvent.end).toISOString().slice(0, 16) : ''}
-            onChange={(e) => setNewEvent({ ...newEvent, end: new Date(e.target.value) })}
-          />
-        </label>
+            <input
+              type="file"
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, attachment: e.target.files[0] })
+              }
+              className="mb-4"
+            />
 
-        <input
-          type="text"
-          placeholder="Location"
-          value={newEvent.location}
-          onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
-        />
+            <textarea
+              placeholder="Notes"
+              value={newEvent.notes}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, notes: e.target.value })
+              }
+              className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+            />
 
-        <label>
-          Repeat:
-          <input
-            type="checkbox"
-            checked={newEvent.repeat}
-            onChange={(e) => setNewEvent({ ...newEvent, repeat: e.target.checked })}
-          />
-        </label>
-
-        <input
-          type="file"
-          onChange={(e) => setNewEvent({ ...newEvent, attachment: e.target.files[0] })}
-        />
-
-        <textarea
-          placeholder="Notes"
-          value={newEvent.notes}
-          onChange={(e) => setNewEvent({ ...newEvent, notes: e.target.value })}
-        />
-
-        <div className="modal-buttons">
-          <button onClick={handleSaveEvent}>
-            {newEvent.id ? 'Save Changes' : 'Add Event'}
-          </button>
-          <button onClick={closeModal}>Cancel</button>
-          {newEvent.id && (
-            <button onClick={handleDeleteEvent} style={{ backgroundColor: 'red' }}>
-              Delete Event
-            </button>
-          )}
-        </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={handleSaveEvent}
+                className="px-4 py-2 bg-[#1D3C34] text-white rounded-md hover:bg-[#145c4b] transition"
+              >
+                {newEvent.id ? "Save Changes" : "Add Event"}
+              </button>
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition"
+              >
+                Cancel
+              </button>
+              {newEvent.id && (
+                <button
+                  onClick={handleDeleteEvent}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+                >
+                  Delete Event
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </Modal>
     </div>
   );

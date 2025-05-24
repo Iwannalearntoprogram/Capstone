@@ -1,117 +1,180 @@
+import React, { useEffect } from "react";
+import "./App.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useAuthStore } from "./store/AuthStore";
 
-// import './App.css';
-// import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-// import Layout from './components/Layout';
-// import HomePage from './pages/HomePage';
-// import ProjectsPage from './pages/ProjectsPage';
-// import LoginPage from './pages/LoginPage';
-// import SignupPage from './pages/SignupPage';
-// import ProfilePage from './pages/ProfilePage';
+import Layout from "./components/Layout";
+import HomePage from "./pages/HomePage";
 
-// const routes = [
-//   {
-//     path: '/',
-//     element: <Layout />,
-//     children: [
-//       {
-//         path: 'profile', 
-//         element: <ProfilePage />,
-//       },
-//       {
-//         path: 'home',
-//         element: <HomePage />,
-//       },
-//       {
-//         path: 'projects',
-//         element: <ProjectsPage />,
-//       },
-//       {
-//         path: '/',
-//         element: <LoginPage />,
-//       },
-//       {
-//         path: 'signup',
-//         element: <SignupPage />,
-//       },
-//     ],
-//   },
-// ];
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import ProfilePage from "./pages/ProfilePage";
+import Inbox from "./pages/Inbox";
+import CalendarPage from "./pages/CalendarPage";
+import NotificationPage from "./pages/NotificationPage";
 
-// const router = createBrowserRouter(routes);
+//project detail pages
+import ProjectsPage from "./pages/ProjectsPage";
+import DesignerProjectsPage from "./pages/DesignerProjectsPage";
+import ProjectDetailsPage from "./pages/ProjectDetailsPage";
+import AdminProjectsPage from "./pages/AdminProjectsPage";
 
-// function App() {
-//   return <RouterProvider router={router} />;
-// }
+//tab content components
+import TasksTab from "./components/projectdetails/TasksTab";
+import ProgressTab from "./components/projectdetails/ProgressTab";
+import TimelineTab from "./components/projectdetails/TimelineTab";
 
-// export default App;
-import './App.css';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Layout from './components/Layout';
-import HomePage from './pages/HomePage';
-import ProjectsPage from './pages/ProjectsPage';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import ProfilePage from './pages/ProfilePage';
-import Inbox from './pages/Inbox';
-import CalendarPage from './pages/CalendarPage';
-import NotificationPage from './pages/NotificationPage';
+//materials
+import MaterialsPage from "./pages/MaterialsPage";
+import MaterialDetailsPage from "./pages/MaterialDetailsPage";
+//material list
+import MaterialList from "./components/materials/MaterialList";
 
-// Import the new project detail pages
-import DesignerProjectsPage from './pages/DesignerProjectsPage';  // This would be your "Designer Projects Page"
-import ProjectDetailsPage from './pages/ProjectDetailsPage';  // This would be your "Project Details Page"
-import AdminProjectsPage from './pages/AdminProjectsPage';
-
-// Import tab content components
-import TasksTab from './components/TasksTab';  // Tasks tab content
-import ProgressTab from './components/ProgressTab';  // Progress tab content
-import FilesTab from './components/FilesTab';  // Files tab content
-
-const routes = [
-  // Routes for Login and Signup (no layout)
-  {
-    path: '/',
-    element: <LoginPage />,
-  },
-  {
-    path: '/signup',
-    element: <SignupPage />,
-  },
-
-  // Routes for pages that should use the layout
-  {
-    path: '/', // Use a different path for layout
-    element: <Layout />, // Layout with Sidebar and Navbar
-    children: [
-      { path: 'home', element: <HomePage /> },
-      { path: 'profile', element: <ProfilePage /> },
-      // { path: 'projects', element: <ProjectsPage /> },
-      { path: 'inbox', element: <Inbox /> },
-      { path: 'notification', element: <NotificationPage /> },
-      { path: 'calendar', element: <CalendarPage /> },
-
-      // Add the new routes for designer projects and project details
-      // { path: 'projects', element: <DesignerProjectsPage /> },
-
-      { path: 'projects', element: <AdminProjectsPage /> },
-
-
-      {
-        path: 'projects/:projectId',
-        element: <ProjectDetailsPage />,
-        children: [
-          { path: 'tasks', element: <TasksTab /> },
-          { path: 'progress', element: <ProgressTab /> },
-          { path: 'files', element: <FilesTab /> },
-        ],
-      },
-    ],
-  },
-];
-
-const router = createBrowserRouter(routes);
+//utils
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-  return <RouterProvider router={router} />;
+  useEffect(() => {
+    useAuthStore.getState().rehydrate();
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/*  Login and Signup */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <LoginPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <ProtectedRoute>
+              <SignupPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* layout */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            path="home"
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="inbox" element={<Inbox />} />
+          <Route
+            path="notification"
+            element={
+              <ProtectedRoute>
+                <NotificationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="calendar"
+            element={
+              <ProtectedRoute>
+                <CalendarPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* projects */}
+          <Route
+            path="projects"
+            element={
+              <ProtectedRoute>
+                <ProjectsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="projects/:id"
+            element={
+              <ProtectedRoute>
+                <ProjectDetailsPage />
+              </ProtectedRoute>
+            }
+          >
+            <Route
+              path="tasks"
+              element={
+                <ProtectedRoute>
+                  <TasksTab />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="progress"
+              element={
+                <ProtectedRoute>
+                  <ProgressTab />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="timeline"
+              element={
+                <ProtectedRoute>
+                  <TimelineTab />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+
+          {/* materials */}
+          <Route
+            path="materials"
+            element={
+              <ProtectedRoute>
+                <MaterialsPage />
+              </ProtectedRoute>
+            }
+          >
+            <Route
+              path="items"
+              element={
+                <ProtectedRoute>
+                  <MaterialList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path=":id"
+              element={
+                <ProtectedRoute>
+                  <MaterialDetailsPage />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;

@@ -4,10 +4,10 @@ const User = require("../../models/User/User");
 const sendEmail = require("../../utils/sendEmail");
 const catchAsync = require("../../utils/catchAsync");
 const AppError = require("../../utils/appError");
+const InvalidToken = require("../../models/utils/InvalidToken");
 
 // ✅ Register route
 const register = catchAsync(async (req, res, next) => {
-  // Destructure incoming fields from frontend
   const { firstName, lastName, username, email, password, phoneNumber, role } =
     req.body;
 
@@ -31,18 +31,20 @@ const register = catchAsync(async (req, res, next) => {
 
   const newUser = new User({
     fullName: `${firstName} ${lastName}`,
+    firstName,
+    lastName,
     username,
     email,
     password: hashedPassword,
     phoneNumber,
-    userType: role || "client",
+    role: role || "client",
   });
 
   await newUser.save();
 
   return res
     .status(201)
-    .json({ message: `${newUser.userType} registered successfully` });
+    .json({ message: `${newUser.role} registered successfully` });
 });
 
 //OTP Route
@@ -98,21 +100,40 @@ const login = catchAsync(async (req, res, next) => {
 
   // Create JWT token
   const token = jwt.sign(
-    { id: user._id, role: user.userType },
+    { id: user._id, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
 
+  res.cookie("token", token, {
+    secure: true,
+  });
+
   return res.json({
-    token,
     user: {
       id: user._id,
       username: user.username,
       email: user.email,
       phoneNumber: user.phoneNumber,
-      role: user.userType,
+      role: user.role,
     },
   });
+});
+
+// Logout route
+const logout = catchAsync(async (req, res, next) => {
+  const authHeader = req.header("Authorization");
+  const token = authHeader.split(" ")[1];
+
+  const invalidToken = new InvalidToken({
+    token: token,
+  });
+
+  await invalidToken.save();
+
+  return res
+    .status(200)
+    .json({ message: "Logged Out Successfully", invalidToken });
 });
 
 module.exports = {
@@ -120,4 +141,5 @@ module.exports = {
   login,
   verifyEmail,
   verifyOTP,
+  logout,
 };

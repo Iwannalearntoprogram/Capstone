@@ -1,122 +1,252 @@
-// import React from "react";
-
-// function AboutPage (){
-//     return (
-//         <div>
-            
-//             <h1>About Us </h1>
-//             <p>
-//         Welcome to Eli's Website, where innovation meets purpose. We are a passionate team dedicated to creating solutions that enhance everyday 
-//         life through technology. Our mission is to develop intuitive, user-friendly web and mobile applications that address real-world 
-//         challenges and empower individuals and businesses alike. At React, we value creativity, integrity, and excellence. Whether it's 
-//         improving efficiency, promoting sustainability, or fostering seamless digital experiences, we strive to make a meaningful impact
-//          with every project we build.</p>
-//         </div>
-        
-
-//     );
-// }
-
-// export default AboutPage;
-
-
-// import React, { useState } from 'react';
-// import Navbar from '../components/Navbar';
-// import Sidebar from '../components/Sidebar';
-
-// const AboutPage = () => {
-//   const [sidebarOpen, setSidebarOpen] = useState(true);
-//   const toggleSidebar = () => setSidebarOpen(prev => !prev);
-
-//   return (
-//     <div>
-//       {/* <Navbar toggleSidebar={toggleSidebar} />
-//       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} /> */}
-
-//       <main className="">
-//         <h1 className="">Projects page</h1>
-//         <p>Estetika's Projects</p>
-//       </main>
-//     </div>
-//   );
-// };
-
-// export default AboutPage;
-
-import React, { useState } from 'react';
-import SubNavbarProjects from '../components/SubNavbarProjects'; // Import SubNavbar
-import '../styles/Projects.css';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaSearch } from "react-icons/fa";
+import SubNavbarProjects from "../components/SubNavbarProjects";
+import Cookies from "js-cookie";
+import axios from "axios";
+import ProjectCard from "../components/project/ProjectCard";
 
 const ProjectsPage = () => {
-  // Sample project data (you can replace this with data from your backend later)
-  const [projects] = useState([
-    {
-      id: 1,
-      title: 'Redesign Website',
-      description: 'A complete redesign of the company website.',
-      status: 'In Progress',
-      deadline: 'May 31, 2025',
-      assignedTo: 'Jane Doe',
-    },
-    {
-      id: 2,
-      title: 'Mobile App UI/UX',
-      description: 'Design the UI/UX for a mobile application.',
-      status: 'Pending',
-      deadline: 'June 15, 2025',
-      assignedTo: 'John Smith',
-    },
-    {
-      id: 3,
-      title: 'Landing Page Design',
-      description: 'Design a landing page for a new product launch.',
-      status: 'Completed',
-      deadline: 'April 30, 2025',
-      assignedTo: 'Alice Brown',
-    },
-    {
-      id: 4,
-      title: 'Landing Page Design',
-      description: 'Design a landing page for a new product launch.',
-      status: 'Completed',
-      deadline: 'April 30, 2025',
-      assignedTo: 'Alice Brown',
-    },
-  ]);
+  const token = Cookies.get("token");
+  const id = localStorage.getItem("id");
+  const [projects, setProjects] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [filteredProjects, setFilteredProjects] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [newProject, setNewProject] = useState({
+    title: "",
+    description: "",
+    budget: "",
+    startDate: "",
+    endDate: "",
+  });
+
+  const navigate = useNavigate();
+
+  const handleProjectClick = (projectId) => {
+    navigate(`/projects/${projectId}/tasks`);
+  };
+
+  const handleDeleteProject = async (projectId) => {
+    if (!window.confirm("Are you sure you want to delete this project?"))
+      return;
+    try {
+      await axios.delete(`http://localhost:3000/api/project?id=${projectId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setProjects((prev) => prev.filter((p) => p._id !== projectId));
+      setFilteredProjects((prev) => prev.filter((p) => p._id !== projectId));
+    } catch (err) {
+      alert("Failed to delete project.");
+    }
+  };
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const response = await axios.get(
+        `http://localhost:3000/api/project?projectCreator=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setProjects(response.data.project);
+      setFilteredProjects(response.data.project);
+    };
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    if (!searchTerm) {
+      setFilteredProjects(projects);
+    } else {
+      setFilteredProjects(
+        projects.filter((project) =>
+          project.title.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    }
+  }, [searchTerm, projects]);
+
+  const handleAddProject = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(
+        "http://localhost:3000/api/project",
+        {
+          ...newProject,
+          budget: Number(newProject.budget),
+          projectCreator: id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setShowModal(false);
+      setNewProject({
+        title: "",
+        description: "",
+        budget: "",
+        startDate: "",
+        endDate: "",
+      });
+
+      const response = await axios.get(
+        `http://localhost:3000/api/project?projectCreator=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setProjects(response.data.project);
+      setFilteredProjects(response.data.project);
+    } catch (err) {
+      alert("Failed to add project.");
+    }
+  };
 
   return (
-    <div>
-      {/* <SubNavbarProjects /> SubNavbar component */}
-
-      {/* Page Heading */}
-      <div className="projects-header">
-        <h1>Projects</h1>
-        <p>Estetika's Ongoing and Completed Projects</p>
-      </div>
-
-      {/* Projects Overview Section */}
-      <div className="projects-overview">
-        <h2>Projects Overview</h2>
-        <div className="projects-list">
-          {projects.map((project) => (
-            <div key={project.id} className="project-card">
-              <h3>{project.title}</h3>
-              <p>{project.description}</p>
-              <div className="project-details">
-                <span><strong>Status:</strong> {project.status}</span>
-                <span><strong>Deadline:</strong> {project.deadline}</span>
-                <span><strong>Assigned To:</strong> {project.assignedTo}</span>
-              </div>
-              <button className="view-project-button" onClick={() => alert(`View details of ${project.title}`)}>
-                View Project Details
+    <div className="px-4 py-8 mx-auto">
+      {showModal && (
+        <div className="fixed inset-0 bg-black/20 bg-opacity-40 flex items-center justify-center z-50 backdrop-blur-xs">
+          <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-md relative">
+            <button
+              className="absolute top-2 right-4 text-gray-500 text-2xl"
+              onClick={() => setShowModal(false)}
+            >
+              &times;
+            </button>
+            <h2 className="text-xl font-bold mb-4">Add New Project</h2>
+            <form onSubmit={handleAddProject} className="flex flex-col gap-4">
+              {/* ...form fields... */}
+              <label className="">
+                Project Title
+                <input
+                  type="text"
+                  placeholder="Project Title"
+                  className="border rounded p-2 mt-1 w-full"
+                  value={newProject.title}
+                  onChange={(e) =>
+                    setNewProject((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+              <label className="">
+                Description
+                <textarea
+                  placeholder="Description"
+                  className="border rounded p-2 mt-1 w-full"
+                  value={newProject.description}
+                  onChange={(e) =>
+                    setNewProject((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+              <label className="">
+                Budget
+                <input
+                  type="number"
+                  placeholder="Budget"
+                  className="border rounded p-2 mt-1 w-full"
+                  value={newProject.budget}
+                  onChange={(e) =>
+                    setNewProject((prev) => ({
+                      ...prev,
+                      budget: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+              <label className="">
+                Start Date
+                <input
+                  type="date"
+                  className="border rounded p-2 mt-1 w-full"
+                  value={newProject.startDate}
+                  onChange={(e) =>
+                    setNewProject((prev) => ({
+                      ...prev,
+                      startDate: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+              <label className="">
+                End Date
+                <input
+                  type="date"
+                  className="border rounded p-2 mt-1 w-full"
+                  value={newProject.endDate}
+                  onChange={(e) =>
+                    setNewProject((prev) => ({
+                      ...prev,
+                      endDate: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </label>
+              <button
+                type="submit"
+                className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition"
+              >
+                Add Project
               </button>
-            </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* projects */}
+      <div className="projects-overview">
+        <div className="flex justify-end mb-4">
+          <div className="flex items-center gap-2 w-full max-w-sm  border rounded-full px-3 py-2 shadow-sm">
+            <FaSearch className="text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search"
+              className="w-full outline-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredProjects.map((project) => (
+            <ProjectCard
+              key={project._id}
+              project={project}
+              onView={handleProjectClick}
+              onDelete={handleDeleteProject}
+            />
           ))}
+
+          <div
+            className="bg-white/40 border rounded-xl p-6 shadow-md flex flex-col items-center justify-center cursor-pointer hover:bg-white/60"
+            onClick={() => setShowModal(true)}
+          >
+            <p className="text-gray-500">Add a Project</p>
+            <div className="text-2xl font-bold text-gray-700">+</div>
+          </div>
         </div>
       </div>
-
-      {/* Add a section for any other content you'd like, such as project actions */}
-      
     </div>
   );
 };
