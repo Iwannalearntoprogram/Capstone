@@ -27,6 +27,8 @@ function Inbox() {
   const selectedUserRef = useRef(selectedUser);
   const userIdRef = useRef(userId);
 
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
+
   useEffect(() => {
     selectedUserRef.current = selectedUser;
     userIdRef.current = userId;
@@ -53,14 +55,11 @@ function Inbox() {
   const fetchUsers = async () => {
     if (!userId) return;
     try {
-      const res = await axios.get(
-        `http://localhost:3000/api/user?exclude=${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.get(`${serverUrl}/api/user?exclude=${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setUsers(res.data);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -83,7 +82,7 @@ function Inbox() {
   const fetchMessages = async (user) => {
     try {
       const res = await axios.get(
-        `http://localhost:3000/api/message?user1=${userId}&user2=${user._id}`,
+        `${serverUrl}/api/message?user1=${userId}&user2=${user._id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
