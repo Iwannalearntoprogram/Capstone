@@ -14,6 +14,11 @@ const messageSchema = new mongoose.Schema({
     enum: ["sent", "delivered", "read"],
     default: "sent",
   },
+  file: {
+    url: { type: String },
+    type: { type: String },
+    name: { type: String },
+  },
   lastSeen: {
     type: Date,
   },

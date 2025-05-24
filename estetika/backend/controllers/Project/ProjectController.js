@@ -125,7 +125,6 @@ const project_post = catchAsync(async (req, res, next) => {
     startDate,
     endDate,
     files,
-    members,
     tasks,
     timeline,
     roomType,
@@ -143,11 +142,6 @@ const project_post = catchAsync(async (req, res, next) => {
     return next(new AppError("Cannot create project, missing title.", 400));
   }
 
-  const membersArray = Array.isArray(members) ? members : [];
-  if (!membersArray.includes(projectCreator)) {
-    membersArray.push(projectCreator);
-  }
-
   const newProject = new Project({
     title,
     description,
@@ -155,7 +149,6 @@ const project_post = catchAsync(async (req, res, next) => {
     startDate,
     endDate,
     files,
-    members: membersArray,
     tasks,
     timeline,
     projectCreator,
@@ -201,16 +194,14 @@ const project_put = catchAsync(async (req, res, next) => {
   if (!id) return next(new AppError("Project identifier not found", 400));
 
   const project = await Project.findById(id);
-
-  if (!project) {
+  if (!project)
     return next(new AppError("Project not found. Invalid Project ID.", 404));
-  }
 
+  console.log(req.body);
   let updates = {};
-
   if (title) updates.title = title;
   if (description) updates.description = description;
-  if (budget) updates.budget = budget;
+  if (budget !== undefined) updates.budget = budget;
   if (startDate) updates.startDate = startDate;
   if (endDate) updates.endDate = endDate;
   if (files) updates.files = files;
@@ -219,21 +210,20 @@ const project_put = catchAsync(async (req, res, next) => {
   if (timeline) updates.timeline = timeline;
   if (status) updates.status = status;
   if (roomType) updates.roomType = roomType;
-  if (projectSize) updates.projectSize = projectSize;
+  if (projectSize !== undefined) updates.projectSize = projectSize;
   if (projectLocation) updates.projectLocation = projectLocation;
   if (designInspo) updates.designInspo = designInspo;
+  console.log(updates);
 
   const updatedProject = await Project.findByIdAndUpdate(id, updates, {
     new: true,
   });
 
-  if (!updatedProject) {
-    return next(new AppError("Project not found", 404));
-  }
+  if (!updatedProject) return next(new AppError("Project not found", 404));
 
   return res
     .status(200)
-    .json({ message: "Project Updated Successfully", updatedProject, project });
+    .json({ message: "Project Updated Successfully", updatedProject });
 });
 
 // Delete Project

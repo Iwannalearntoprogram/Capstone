@@ -23,6 +23,13 @@ const allowedDocumentTypes = [
   "application/csv",
 ];
 
+const allowedImageTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
+
 const firebaseConfig = {
   storageBucket: process.env.FIREBASE_STORAGEBUCKET,
 };
@@ -162,7 +169,59 @@ const document_post = catchAsync(async (req, res, next) => {
   });
 });
 
+const message_file_post = catchAsync(async (req, res, next) => {
+  if (!req.file) {
+    return next(new AppError("No file uploaded", 400));
+  }
+
+  const isImage = allowedImageTypes.includes(req.file.mimetype);
+  const isDocument = allowedDocumentTypes.includes(req.file.mimetype);
+
+  if (!isImage && !isDocument) {
+    return next(
+      new AppError(
+        "File type not allowed. Only images and supported documents are allowed.",
+        400
+      )
+    );
+  }
+
+  const userId = req.id;
+  initializeApp(firebaseConfig);
+  const storage = getStorage();
+
+  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+  const folder = isImage ? "message-images" : "message-documents";
+  const storageRef = ref(
+    storage,
+    `${folder}/${userId}/${req.file.originalname}-${uniqueSuffix}`
+  );
+
+  const metadata = {
+    contentType: req.file.mimetype,
+  };
+
+  const snapshot = await uploadBytesResumable(
+    storageRef,
+    req.file.buffer,
+    metadata
+  );
+
+  const downloadURL = await getDownloadURL(snapshot.ref);
+
+  if (!downloadURL) {
+    return next(new AppError("Failed to upload file", 500));
+  }
+
+  return res.status(200).json({
+    message: "File uploaded successfully!",
+    fileLink: downloadURL,
+    fileType: req.file.mimetype,
+  });
+});
+
 module.exports = {
   image_post,
   document_post,
+  message_file_post
 };

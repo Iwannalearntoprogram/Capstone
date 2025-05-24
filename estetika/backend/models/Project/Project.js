@@ -32,7 +32,7 @@ const projectSchema = new mongoose.Schema(
         "Whole House",
         "Commercial Space",
       ],
-      default: "pending",
+      default: "Living Room",
     },
     projectSize: Number,
     projectLocation: String,
