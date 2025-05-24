@@ -6,18 +6,14 @@ export const useAuthStore = create((set) => ({
   user: null,
   token: null,
 
-  login: async (email, password) => {
+  login: async (email, password, URL) => {
     const formData = { email, password };
 
     try {
       set({ isLoading: true });
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
-        formData,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.post(`${URL}/api/auth/login`, formData, {
+        withCredentials: true,
+      });
       console.log("Login response: ", response);
       const data = response.data;
       const token = Cookies.get("token");
