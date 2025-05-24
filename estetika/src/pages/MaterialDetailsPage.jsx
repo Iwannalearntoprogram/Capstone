@@ -13,7 +13,6 @@ export default function MaterialDetailsPage() {
   const { id } = useParams();
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-10 py-10">
-      {/* Images */}
       <div className="flex gap-4">
         <div className="flex flex-col gap-4">
           <img

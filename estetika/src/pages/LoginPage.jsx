@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import logo from "../assets/images/logo-moss-2.png";
 import marbleBg from "../assets/images/white-marble-bg.png";
-import { useAuthStore } from "../store/AuthStore"; // Import your AuthStore
+import { useAuthStore } from "../store/AuthStore";
+
+const URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 
 function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -25,10 +27,9 @@ function LoginPage() {
     setError("");
     setIsSubmitting(true);
 
-    const result = await login(formData.email, formData.password);
+    const result = await login(formData.email, formData.password, URL);
 
     setIsSubmitting(false);
-    console.log(result);
     if (result.success) {
       navigate("/home");
     } else {
