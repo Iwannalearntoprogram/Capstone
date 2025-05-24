@@ -50,7 +50,7 @@ app.use(
 app.use(hpp()); // prevent paramater pollution
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
   })
 ); // Cross Origin Resource Sharing
