@@ -5,30 +5,30 @@ const catchAsync = require("../../utils/catchAsync");
 const { generateEmbedding } = require("../../utils/embed");
 const { openai } = require("../../utils/openaiClient");
 
-
 // Get Material by Id or DesignerId
 const material_get = catchAsync(async (req, res, next) => {
   const { id, designerId } = req.query;
 
   let material;
 
-  if (!id && !designerId)
-    return next(new AppError("Material identifier not found", 400));
-
-  id
-    ? (material = await Material.findById(id).populate(
-        "designerId",
-        "-password"
-      ))
-    : (material = await Material.find({ designerId }).populate(
-        "designerId",
-        "-password"
-      ));
-
-  if (!material)
-    return next(
-      new AppError("Material not found. Invalid Material Identifier.", 404)
+  if (id) {
+    material = await Material.findById(id).populate("designerId", "-password");
+    if (!material)
+      return next(
+        new AppError("Material not found. Invalid Material Identifier.", 404)
+      );
+  } else if (designerId) {
+    material = await Material.find({ designerId }).populate(
+      "designerId",
+      "-password"
     );
+    if (!material || material.length === 0)
+      return next(
+        new AppError("Material not found. Invalid Material Identifier.", 404)
+      );
+  } else {
+    material = await Material.find().populate("designerId", "-password");
+  }
 
   return res
     .status(200)
@@ -58,8 +58,18 @@ const material_post = catchAsync(async (req, res, next) => {
     return next(new AppError("Cannot create material, missing fields.", 400));
   }
 
+  if (
+    !Array.isArray(price) ||
+    !Array.isArray(options) ||
+    price.length !== options.length
+  ) {
+    return next(
+      new AppError("Price must be an array matching options length.", 400)
+    );
+  }
+
   const embedding = await generateEmbedding(`${name} ${description}`);
-  
+
   const newMaterial = new Material({
     designerId,
     name,
@@ -109,11 +119,25 @@ const material_put = catchAsync(async (req, res, next) => {
 
   if (name) updates.name = name;
   if (company) updates.company = company;
-  if (price) updates.price = price;
   if (description) updates.description = description;
   if (image) updates.image = image;
-  if (options) updates.options = options;
   if (category) updates.category = category;
+
+  if (options || price) {
+    const newOptions = options || material.options;
+    const newPrice = price || material.price;
+    if (
+      !Array.isArray(newOptions) ||
+      !Array.isArray(newPrice) ||
+      newOptions.length !== newPrice.length
+    ) {
+      return next(
+        new AppError("Price must be an array matching options length.", 400)
+      );
+    }
+    updates.options = newOptions;
+    updates.price = newPrice;
+  }
 
   const updatedMaterial = await Material.findByIdAndUpdate(id, updates, {
     new: true,
@@ -152,10 +176,12 @@ const material_delete = catchAsync(async (req, res, next) => {
 });
 
 const vector_search = catchAsync(async (req, res) => {
-  const { query } = req.query;
+  const { query, max } = req.query;
 
   if (!query) return res.status(400).json({ error: "Query is required." });
+  if (!max) return res.status(400).json({ error: "Max is required." });
 
+  const maxInt = parseInt(max, 10);
   const vector = await generateEmbedding(query);
 
   const results = await Material.aggregate([
@@ -164,7 +190,7 @@ const vector_search = catchAsync(async (req, res) => {
         queryVector: vector,
         path: "embedding",
         numCandidates: 100,
-        limit: 20,
+        limit: maxInt,
         index: "materials_search",
       },
     },
@@ -190,7 +216,7 @@ const vector_search = catchAsync(async (req, res) => {
           sanitized,
           null,
           2
-        )}\n\nReturn only the relevant ones as a JSON array.`,
+        )}\n\nReturn only the relevant ones as a JSON array. . Do not include any markdown formatting.`,
       },
     ],
     temperature: 0.2,
@@ -204,7 +230,6 @@ const vector_search = catchAsync(async (req, res) => {
     candidates: sanitized,
   });
 });
-
 
 module.exports = {
   material_get,

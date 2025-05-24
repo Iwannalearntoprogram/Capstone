@@ -11,11 +11,12 @@ const notificationSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["assigned", "overdue", "phase-started"],
+      enum: ["assigned", "overdue", "phase-started", "alarm"],
     },
     task: { type: mongoose.Schema.Types.ObjectId, ref: "Task" },
     project: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
     phase: { type: mongoose.Schema.Types.ObjectId, ref: "Phase" },
+    event: { type: mongoose.Schema.Types.ObjectId, ref: "Event" },
     read: { type: Boolean, default: false },
   },
   { timestamps: true }

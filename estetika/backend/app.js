@@ -17,7 +17,6 @@ const fileRoute = require("./routes/Project/fileRoute");
 const materialRoute = require("./routes/Project/materialRoute");
 const phaseRoute = require("./routes/Project/phaseRoute");
 const projectRoute = require("./routes/Project/projectRoute");
-const subPhaseRoute = require("./routes/Project/subPhaseRoute");
 const taskRoute = require("./routes/Project/taskRoute");
 
 // utility
@@ -26,6 +25,7 @@ const AppError = require("./utils/appError");
 const checkAuth = require("./utils/checkAuth");
 const globalErrorHandler = require("./controllers/utils/ErrorController");
 const {
+  checkEventAlarms,
   checkOverdueTasks,
   checkPhaseStart,
 } = require("./utils/cronJobNotification");
@@ -50,7 +50,7 @@ app.use(
 app.use(hpp()); // prevent paramater pollution
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
   })
 ); // Cross Origin Resource Sharing
@@ -74,7 +74,6 @@ app.use("/api/upload", checkAuth, fileRoute);
 app.use("/api/material", checkAuth, materialRoute);
 app.use("/api/phase", checkAuth, phaseRoute);
 app.use("/api/project", checkAuth, projectRoute);
-app.use("/api/subphase", checkAuth, subPhaseRoute);
 app.use("/api/task", checkAuth, taskRoute);
 
 // utility
@@ -89,6 +88,7 @@ app.use(globalErrorHandler);
 
 // cron job
 cron.schedule("0 * * * *", () => {
+  checkEventAlarms();
   checkOverdueTasks();
   checkPhaseStart();
 });

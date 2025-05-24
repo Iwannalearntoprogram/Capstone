@@ -6,7 +6,7 @@ const Message = require("../models/User/Message");
 const initSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL,
+      origin: true,
       methods: ["GET", "POST"],
     },
   });
@@ -65,6 +65,40 @@ const initSocket = (server) => {
         console.error("Error in send_private_message:", err.message);
       }
     });
+
+    socket.on(
+      "send_private_file",
+      async ({ recipientId, fileLink, fileType, fileName }) => {
+        try {
+          const sender = socket.user;
+          const recipientUser = await User.findById(recipientId);
+          if (!recipientUser) return;
+
+          const message = await Message.create({
+            sender: sender._id,
+            recipient: recipientUser._id,
+            file: {
+              url: fileLink,
+              type: fileType,
+              name: fileName,
+            },
+          });
+
+          if (recipientUser.socketId) {
+            io.to(recipientUser.socketId).emit("receive_private_file", {
+              sender: sender._id,
+              fileLink,
+              fileType,
+              fileName,
+              timestamp: message.timestamp,
+            });
+          }
+        } catch (err) {
+          console.error("Error in send_private_file:", err.message);
+          socket.emit("file_error", "Failed to send file");
+        }
+      }
+    );
 
     socket.on("mark_as_read", async ({ messageId }) => {
       try {
