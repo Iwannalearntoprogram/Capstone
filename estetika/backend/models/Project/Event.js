@@ -15,6 +15,10 @@ const eventSchema = new mongoose.Schema(
     notes: String,
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     recepient: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
+    notified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
