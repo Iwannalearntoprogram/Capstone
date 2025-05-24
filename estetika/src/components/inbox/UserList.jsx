@@ -56,7 +56,6 @@ const UserList = ({ users, selectedUser, onSelect }) => {
             }`}
             onClick={() => onSelect(user)}
           >
-            {/* Avatar */}
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm mr-3 ${getAvatarColor(
                 userName
@@ -64,8 +63,6 @@ const UserList = ({ users, selectedUser, onSelect }) => {
             >
               {getInitials(user)}
             </div>
-
-            {/* User Info */}
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-gray-900 text-sm mb-0.5">
                 {userName}
@@ -74,11 +71,8 @@ const UserList = ({ users, selectedUser, onSelect }) => {
                 {getPreviewMessage(user)}
               </div>
             </div>
-
-            {/* Meta Info */}
             <div className="flex flex-col items-end gap-1 ml-2">
               <div className="text-xs text-gray-400">{formatTime()}</div>
-              {/* Online Status */}
               <div
                 className={`w-2 h-2 rounded-full ${
                   user.socketId ? "bg-green-400" : "bg-gray-300"

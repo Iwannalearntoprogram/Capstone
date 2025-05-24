@@ -21,8 +21,9 @@ function Inbox() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
+  const [search, setSearch] = useState("");
+  const [filteredUsers, setFilteredUsers] = useState([]);
 
-  // Use refs to access latest values inside socket listeners
   const selectedUserRef = useRef(selectedUser);
   const userIdRef = useRef(userId);
 
@@ -39,20 +40,16 @@ function Inbox() {
     });
     fetchUsers();
 
-    // Listen for real-time user list updates
     socket.on("update_user_list", (updatedUsers) => {
-      // Filter out the current user from the list
       const filteredUsers = updatedUsers.filter((user) => user._id !== userId);
       setUsers(filteredUsers);
     });
 
-    // Cleanup socket listeners on unmount
     return () => {
       socket.off("update_user_list");
     };
   }, [userId]);
 
-  // Fetch users from backend
   const fetchUsers = async () => {
     if (!userId) return;
     try {
@@ -70,7 +67,19 @@ function Inbox() {
     }
   };
 
-  // Fetch messages from backend
+  useEffect(() => {
+    if (!search) {
+      setFilteredUsers(users);
+    } else {
+      setFilteredUsers(
+        users.filter((user) => {
+          const name = user.firstName || user.fullName || user.username || "";
+          return name.toLowerCase().includes(search.toLowerCase());
+        })
+      );
+    }
+  }, [search, users]);
+
   const fetchMessages = async (user) => {
     try {
       const res = await axios.get(
@@ -87,13 +96,11 @@ function Inbox() {
     }
   };
 
-  // When user is selected, fetch messages
   const handleUserSelect = (user) => {
     setSelectedUser(user);
     fetchMessages(user);
   };
 
-  // Send message via socket and update local state
   const sendMessage = () => {
     if (!content || !selectedUser) return;
     socket.emit("send_private_message", {
@@ -111,8 +118,6 @@ function Inbox() {
   useEffect(() => {
     const handleMessage = (msg) => {
       const selected = selectedUserRef.current;
-
-      // Append message if it's from the currently selected user
       if (msg.sender === selected?._id) {
         setMessages((prev) => [...prev, msg]);
       }
@@ -133,12 +138,14 @@ function Inbox() {
             type="text"
             placeholder="Search"
             className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm outline-none focus:border-blue-500"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto ">
+        <div className="flex-1 overflow-y-auto">
           <UserList
-            users={users}
+            users={filteredUsers}
             selectedUser={selectedUser}
             onSelect={handleUserSelect}
           />
