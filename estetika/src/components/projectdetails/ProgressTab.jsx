@@ -129,6 +129,7 @@ function ProgressTab() {
       );
       setShowModal(false);
       setPhaseForm({ title: "", startDate: "", endDate: "" });
+      location.reload();
     } catch (err) {
       alert("Failed to add phase.");
     }

@@ -73,6 +73,18 @@ export default function Column({ column, tasks, project }) {
     }, 300);
   };
 
+  // Find the selected phase object
+  const selectedPhase = Array.isArray(project?.timeline)
+    ? project.timeline.find((p) => p._id === newTask.phaseId)
+    : null;
+
+  const phaseStart = selectedPhase?.startDate
+    ? new Date(selectedPhase.startDate).toISOString().slice(0, 10)
+    : "";
+  const phaseEnd = selectedPhase?.endDate
+    ? new Date(selectedPhase.endDate).toISOString().slice(0, 10)
+    : "";
+
   return (
     <div className="flex-1 rounded-xl flex flex-col">
       <h3 className="bg-[#eac5b1] p-4 py-2 font-bold rounded-tl-xl rounded-tr-xl">
@@ -121,6 +133,24 @@ export default function Column({ column, tasks, project }) {
         ariaHideApp={false}
       >
         <h2 className="text-lg font-semibold mb-4">Add Task</h2>
+        <label className="block mb-2">Phase:</label>
+        <select
+          value={newTask.phaseId}
+          onChange={(e) => setNewTask({ ...newTask, phaseId: e.target.value })}
+          className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+        >
+          {Array.isArray(project?.timeline) && project.timeline.length > 0 ? (
+            project.timeline.map((phase) => (
+              <option key={phase._id} value={phase._id}>
+                {phase.title}
+              </option>
+            ))
+          ) : (
+            <option value="">
+              Please create a Phase first in progress tab
+            </option>
+          )}
+        </select>
         <label className="block mb-2">Task:</label>
         <input
           type="text"
@@ -144,6 +174,8 @@ export default function Column({ column, tasks, project }) {
         <input
           type="date"
           value={newTask.startDate || ""}
+          min={phaseStart}
+          max={phaseEnd}
           onChange={(e) =>
             setNewTask({ ...newTask, startDate: e.target.value })
           }
@@ -154,6 +186,8 @@ export default function Column({ column, tasks, project }) {
         <input
           type="date"
           value={newTask.endDate || ""}
+          min={phaseStart}
+          max={phaseEnd}
           onChange={(e) => setNewTask({ ...newTask, endDate: e.target.value })}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
@@ -172,24 +206,6 @@ export default function Column({ column, tasks, project }) {
             </option>
           ))}
         </select> */}
-        <label className="block mb-2">Phase:</label>
-        <select
-          value={newTask.phaseId}
-          onChange={(e) => setNewTask({ ...newTask, phaseId: e.target.value })}
-          className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
-        >
-          {Array.isArray(project?.timeline) && project.timeline.length > 0 ? (
-            project.timeline.map((phase) => (
-              <option key={phase._id} value={phase._id}>
-                {phase.title}
-              </option>
-            ))
-          ) : (
-            <option value="">
-              Please create a Phase first in progress tab
-            </option>
-          )}
-        </select>
 
         <div className="flex justify-end gap-2">
           <button
