@@ -2,6 +2,56 @@ const Notification = require("../models/utils/Notification");
 const Task = require("../models/Project/Task");
 const Phase = require("../models/Project/Phase");
 const Project = require("../models/Project/Project");
+const Event = require("../models/Project/Event");
+
+const checkEventAlarms = async () => {
+  console.log("Checking for event alarms...");
+  const now = new Date();
+  const events = await Event.find({
+    alarm: { $lte: now, $ne: null },
+    notified: false,
+  });
+
+  for (const event of events) {
+    // Notify the main user
+    if (event.userId) {
+      const existing = await Notification.findOne({
+        recipient: event.userId,
+        event: event._id,
+        type: "alarm",
+      });
+      if (!existing) {
+        await Notification.create({
+          recipient: event.userId,
+          message: `Event "${event.title}" alarm time reached.`,
+          type: "alarm",
+          event: event._id,
+        });
+      }
+    }
+    // Notify recipients
+    if (event.recepient && event.recepient.length > 0) {
+      console.log("Notifying recipients for event:", event.title);
+      for (const userId of event.recepient) {
+        const existing = await Notification.findOne({
+          recipient: userId,
+          event: event._id,
+          type: "alarm",
+        });
+        if (!existing) {
+          await Notification.create({
+            recipient: userId,
+            message: `Reminder for Event "${event.title}".`,
+            type: "alarm",
+            event: event._id,
+          });
+        }
+      }
+    }
+    event.notified = true;
+    await event.save();
+  }
+};
 
 const checkOverdueTasks = async () => {
   const now = new Date();
@@ -69,4 +119,4 @@ const checkPhaseStart = async () => {
   }
 };
 
-module.exports = { checkOverdueTasks, checkPhaseStart };
+module.exports = { checkEventAlarms, checkOverdueTasks, checkPhaseStart };

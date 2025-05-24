@@ -25,6 +25,7 @@ const AppError = require("./utils/appError");
 const checkAuth = require("./utils/checkAuth");
 const globalErrorHandler = require("./controllers/utils/ErrorController");
 const {
+  checkEventAlarms,
   checkOverdueTasks,
   checkPhaseStart,
 } = require("./utils/cronJobNotification");
@@ -86,7 +87,8 @@ app.all("/{*splat}", (req, res, next) => {
 app.use(globalErrorHandler);
 
 // cron job
-cron.schedule("0 * * * *", () => {
+cron.schedule("* * * * *", () => {
+  checkEventAlarms();
   checkOverdueTasks();
   checkPhaseStart();
 });

@@ -2,6 +2,7 @@ const Event = require("../../models/Project/Event");
 const User = require("../../models/User/User");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
+const Notification = require("../../models/utils/Notification");
 
 // Get Event by Id or UserId
 const event_get = catchAsync(async (req, res, next) => {
@@ -13,9 +14,13 @@ const event_get = catchAsync(async (req, res, next) => {
     return next(new AppError("Event identifier not found", 400));
 
   if (id) {
-    event = await Event.findById(id).populate("userId", "-password");
+    event = await Event.findById(id)
+      .populate("userId", "-password")
+      .populate("recepient", "-password");
   } else {
-    event = await Event.find({ userId }).populate("userId", "-password");
+    event = await Event.find({ userId })
+      .populate("userId", "-password")
+      .populate("recepient", "-password");
   }
 
   if (!event)
@@ -35,10 +40,10 @@ const event_post = catchAsync(async (req, res, next) => {
     startDate,
     endDate,
     location,
-    repeat,
     color,
     file,
     notes,
+    recepient,
   } = req.body;
 
   const isUserValid = await User.findById(userId);
@@ -50,6 +55,15 @@ const event_post = catchAsync(async (req, res, next) => {
     return next(new AppError("Cannot create event, missing title.", 400));
   }
 
+  // Ensure recepient is an array and includes userId
+  let recipients = [];
+  if (recepient) {
+    recipients = Array.isArray(recepient) ? recepient : [recepient];
+  }
+  if (!recipients.includes(userId.toString())) {
+    recipients.push(userId.toString());
+  }
+
   const newEvent = new Event({
     userId,
     title,
@@ -57,13 +71,23 @@ const event_post = catchAsync(async (req, res, next) => {
     startDate,
     endDate,
     location,
-    repeat,
     color,
     file,
     notes,
+    recepient: recipients,
   });
 
   await newEvent.save();
+
+  if (recipients.length > 0) {
+    const notifications = recipients.map((recipientId) => ({
+      recipient: recipientId,
+      message: `You have been assigned a new event: ${title}`,
+      type: "assigned",
+      event: newEvent._id,
+    }));
+    await Notification.insertMany(notifications);
+  }
 
   return res
     .status(200)
@@ -79,10 +103,10 @@ const event_put = catchAsync(async (req, res, next) => {
     startDate,
     endDate,
     location,
-    repeat,
     color,
     file,
     notes,
+    recepient,
   } = req.body;
 
   if (!id) return next(new AppError("Event identifier not found", 400));
@@ -93,10 +117,10 @@ const event_put = catchAsync(async (req, res, next) => {
     !startDate &&
     !endDate &&
     !location &&
-    !repeat &&
     !color &&
     !file &&
-    !notes
+    !notes &&
+    !recepient
   ) {
     return next(new AppError("No data to update", 400));
   }
@@ -114,10 +138,10 @@ const event_put = catchAsync(async (req, res, next) => {
   if (startDate) updates.startDate = startDate;
   if (endDate) updates.endDate = endDate;
   if (location) updates.location = location;
-  if (repeat !== undefined) updates.repeat = repeat;
   if (color) updates.color = color;
   if (file) updates.file = file;
   if (notes) updates.notes = notes;
+  if (recepient) updates.recepient = recepient;
 
   const updatedEvent = await Event.findByIdAndUpdate(id, updates, {
     new: true,
