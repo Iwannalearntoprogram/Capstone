@@ -17,7 +17,6 @@ const fileRoute = require("./routes/Project/fileRoute");
 const materialRoute = require("./routes/Project/materialRoute");
 const phaseRoute = require("./routes/Project/phaseRoute");
 const projectRoute = require("./routes/Project/projectRoute");
-const subPhaseRoute = require("./routes/Project/subPhaseRoute");
 const taskRoute = require("./routes/Project/taskRoute");
 
 // utility
@@ -74,7 +73,6 @@ app.use("/api/upload", checkAuth, fileRoute);
 app.use("/api/material", checkAuth, materialRoute);
 app.use("/api/phase", checkAuth, phaseRoute);
 app.use("/api/project", checkAuth, projectRoute);
-app.use("/api/subphase", checkAuth, subPhaseRoute);
 app.use("/api/task", checkAuth, taskRoute);
 
 // utility
