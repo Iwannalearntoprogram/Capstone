@@ -66,8 +66,9 @@ function ProgressTab() {
   const phases = Array.isArray(project?.timeline) ? project.timeline : [];
   const tasks = Array.isArray(project?.tasks) ? project.tasks : [];
 
-  // --- Fetch overall project progress here ---
   const [overallProgress, setOverallProgress] = useState(undefined);
+
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   useEffect(() => {
     const fetchOverallProgress = async () => {
@@ -75,14 +76,13 @@ function ProgressTab() {
       try {
         const token = Cookies.get("token");
         const response = await axios.get(
-          `http://localhost:3000/api/phase?projectId=${project._id}`,
+          `${serverUrl}/api/phase?projectId=${project._id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        // Calculate average progress from all phases
         const phaseArr = response.data.phase || [];
         if (phaseArr.length > 0) {
           const total = phaseArr.reduce(
@@ -114,7 +114,7 @@ function ProgressTab() {
     setIsSubmitting(true);
     try {
       await axios.post(
-        "http://localhost:3000/api/phase",
+        `${serverUrl}/api/phase`,
         {
           title: phaseForm.title,
           startDate: new Date(phaseForm.startDate).toISOString(),
@@ -129,6 +129,7 @@ function ProgressTab() {
       );
       setShowModal(false);
       setPhaseForm({ title: "", startDate: "", endDate: "" });
+      location.reload();
     } catch (err) {
       alert("Failed to add phase.");
     }
@@ -137,7 +138,6 @@ function ProgressTab() {
 
   return (
     <div className="space-y-8 bg-white rounded-xl shadow p-6">
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/30 h-full flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-md relative">

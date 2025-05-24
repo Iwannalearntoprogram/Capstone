@@ -13,6 +13,8 @@ const Navbar = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const notifRef = useRef();
 
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
+
   // Get user from auth store
   const { user } = useAuthStore();
   const username = user?.fullName || user?.username || "User";
@@ -28,7 +30,7 @@ const Navbar = ({ toggleSidebar }) => {
       try {
         const token = Cookies.get("token");
         const res = await axios.get(
-          `http://localhost:3000/api/user/notification?recipient=${user._id}`,
+          `${serverUrl}/api/user/notification?recipient=${user._id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

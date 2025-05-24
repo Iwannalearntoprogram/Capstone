@@ -8,12 +8,14 @@ function ProjectDetailsPage() {
   const location = useLocation();
   const [project, setProject] = useState(location.state?.project || null);
 
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
+
   const fetchProject = async () => {
     try {
       const projectCreator = localStorage.getItem("id");
       const token = Cookies.get("token");
       const response = await axios.get(
-        `http://localhost:3000/api/project?projectCreator=${projectCreator}&id=${id}`,
+        `${serverUrl}/api/project?projectCreator=${projectCreator}&id=${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
