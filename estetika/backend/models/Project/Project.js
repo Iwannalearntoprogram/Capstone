@@ -20,6 +20,23 @@ const projectSchema = new mongoose.Schema(
       enum: ["pending", "ongoing", "completed", "cancelled"],
       default: "pending",
     },
+    roomType: {
+      type: String,
+      enum: [
+        "Living Room",
+        "Bedroom",
+        "Kitchen",
+        "Bathroom",
+        "Home Office",
+        "Dining Room",
+        "Whole House",
+        "Commercial Space",
+      ],
+      default: "pending",
+    },
+    projectSize: Number,
+    projectLocation: String,
+    designInspo: String,
   },
   {
     timestamps: true,
