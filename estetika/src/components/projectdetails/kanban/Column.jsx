@@ -21,6 +21,8 @@ export default function Column({ column, tasks, project }) {
     phaseId: project?.timeline?.[0]?._id || "",
   });
 
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
+
   const handleSaveTask = async () => {
     console.log("project", project);
     const body = {
@@ -38,7 +40,7 @@ export default function Column({ column, tasks, project }) {
     };
 
     try {
-      await axios.post("http://localhost:3000/api/task", body, {
+      await axios.post(`${serverUrl}/api/task`, body, {
         headers: {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },

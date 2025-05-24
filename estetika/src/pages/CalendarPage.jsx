@@ -27,6 +27,8 @@ const CalendarPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [closing, setClosing] = useState(false);
 
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
+
   const [newEvent, setNewEvent] = useState({
     title: "",
     start: null,
@@ -77,15 +79,11 @@ const CalendarPage = () => {
 
     try {
       const token = Cookies.get("token");
-      const response = await axios.post(
-        "http://localhost:3000/api/event",
-        body,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.post(`${serverUrl}/api/event`, body, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const savedEvent = response.data.event || {
         ...newEvent,
         id: Date.now(),
@@ -128,7 +126,7 @@ const CalendarPage = () => {
         const token = Cookies.get("token");
         const userId = localStorage.getItem("id");
         const response = await axios.get(
-          `http://localhost:3000/api/event?userId=${userId}`,
+          `${serverUrl}/api/event?userId=${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

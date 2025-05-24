@@ -17,7 +17,8 @@ function TasksTab() {
     Array.isArray(project?.tasks) ? project.tasks : []
   );
 
-  // Update tasks state if project.tasks changes
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
+
   useEffect(() => {
     setTasks(Array.isArray(project?.tasks) ? project.tasks : []);
   }, [project?.tasks]);
@@ -38,7 +39,7 @@ function TasksTab() {
     try {
       const token = Cookies.get("token");
       await axios.put(
-        `http://localhost:3000/api/task?id=${taskId}`,
+        `${serverUrl}/api/task?id=${taskId}`,
         { status: newStatus },
         {
           headers: {

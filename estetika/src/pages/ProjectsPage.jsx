@@ -23,6 +23,8 @@ const ProjectsPage = () => {
 
   const navigate = useNavigate();
 
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
+
   const handleProjectClick = (projectId) => {
     navigate(`/projects/${projectId}/tasks`);
   };
@@ -31,7 +33,7 @@ const ProjectsPage = () => {
     if (!window.confirm("Are you sure you want to delete this project?"))
       return;
     try {
-      await axios.delete(`http://localhost:3000/api/project?id=${projectId}`, {
+      await axios.delete(`${serverUrl}/api/project?id=${projectId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -46,7 +48,7 @@ const ProjectsPage = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       const response = await axios.get(
-        `http://localhost:3000/api/project?projectCreator=${id}`,
+        `${serverUrl}/api/project?projectCreator=${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -75,7 +77,7 @@ const ProjectsPage = () => {
     e.preventDefault();
     try {
       await axios.post(
-        "http://localhost:3000/api/project",
+        `${serverUrl}/api/project`,
         {
           ...newProject,
           budget: Number(newProject.budget),
@@ -97,7 +99,7 @@ const ProjectsPage = () => {
       });
 
       const response = await axios.get(
-        `http://localhost:3000/api/project?projectCreator=${id}`,
+        `${serverUrl}/api/project?projectCreator=${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
