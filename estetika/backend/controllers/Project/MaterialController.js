@@ -5,7 +5,6 @@ const catchAsync = require("../../utils/catchAsync");
 const { generateEmbedding } = require("../../utils/embed");
 const { openai } = require("../../utils/openaiClient");
 
-
 // Get Material by Id or DesignerId
 const material_get = catchAsync(async (req, res, next) => {
   const { id, designerId } = req.query;
@@ -59,7 +58,7 @@ const material_post = catchAsync(async (req, res, next) => {
   }
 
   const embedding = await generateEmbedding(`${name} ${description}`);
-  
+
   const newMaterial = new Material({
     designerId,
     name,
@@ -152,10 +151,12 @@ const material_delete = catchAsync(async (req, res, next) => {
 });
 
 const vector_search = catchAsync(async (req, res) => {
-  const { query } = req.query;
+  const { query, max } = req.query;
 
   if (!query) return res.status(400).json({ error: "Query is required." });
+  if (!max) return res.status(400).json({ error: "Max is required." });
 
+  const maxInt = parseInt(max, 10);
   const vector = await generateEmbedding(query);
 
   const results = await Material.aggregate([
@@ -164,7 +165,7 @@ const vector_search = catchAsync(async (req, res) => {
         queryVector: vector,
         path: "embedding",
         numCandidates: 100,
-        limit: 20,
+        limit: maxInt,
         index: "materials_search",
       },
     },
@@ -190,7 +191,7 @@ const vector_search = catchAsync(async (req, res) => {
           sanitized,
           null,
           2
-        )}\n\nReturn only the relevant ones as a JSON array.`,
+        )}\n\nReturn only the relevant ones as a JSON array. . Do not include any markdown formatting.`,
       },
     ],
     temperature: 0.2,
@@ -204,7 +205,6 @@ const vector_search = catchAsync(async (req, res) => {
     candidates: sanitized,
   });
 });
-
 
 module.exports = {
   material_get,
