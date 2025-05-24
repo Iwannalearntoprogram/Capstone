@@ -4,7 +4,14 @@ import socket from "../utils/socket";
 import UserList from "../components/inbox/UserList";
 import ChatWindow from "../components/inbox/ChatWindow";
 import Cookies from "js-cookie";
-import { FiSend } from "react-icons/fi";
+import {
+  FiSend,
+  FiPaperclip,
+  FiMic,
+  FiSmile,
+  FiBell,
+  FiMenu,
+} from "react-icons/fi";
 
 function Inbox() {
   const storedUserId = localStorage.getItem("id");
@@ -31,33 +38,53 @@ function Inbox() {
       }
     });
     fetchUsers();
-  }, []);
+
+    // Listen for real-time user list updates
+    socket.on("update_user_list", (updatedUsers) => {
+      // Filter out the current user from the list
+      const filteredUsers = updatedUsers.filter((user) => user._id !== userId);
+      setUsers(filteredUsers);
+    });
+
+    // Cleanup socket listeners on unmount
+    return () => {
+      socket.off("update_user_list");
+    };
+  }, [userId]);
 
   // Fetch users from backend
   const fetchUsers = async () => {
     if (!userId) return;
-    const res = await axios.get(
-      `http://localhost:3000/api/user?exclude=${userId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    setUsers(res.data);
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/user?exclude=${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setUsers(res.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
   };
 
   // Fetch messages from backend
   const fetchMessages = async (user) => {
-    const res = await axios.get(
-      `http://localhost:3000/api/message?user1=${userId}&user2=${user._id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    setMessages(res.data);
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/message?user1=${userId}&user2=${user._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setMessages(res.data);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
   };
 
   // When user is selected, fetch messages
@@ -99,40 +126,92 @@ function Inbox() {
   }, []);
 
   return (
-    <div className="flex h-screen font-sans">
-      {/* Sidebar */}
-      <div className="w-1/4 pt-6 border-r border-gray-200">
-        <UserList
-          users={users}
-          selectedUser={selectedUser}
-          onSelect={handleUserSelect}
-        />
+    <div className="flex h-screen bg-gray-50 font-sans">
+      <div className="w-1/5 bg-white border-r border-gray-200 flex flex-col pt-12 max-h-full">
+        <div className="p-4 border-b border-gray-100">
+          <input
+            type="text"
+            placeholder="Search"
+            className="w-full px-3 py-2 border border-gray-300 rounded-full text-sm outline-none focus:border-blue-500"
+          />
+        </div>
+
+        <div className="flex-1 overflow-y-auto ">
+          <UserList
+            users={users}
+            selectedUser={selectedUser}
+            onSelect={handleUserSelect}
+          />
+        </div>
       </div>
 
-      {/* Main Chat */}
-      <div className="flex-1 p-6 flex flex-col">
-        <h3 className="font-bold mb-2">
-          Chat with {selectedUser?.userId || "..."}
-        </h3>
-        <div className="flex-1 ">
-          <ChatWindow messages={messages} userId={userId} />
-        </div>
-        <div className="flex gap-2 mt-2 w-1/2 mx-auto">
-          <input
-            className="flex-1 border-1 px-4 border-black/20 rounded-full p-2"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Type message..."
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          />
-          <button
-            className="bg-blue-500 p-2 w-10 h-10 text-white rounded-full pointer-cursor"
-            onClick={sendMessage}
-            aria-label="Send"
-          >
-            <FiSend size={22} />
-          </button>
-        </div>
+      <div className="flex-1 flex flex-col bg-gray-50 mt-12">
+        {selectedUser ? (
+          <>
+            <div className="bg-white px-6 py-4 border-b border-gray-200 flex items-center gap-3">
+              <div className="w-9 h-9 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold">
+                {(selectedUser.firstName ||
+                  selectedUser.fullName ||
+                  selectedUser.username ||
+                  "U")[0].toUpperCase()}
+              </div>
+              <div>
+                <h3 className="font-semibold text-base text-gray-900">
+                  {selectedUser.firstName ||
+                    selectedUser.fullName ||
+                    selectedUser.username}
+                </h3>
+                <span className="text-sm text-gray-500">
+                  {selectedUser.socketId ? "Active now" : "Offline"}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex-1 px-6 py-5">
+              <ChatWindow messages={messages} userId={userId} />
+            </div>
+
+            <div className="bg-white px-6 py-4 border-t border-gray-200">
+              <div className="flex items-center gap-3">
+                <input
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-full text-sm outline-none focus:border-blue-500"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Type message here..."
+                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                />
+                <div className="flex items-center gap-2">
+                  <button className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+                    <FiPaperclip size={16} />
+                  </button>
+                  <button className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+                    <FiSmile size={16} />
+                  </button>
+                  <button className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+                    <FiMic size={16} />
+                  </button>
+                  <button
+                    className="w-8 h-8 flex items-center justify-center bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                    onClick={sendMessage}
+                    aria-label="Send"
+                  >
+                    <FiSend size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-gray-500">
+            <div className="text-center">
+              <div className="text-6xl mb-4">💬</div>
+              <h3 className="text-xl font-semibold mb-2">
+                Select a conversation
+              </h3>
+              <p>Choose a user from the sidebar to start chatting</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

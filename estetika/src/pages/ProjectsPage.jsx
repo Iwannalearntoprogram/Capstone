@@ -27,16 +27,15 @@ const ProjectsPage = () => {
     navigate(`/projects/${projectId}/tasks`);
   };
 
-  // Handle project deletion
   const handleDeleteProject = async (projectId) => {
-    if (!window.confirm("Are you sure you want to delete this project?")) return;
+    if (!window.confirm("Are you sure you want to delete this project?"))
+      return;
     try {
       await axios.delete(`http://localhost:3000/api/project?id=${projectId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      // Remove the deleted project from state
       setProjects((prev) => prev.filter((p) => p._id !== projectId));
       setFilteredProjects((prev) => prev.filter((p) => p._id !== projectId));
     } catch (err) {
