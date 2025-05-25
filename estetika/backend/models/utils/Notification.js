@@ -11,7 +11,7 @@ const notificationSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["assigned", "overdue", "phase-started", "alarm"],
+      enum: ["assigned", "overdue", "phase-started", "alarm", "update"],
     },
     task: { type: mongoose.Schema.Types.ObjectId, ref: "Task" },
     project: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },

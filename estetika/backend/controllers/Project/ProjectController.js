@@ -22,7 +22,8 @@ const project_get = catchAsync(async (req, res, next) => {
           path: "tasks",
         },
       })
-      .populate("projectCreator", "-password");
+      .populate("projectCreator", "-password")
+      .populate("projectUpdates");
   } else {
     project = await Project.find({ projectCreator })
       .populate("members", "-password")
@@ -33,7 +34,8 @@ const project_get = catchAsync(async (req, res, next) => {
           path: "tasks",
         },
       })
-      .populate("projectCreator", "-password");
+      .populate("projectCreator", "-password")
+      .populate("projectUpdates");
   }
 
   if (!project || (Array.isArray(project) && project.length === 0))
@@ -189,6 +191,7 @@ const project_put = catchAsync(async (req, res, next) => {
     projectSize,
     projectLocation,
     designInspo,
+    projectUpdates,
   } = req.body;
 
   if (!id) return next(new AppError("Project identifier not found", 400));
@@ -213,7 +216,7 @@ const project_put = catchAsync(async (req, res, next) => {
   if (projectSize !== undefined) updates.projectSize = projectSize;
   if (projectLocation) updates.projectLocation = projectLocation;
   if (designInspo) updates.designInspo = designInspo;
-  console.log(updates);
+  if (projectUpdates) updates.projectUpdates = projectUpdates;
 
   const updatedProject = await Project.findByIdAndUpdate(id, updates, {
     new: true,
@@ -250,6 +253,9 @@ const project_delete = catchAsync(async (req, res, next) => {
   await Promise.all([
     Project.db.model("Task").deleteMany({ _id: { $in: project.tasks } }),
     Project.db.model("Phase").deleteMany({ _id: { $in: project.timeline } }),
+    Project.db
+      .model("ProjectUpdate")
+      .deleteMany({ _id: { $in: project.projectUpdates } }),
   ]);
 
   await User.findByIdAndUpdate(

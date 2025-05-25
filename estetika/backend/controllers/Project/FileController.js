@@ -36,11 +36,11 @@ const firebaseConfig = {
 
 // Upload Profile Picture
 const image_post = catchAsync(async (req, res, next) => {
-  if (!req.file) {
-    return next(new AppError("No file uploaded", 400));
+  if (!req.image) {
+    return next(new AppError("No image uploaded", 400));
   }
 
-  if (!req.file.mimetype.startsWith("image/")) {
+  if (!req.image.mimetype.startsWith("image/")) {
     return next(new AppError("File is not an image.", 400));
   }
 
@@ -52,16 +52,16 @@ const image_post = catchAsync(async (req, res, next) => {
   const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
   const storageRef = ref(
     storage,
-    `picture/${userId}/${req.file.originalname}-${uniqueSuffix}`
+    `picture/${userId}/${req.image.originalname}-${uniqueSuffix}`
   );
 
   const metadata = {
-    contentType: req.file.mimetype,
+    contentType: req.image.mimetype,
   };
 
   const snapshot = await uploadBytesResumable(
     storageRef,
-    req.file.buffer,
+    req.image.buffer,
     metadata
   );
 
@@ -220,8 +220,72 @@ const message_file_post = catchAsync(async (req, res, next) => {
   });
 });
 
+const update_image_post = catchAsync(async (req, res, next) => {
+  const { projectId } = req.query;
+
+  if (!req.file) {
+    return next(new AppError("No file uploaded", 400));
+  }
+
+  if (!projectId) {
+    return next(new AppError("Project ID not found", 400));
+  }
+
+  const isProjectValid = await Project.findById(projectId);
+
+  if (!isProjectValid) {
+    return next(new AppError("Project not found. Invalid Project ID.", 404));
+  }
+
+  if (!req.file.mimetype.startsWith("image/")) {
+    return next(new AppError("File is not an image.", 400));
+  }
+
+  const userId = req.id;
+
+  initializeApp(firebaseConfig);
+  const storage = getStorage();
+
+  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+  const storageRef = ref(
+    storage,
+    `${projectId}/updates/${userId}/${req.file.originalname}-${uniqueSuffix}`
+  );
+
+  const metadata = {
+    contentType: req.file.mimetype,
+  };
+
+  const snapshot = await uploadBytesResumable(
+    storageRef,
+    req.file.buffer,
+    metadata
+  );
+
+  const downloadURL = await getDownloadURL(snapshot.ref);
+
+  if (!downloadURL) {
+    return next(new AppError("Failed to upload image", 500));
+  }
+
+  const changedProfilePicture = await User.findByIdAndUpdate(
+    userId,
+    { profileImage: downloadURL },
+    { new: true }
+  );
+
+  if (!changedProfilePicture)
+    return next(new AppError("Failed to update profile picture", 500));
+
+  return res.status(200).json({
+    message: "Project Update Picture Successfully Uploaded!",
+    imageLink: downloadURL,
+  });
+});
+
 module.exports = {
   image_post,
   document_post,
-  message_file_post
+  message_file_post,
+  update_image_post,
 };
