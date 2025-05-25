@@ -3,16 +3,21 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import logo from "../assets/images/logo-moss-2.png";
 import marbleBg from "../assets/images/white-marble-bg.png";
 import { useAuthStore } from "../store/AuthStore";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 const URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 
 function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [otpError, setOtpError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
 
-  const { login, token } = useAuthStore();
+  const navigate = useNavigate();
+  const { login, token, setUserAndToken } = useAuthStore();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,7 +36,7 @@ function LoginPage() {
 
     setIsSubmitting(false);
     if (result.success) {
-      navigate("/home");
+      setShowOtpModal(true); // show OTP modal
     } else {
       setError(
         result.error?.response?.data?.message ||
@@ -40,23 +45,75 @@ function LoginPage() {
     }
   };
 
-  if (token) {
-    return <Navigate to="/home" replace />;
-  }
+  const handleVerifyOtp = async () => {
+    try {
+      const response = await axios.post(
+        `${URL}/api/auth/verify-otp`,
+        {
+          email: formData.email,
+          otp: otpCode,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      const data = response.data;
+
+      const token = Cookies.get("token");
+      Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
+      localStorage.setItem("id", data.user.id);
+      localStorage.setItem("role", data.user.role);
+
+      useAuthStore.setState({
+        user: data.user,
+        token: token,
+      });
+
+      navigate("/home");
+    } catch (err) {
+      setOtpError(err.response?.data?.message || "Invalid OTP. Try again.");
+    }
+  };
+
+  if (token) return <Navigate to="/home" replace />;
 
   return (
     <div
       className="flex flex-col items-center justify-center h-screen bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${marbleBg})` }}
     >
-      <div className="flex flex-col md:flex-row shadow-lg rounded-lg overflow-hidden max-w-4xl">
+      {/* OTP Modal */}
+      {showOtpModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+            <h2 className="text-xl font-semibold mb-2">Enter OTP</h2>
+            <p className="text-sm mb-4">
+              A code has been sent to your email. Please enter it below.
+            </p>
+            <input
+              type="text"
+              value={otpCode}
+              onChange={(e) => setOtpCode(e.target.value)}
+              className="w-full p-2 border border-gray-400 rounded mb-3"
+              placeholder="Enter OTP"
+            />
+            <button
+              onClick={handleVerifyOtp}
+              className="w-full bg-[#1D3C34] text-white py-2 rounded-full hover:bg-[#16442A] transition"
+            >
+              Verify OTP
+            </button>
+            {otpError && <p className="text-red-500 mt-2">{otpError}</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Login UI */}
+      <div className="flex flex-col md:flex-row shadow-lg rounded-lg overflow-hidden max-w-4xl z-10">
         <div className="flex flex-col items-center justify-center p-12 md:w-1/2 bg-white shadow-md rounded-l-lg">
           <div className="mb-8">
-            <img
-              src={logo}
-              alt="logo"
-              className="h-16 w-auto mx-auto object-contain"
-            />
+            <img src={logo} alt="logo" className="h-16 w-auto mx-auto" />
           </div>
           <h2 className="text-2xl font-semibold text-[#1D3C34] mb-8">
             Welcome Back!
@@ -66,7 +123,7 @@ function LoginPage() {
               type="email"
               name="email"
               placeholder="Email"
-              className="w-full p-2 px-4 mb-4 border border-gray-500 rounded-full focus:outline-none  placeholder-gray-500"
+              className="w-full p-2 px-4 mb-4 border border-gray-500 rounded-full"
               value={formData.email}
               onChange={handleChange}
               required
@@ -75,7 +132,7 @@ function LoginPage() {
               type="password"
               name="password"
               placeholder="Password"
-              className="w-full p-2 px-4 mb-4 border border-gray-500 rounded-full focus:outline-none  placeholder-gray-500"
+              className="w-full p-2 px-4 mb-4 border border-gray-500 rounded-full"
               value={formData.password}
               onChange={handleChange}
               required
