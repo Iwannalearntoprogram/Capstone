@@ -37,6 +37,10 @@ const projectSchema = new mongoose.Schema(
     projectSize: Number,
     projectLocation: String,
     designInspo: String,
+    projectUpdates: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "ProjectUpdate",
+    },
   },
   {
     timestamps: true,
