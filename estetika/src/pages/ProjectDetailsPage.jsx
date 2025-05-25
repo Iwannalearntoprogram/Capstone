@@ -43,7 +43,7 @@ function ProjectDetailsPage() {
     { label: "Tasks", path: "tasks" },
     { label: "Progress", path: "progress" },
     { label: "Timeline", path: "timeline" },
-    // Add more tabs as needed
+    { label: "Files", path: "files" },
   ];
 
   return (

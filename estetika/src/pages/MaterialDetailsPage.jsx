@@ -16,6 +16,8 @@ export default function MaterialDetailsPage() {
   const [material, setMaterial] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mainImageIdx, setMainImageIdx] = useState(0);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [quantity, setQuantity] = useState(1);
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -29,6 +31,10 @@ export default function MaterialDetailsPage() {
           },
         });
         setMaterial(res.data.material);
+        // Set first size as default selected
+        if (res.data.material.options && res.data.material.options.length > 0) {
+          setSelectedSize(res.data.material.options[0]);
+        }
       } catch (err) {
         setMaterial(null);
       } finally {
@@ -37,6 +43,14 @@ export default function MaterialDetailsPage() {
     };
     if (id) fetchMaterial();
   }, [id, serverUrl]);
+
+  const handleQuantityChange = (increment) => {
+    setQuantity((prev) => Math.max(1, prev + increment));
+  };
+
+  const handleSizeSelect = (size) => {
+    setSelectedSize(size);
+  };
 
   if (loading) {
     return <div className="p-10 text-gray-400">Loading material...</div>;
@@ -92,33 +106,58 @@ export default function MaterialDetailsPage() {
             {material.options?.map((size) => (
               <Button
                 key={size}
-                className="px-3 py-1 rounded-full border bg-white"
+                className={`px-3 py-1 rounded-full border transition-colors ${
+                  selectedSize === size
+                    ? "bg-[#1D3C34] text-white border-[#1D3C34]"
+                    : "bg-white border-gray-300 hover:border-[#1D3C34]"
+                }`}
+                onClick={() => handleSizeSelect(size)}
               >
                 {size}
               </Button>
             ))}
           </div>
+          {selectedSize && (
+            <p className="text-sm text-gray-500 mt-1">
+              Selected: {selectedSize}
+            </p>
+          )}
         </div>
 
         {/* Quantity + Add Button */}
         <div className="mt-6 flex items-center gap-4">
           <div className="flex items-center border px-2 rounded">
-            <Button className="px-2">-</Button>
-            <span className="px-4">1</span>
-            <Button className="px-2">+</Button>
+            <Button
+              className="px-2 py-1 hover:bg-gray-100"
+              onClick={() => handleQuantityChange(-1)}
+            >
+              -
+            </Button>
+            <span className="px-4 py-1">{quantity}</span>
+            <Button
+              className="px-2 py-1 hover:bg-gray-100"
+              onClick={() => handleQuantityChange(1)}
+            >
+              +
+            </Button>
           </div>
-          <Button className="bg-black text-white px-6 py-2 rounded-full">
+          <Button className="bg-[#1D3C34] text-white px-6 py-2 rounded-full hover:bg-[#145c4b] transition">
             Add to Sheet
           </Button>
         </div>
+
+        {selectedSize && (
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+            <p className="text-sm font-medium">Selected Options:</p>
+            <p className="text-sm text-gray-600">Size: {selectedSize}</p>
+            <p className="text-sm text-gray-600">Quantity: {quantity}</p>
+          </div>
+        )}
       </div>
 
-      {/* Similar Products */}
       <div className="md:col-span-2 px-10 pb-10">
         <h3 className="text-xl font-semibold mb-4">Similar Products</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* You can fetch and map similar products here if needed */}
-        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
       </div>
     </div>
   );

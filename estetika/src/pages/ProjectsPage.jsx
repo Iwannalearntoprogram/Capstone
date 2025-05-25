@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaChevronDown, FaChevronUp, FaPlus } from "react-icons/fa";
 import SubNavbarProjects from "../components/SubNavbarProjects";
 import Cookies from "js-cookie";
 import axios from "axios";
@@ -9,10 +9,17 @@ import ProjectCard from "../components/project/ProjectCard";
 const ProjectsPage = () => {
   const token = Cookies.get("token");
   const id = localStorage.getItem("id");
+  const [userRole, setUserRole] = useState(null);
   const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [expandedSections, setExpandedSections] = useState({
+    ongoing: true,
+    pending: true,
+    completed: false,
+    cancelled: false,
+  });
   const [newProject, setNewProject] = useState({
     title: "",
     description: "",
@@ -22,8 +29,13 @@ const ProjectsPage = () => {
   });
 
   const navigate = useNavigate();
-
   const serverUrl = import.meta.env.VITE_SERVER_URL;
+
+  // Get user role from localStorage
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    setUserRole(role);
+  }, []);
 
   const handleProjectClick = (projectId) => {
     navigate(`/projects/${projectId}/tasks`);
@@ -45,6 +57,13 @@ const ProjectsPage = () => {
     }
   };
 
+  const toggleSection = (sectionKey) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey],
+    }));
+  };
+
   useEffect(() => {
     const fetchProjects = async () => {
       const response = await axios.get(
@@ -55,6 +74,7 @@ const ProjectsPage = () => {
           },
         }
       );
+      console.log(response.data.project);
       setProjects(response.data.project);
       setFilteredProjects(response.data.project);
     };
@@ -113,9 +133,59 @@ const ProjectsPage = () => {
     }
   };
 
+  // Group projects by status
+  const groupedProjects = {
+    ongoing: filteredProjects.filter((project) => project.status === "ongoing"),
+    pending: filteredProjects.filter((project) => project.status === "pending"),
+    completed: filteredProjects.filter(
+      (project) => project.status === "completed"
+    ),
+    cancelled: filteredProjects.filter(
+      (project) => project.status === "cancelled"
+    ),
+  };
+
+  const StatusSection = ({ title, projects, sectionKey }) => (
+    <div className="mb-4">
+      <div
+        className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition border"
+        onClick={() => toggleSection(sectionKey)}
+      >
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-800">
+            {title} ({projects.length})
+          </h2>
+        </div>
+        {expandedSections[sectionKey] ? (
+          <FaChevronUp className="text-gray-600" />
+        ) : (
+          <FaChevronDown className="text-gray-600" />
+        )}
+      </div>
+
+      {expandedSections[sectionKey] && (
+        <div className="mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {projects.map((project) => (
+              <ProjectCard
+                key={project._id}
+                project={project}
+                onView={handleProjectClick}
+                onDelete={handleDeleteProject}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const isAdmin = userRole === "admin";
+
   return (
     <div className="px-4 py-8 mx-auto">
-      {showModal && (
+      {/* Add Project Modal - Only show if admin */}
+      {showModal && isAdmin && (
         <div className="fixed inset-0 bg-black/20 bg-opacity-40 flex items-center justify-center z-50 backdrop-blur-xs">
           <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-md relative">
             <button
@@ -126,7 +196,6 @@ const ProjectsPage = () => {
             </button>
             <h2 className="text-xl font-bold mb-4">Add New Project</h2>
             <form onSubmit={handleAddProject} className="flex flex-col gap-4">
-              {/* ...form fields... */}
               <label className="">
                 Project Title
                 <input
@@ -215,39 +284,60 @@ const ProjectsPage = () => {
         </div>
       )}
 
-      {/* projects */}
-      <div className="projects-overview">
-        <div className="flex justify-end mb-4">
-          <div className="flex items-center gap-2 w-full max-w-sm  border rounded-full px-3 py-2 shadow-sm">
+      {/* Search Bar and Add Button */}
+      <div className="flex justify-between items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-gray-800">Projects</h1>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 w-full max-w-sm border rounded-full px-3 py-2 shadow-sm">
             <FaSearch className="text-gray-400" />
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search projects..."
               className="w-full outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProjects.map((project) => (
-            <ProjectCard
-              key={project._id}
-              project={project}
-              onView={handleProjectClick}
-              onDelete={handleDeleteProject}
-            />
-          ))}
-
-          <div
-            className="bg-white/40 border rounded-xl p-6 shadow-md flex flex-col items-center justify-center cursor-pointer hover:bg-white/60"
-            onClick={() => setShowModal(true)}
-          >
-            <p className="text-gray-500">Add a Project</p>
-            <div className="text-2xl font-bold text-gray-700">+</div>
-          </div>
+          {/* Only show Add Project button if admin */}
+          {isAdmin && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-[#1D3C34] text-white px-4 py-2 rounded-full hover:bg-[#16442A] transition flex items-center gap-2 whitespace-nowrap"
+            >
+              <FaPlus size={14} />
+              Add Project
+            </button>
+          )}
         </div>
+      </div>
+
+      {/* Projects grouped by status */}
+      <div className="projects-overview">
+        <StatusSection
+          title="Pending Projects"
+          projects={groupedProjects.pending}
+          sectionKey="pending"
+        />
+
+        <StatusSection
+          title="Ongoing Projects"
+          projects={groupedProjects.ongoing}
+          sectionKey="ongoing"
+        />
+
+        <StatusSection
+          title="Completed Projects"
+          projects={groupedProjects.completed}
+          sectionKey="completed"
+        />
+
+        <StatusSection
+          title="Cancelled Projects"
+          projects={groupedProjects.cancelled}
+          sectionKey="cancelled"
+        />
       </div>
     </div>
   );

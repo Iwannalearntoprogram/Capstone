@@ -23,6 +23,7 @@ import AdminProjectsPage from "./pages/AdminProjectsPage";
 import TasksTab from "./components/projectdetails/TasksTab";
 import ProgressTab from "./components/projectdetails/ProgressTab";
 import TimelineTab from "./components/projectdetails/TimelineTab";
+import FilesTab from "./components/projectdetails/FilesTab";
 
 //materials
 import MaterialsPage from "./pages/MaterialsPage";
@@ -140,6 +141,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <TimelineTab />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="files"
+              element={
+                <ProtectedRoute>
+                  <FilesTab />
                 </ProtectedRoute>
               }
             />
