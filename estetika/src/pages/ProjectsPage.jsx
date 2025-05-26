@@ -67,7 +67,9 @@ const ProjectsPage = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       const response = await axios.get(
-        `${serverUrl}/api/project?projectCreator=${id}`,
+        `${serverUrl}/api/project?${
+          userRole === "admin" ? "index=true" : `member=${id}`
+        }`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

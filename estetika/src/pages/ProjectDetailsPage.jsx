@@ -14,14 +14,11 @@ function ProjectDetailsPage() {
     try {
       const projectCreator = localStorage.getItem("id");
       const token = Cookies.get("token");
-      const response = await axios.get(
-        `${serverUrl}/api/project?projectCreator=${projectCreator}&id=${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`${serverUrl}/api/project?id=${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setProject(
         Array.isArray(response.data.project)
           ? response.data.project[0]
