@@ -10,6 +10,7 @@ const MaterialsPage = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [userRole, setUserRole] = useState(null);
   const [newMaterial, setNewMaterial] = useState({
     name: "",
     company: "",
@@ -21,6 +22,12 @@ const MaterialsPage = () => {
   });
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
+
+  // Get user role from localStorage
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    setUserRole(role);
+  }, []);
 
   useEffect(() => {
     const fetchMaterials = async () => {
@@ -103,6 +110,8 @@ const MaterialsPage = () => {
     mat.name?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const canAddMaterial = userRole === "admin" || userRole === "designer";
+
   return (
     <div className="flex flex-col items-center">
       <div className="mb-8 w-full flex items-center">
@@ -119,13 +128,17 @@ const MaterialsPage = () => {
             size={20}
           />
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="ml-4 bg-[#1D3C34] text-white px-4 py-2 rounded-full hover:bg-[#145c4b] transition flex items-center gap-2"
-        >
-          <FiPlus size={20} />
-          Add Material
-        </button>
+
+        {/* Only show Add Material button for admin and designer */}
+        {canAddMaterial && (
+          <button
+            onClick={() => setShowModal(true)}
+            className="ml-4 bg-[#1D3C34] text-white px-4 py-2 rounded-full hover:bg-[#145c4b] transition flex items-center gap-2"
+          >
+            <FiPlus size={20} />
+            Add Material
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -134,7 +147,8 @@ const MaterialsPage = () => {
         <Outlet context={{ materialsData: filteredMaterials }} />
       )}
 
-      {showModal && (
+      {/* Only show modal if user can add materials */}
+      {showModal && canAddMaterial && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 ">
           <div className="bg-white p-6 rounded-lg w-[90%] max-w-lg max-h-[85vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Add New Material</h2>

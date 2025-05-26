@@ -10,7 +10,6 @@ import {
 } from "react-icons/fa";
 
 export default function FilesTab() {
-  // Sample file data
   const files = [
     {
       id: 1,
