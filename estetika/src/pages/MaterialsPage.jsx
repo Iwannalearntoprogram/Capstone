@@ -16,10 +16,11 @@ const MaterialsPage = () => {
     company: "",
     price: [""],
     description: "",
-    image: [""],
     options: [""],
     category: "",
+    image: [""],
   });
+  const [selectedImage, setSelectedImage] = useState([]);
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -49,8 +50,29 @@ const MaterialsPage = () => {
   }, []);
 
   const handleAddMaterial = async () => {
+    const formData = new FormData();
+    const token = Cookies.get("token");
+
     try {
-      const token = Cookies.get("token");
+      selectedImage.forEach((image) => {
+        formData.append("image", image);
+      });
+      const res = await axios.post(
+        `${serverUrl}/api/upload/material`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      newMaterial.image = res.data.imageLink;
+    } catch (error) {
+      console.error("Error adding material:", error);
+    }
+
+    try {
       const materialData = {
         ...newMaterial,
         price: newMaterial.price.filter((p) => p !== "").map((p) => Number(p)),
@@ -223,34 +245,6 @@ const MaterialsPage = () => {
                 </button>
               </div>
 
-              {/* Image Fields */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Images</label>
-                {newMaterial.image.map((image, index) => (
-                  <input
-                    key={index}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const newImages = [...newMaterial.image];
-                        newImages[index] = file;
-                        setNewMaterial({ ...newMaterial, image: newImages });
-                      }
-                    }}
-                    className="w-full p-2 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
-                  />
-                ))}
-                <button
-                  type="button"
-                  onClick={addImageField}
-                  className="text-[#1D3C34] text-sm hover:underline"
-                >
-                  + Add Image
-                </button>
-              </div>
-
               {/* Options Fields */}
               <div>
                 <label className="block text-sm font-medium mb-2">
@@ -278,6 +272,32 @@ const MaterialsPage = () => {
                   className="text-[#1D3C34] text-sm hover:underline"
                 >
                   + Add Option
+                </button>
+              </div>
+
+              {/* Image Fields */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Images</label>
+                {newMaterial.image.map((image, index) => (
+                  <input
+                    key={index}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setSelectedImage((prev) => [...prev, file || []]);
+                      }
+                    }}
+                    className="w-full p-2 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+                  />
+                ))}
+                <button
+                  type="button"
+                  onClick={addImageField}
+                  className="text-[#1D3C34] text-sm hover:underline"
+                >
+                  + Add Image
                 </button>
               </div>
             </div>

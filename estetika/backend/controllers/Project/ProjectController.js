@@ -239,7 +239,6 @@ const project_put = catchAsync(async (req, res, next) => {
   if (!project)
     return next(new AppError("Project not found. Invalid Project ID.", 404));
 
-  console.log(req.body);
   let updates = {};
   if (title) updates.title = title;
   if (description) updates.description = description;
@@ -247,7 +246,22 @@ const project_put = catchAsync(async (req, res, next) => {
   if (startDate) updates.startDate = startDate;
   if (endDate) updates.endDate = endDate;
   if (files) updates.files = files;
-  if (members) updates.members = members;
+  if (members) {
+    if (Array.isArray(members)) {
+      const resolvedMembers = await Promise.all(
+        members.map(async (member) => {
+          if (project.members.includes(member)) {
+            return member;
+          }
+          const user = await User.findOne({
+            $or: [{ email: member }, { username: member }],
+          });
+          return user ? user._id : null;
+        })
+      );
+      updates.members = resolvedMembers.filter(Boolean);
+    }
+  }
   if (tasks) updates.tasks = tasks;
   if (timeline) updates.timeline = timeline;
   if (status) updates.status = status;

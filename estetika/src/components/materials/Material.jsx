@@ -1,41 +1,38 @@
 import { useNavigate } from "react-router-dom";
+import sofaImg from "../../assets/images/sofa.jpg";
 
 export default function Material({ materialDetails }) {
   const { _id, name, company, price, image } = materialDetails;
   const navigate = useNavigate();
 
-  // Use the first image from the material's image array, or a fallback
-  const displayImage =
-    image && image.length > 0
-      ? image[0]
-      : "https://via.placeholder.com/300x300?text=No+Image";
+  // Calculate price range if price is an array
+  let priceDisplay;
+  if (Array.isArray(price)) {
+    const min = Math.min(...price);
+    const max = Math.max(...price);
+    priceDisplay = min === max ? `$${min}` : `$${min} - $${max}`;
+  } else {
+    priceDisplay = `$${price}`;
+  }
 
   return (
     <div
-      className="min-w-60 lg:mb-8 cursor-pointer"
+      className="min-w-60 lg:mb-8"
       onClick={() => navigate(`/materials/${_id}`)}
     >
       {/* image here */}
       <div className="min-w-60 h-60 bg-white rounded-xl mb-4 flex items-center justify-center overflow-hidden">
         <img
-          src={displayImage}
+          src={image[0]}
           alt={name}
-          className="object-contain w-full h-full rounded-xl"
-          onError={(e) => {
-            e.target.src =
-              "https://via.placeholder.com/300x300?text=Image+Not+Found";
-          }}
+          className="object-cover w-full h-full rounded-xl"
         />
       </div>
       {/* info here */}
       <div>
-        <h2 className="font-bold">{name}</h2>
-        <p className="text-sm">{company}</p>
-        <p className="font-bold text-lg">
-          {Array.isArray(price)
-            ? `₱${price[0]} - ₱${price[price.length - 1]}`
-            : `₱${price}`}
-        </p>
+        <h2 className="font-bold ">{name}</h2>
+        <p className="font-semibold text-sm">{company}</p>
+        <p className="font-bold text-lg">{priceDisplay}</p>
       </div>
     </div>
   );
