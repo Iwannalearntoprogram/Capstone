@@ -50,12 +50,6 @@ function RingProgressBar({
   );
 }
 
-function getPhaseProgress(tasks) {
-  if (!tasks || !tasks.length) return 0;
-  const total = tasks.reduce((sum, t) => sum + (t.progress || 0), 0);
-  return Math.round(total / tasks.length);
-}
-
 function PhaseCard({ phase, tasks, projectId }) {
   const [phaseProgress, setPhaseProgress] = useState(undefined);
   const [overallProgress, setOverallProgress] = useState(undefined);
