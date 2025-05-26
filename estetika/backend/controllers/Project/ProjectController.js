@@ -270,7 +270,6 @@ const project_put = catchAsync(async (req, res, next) => {
   if (projectLocation) updates.projectLocation = projectLocation;
   if (designInspo) updates.designInspo = designInspo;
   if (projectUpdates) updates.projectUpdates = projectUpdates;
-  console.log(updates.members);
 
   const updatedProject = await Project.findByIdAndUpdate(id, updates, {
     new: true,
