@@ -14,12 +14,7 @@ const ProjectsPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [expandedSections, setExpandedSections] = useState({
-    ongoing: true,
-    pending: true,
-    completed: false,
-    cancelled: false,
-  });
+  const [expandedSections, setExpandedSections] = useState({});
   const [newProject, setNewProject] = useState({
     title: "",
     description: "",
@@ -66,20 +61,30 @@ const ProjectsPage = () => {
 
   useEffect(() => {
     const fetchProjects = async () => {
-      const response = await axios.get(
-        `${serverUrl}/api/project?projectCreator=${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log(response.data.project);
-      setProjects(response.data.project);
-      setFilteredProjects(response.data.project);
+      if (!userRole) return; // Wait for userRole to be set
+
+      try {
+        const response = await axios.get(
+          `${serverUrl}/api/project?${
+            userRole === "admin" ? "index=true" : `member=${id}`
+          }`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Projects fetched:", response.data.project);
+        setProjects(response.data.project || []);
+        setFilteredProjects(response.data.project || []);
+      } catch (err) {
+        console.error("Error fetching projects:", err);
+        setProjects([]);
+        setFilteredProjects([]);
+      }
     };
     fetchProjects();
-  }, []);
+  }, [userRole]); // Add userRole as dependency
 
   useEffect(() => {
     if (!searchTerm) {
@@ -92,6 +97,29 @@ const ProjectsPage = () => {
       );
     }
   }, [searchTerm, projects]);
+
+  // Group projects by status - including all possible statuses
+  const groupedProjects = {
+    ongoing: filteredProjects.filter((project) => project.status === "ongoing"),
+    pending: filteredProjects.filter((project) => project.status === "pending"),
+    delayed: filteredProjects.filter((project) => project.status === "delayed"),
+    completed: filteredProjects.filter(
+      (project) => project.status === "completed"
+    ),
+    cancelled: filteredProjects.filter(
+      (project) => project.status === "cancelled"
+    ),
+  };
+
+  // Auto-expand sections that have projects, auto-collapse sections that don't
+  useEffect(() => {
+    const newExpandedSections = {};
+    Object.keys(groupedProjects).forEach((key) => {
+      // Expand only if section has projects
+      newExpandedSections[key] = groupedProjects[key].length > 0;
+    });
+    setExpandedSections(newExpandedSections);
+  }, [filteredProjects]);
 
   const handleAddProject = async (e) => {
     e.preventDefault();
@@ -118,31 +146,23 @@ const ProjectsPage = () => {
         endDate: "",
       });
 
+      // Refetch projects with the same role-based logic
       const response = await axios.get(
-        `${serverUrl}/api/project?projectCreator=${id}`,
+        `${serverUrl}/api/project?${
+          userRole === "admin" ? "index=true" : `member=${id}`
+        }`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      setProjects(response.data.project);
-      setFilteredProjects(response.data.project);
+      setProjects(response.data.project || []);
+      setFilteredProjects(response.data.project || []);
     } catch (err) {
+      console.error("Error adding project:", err);
       alert("Failed to add project.");
     }
-  };
-
-  // Group projects by status
-  const groupedProjects = {
-    ongoing: filteredProjects.filter((project) => project.status === "ongoing"),
-    pending: filteredProjects.filter((project) => project.status === "pending"),
-    completed: filteredProjects.filter(
-      (project) => project.status === "completed"
-    ),
-    cancelled: filteredProjects.filter(
-      (project) => project.status === "cancelled"
-    ),
   };
 
   const StatusSection = ({ title, projects, sectionKey }) => (
@@ -165,16 +185,22 @@ const ProjectsPage = () => {
 
       {expandedSections[sectionKey] && (
         <div className="mt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {projects.map((project) => (
-              <ProjectCard
-                key={project._id}
-                project={project}
-                onView={handleProjectClick}
-                onDelete={handleDeleteProject}
-              />
-            ))}
-          </div>
+          {projects.length === 0 ? (
+            <div className="text-center text-gray-500 py-8">
+              No {title.toLowerCase()} found
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {projects.map((project) => (
+                <ProjectCard
+                  key={project._id}
+                  project={project}
+                  onView={handleProjectClick}
+                  onDelete={handleDeleteProject}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -325,6 +351,12 @@ const ProjectsPage = () => {
           title="Ongoing Projects"
           projects={groupedProjects.ongoing}
           sectionKey="ongoing"
+        />
+
+        <StatusSection
+          title="Delayed Projects"
+          projects={groupedProjects.delayed}
+          sectionKey="delayed"
         />
 
         <StatusSection
