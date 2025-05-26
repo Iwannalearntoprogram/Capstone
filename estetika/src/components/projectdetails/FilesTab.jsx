@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaPlus,
   FaUpload,
@@ -8,8 +8,16 @@ import {
   FaFilePdf,
   FaFileAlt,
 } from "react-icons/fa";
+import Cookies from "js-cookie";
+import axios from "axios";
+import { useOutletContext } from "react-router-dom";
 
 export default function FilesTab() {
+  const { project, refreshProject } = useOutletContext();
+  const [selectedFile, setSelectedFile] = useState([]);
+
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
+
   // Sample file data
   const files = [
     {
@@ -72,15 +80,77 @@ export default function FilesTab() {
     }
   };
 
+  const handleAddFile = async () => {
+    const token = Cookies.get("token");
+    const formData = new FormData();
+    let fileLink;
+
+    try {
+      formData.append("document", selectedFile[0]);
+
+      const res = await axios.post(
+        `${serverUrl}/api/upload/document?projectId=${project?._id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      fileLink = res.data.documentLink;
+    } catch (error) {
+      console.error("Error adding file:", error);
+    }
+
+    try {
+      const res = await axios.put(
+        `${serverUrl}/api/project?id=${project?._id}`,
+        {
+          files: [...(project?.files || []), fileLink],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      refreshProject && refreshProject();
+      setSelectedFile([]);
+    } catch (error) {
+      console.error("Error adding file:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedFile.length > 0) {
+      handleAddFile();
+    }
+  }, [selectedFile]);
+
   return (
     <div className="mt-6">
       <div className="flex items-center gap-4 mb-4">
         <button className="bg-[#1D3C34] text-white px-4 py-2 rounded flex items-center text-sm hover:bg-[#16442A] transition">
           <FaPlus className="w-4 h-4 mr-1" /> New
         </button>
-        <button className="bg-[#1D3C34] text-white px-4 py-2 rounded flex items-center text-sm hover:bg-[#16442A] transition">
+        <label className="bg-[#1D3C34] text-white px-4 py-2 rounded flex items-center text-sm hover:bg-[#16442A] transition cursor-pointer">
           <FaUpload className="w-4 h-4 mr-1" /> Upload
-        </button>
+          <input
+            type="file"
+            accept=".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,image/*"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) {
+                setSelectedFile((prev) => [...prev, file || []]);
+              }
+            }}
+            className="hidden"
+          />
+        </label>
         <FaInfoCircle className="w-4 h-4 text-gray-600" />
       </div>
 

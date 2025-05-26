@@ -239,7 +239,6 @@ const project_put = catchAsync(async (req, res, next) => {
   if (!project)
     return next(new AppError("Project not found. Invalid Project ID.", 404));
 
-  console.log(req.body);
   let updates = {};
   if (title) updates.title = title;
   if (description) updates.description = description;
