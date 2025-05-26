@@ -35,9 +35,12 @@ const topMaterials = [
 const HomePage = () => {
   const id = localStorage.getItem("id");
   const role = localStorage.getItem("role");
-  const [loading, setLoading] = useState(true);
+  const [overviewLoading, setOverviewLoading] = useState(true);
+  const [completionLoading, setCompletionLoading] = useState(true);
+
   const [projectsData, setProjectsData] = useState([]);
   const [projectStates, setProjectStates] = useState({});
+  const [projectCompletion, setProjectCompletion] = useState({});
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -65,6 +68,7 @@ const HomePage = () => {
 
   useEffect(() => {
     checkProjectsState(projectsData);
+    checkProjectCompletion(projectsData);
   }, [projectsData]);
 
   const checkProjectsState = (projects) => {
@@ -88,7 +92,25 @@ const HomePage = () => {
       cancelled: cancelledProjects,
     });
 
-    setLoading(false);
+    setOverviewLoading(false);
+  };
+
+  const checkProjectCompletion = (projects) => {
+    // Model as array of { year: "year", sales: completedCount }
+    const years = [2022, 2023, 2024, 2025, 2026, 2027, 2028];
+    const completionData = years.map((year) => ({
+      year: year.toString(),
+      sales: projects.filter(
+        (project) =>
+          project.status === "completed" &&
+          project.endDate &&
+          new Date(project.endDate).getFullYear() === year
+      ).length,
+    }));
+
+    setProjectCompletion(completionData);
+
+    setCompletionLoading(false);
   };
 
   return (
@@ -102,7 +124,7 @@ const HomePage = () => {
         <div className="flex gap-4 justify-center">
           <div className="h-40 w-40 bg-red-100 rounded-xl relative">
             <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
-              {`${loading ? "0" : projectStates.active}`}
+              {`${overviewLoading ? "0" : projectStates.active}`}
             </p>
             <p className="w-full text-center absolute bottom-4 ">
               Active Projects
@@ -110,7 +132,7 @@ const HomePage = () => {
           </div>
           <div className="h-40 w-40 bg-amber-100 rounded-xl relative">
             <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
-              {`${loading ? "0" : projectStates.completed}`}
+              {`${overviewLoading ? "0" : projectStates.completed}`}
             </p>
             <p className="w-full text-center absolute bottom-4 ">
               Completed Projects
@@ -118,13 +140,13 @@ const HomePage = () => {
           </div>
           <div className="h-40 w-40 bg-green-100 rounded-xl relative">
             <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
-              {`${loading ? "0" : projectStates.delayed}`}
+              {`${overviewLoading ? "0" : projectStates.delayed}`}
             </p>
             <p className="w-full text-center absolute bottom-4 ">Delayed</p>
           </div>
           <div className="h-40 w-40 bg-purple-100 rounded-xl relative">
             <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
-              {`${loading ? "0" : projectStates.cancelled}`}
+              {`${overviewLoading ? "0" : projectStates.cancelled}`}
             </p>
             <p className="w-full text-center absolute bottom-4 ">Cancelled</p>
           </div>
@@ -141,7 +163,11 @@ const HomePage = () => {
       <div className="col-span-4 bg-white rounded-xl p-8 shadow-md">
         <h2 className="font-bold mb-4">Project Completion</h2>
         <div className="h-52 w-full">
-          <ProjectCompletionChart />
+          {completionLoading ? (
+            <ProjectCompletionChart />
+          ) : (
+            <ProjectCompletionChart data={projectCompletion} />
+          )}
         </div>
       </div>
       {/* project top materials */}
