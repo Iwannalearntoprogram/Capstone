@@ -2,6 +2,7 @@ const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User/User");
 const Message = require("../models/User/Message");
+const Notification = require("../models/utils/Notification");
 
 const initSocket = (server) => {
   const io = new Server(server, {
@@ -59,6 +60,14 @@ const initSocket = (server) => {
             sender: sender._id,
             content,
             timestamp: message.timestamp,
+          });
+        }
+
+        if (sender.role === "designer" && recipientUser.role === "client") {
+          await Notification.create({
+            recipient: clientId,
+            message: `Designer: ${sender.fullName} has messaged you.`,
+            type: "update",
           });
         }
       } catch (err) {
