@@ -283,9 +283,65 @@ const update_image_post = catchAsync(async (req, res, next) => {
   });
 });
 
+const material_image_post = catchAsync(async (req, res, next) => {
+  if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+    return next(new AppError("No files uploaded", 400));
+  }
+
+  const userId = req.id;
+
+  initializeApp(firebaseConfig);
+  const storage = getStorage();
+
+  const uploadPromises = req.files.map(async (file) => {
+    if (!file.mimetype.startsWith("image/")) {
+      throw new AppError("One or more files are not images.", 400);
+    }
+
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const storageRef = ref(
+      storage,
+      `materials/${userId}/${file.originalname}-${uniqueSuffix}`
+    );
+
+    const metadata = {
+      contentType: file.mimetype,
+    };
+
+    const snapshot = await uploadBytesResumable(
+      storageRef,
+      file.buffer,
+      metadata
+    );
+
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
+    if (!downloadURL) {
+      throw new AppError("Failed to upload one of the material images", 500);
+    }
+
+    return downloadURL;
+  });
+
+  let imageLinks;
+  try {
+    imageLinks = await Promise.all(uploadPromises);
+  } catch (err) {
+    return next(err);
+  }
+
+  // Optionally, update the material's image field in your DB here if needed
+
+  return res.status(200).json({
+    message: "Material Images Successfully Uploaded!",
+    imageLink: imageLinks,
+  });
+});
+
 module.exports = {
   image_post,
   document_post,
   message_file_post,
   update_image_post,
+  material_image_post,
 };
