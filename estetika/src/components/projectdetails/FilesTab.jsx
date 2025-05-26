@@ -131,6 +131,39 @@ export default function FilesTab() {
     }
   }, [selectedFile]);
 
+  // Helper to get file name from URL
+  const getFileName = (url) => {
+    try {
+      const decoded = decodeURIComponent(url);
+      const lastSegment = decoded.split("/").pop().split("?")[0];
+      return lastSegment.replace(/-\d{10,}-\d+$/, "");
+    } catch {
+      return url;
+    }
+  };
+
+  // Helper to guess file type from extension
+  const getFileType = (url) => {
+    const ext = url.split(".").pop().toLowerCase();
+    if (["csv", "xls", "xlsx"].includes(ext)) return "spreadsheet";
+    if (["pdf"].includes(ext)) return "pdf";
+    if (["doc", "docx", "txt", "rtf"].includes(ext)) return "document";
+    return "document";
+  };
+
+  // const getFileName = (url) => {
+  //   try {
+  //     const lastSegment = url.split("/").pop();
+  //     const dashIdx = lastSegment.indexOf("-");
+  //     return dashIdx !== -1 ? lastSegment.substring(0, dashIdx) : lastSegment;
+  //   } catch {
+  //     return url;
+  //   }
+  // };
+
+  // Use project.files if available, else empty array
+  const projectFiles = Array.isArray(project?.files) ? project.files : [];
+
   return (
     <div className="mt-6">
       <div className="flex items-center gap-4 mb-4">
@@ -166,43 +199,41 @@ export default function FilesTab() {
             </tr>
           </thead>
           <tbody>
-            {files.map((file) => (
+            {projectFiles.map((fileUrl, idx) => (
               <tr
-                key={file.id}
+                key={fileUrl}
                 className="border-t hover:bg-gray-50 transition-colors"
               >
-                <td className="p-3">{getFileIcon(file.type)}</td>
+                <td className="p-3">{getFileIcon(getFileType(fileUrl))}</td>
                 <td className="p-3">
-                  <span className="text-gray-900 hover:text-[#1D3C34] cursor-pointer">
-                    {file.name}
-                  </span>
+                  <a
+                    href={fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-900 hover:text-[#1D3C34] cursor-pointer"
+                  >
+                    {getFileName(fileUrl)}
+                  </a>
                 </td>
-                <td className="p-3 text-gray-600">{file.modified}</td>
+                <td className="p-3 text-gray-600">—</td>
                 <td className="p-3">
                   <div className="flex -space-x-2">
-                    {file.modifiedBy.slice(0, 3).map((src, idx) => (
-                      <img
-                        key={idx}
-                        src={src}
-                        alt="Avatar"
-                        className="w-6 h-6 rounded-full border-2 border-white object-cover"
-                      />
-                    ))}
-                    {file.modifiedBy.length > 3 && (
-                      <div className="w-6 h-6 rounded-full bg-gray-300 text-xs text-center text-black flex items-center justify-center border-2 border-white">
-                        +{file.modifiedBy.length - 3}
-                      </div>
-                    )}
+                    {/* Placeholder avatar */}
+                    <img
+                      src="https://ui-avatars.com/api/?name=User"
+                      alt="Avatar"
+                      className="w-6 h-6 rounded-full border-2 border-white object-cover"
+                    />
                   </div>
                 </td>
-                <td className="p-3 text-gray-600">{file.createdBy}</td>
+                <td className="p-3 text-gray-600">—</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {files.length === 0 && (
+      {projectFiles.length === 0 && (
         <div className="text-center py-12 text-gray-500">
           <FaFileAlt className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>No files uploaded yet</p>
