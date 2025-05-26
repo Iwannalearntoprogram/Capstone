@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import logo from "../assets/images/logo-moss-2.png";
 import marbleBg from "../assets/images/white-marble-bg.png";
@@ -15,6 +15,7 @@ function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
 
   const navigate = useNavigate();
   const { login, token, setUserAndToken } = useAuthStore();
@@ -36,6 +37,7 @@ function LoginPage() {
 
     setIsSubmitting(false);
     if (result.success) {
+      handleSendOtp();
       setShowOtpModal(true); // show OTP modal
     } else {
       setError(
@@ -45,38 +47,52 @@ function LoginPage() {
     }
   };
 
-  const handleVerifyOtp = async () => {
+  const handleSendOtp = async () => {
     try {
-      const response = await axios.post(
-        `${URL}/api/auth/verify-otp`,
-        {
-          email: formData.email,
-          otp: otpCode,
-        },
-        {
-          withCredentials: true,
-        }
-      );
-
-      const data = response.data;
-
-      const token = Cookies.get("token");
-      Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
-      localStorage.setItem("id", data.user.id);
-      localStorage.setItem("role", data.user.role);
-
-      useAuthStore.setState({
-        user: data.user,
-        token: token,
+      await axios.post(`${URL}/api/auth/send-otp`, {
+        email: formData.email,
       });
-
-      navigate("/home");
-    } catch (err) {
-      setOtpError(err.response?.data?.message || "Invalid OTP. Try again.");
+    } catch (error) {
+      console.error("Error sending OTP:", error);
     }
   };
 
-  if (token) return <Navigate to="/home" replace />;
+  const handleVerifyOtp = async () => {
+    try {
+      const response = await axios.post(`${URL}/api/auth/verify-otp`, {
+        email: formData.email,
+        otp: otpCode,
+      });
+
+      if (response.status === 200) {
+        const tempUser = Cookies.get("temp_user");
+        const tempToken = Cookies.get("temp_token");
+        const tempId = localStorage.getItem("temp_id");
+        const tempRole = localStorage.getItem("temp_role");
+
+        if (tempUser && tempToken && tempId && tempRole) {
+          Cookies.set("user", tempUser, { expires: 1 });
+          Cookies.set("token", tempToken, { expires: 1 });
+          localStorage.setItem("id", tempId);
+          localStorage.setItem("role", tempRole);
+
+          Cookies.remove("temp_user");
+          Cookies.remove("temp_token");
+          localStorage.removeItem("temp_id");
+          localStorage.removeItem("temp_role");
+        }
+
+        useAuthStore.setState({
+          user: JSON.parse(tempUser),
+          token: tempToken,
+        });
+      }
+    } catch (err) {
+      setOtpError(err.response?.data?.message || "Invalid OTP. Try again.");
+    } finally {
+      navigate("/home", { replace: true });
+    }
+  };
 
   return (
     <div
