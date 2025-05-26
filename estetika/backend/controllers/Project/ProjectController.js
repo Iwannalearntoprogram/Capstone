@@ -246,7 +246,22 @@ const project_put = catchAsync(async (req, res, next) => {
   if (startDate) updates.startDate = startDate;
   if (endDate) updates.endDate = endDate;
   if (files) updates.files = files;
-  if (members) updates.members = members;
+  if (members) {
+    if (Array.isArray(members)) {
+      const resolvedMembers = await Promise.all(
+        members.map(async (member) => {
+          if (project.members.includes(member)) {
+            return member;
+          }
+          const user = await User.findOne({
+            $or: [{ email: member }, { username: member }],
+          });
+          return user ? user._id : null;
+        })
+      );
+      updates.members = resolvedMembers.filter(Boolean);
+    }
+  }
   if (tasks) updates.tasks = tasks;
   if (timeline) updates.timeline = timeline;
   if (status) updates.status = status;
@@ -255,6 +270,7 @@ const project_put = catchAsync(async (req, res, next) => {
   if (projectLocation) updates.projectLocation = projectLocation;
   if (designInspo) updates.designInspo = designInspo;
   if (projectUpdates) updates.projectUpdates = projectUpdates;
+  console.log(updates.members);
 
   const updatedProject = await Project.findByIdAndUpdate(id, updates, {
     new: true,

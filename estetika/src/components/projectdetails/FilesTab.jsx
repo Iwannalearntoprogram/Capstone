@@ -151,16 +151,6 @@ export default function FilesTab() {
     return "document";
   };
 
-  // const getFileName = (url) => {
-  //   try {
-  //     const lastSegment = url.split("/").pop();
-  //     const dashIdx = lastSegment.indexOf("-");
-  //     return dashIdx !== -1 ? lastSegment.substring(0, dashIdx) : lastSegment;
-  //   } catch {
-  //     return url;
-  //   }
-  // };
-
   // Use project.files if available, else empty array
   const projectFiles = Array.isArray(project?.files) ? project.files : [];
 

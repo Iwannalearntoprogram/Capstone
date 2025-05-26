@@ -25,6 +25,7 @@ const ProjectCard = ({ project, onView, onDelete }) => {
     projectSize: project.projectSize || "",
     roomType: project.roomType || "",
     status: project.status || "",
+    members: project.members || [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -92,21 +93,30 @@ const ProjectCard = ({ project, onView, onDelete }) => {
     setIsSubmitting(true);
     try {
       const token = Cookies.get("token");
+      const updatedProject = {
+        title: editProjectForm.title,
+        description: editProjectForm.description,
+        budget: Number(editProjectForm.budget),
+        startDate: new Date(editProjectForm.startDate).toISOString(),
+        endDate: new Date(editProjectForm.endDate).toISOString(),
+        projectLocation: editProjectForm.projectLocation,
+        projectSize: editProjectForm.projectSize
+          ? Number(editProjectForm.projectSize)
+          : null,
+        roomType: editProjectForm.roomType,
+        status: editProjectForm.status,
+        members: Array.isArray(editProjectForm.members)
+          ? editProjectForm.members.map((member) =>
+              typeof member === "object" && member !== null && member._id
+                ? member._id
+                : member
+            )
+          : [],
+      };
+
       await axios.put(
         `${serverUrl}/api/project?id=${project._id}`,
-        {
-          title: editProjectForm.title,
-          description: editProjectForm.description,
-          budget: Number(editProjectForm.budget),
-          startDate: new Date(editProjectForm.startDate).toISOString(),
-          endDate: new Date(editProjectForm.endDate).toISOString(),
-          projectLocation: editProjectForm.projectLocation,
-          projectSize: editProjectForm.projectSize
-            ? Number(editProjectForm.projectSize)
-            : null,
-          roomType: editProjectForm.roomType,
-          status: editProjectForm.status,
-        },
+        updatedProject,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -124,6 +134,13 @@ const ProjectCard = ({ project, onView, onDelete }) => {
   };
 
   const isAdmin = userRole === "admin";
+
+  const addMemberField = () => {
+    setEditProjectForm((prev) => ({
+      ...prev,
+      members: [...editProjectForm.members, ""],
+    }));
+  };
 
   return (
     <>
@@ -245,6 +262,73 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   <option value="cancelled">Cancelled</option>
                 </select>
               </label>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Members
+                </label>
+                <ul className="mb-2">
+                  {editProjectForm.members &&
+                  editProjectForm.members.length > 0 ? (
+                    editProjectForm.members.map((member, index) => (
+                      <li
+                        key={member._id || index}
+                        className="flex items-center justify-between mb-1"
+                      >
+                        <input
+                          key={index}
+                          type="text"
+                          placeholder={`Member ${index + 1} Email or Username`}
+                          value={member.fullName}
+                          onChange={(e) => {
+                            const updatedMembers = [...editProjectForm.members];
+                            updatedMembers[index] = `${e.target.value}`;
+                            setEditProjectForm((prev) => ({
+                              ...prev,
+                              members: updatedMembers,
+                            }));
+                          }}
+                          className="w-full p-2 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+                        />
+                        <button
+                          type="button"
+                          className="text-red-500 text-xs px-2 py-1 rounded hover:bg-red-100"
+                          onClick={async () => {
+                            try {
+                              const token = Cookies.get("token");
+                              await axios.put(
+                                `${serverUrl}/api/project/remove-member?id=${project._id}`,
+                                { memberId: member._id },
+                                {
+                                  headers: {
+                                    Authorization: `Bearer ${token}`,
+                                  },
+                                }
+                              );
+                              alert("Member removed!");
+                              window.location.reload();
+                            } catch (err) {
+                              alert("Failed to remove member.");
+                            }
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-gray-400 text-xs">No members yet.</li>
+                  )}
+                  <li>
+                    <button
+                      type="button"
+                      onClick={addMemberField}
+                      className="text-[#1D3C34] text-sm hover:underline"
+                    >
+                      + Add Member
+                    </button>
+                  </li>
+                </ul>
+              </div>
               <button
                 type="submit"
                 className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition cursor-pointer"
