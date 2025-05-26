@@ -26,7 +26,9 @@ function ProfilePage() {
         }
 
         const response = await axios.get(
-          `${serverUrl}/api/project?projectCreator=${userId}`,
+          `${serverUrl}/api/project?${
+            user.role === "admin" ? "index=true" : `member=${user.id}`
+          }`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

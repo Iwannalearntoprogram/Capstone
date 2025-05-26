@@ -76,7 +76,6 @@ const ProjectsPage = () => {
           },
         }
       );
-      console.log(response.data.project);
       setProjects(response.data.project);
       setFilteredProjects(response.data.project);
     };
