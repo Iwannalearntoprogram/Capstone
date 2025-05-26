@@ -5,11 +5,11 @@ const catchAsync = require("../../utils/catchAsync");
 
 // Get Project by Id or projectCreator
 const project_get = catchAsync(async (req, res, next) => {
-  const { id, projectCreator } = req.query;
+  const { id, projectCreator, member, index } = req.query;
 
   let project;
 
-  if (!id && !projectCreator)
+  if (!id && !projectCreator && !member && !index)
     return next(new AppError("Project identifier not found", 400));
 
   if (id) {
@@ -24,8 +24,32 @@ const project_get = catchAsync(async (req, res, next) => {
       })
       .populate("projectCreator", "-password")
       .populate("projectUpdates");
-  } else {
+  } else if (projectCreator) {
     project = await Project.find({ projectCreator })
+      .populate("members", "-password")
+      .populate("tasks")
+      .populate({
+        path: "timeline",
+        populate: {
+          path: "tasks",
+        },
+      })
+      .populate("projectCreator", "-password")
+      .populate("projectUpdates");
+  } else if (member) {
+    project = await Project.find({ members: member })
+      .populate("members", "-password")
+      .populate("tasks")
+      .populate({
+        path: "timeline",
+        populate: {
+          path: "tasks",
+        },
+      })
+      .populate("projectCreator", "-password")
+      .populate("projectUpdates");
+  } else if (index) {
+    project = await Project.find()
       .populate("members", "-password")
       .populate("tasks")
       .populate({
@@ -42,6 +66,13 @@ const project_get = catchAsync(async (req, res, next) => {
     return next(
       new AppError("Project not found. Invalid Project Identifier.", 404)
     );
+
+  const isPastEndDate = (endDate) => {
+    if (!endDate) return false;
+    const end = new Date(endDate);
+    const now = new Date();
+    return end < now;
+  };
 
   if (id) {
     project = project.toObject ? project.toObject() : project;
@@ -72,6 +103,10 @@ const project_get = catchAsync(async (req, res, next) => {
       project.progress = overallProgress;
     } else {
       project.progress = 0;
+    }
+
+    if (isPastEndDate(project.endDate)) {
+      project.status = "delayed";
     }
   } else {
     project.forEach((proj, idx) => {
@@ -108,6 +143,10 @@ const project_get = catchAsync(async (req, res, next) => {
         proj.progress = overallProgress;
       } else {
         proj.progress = 0;
+      }
+
+      if (isPastEndDate(proj.endDate)) {
+        proj.status = "delayed";
       }
     });
   }
