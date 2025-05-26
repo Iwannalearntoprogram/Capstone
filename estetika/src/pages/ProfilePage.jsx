@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import sofaImg from "../assets/images/sofa.jpg";
 import Cookies from "js-cookie";
+import axios from "axios";
 
 function ProfilePage() {
-  // Get user directly from cookie
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
   const userCookie = Cookies.get("user");
   const user = userCookie ? JSON.parse(userCookie) : null;
-  console.log("User from cookie:", user);
+  const token = Cookies.get("token");
+  const [projects, setProjects] = useState([]);
 
   const handleLogout = () => {
     Cookies.remove("token");
@@ -15,6 +17,23 @@ function ProfilePage() {
     localStorage.removeItem("role");
     window.location.reload();
   };
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const response = await axios.get(
+        `${serverUrl}/api/project?${
+          user.role === "admin" ? "index=true" : `member=${user.id}`
+        }`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setProjects(response.data.project);
+    };
+    fetchProjects();
+  }, []);
 
   return (
     <>
@@ -49,35 +68,23 @@ function ProfilePage() {
           <div className="bg-white p-4 rounded-lg shadow-md">
             <div className="flex justify-between mb-4">
               <h2 className="font-bold">Project</h2>
-              <button className="text-sm font-bold text-pink-500">
+              {/* <button className="text-sm font-bold text-pink-500">
                 View All
-              </button>
+              </button> */}
             </div>
             <div className="flex flex-wrap gap-3 justify-center">
-              <div>
-                <div className="w-24 h-24 rounded-lg bg-violet-200 mb-4"></div>
-                <p className="text-center text-xs">Lorem ipsum</p>
-              </div>
-              <div>
-                <div className="w-24 h-24 rounded-lg bg-violet-200 mb-4"></div>
-                <p className="text-center text-xs">Lorem ipsum</p>
-              </div>
-              <div>
-                <div className="w-24 h-24 rounded-lg bg-violet-200 mb-4"></div>
-                <p className="text-center text-xs">Lorem ipsum</p>
-              </div>
-              <div>
-                <div className="w-24 h-24 rounded-lg bg-violet-200 mb-4"></div>
-                <p className="text-center text-xs">Lorem ipsum</p>
-              </div>
-              <div>
-                <div className="w-24 h-24 rounded-lg bg-violet-200 mb-4"></div>
-                <p className="text-center text-xs">Lorem ipsum</p>
-              </div>
-              <div>
-                <div className="w-24 h-24 rounded-lg bg-violet-200 mb-4"></div>
-                <p className="text-center text-xs">Lorem ipsum</p>
-              </div>
+              {projects && projects.length > 0 ? (
+                projects.map((project) => (
+                  <div key={project._id || project.id}>
+                    <div className="w-24 h-24 rounded-lg bg-violet-200 mb-4"></div>
+                    <p className="text-center text-xs">{project.title}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-xs text-gray-400">
+                  No projects found
+                </p>
+              )}
             </div>
           </div>
         </div>
