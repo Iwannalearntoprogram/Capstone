@@ -2,11 +2,12 @@ const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User/User");
 const Message = require("../models/User/Message");
+const Notification = require("../models/utils/Notification");
 
 const initSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: true,
+      origin: [process.env.CLIENT_URL, "http://localhost:5173"],
       methods: ["GET", "POST"],
     },
   });
@@ -60,6 +61,25 @@ const initSocket = (server) => {
             content,
             timestamp: message.timestamp,
           });
+        }
+
+        if (sender.role === "designer" && recipientUser.role === "client") {
+          // Check if a similar notification was created in the last 10 minutes
+          const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+          const existingNotification = await Notification.findOne({
+            recipient: recipientUser._id,
+            type: "update",
+            message: `Designer: ${sender.fullName} has messaged you.`,
+            createdAt: { $gte: tenMinutesAgo },
+          });
+
+          if (!existingNotification) {
+            await Notification.create({
+              recipient: recipientUser._id,
+              message: `Designer: ${sender.fullName} has messaged you.`,
+              type: "update",
+            });
+          }
         }
       } catch (err) {
         console.error("Error in send_private_message:", err.message);

@@ -11,19 +11,16 @@ export const useAuthStore = create((set) => ({
 
     try {
       set({ isLoading: true });
-      const response = await axios.post(`${URL}/api/auth/login`, formData, {
-        withCredentials: true,
-      });
-      console.log("Login response: ", response);
+      const response = await axios.post(`${URL}/api/auth/login`, formData);
       const data = response.data;
-      const token = Cookies.get("token");
-      Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
+      Cookies.set("user", JSON.stringify(data.user), { expires: 1 });
+      Cookies.set("token", `${data.token}`, { expires: 1 });
       localStorage.setItem("id", data.user.id);
       localStorage.setItem("role", data.user.role);
 
       set({
         user: data.user,
-        token: token,
+        token: data.token,
       });
       return { success: true };
     } catch (e) {
@@ -41,8 +38,8 @@ export const useAuthStore = create((set) => ({
   },
 
   rehydrate: () => {
-    const userCookie = Cookies.get("user");
     const token = Cookies.get("token");
+    const userCookie = Cookies.get("user");
     let user = null;
     if (userCookie) {
       try {

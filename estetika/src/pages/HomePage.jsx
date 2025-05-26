@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CustomerSatisfactionChart from "../components/dashboard/CustomerSatisfactionChart";
 import ProjectCompletionChart from "../components/dashboard/ProjectCompletionChart";
+import Cookies from "js-cookie";
+import axios from "axios";
 
 // Separated Top Materials Data
 const topMaterials = [
@@ -31,6 +33,64 @@ const topMaterials = [
 ];
 
 const HomePage = () => {
+  const id = localStorage.getItem("id");
+  const role = localStorage.getItem("role");
+  const [loading, setLoading] = useState(true);
+  const [projectsData, setProjectsData] = useState([]);
+  const [projectStates, setProjectStates] = useState({});
+
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
+
+  useEffect(() => {
+    const fetchMaterials = async () => {
+      try {
+        const token = Cookies.get("token");
+        const res = await axios.get(
+          `${serverUrl}/api/project?${
+            role === "admin" ? "index=true" : `member=${id}`
+          }`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setProjectsData(res.data.project);
+      } catch (err) {
+        setProjectsData([]);
+      }
+    };
+    fetchMaterials();
+  }, []);
+
+  useEffect(() => {
+    checkProjectsState(projectsData);
+  }, [projectsData]);
+
+  const checkProjectsState = (projects) => {
+    const activeProjects = projects.filter(
+      (project) => project.status === "ongoing"
+    ).length;
+    const completedProjects = projects.filter(
+      (project) => project.status === "completed"
+    ).length;
+    const delayedProjects = projects.filter(
+      (project) => project.status === "delayed"
+    ).length;
+    const cancelledProjects = projects.filter(
+      (project) => project.status === "cancelled"
+    ).length;
+
+    setProjectStates({
+      active: activeProjects,
+      completed: completedProjects,
+      delayed: delayedProjects,
+      cancelled: cancelledProjects,
+    });
+
+    setLoading(false);
+  };
+
   return (
     <div className="w-full min-h-screen grid grid-rows-3 grid-cols-8 gap-4 grid-auto-rows-[minmax(0, 1fr)]">
       {/* project overview */}
@@ -42,7 +102,7 @@ const HomePage = () => {
         <div className="flex gap-4 justify-center">
           <div className="h-40 w-40 bg-red-100 rounded-xl relative">
             <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
-              14
+              {`${loading ? "0" : projectStates.active}`}
             </p>
             <p className="w-full text-center absolute bottom-4 ">
               Active Projects
@@ -50,7 +110,7 @@ const HomePage = () => {
           </div>
           <div className="h-40 w-40 bg-amber-100 rounded-xl relative">
             <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
-              34
+              {`${loading ? "0" : projectStates.completed}`}
             </p>
             <p className="w-full text-center absolute bottom-4 ">
               Completed Projects
@@ -58,13 +118,13 @@ const HomePage = () => {
           </div>
           <div className="h-40 w-40 bg-green-100 rounded-xl relative">
             <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
-              5
+              {`${loading ? "0" : projectStates.delayed}`}
             </p>
             <p className="w-full text-center absolute bottom-4 ">Delayed</p>
           </div>
           <div className="h-40 w-40 bg-purple-100 rounded-xl relative">
             <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
-              7
+              {`${loading ? "0" : projectStates.cancelled}`}
             </p>
             <p className="w-full text-center absolute bottom-4 ">Cancelled</p>
           </div>

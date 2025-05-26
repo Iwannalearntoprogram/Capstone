@@ -105,10 +105,6 @@ const login = catchAsync(async (req, res, next) => {
     { expiresIn: "1d" }
   );
 
-  res.cookie("token", token, {
-    secure: true,
-  });
-
   return res.json({
     user: {
       id: user._id,
@@ -117,6 +113,7 @@ const login = catchAsync(async (req, res, next) => {
       phoneNumber: user.phoneNumber,
       role: user.role,
     },
+    token,
   });
 });
 

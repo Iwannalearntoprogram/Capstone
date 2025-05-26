@@ -80,16 +80,31 @@ const user_update = catchAsync(async (req, res, next) => {
 
   if (!updatedUser) return next(new AppError("User not Found.", 404));
 
-  const expiration = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+  const expiration = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
   const payload = { user: JSON.stringify(updatedUser), exp: expiration };
   const token = jwt.sign(payload, KEY);
 
-  res.cookie("token", token, {
-    secure: true,
-    expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
-  });
-
-  return res.status(200).json({ message: "Account Successfully Updated" });
+  return res
+    .status(200)
+    .json({ message: "Account Successfully Updated", token });
 });
 
-module.exports = { users_index, user_update };
+// Get User by Id or Username
+const user_get = catchAsync(async (req, res, next) => {
+  const { id, username } = req.query;
+
+  let user;
+  if (id) {
+    user = await User.findById(id).populate("projectsId");
+  } else if (username) {
+    user = await User.findOne({ username }).populate("projectsId");
+  }
+
+  if (!user) return next(new AppError("User not found", 404));
+
+  const { password, __v, ...other } = user._doc;
+
+  return res.status(200).json({ message: "User Fetched", user: other });
+});
+
+module.exports = { users_index, user_update, user_get };
