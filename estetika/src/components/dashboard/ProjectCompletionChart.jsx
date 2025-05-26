@@ -9,42 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  {
-    year: "2021",
-    sales: 4000,
-  },
-  {
-    year: "2022",
-    sales: 3000,
-  },
-  {
-    year: "2023",
-    sales: 2000,
-  },
-  {
-    year: "2024",
-    sales: 2780,
-  },
-  {
-    year: "2025",
-    sales: 1890,
-  },
-  {
-    year: "2026",
-    sales: 2500,
-  },
-  {
-    year: "2027",
-    sales: 3200,
-  },
-  {
-    year: "2028",
-    sales: 1000,
-  },
-];
-
-const ProjectCompletionChart = () => {
+const ProjectCompletionChart = ({ data }) => {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart

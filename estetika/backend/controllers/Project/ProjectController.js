@@ -105,7 +105,7 @@ const project_get = catchAsync(async (req, res, next) => {
       project.progress = 0;
     }
 
-    if (isPastEndDate(project.endDate)) {
+    if (isPastEndDate(project.endDate) && project.status === "ongoing") {
       project.status = "delayed";
     }
   } else {
@@ -145,7 +145,7 @@ const project_get = catchAsync(async (req, res, next) => {
         proj.progress = 0;
       }
 
-      if (isPastEndDate(proj.endDate)) {
+      if (isPastEndDate(proj.endDate) && proj.status === "ongoing") {
         proj.status = "delayed";
       }
     });
