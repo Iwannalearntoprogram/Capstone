@@ -64,11 +64,22 @@ const initSocket = (server) => {
         }
 
         if (sender.role === "designer" && recipientUser.role === "client") {
-          await Notification.create({
-            recipient: clientId,
-            message: `Designer: ${sender.fullName} has messaged you.`,
+          // Check if a similar notification was created in the last 10 minutes
+          const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+          const existingNotification = await Notification.findOne({
+            recipient: recipientUser._id,
             type: "update",
+            message: `Designer: ${sender.fullName} has messaged you.`,
+            createdAt: { $gte: tenMinutesAgo },
           });
+
+          if (!existingNotification) {
+            await Notification.create({
+              recipient: recipientUser._id,
+              message: `Designer: ${sender.fullName} has messaged you.`,
+              type: "update",
+            });
+          }
         }
       } catch (err) {
         console.error("Error in send_private_message:", err.message);
