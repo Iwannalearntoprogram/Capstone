@@ -3,7 +3,9 @@ const router = express.Router();
 const {
   users_index,
   user_update,
+  user_get,
 } = require("../../controllers/User/UserController");
+
 const {
   notification_get,
   notification_post,
@@ -12,6 +14,7 @@ const {
 } = require("../../controllers/utils/NotificationController");
 
 router.get("/", users_index);
+router.get("/data", user_get);
 router.put("/", user_update);
 
 router.get("/notification", notification_get);
