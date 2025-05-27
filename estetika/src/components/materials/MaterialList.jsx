@@ -4,8 +4,6 @@ import Material from "./Material";
 export default function MaterialList() {
   const { materialsData } = useOutletContext();
 
-  console.log("Materials Data:", materialsData);
-
   return (
     <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
       {materialsData.map((material) => (

@@ -49,9 +49,6 @@ const TimelineTab = () => {
   const phases = Array.isArray(project?.timeline) ? project.timeline : [];
   const tasks = Array.isArray(project?.tasks) ? project.tasks : [];
 
-  console.log("Project Timeline:", phases);
-  console.log("Project Tasks:", tasks);
-
   let allTasks = [];
   phases.forEach((phase) => {
     if (Array.isArray(phase.tasks)) {
