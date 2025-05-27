@@ -21,7 +21,9 @@ const notification_get = catchAsync(async (req, res, next) => {
       .populate("project")
       .populate("phase");
   } else {
-    notifications = await Notification.find({ recipient })
+    notifications = await Notification.find({
+      recipient: { $in: Array.isArray(recipient) ? recipient : [recipient] },
+    })
       .populate("recipient", "-password")
       .populate("task")
       .populate("project")
