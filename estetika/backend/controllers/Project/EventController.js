@@ -16,11 +16,13 @@ const event_get = catchAsync(async (req, res, next) => {
   if (id) {
     event = await Event.findById(id)
       .populate("userId", "-password")
-      .populate("recepient", "-password");
+      .populate("recipient", "-password");
   } else {
-    event = await Event.find({ userId })
+    event = await Event.find({
+      $or: [{ userId }, { recipient: userId }],
+    })
       .populate("userId", "-password")
-      .populate("recepient", "-password");
+      .populate("recipient", "-password");
   }
 
   if (!event)
@@ -113,7 +115,7 @@ const event_put = catchAsync(async (req, res, next) => {
     color,
     file,
     notes,
-    recepient,
+    recipient,
   } = req.body;
 
   if (!id) return next(new AppError("Event identifier not found", 400));
@@ -127,7 +129,7 @@ const event_put = catchAsync(async (req, res, next) => {
     !color &&
     !file &&
     !notes &&
-    !recepient
+    !recipient
   ) {
     return next(new AppError("No data to update", 400));
   }
@@ -148,7 +150,20 @@ const event_put = catchAsync(async (req, res, next) => {
   if (color) updates.color = color;
   if (file) updates.file = file;
   if (notes) updates.notes = notes;
-  if (recepient) updates.recepient = recepient;
+
+  if (recipient) {
+    if (Array.isArray(recipient)) {
+      const resolvedRecipients = await Promise.all(
+        recipient.map(async (receiver) => {
+          const user = await User.findOne({
+            $or: [{ email: receiver }, { username: receiver }],
+          });
+          return user ? user._id : null;
+        })
+      );
+      updates.recipient = resolvedRecipients.filter(Boolean);
+    }
+  }
 
   const updatedEvent = await Event.findByIdAndUpdate(id, updates, {
     new: true,
