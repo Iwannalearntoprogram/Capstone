@@ -19,13 +19,13 @@ const users_index = catchAsync(async (req, res) => {
 // Update User
 const user_update = catchAsync(async (req, res, next) => {
   const KEY = process.env.JWT_SECRET;
-  let { userId } = req.query;
+  let { id } = req.query;
 
-  if (!userId) {
-    userId = req.id;
+  if (!id) {
+    id = req.id;
   }
 
-  const user = await User.findById(userId);
+  const user = await User.findById(id);
 
   if (!user) {
     return next(new AppError("User not Found.", 404));
@@ -73,7 +73,7 @@ const user_update = catchAsync(async (req, res, next) => {
   });
 
   const updatedUser = await User.findByIdAndUpdate(
-    userId,
+    id,
     { $set: updateData },
     { new: true }
   );
