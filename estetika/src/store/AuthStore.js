@@ -13,6 +13,11 @@ export const useAuthStore = create((set) => ({
       set({ isLoading: true });
       const response = await axios.post(`${URL}/api/auth/login`, formData);
       const data = response.data;
+
+      if (data.user.role === "client") {
+        return alert("Clients can only login through our mobile app.");
+      }
+
       Cookies.set("temp_user", JSON.stringify(data.user), { expires: 1 });
       Cookies.set("temp_token", `${data.token}`, { expires: 1 });
       localStorage.setItem("temp_id", data.user.id);
