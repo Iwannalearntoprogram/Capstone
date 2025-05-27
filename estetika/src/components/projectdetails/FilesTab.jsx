@@ -65,18 +65,57 @@ export default function FilesTab() {
     },
   ];
 
-  const getFileIcon = (type) => {
-    switch (type) {
-      case "spreadsheet":
+  const getFileIcon = (typeOrUrl) => {
+    // Accepts either a type or a file URL/filename
+    let ext = "";
+    if (typeof typeOrUrl === "string" && typeOrUrl.includes(".")) {
+      // Try to extract extension from URL or filename
+      const url = typeOrUrl.split("?")[0];
+      ext = url.split(".").pop().toLowerCase();
+    } else if (typeof typeOrUrl === "string") {
+      ext = typeOrUrl.toLowerCase();
+    }
+    switch (ext) {
+      case "csv":
+      case "xls":
+      case "xlsx":
         return <FaFileExcel className="text-green-600 w-5 h-5" />;
       case "pdf":
         return <FaFilePdf className="text-red-600 w-5 h-5" />;
-      case "image":
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
+      case "bmp":
+      case "svg":
+      case "webp":
         return <FaFileImage className="text-blue-600 w-5 h-5" />;
-      case "document":
+      case "doc":
+      case "docx":
         return <FaFileAlt className="text-blue-800 w-5 h-5" />;
+      case "txt":
+      case "rtf":
+        return <FaFileAlt className="text-blue-600 w-5 h-5" />;
+      case "zip":
+      case "rar":
+      case "7z":
+      case "tar":
+      case "gz":
+        return <FaFileAlt className="text-yellow-600 w-5 h-5" />;
+      case "mp3":
+      case "wav":
+      case "ogg":
+      case "flac":
+      case "aac":
+        return <FaFileAlt className="text-purple-600 w-5 h-5" />;
+      case "mp4":
+      case "mov":
+      case "avi":
+      case "mkv":
+      case "webm":
+        return <FaFileAlt className="text-pink-600 w-5 h-5" />;
       default:
-        return <FaFileAlt className="text-gray-600 w-5 h-5" />;
+        return <FaFileAlt className="text-blue-600 w-5 h-5" />;
     }
   };
 
@@ -148,6 +187,11 @@ export default function FilesTab() {
     if (["csv", "xls", "xlsx"].includes(ext)) return "spreadsheet";
     if (["pdf"].includes(ext)) return "pdf";
     if (["doc", "docx", "txt", "rtf"].includes(ext)) return "document";
+    if (["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp"].includes(ext))
+      return "image";
+    if (["zip", "rar", "7z", "tar", "gz"].includes(ext)) return "zip";
+    if (["mp3", "wav", "ogg", "flac", "aac"].includes(ext)) return "audio";
+    if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) return "video";
     return "document";
   };
 
@@ -194,7 +238,7 @@ export default function FilesTab() {
                 key={fileUrl}
                 className="border-t hover:bg-gray-50 transition-colors"
               >
-                <td className="p-3">{getFileIcon(getFileType(fileUrl))}</td>
+                <td className="p-3">{getFileIcon(fileUrl)}</td>
                 <td className="p-3">
                   <a
                     href={fileUrl}

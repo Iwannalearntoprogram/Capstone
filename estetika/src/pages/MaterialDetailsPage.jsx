@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import Papa from "papaparse";
 
 function Button({ children, className = "", ...props }) {
   return (
@@ -50,7 +51,6 @@ export default function MaterialDetailsPage() {
             },
           }
         );
-        console.log("Projects fetched:", response.data.project);
         setProjects(response.data.project || []);
       } catch (err) {
         console.error("Error fetching projects:", err);
@@ -159,6 +159,16 @@ export default function MaterialDetailsPage() {
     setShowAddToSheetModal(true);
   };
 
+  const getFileName = (url) => {
+    try {
+      const decoded = decodeURIComponent(url);
+      const lastSegment = decoded.split("/").pop().split("?")[0];
+      return lastSegment.replace(/-\d{10,}-\d+$/, "");
+    } catch {
+      return url;
+    }
+  };
+
   const handleAddToSheet = async () => {
     if (!selectedProject) {
       alert("Please select a project");
@@ -167,26 +177,111 @@ export default function MaterialDetailsPage() {
 
     setIsAddingToSheet(true);
     try {
-      await axios.post(
-        `${serverUrl}/api/`,
-        {
-          projectId: selectedProject,
-          materialId: material._id,
-          materialName: material.name,
-          company: material.company,
-          selectedSize: selectedSize,
-          quantity: quantity,
-          price: Array.isArray(material.price)
-            ? material.price[0]
-            : material.price,
-        },
+      // 1. Fetch the selected project to get its files
+      const token = Cookies.get("token");
+      const projectRes = await axios.get(
+        `${serverUrl}/api/project?id=${selectedProject}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-
+      const project = projectRes.data.project;
+      const files = Array.isArray(project.files) ? project.files : [];
+      // 2. Find index.csv in files
+      const indexCsvUrl = files.find((url) => getFileName(url) === "index.csv");
+      let csvContent = "";
+      let rows = [];
+      const newRow = [
+        material.name,
+        material.company,
+        selectedSize,
+        quantity,
+        Array.isArray(material.price) ? material.price[0] : material.price,
+      ];
+      if (indexCsvUrl) {
+        // Download and parse existing CSV
+        const resp = await axios.get(
+          `${serverUrl}/api/upload/fetch-csv?url=${encodeURIComponent(
+            indexCsvUrl
+          )}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const text = await resp.data;
+        const parsed = Papa.parse(text, { skipEmptyLines: true });
+        rows = parsed.data;
+        rows.push(newRow);
+      } else {
+        // Create new CSV with headers
+        rows = [
+          ["Material Name", "Company", "Size", "Quantity", "Price"],
+          newRow,
+        ];
+      }
+      // Convert rows to CSV string
+      csvContent = Papa.unparse(rows);
+      // Upload new CSV to backend
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const formData = new FormData();
+      formData.append("document", blob, "index.csv");
+      let uploadRes;
+      try {
+        uploadRes = await axios.post(
+          `${serverUrl}/api/upload/document?projectId=${selectedProject}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        console.log("Upload response:", uploadRes.data);
+      } catch (uploadErr) {
+        console.error("Upload error:", uploadErr.response?.data || uploadErr);
+        alert(
+          "Failed to upload CSV: " +
+            (uploadErr.response?.data?.message || uploadErr.message)
+        );
+        setIsAddingToSheet(false);
+        return;
+      }
+      const newCsvUrl = uploadRes.data.documentLink;
+      if (!newCsvUrl) {
+        alert("Upload failed: No documentLink returned");
+        setIsAddingToSheet(false);
+        return;
+      }
+      // Update project.files (replace old index.csv if exists)
+      let newFiles = files.filter((url) => getFileName(url) !== "index.csv");
+      newFiles.push(newCsvUrl);
+      let updateRes;
+      try {
+        updateRes = await axios.put(
+          `${serverUrl}/api/project?id=${selectedProject}`,
+          { files: newFiles },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Project update response:", updateRes.data);
+      } catch (updateErr) {
+        console.error(
+          "Project update error:",
+          updateErr.response?.data || updateErr
+        );
+        alert(
+          "Failed to update project files: " +
+            (updateErr.response?.data?.message || updateErr.message)
+        );
+        setIsAddingToSheet(false);
+        return;
+      }
       alert("Material added to project sheet successfully!");
       setShowAddToSheetModal(false);
       setSelectedProject("");
