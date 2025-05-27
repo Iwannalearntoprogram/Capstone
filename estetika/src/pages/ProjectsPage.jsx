@@ -31,12 +31,6 @@ const ProjectsPage = () => {
   const navigate = useNavigate();
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
-  // Get user role from localStorage
-  useEffect(() => {
-    const role = localStorage.getItem("role");
-    setUserRole(role);
-  }, []);
-
   const handleProjectClick = (projectId) => {
     navigate(`/projects/${projectId}/tasks`);
   };
@@ -65,10 +59,13 @@ const ProjectsPage = () => {
   };
 
   useEffect(() => {
+    const role = localStorage.getItem("role");
+    setUserRole(role);
+
     const fetchProjects = async () => {
       const response = await axios.get(
         `${serverUrl}/api/project?${
-          userRole === "admin" ? "index=true" : `member=${id}`
+          role === "admin" ? "index=true" : `member=${id}`
         }`,
         {
           headers: {
