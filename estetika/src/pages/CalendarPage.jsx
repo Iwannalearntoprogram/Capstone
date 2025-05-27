@@ -41,9 +41,10 @@ const CalendarPage = () => {
     location: "",
     notes: "",
     alarm: null,
-    repeat: false,
     attachment: null,
   });
+  const [recipients, setRecipients] = useState([]);
+  const [recipientInput, setRecipientInput] = useState("");
 
   const formatToDateTimeLocal = (date) => {
     if (!date) return "";
@@ -67,9 +68,9 @@ const CalendarPage = () => {
       location: selectedEvent.location || "",
       notes: selectedEvent.notes || "",
       alarm: selectedEvent.alarm || null,
-      repeat: selectedEvent.repeat || false,
       attachment: null,
     });
+    setRecipients(selectedEvent.recipients || []);
     setShowViewModal(false);
     setShowEditModal(true);
   };
@@ -88,11 +89,25 @@ const CalendarPage = () => {
       repeat: false,
       attachment: null,
     });
+    setRecipients([]);
+    setRecipientInput("");
     setShowAddModal(true);
+  };
+
+  const handleAddRecipient = () => {
+    if (recipientInput.trim() && !recipients.includes(recipientInput.trim())) {
+      setRecipients([...recipients, recipientInput.trim()]);
+      setRecipientInput("");
+    }
+  };
+  const handleRemoveRecipient = (name) => {
+    setRecipients(recipients.filter((r) => r !== name));
   };
 
   const handleAddEvent = async () => {
     if (!newEvent.title) return alert("Please enter a title!");
+    if (recipients.length === 0)
+      return alert("Please add at least one recipient!");
 
     const body = {
       title: newEvent.title,
@@ -103,6 +118,7 @@ const CalendarPage = () => {
       repeat: newEvent.repeat || false,
       color: newEvent.color || "#4287f5",
       notes: newEvent.notes || "",
+      recipient: recipients,
     };
 
     try {
@@ -126,6 +142,8 @@ const CalendarPage = () => {
 
   const handleUpdateEvent = async () => {
     if (!newEvent.title) return alert("Please enter a title!");
+    if (recipients.length === 0)
+      return alert("Please add at least one recipient!");
 
     const body = {
       title: newEvent.title,
@@ -133,9 +151,9 @@ const CalendarPage = () => {
       startDate: newEvent.start ? newEvent.start.toISOString() : "",
       endDate: newEvent.end ? newEvent.end.toISOString() : "",
       location: newEvent.location || "",
-      repeat: newEvent.repeat || false,
       color: newEvent.color || "#4287f5",
       notes: newEvent.notes || "",
+      recipients,
     };
 
     try {
@@ -205,6 +223,8 @@ const CalendarPage = () => {
       repeat: false,
       attachment: null,
     });
+    setRecipients([]);
+    setRecipientInput("");
   };
 
   const closeEditModal = () => {
@@ -220,6 +240,8 @@ const CalendarPage = () => {
       repeat: false,
       attachment: null,
     });
+    setRecipients([]);
+    setRecipientInput("");
   };
 
   useEffect(() => {
@@ -320,6 +342,12 @@ const CalendarPage = () => {
                 <b>Alarm:</b> {new Date(selectedEvent.alarm).toLocaleString()}
               </div>
             )}
+            <div className="mb-2">
+              <b>Recipients:</b>{" "}
+              {selectedEvent.recipients?.length > 0
+                ? selectedEvent.recipients.join(", ")
+                : "No recipients"}
+            </div>
             <div className="flex justify-end gap-2 mt-4">
               <button
                 onClick={handleEditClick}
@@ -361,6 +389,46 @@ const CalendarPage = () => {
           onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
+        <label className="block mb-2">Recipients:</label>
+        <div className="flex mb-2 gap-2">
+          <input
+            type="text"
+            placeholder="Add recipient email or username"
+            value={recipientInput}
+            onChange={(e) => setRecipientInput(e.target.value)}
+            className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddRecipient();
+              }
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleAddRecipient}
+            className="px-3 py-1 bg-[#1D3C34] text-white rounded-md hover:bg-[#145c4b] transition"
+          >
+            Add
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {recipients.map((r) => (
+            <span
+              key={r}
+              className="bg-gray-200 px-2 py-1 rounded-full flex items-center gap-1"
+            >
+              {r}
+              <button
+                type="button"
+                onClick={() => handleRemoveRecipient(r)}
+                className="ml-1 text-red-500"
+              >
+                &times;
+              </button>
+            </span>
+          ))}
+        </div>
 
         <label className="block mb-2">From:</label>
         <input
@@ -444,6 +512,46 @@ const CalendarPage = () => {
           onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
+        <label className="block mb-2">Recipients:</label>
+        <div className="flex mb-2 gap-2">
+          <input
+            type="text"
+            placeholder="Add recipient name"
+            value={recipientInput}
+            onChange={(e) => setRecipientInput(e.target.value)}
+            className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddRecipient();
+              }
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleAddRecipient}
+            className="px-3 py-1 bg-[#1D3C34] text-white rounded-md hover:bg-[#145c4b] transition"
+          >
+            Add
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {recipients.map((r) => (
+            <span
+              key={r}
+              className="bg-gray-200 px-2 py-1 rounded-full flex items-center gap-1"
+            >
+              {r}
+              <button
+                type="button"
+                onClick={() => handleRemoveRecipient(r)}
+                className="ml-1 text-red-500"
+              >
+                &times;
+              </button>
+            </span>
+          ))}
+        </div>
 
         <label className="block mb-2">From:</label>
         <input
