@@ -11,6 +11,12 @@ const Project = require("../../models/Project/Project");
 const User = require("../../models/User/User");
 const Event = require("../../models/Project/Event");
 
+// Use dynamic import for node-fetch ESM compatibility
+let fetch;
+(async () => {
+  fetch = (await import("node-fetch")).default;
+})();
+
 const allowedDocumentTypes = [
   "application/pdf",
   "application/msword",
@@ -121,12 +127,11 @@ const document_post = catchAsync(async (req, res, next) => {
   initializeApp(firebaseConfig);
   const storage = getStorage();
 
-  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
   const storageRef = ref(
     storage,
     `document/${projectId ? projectId : eventId}/${userId}/${
       req.file.originalname
-    }-${uniqueSuffix}`
+    }`
   );
 
   const metadata = {
@@ -338,10 +343,22 @@ const material_image_post = catchAsync(async (req, res, next) => {
   });
 });
 
+// In fetch_csv, use dynamic import if fetch is not defined
+const fetch_csv = catchAsync(async (req, res) => {
+  const { url } = req.query;
+  if (!url) return next(new AppError("URL not provided", 400));
+  if (!fetch) fetch = (await import("node-fetch")).default;
+  const response = await fetch(url);
+  const text = await response.text();
+  res.set("Content-Type", "text/csv");
+  return res.send(text);
+});
+
 module.exports = {
   image_post,
   document_post,
   message_file_post,
   update_image_post,
   material_image_post,
+  fetch_csv,
 };
