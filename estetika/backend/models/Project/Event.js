@@ -14,7 +14,7 @@ const eventSchema = new mongoose.Schema(
     file: String,
     notes: String,
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    recepient: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
+    recipient: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
     notified: {
       type: Boolean,
       default: false,

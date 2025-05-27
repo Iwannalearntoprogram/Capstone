@@ -43,7 +43,7 @@ const event_post = catchAsync(async (req, res, next) => {
     color,
     file,
     notes,
-    recepient,
+    recipient,
   } = req.body;
 
   const isUserValid = await User.findById(userId);
@@ -55,13 +55,20 @@ const event_post = catchAsync(async (req, res, next) => {
     return next(new AppError("Cannot create event, missing title.", 400));
   }
 
-  // Ensure recepient is an array and includes userId
   let recipients = [];
-  if (recepient) {
-    recipients = Array.isArray(recepient) ? recepient : [recepient];
-  }
-  if (!recipients.includes(userId.toString())) {
-    recipients.push(userId.toString());
+
+  if (recipient) {
+    if (Array.isArray(recipient)) {
+      const resolvedRecipients = await Promise.all(
+        recipient.map(async (receiver) => {
+          const user = await User.findOne({
+            $or: [{ email: receiver }, { username: receiver }],
+          });
+          return user ? user._id : null;
+        })
+      );
+      recipients = resolvedRecipients.filter(Boolean);
+    }
   }
 
   const newEvent = new Event({
@@ -74,7 +81,7 @@ const event_post = catchAsync(async (req, res, next) => {
     color,
     file,
     notes,
-    recepient: recipients,
+    recipient: recipients,
   });
 
   await newEvent.save();
