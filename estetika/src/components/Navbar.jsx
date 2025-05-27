@@ -26,11 +26,12 @@ const Navbar = ({ toggleSidebar }) => {
   // Fetch notifications from API
   useEffect(() => {
     const fetchNotifications = async () => {
-      if (!user?._id) return;
+      if (!user?.id) return;
       try {
+        console.log(1);
         const token = Cookies.get("token");
         const res = await axios.get(
-          `${serverUrl}/api/user/notification?recipient=${user._id}`,
+          `${serverUrl}/api/user/notification?recipient=${user.id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -53,7 +54,7 @@ const Navbar = ({ toggleSidebar }) => {
       }
     };
     fetchNotifications();
-  }, [user?._id]);
+  }, [user?.id]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
