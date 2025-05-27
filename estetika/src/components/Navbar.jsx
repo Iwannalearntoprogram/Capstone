@@ -28,7 +28,6 @@ const Navbar = ({ toggleSidebar }) => {
     const fetchNotifications = async () => {
       if (!user?.id) return;
       try {
-        console.log(1);
         const token = Cookies.get("token");
         const res = await axios.get(
           `${serverUrl}/api/user/notification?recipient=${user.id}`,
