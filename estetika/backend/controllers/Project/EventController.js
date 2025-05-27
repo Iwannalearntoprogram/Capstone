@@ -16,11 +16,11 @@ const event_get = catchAsync(async (req, res, next) => {
   if (id) {
     event = await Event.findById(id)
       .populate("userId", "-password")
-      .populate("recepient", "-password");
+      .populate("recipient", "-password");
   } else {
     event = await Event.find({ userId })
       .populate("userId", "-password")
-      .populate("recepient", "-password");
+      .populate("recipient", "-password");
   }
 
   if (!event)

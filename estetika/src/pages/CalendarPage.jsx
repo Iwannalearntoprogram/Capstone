@@ -263,6 +263,7 @@ const CalendarPage = () => {
           end: new Date(ev.endDate),
         }));
         setEvents(mappedEvents);
+        console.log("Fetched events:", mappedEvents);
       } catch (err) {
         console.error("Failed to fetch events:", err);
         setEvents([]);
@@ -344,8 +345,13 @@ const CalendarPage = () => {
             )}
             <div className="mb-2">
               <b>Recipients:</b>{" "}
-              {selectedEvent.recipients?.length > 0
-                ? selectedEvent.recipients.join(", ")
+              {Array.isArray(selectedEvent.recipient) &&
+              selectedEvent.recipient.length > 0
+                ? selectedEvent.recipient.map((r) => r.fullName || r).join(", ")
+                : typeof selectedEvent.recipient === "object" &&
+                  selectedEvent.recipient !== null &&
+                  selectedEvent.recipient.fullName
+                ? selectedEvent.recipient.fullName
                 : "No recipients"}
             </div>
             <div className="flex justify-end gap-2 mt-4">
