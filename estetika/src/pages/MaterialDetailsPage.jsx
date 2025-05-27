@@ -193,12 +193,16 @@ export default function MaterialDetailsPage() {
       const indexCsvUrl = files.find((url) => getFileName(url) === "index.csv");
       let csvContent = "";
       let rows = [];
+      const unitPrice = Array.isArray(material.price)
+        ? material.price[material.options.indexOf(selectedSize)] ??
+          material.price[0]
+        : material.price;
       const newRow = [
         material.name,
         material.company,
         selectedSize,
         quantity,
-        Array.isArray(material.price) ? material.price[0] : material.price,
+        unitPrice * quantity,
       ];
       if (indexCsvUrl) {
         // Download and parse existing CSV
@@ -239,7 +243,6 @@ export default function MaterialDetailsPage() {
             },
           }
         );
-        console.log("Upload response:", uploadRes.data);
       } catch (uploadErr) {
         console.error("Upload error:", uploadErr.response?.data || uploadErr);
         alert(
@@ -315,6 +318,13 @@ export default function MaterialDetailsPage() {
               </p>
               <p className="text-sm text-gray-600">Size: {selectedSize}</p>
               <p className="text-sm text-gray-600">Quantity: {quantity}</p>
+              <p className="text-sm text-gray-600">
+                Final Price: ₱
+                {Array.isArray(material.price)
+                  ? (material.price[material.options.indexOf(selectedSize)] ??
+                      material.price[0]) * quantity
+                  : material.price * quantity}
+              </p>
             </div>
 
             <div className="mb-4">
@@ -397,9 +407,11 @@ export default function MaterialDetailsPage() {
           <p className="text-sm text-gray-600">COMPANY: {material.company}</p>
           <p className="text-2xl font-semibold mt-4">
             {Array.isArray(material.price)
-              ? `₱${material.price[0]} - ₱${
-                  material.price[material.price.length - 1]
-                }`
+              ? selectedSize
+                ? `₱${material.price[material.options.indexOf(selectedSize)]}`
+                : `₱${material.price[0]} - ₱${
+                    material.price[material.price.length - 1]
+                  }`
               : `₱${material.price}`}
           </p>
           <p className="text-gray-600 mt-2 text-sm">{material.description}</p>
@@ -421,11 +433,6 @@ export default function MaterialDetailsPage() {
                 </Button>
               ))}
             </div>
-            {selectedSize && (
-              <p className="text-sm text-gray-500 mt-1">
-                Selected: {selectedSize}
-              </p>
-            )}
           </div>
 
           <div className="mt-6 flex items-center gap-4">
@@ -451,14 +458,6 @@ export default function MaterialDetailsPage() {
               Add to Sheet
             </Button>
           </div>
-
-          {selectedSize && (
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm font-medium">Selected Options:</p>
-              <p className="text-sm text-gray-600">Size: {selectedSize}</p>
-              <p className="text-sm text-gray-600">Quantity: {quantity}</p>
-            </div>
-          )}
         </div>
 
         <div className="md:col-span-2 mt-10">
