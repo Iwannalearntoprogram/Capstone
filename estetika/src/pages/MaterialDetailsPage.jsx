@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Papa from "papaparse";
+import { useNavigate } from "react-router-dom";
 
 function Button({ children, className = "", ...props }) {
   return (
@@ -14,6 +15,7 @@ function Button({ children, className = "", ...props }) {
 
 export default function MaterialDetailsPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [material, setMaterial] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mainImageIdx, setMainImageIdx] = useState(0);
@@ -60,62 +62,8 @@ export default function MaterialDetailsPage() {
     fetchProjects();
   }, [userRole, serverUrl, token, userId]);
 
-  const similarProducts = [
-    {
-      id: "similar-1",
-      name: "Premium Oak Flooring",
-      company: "WoodCraft Co.",
-      price: 1200,
-      image:
-        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300&h=300&fit=crop",
-      options: ["12mm", "15mm", "18mm"],
-    },
-    {
-      id: "similar-2",
-      name: "Luxury Vinyl Tiles",
-      company: "FloorMax",
-      price: 850,
-      image:
-        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=300&h=300&fit=crop",
-      options: ["4mm", "6mm", "8mm"],
-    },
-    {
-      id: "similar-3",
-      name: "Ceramic Bathroom Tiles",
-      company: "TileWorks",
-      price: 650,
-      image:
-        "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=300&h=300&fit=crop",
-      options: ["300x300", "600x600", "400x800"],
-    },
-    {
-      id: "similar-4",
-      name: "Natural Stone Tiles",
-      company: "StoneHouse",
-      price: 1800,
-      image:
-        "https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=300&h=300&fit=crop",
-      options: ["400x400", "600x600", "800x800"],
-    },
-    {
-      id: "similar-5",
-      name: "Bamboo Flooring",
-      company: "EcoFloor",
-      price: 950,
-      image:
-        "https://images.unsplash.com/photo-1551298370-9c50423c9748?w=300&h=300&fit=crop",
-      options: ["12mm", "14mm", "16mm"],
-    },
-    {
-      id: "similar-6",
-      name: "Marble Effect Tiles",
-      company: "Luxe Tiles",
-      price: 2200,
-      image:
-        "https://images.unsplash.com/photo-1615464118793-f82ed9f1548a?w=300&h=300&fit=crop",
-      options: ["600x600", "800x800", "1200x600"],
-    },
-  ];
+  const [similarProducts, setSimilarProduct] = useState([]);
+  const [fetchingSimilarProduct, setFetchingSimilarProduct] = useState(true);
 
   useEffect(() => {
     const fetchMaterial = async () => {
@@ -139,6 +87,48 @@ export default function MaterialDetailsPage() {
     if (id) fetchMaterial();
   }, [id, serverUrl]);
 
+  useEffect(() => {
+    const fetchSimilar = async () => {
+      if (!material || !material.name) {
+        setSimilarProduct([]);
+        setFetchingSimilarProduct(false);
+        return;
+      }
+      setFetchingSimilarProduct(true);
+      try {
+        const token = Cookies.get("token");
+        const res = await axios.get(
+          `${serverUrl}/api/material/search?query=${encodeURIComponent(
+            material.name
+          )}&max=10`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const filtered = (res.data.results || []).filter(
+          (item) => item._id !== material._id
+        );
+        const sorted = [...filtered].sort((a, b) => {
+          const priceA = Array.isArray(a.price)
+            ? Math.min(...a.price)
+            : a.price;
+          const priceB = Array.isArray(b.price)
+            ? Math.min(...b.price)
+            : b.price;
+          return priceA - priceB;
+        });
+        setSimilarProduct(sorted.slice(0, 4));
+      } catch (err) {
+        setSimilarProduct([]);
+      } finally {
+        setFetchingSimilarProduct(false);
+      }
+    };
+    fetchSimilar();
+  }, [material, serverUrl]);
+
   const handleQuantityChange = (increment) => {
     setQuantity((prev) => Math.max(1, prev + increment));
   };
@@ -148,7 +138,7 @@ export default function MaterialDetailsPage() {
   };
 
   const handleProductClick = (productId) => {
-    console.log(`Navigate to product: ${productId}`);
+    navigate(`/materials/${productId}`);
   };
 
   const handleAddToSheetClick = () => {
@@ -462,47 +452,68 @@ export default function MaterialDetailsPage() {
         </div>
 
         <div className="md:col-span-2 mt-10">
-          <h3 className="text-xl font-semibold mb-6">Similar Products</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {similarProducts.map((product) => (
-              <div
-                key={product.id}
-                className="bg-white border rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => handleProductClick(product.id)}
-              >
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-40 object-cover rounded-t-lg"
-                />
-                <div className="p-4">
-                  <h4 className="font-medium text-sm text-gray-800 mb-1 line-clamp-2">
-                    {product.name}
-                  </h4>
-                  <p className="text-xs text-gray-500 mb-2">
-                    {product.company}
-                  </p>
-                  <p className="font-semibold text-[#1D3C34] mb-2">
-                    ₱{product.price.toLocaleString()}
-                  </p>
-                  <div className="flex gap-1 flex-wrap">
-                    {product.options.slice(0, 2).map((option, idx) => (
-                      <span
-                        key={idx}
-                        className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
-                      >
-                        {option}
-                      </span>
-                    ))}
-                    {product.options.length > 2 && (
-                      <span className="text-xs text-gray-400">
-                        +{product.options.length - 2} more
-                      </span>
-                    )}
+          <h3 className="text-xl font-semibold mb-6">
+            {Array.isArray(similarProducts) &&
+              similarProducts.length > 0 &&
+              "Similar Products"}
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 min-h-[180px]">
+            {fetchingSimilarProduct ? (
+              <div className="col-span-4 flex items-center justify-center text-gray-400 text-lg py-10">
+                Loading similar products...
+              </div>
+            ) : Array.isArray(similarProducts) &&
+              similarProducts.length === 0 ? (
+              <div className="col-span-4 flex items-center justify-center text-gray-400 text-lg py-10">
+                No similar product found.
+              </div>
+            ) : (
+              Array.isArray(similarProducts) &&
+              similarProducts.map((product) => (
+                <div
+                  key={product._id}
+                  className="bg-white border rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => handleProductClick(product._id)}
+                >
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-40 object-cover rounded-t-lg"
+                  />
+                  <div className="p-4">
+                    <h4 className="font-medium text-sm text-gray-800 mb-1 line-clamp-2">
+                      {product.name}
+                    </h4>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {product.company}
+                    </p>
+                    <p className="font-semibold text-[#1D3C34] mb-2">
+                      ₱
+                      {Array.isArray(product.price)
+                        ? product.price[0].toLocaleString()
+                        : product.price.toLocaleString()}
+                    </p>
+                    <div className="flex gap-1 flex-wrap">
+                      {Array.isArray(product.options) &&
+                        product.options.slice(0, 2).map((option, idx) => (
+                          <span
+                            key={idx}
+                            className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
+                          >
+                            {option}
+                          </span>
+                        ))}
+                      {Array.isArray(product.options) &&
+                        product.options.length > 2 && (
+                          <span className="text-xs text-gray-400">
+                            +{product.options.length - 2} more
+                          </span>
+                        )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
