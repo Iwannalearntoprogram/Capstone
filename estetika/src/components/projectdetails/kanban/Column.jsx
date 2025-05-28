@@ -24,7 +24,6 @@ export default function Column({ column, tasks, project }) {
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   const handleSaveTask = async () => {
-    console.log("project", project);
     const body = {
       title: newTask.title,
       description: newTask.description,

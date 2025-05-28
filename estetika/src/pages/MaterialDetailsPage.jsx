@@ -262,7 +262,6 @@ export default function MaterialDetailsPage() {
             },
           }
         );
-        console.log("Project update response:", updateRes.data);
       } catch (updateErr) {
         console.error(
           "Project update error:",
