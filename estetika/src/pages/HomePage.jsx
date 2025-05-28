@@ -72,16 +72,17 @@ const HomePage = () => {
   }, [projectsData]);
 
   const checkProjectsState = (projects) => {
-    const activeProjects = projects.filter(
+    const safeProjects = Array.isArray(projects) ? projects : [];
+    const activeProjects = safeProjects.filter(
       (project) => project.status === "ongoing"
     ).length;
-    const completedProjects = projects.filter(
+    const completedProjects = safeProjects.filter(
       (project) => project.status === "completed"
     ).length;
-    const delayedProjects = projects.filter(
+    const delayedProjects = safeProjects.filter(
       (project) => project.status === "delayed"
     ).length;
-    const cancelledProjects = projects.filter(
+    const cancelledProjects = safeProjects.filter(
       (project) => project.status === "cancelled"
     ).length;
 
@@ -96,11 +97,11 @@ const HomePage = () => {
   };
 
   const checkProjectCompletion = (projects) => {
-    // Model as array of { year: "year", sales: completedCount }
+    const safeProjects = Array.isArray(projects) ? projects : [];
     const years = [2022, 2023, 2024, 2025, 2026, 2027, 2028];
     const completionData = years.map((year) => ({
       year: year.toString(),
-      sales: projects.filter(
+      sales: safeProjects.filter(
         (project) =>
           project.status === "completed" &&
           project.endDate &&
