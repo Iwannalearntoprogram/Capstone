@@ -263,7 +263,6 @@ const CalendarPage = () => {
           end: new Date(ev.endDate),
         }));
         setEvents(mappedEvents);
-        console.log("Fetched events:", mappedEvents);
       } catch (err) {
         console.error("Failed to fetch events:", err);
         setEvents([]);
