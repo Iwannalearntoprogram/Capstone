@@ -6,7 +6,6 @@ const ChatWindow = ({ messages, userId }) => {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    console.log("Messages updated:", messages);
   }, [messages]);
 
   if (!messages || messages.length === 0) {
