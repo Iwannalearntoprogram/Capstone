@@ -133,7 +133,9 @@ const ProjectsPage = () => {
 
   // Group projects by status
   const groupedProjects = {
-    ongoing: filteredProjects.filter((project) => project.status === "ongoing"),
+    ongoing: filteredProjects.filter(
+      (project) => project.status === "ongoing" || project.status === "delayed"
+    ),
     pending: filteredProjects.filter((project) => project.status === "pending"),
     completed: filteredProjects.filter(
       (project) => project.status === "completed"
