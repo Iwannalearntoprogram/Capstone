@@ -32,13 +32,11 @@ class _ForgetPasswordScreenState extends State<ForgotPasswordScreen> {
         _isLoading = true;
       });
 
-      // Simulate API call
       Future.delayed(const Duration(seconds: 2), () {
         setState(() {
           _isLoading = false;
         });
 
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Password reset link sent to your email'),

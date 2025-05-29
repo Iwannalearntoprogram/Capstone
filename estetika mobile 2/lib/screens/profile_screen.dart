@@ -1,9 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:estetika_ui/widgets/custom_app_bar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:estetika_ui/screens/signin_screen.dart';
+import 'package:estetika_ui/widgets/custom_app_bar.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -26,6 +29,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isEditing = false;
   bool _isChangingPassword = false;
   String? _errorMessage;
+  String? _profileImage;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -38,12 +43,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final userString = prefs.getString('user');
     if (userString != null) {
       final user = jsonDecode(userString);
-      print('Loaded user: $user');
       setState(() {
         _nameController.text = user['fullName'] ?? user['username'];
         _emailController.text = user['email'] ?? '';
         _phoneController.text = user['phoneNumber'] ?? '';
+        _profileImage = user['profileImage'];
       });
+    }
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    final picked = await _picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+
+    print('Picked image path: ${picked.path}'); // Log the picked image
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return;
+
+    final imageLink = await _uploadProfileImage(File(picked.path), token);
+    if (imageLink != null) {
+      setState(() {
+        _profileImage = imageLink;
+      });
+      await _updateProfileImage(imageLink);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to upload image')),
+      );
+    }
+  }
+
+  Future<void> _updateProfileImage(String imageLink) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final userString = prefs.getString('user');
+    if (token == null || userString == null) return;
+    final user = jsonDecode(userString);
+
+    final body = jsonEncode({
+      '_id': user['_id'],
+      'profileImage': imageLink,
+    });
+
+    final response = await http.put(
+      Uri.parse('https://capstone-thl5.onrender.com/api/user'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: body,
+    );
+    if (response.statusCode == 200) {
+      user['profileImage'] = imageLink;
+      await prefs.setString('user', jsonEncode(user));
+      setState(() {
+        _profileImage = imageLink;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile picture updated!')),
+      );
     }
   }
 
@@ -118,12 +178,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         body: body,
       );
       if (response.statusCode == 200) {
-        final updatedUser = jsonDecode(response.body)['user'];
-        await prefs.setString('user', jsonEncode(updatedUser));
+        // Update local user object
+        user['fullName'] = _nameController.text.trim();
+        user['email'] = _emailController.text.trim();
+        user['phoneNumber'] = _phoneController.text.trim();
+        await prefs.setString('user', jsonEncode(user));
         setState(() {
           _isEditing = false;
           _errorMessage = null;
         });
+        await _loadUserInfo();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile updated successfully')),
         );
@@ -212,24 +276,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           offset: const Offset(0, 3),
                         ),
                       ],
+                      image: _profileImage != null
+                          ? DecorationImage(
+                              image: NetworkImage(_profileImage!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
-                    child: const Icon(
-                      Icons.person,
-                      size: 80,
-                      color: Colors.grey,
-                    ),
+                    child: _profileImage == null
+                        ? const Icon(
+                            Icons.person,
+                            size: 80,
+                            color: Colors.grey,
+                          )
+                        : null,
                   ),
                   if (_isEditing)
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF203B32),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: 20,
+                    GestureDetector(
+                      onTap: _pickAndUploadImage,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF203B32),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                     ),
                 ],
@@ -475,5 +550,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Text(text),
             ),
     );
+  }
+
+  Future<String?> _uploadProfileImage(File imageFile, String token) async {
+    try {
+      print('Uploading file: ${imageFile.path}');
+      print('File exists: ${imageFile.existsSync()}');
+      var uri =
+          Uri.parse('https://capstone-thl5.onrender.com/api/upload/image');
+      var request = http.MultipartRequest('POST', uri)
+        ..headers['Authorization'] = 'Bearer $token'
+        ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+
+      var response = await request.send();
+
+      final responseBody = await response.stream.bytesToString();
+      print('Upload response: $responseBody');
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(responseBody);
+        return responseData['imageLink'];
+      } else {
+        print('Failed to upload image with status: ${response.statusCode}');
+        print('Error body: $responseBody');
+        return null;
+      }
+    } catch (e) {
+      print('Error uploading image: $e');
+      return null;
+    }
   }
 }

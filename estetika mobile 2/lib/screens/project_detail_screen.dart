@@ -39,6 +39,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _projectData = widget.project; // <-- Initialize here!
     _loadClientInfo();
     _loadProjectDetails();
     _fetchUpdatedProject();
@@ -75,14 +76,22 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
   Future<void> _fetchOverallProgress() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
       final projectId = _projectData['_id'];
       final response = await http.get(
         Uri.parse(
             'https://capstone-thl5.onrender.com/api/phase?projectId=$projectId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
       );
+      print('Overall progress response status: ${response.statusCode}');
+      print('Overall progress response body: ${response.body}');
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
+        print('Overall progress response: ${response.body}');
         final List phases = decoded['phase'] ?? [];
         if (phases.isNotEmpty) {
           double total = 0;
@@ -135,6 +144,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         // Optionally handle error
       }
     }
+    print('Timeline phases: $_timelinePhases'); // <-- Print the timeline here
     setState(() {});
   }
 
@@ -164,10 +174,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
     final projectId = _projectData['_id'];
+    print('Fetching updated project with ID: $projectId');
     try {
       final response = await http.get(
         Uri.parse(
-            'https://capstone-thl5.onrender.com/api/project/update?id=$projectId'),
+            'https://capstone-thl5.onrender.com/api/project/update?projectId=$projectId'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
@@ -177,11 +188,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       print('Fetch updated project body: ${response.body}');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print('Decoded project data: $data'); // <-- Print the parsed result
         if (data['project'] != null) {
           setState(() {
             _projectData = data['project'];
           });
-          // Optionally, refresh timeline and progress
+          print('Project progress: ${_projectData['progress']}');
           await _fetchOverallProgress();
           await _fetchTimelinePhases();
         }
