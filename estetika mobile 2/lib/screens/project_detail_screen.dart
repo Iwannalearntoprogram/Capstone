@@ -52,14 +52,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     } else {
       _clientInfo = {};
     }
-    setState(() {}); // To trigger rebuild for client info
+    setState(() {});
   }
 
   Future<void> _loadProjectDetails() async {
     await Future.delayed(const Duration(milliseconds: 300));
     try {
       _projectData = widget.project;
-      await _fetchOverallProgress(); // <-- fetch progress after loading project
+      await _fetchOverallProgress();
       await _fetchTimelinePhases();
       setState(() {
         _isLoading = false;
@@ -77,7 +77,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     try {
       final projectId = _projectData['_id'];
       final response = await http.get(
-        Uri.parse('https://your-base-url/api/phase?projectId=$projectId'),
+        Uri.parse(
+            'https://capstone-thl5.onrender.com/api/phase?projectId=$projectId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (response.statusCode == 200) {
