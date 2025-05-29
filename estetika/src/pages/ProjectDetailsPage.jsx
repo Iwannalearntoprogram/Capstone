@@ -41,6 +41,7 @@ function ProjectDetailsPage() {
     { label: "Progress", path: "progress" },
     { label: "Timeline", path: "timeline" },
     { label: "Files", path: "files" },
+    { label: "Updates", path: "update" }, // <-- Add this line
   ];
 
   return (
