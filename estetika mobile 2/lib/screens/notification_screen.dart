@@ -44,18 +44,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
       final notif = data['notifications'];
       if (notif != null) {
         setState(() {
-          _notifications = [
-            NotificationItem(
-              id: notif['_id'] ?? '',
-              title: notif['type'] == 'overdue'
-                  ? 'Task Overdue'
-                  : (notif['type'] ?? 'Notification'),
-              description: notif['message'] ?? '',
-              time:
-                  DateTime.tryParse(notif['createdAt'] ?? '') ?? DateTime.now(),
-              isRead: notif['read'] ?? false,
-            ),
-          ];
+          _notifications = List<NotificationItem>.from(
+            (notif as List).map((item) => NotificationItem(
+                  id: item['_id'] ?? '',
+                  title: item['type'] == 'overdue'
+                      ? 'Task Overdue'
+                      : (item['type'] ?? 'Notification'),
+                  description: item['message'] ?? '',
+                  time: DateTime.tryParse(item['createdAt'] ?? '') ??
+                      DateTime.now(),
+                  isRead: item['read'] ?? false,
+                )),
+          );
         });
       }
     }
