@@ -44,8 +44,12 @@ const ProjectsPage = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setProjects((prev) => prev.filter((p) => p._id !== projectId));
-      setFilteredProjects((prev) => prev.filter((p) => p._id !== projectId));
+      setProjects((prev) =>
+        Array.isArray(prev) ? prev.filter((p) => p._id !== projectId) : []
+      );
+      setFilteredProjects((prev) =>
+        Array.isArray(prev) ? prev.filter((p) => p._id !== projectId) : []
+      );
     } catch (err) {
       alert("Failed to delete project.");
     }

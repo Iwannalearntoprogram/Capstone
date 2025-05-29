@@ -4,9 +4,9 @@ const UserList = ({ users, selectedUser, onSelect }) => {
   const sorted = [...users].sort((a, b) => {
     if (a.socketId && !b.socketId) return -1;
     if (!a.socketId && b.socketId) return 1;
-    return (a.firstName || a.fullName || a.username).localeCompare(
-      b.firstName || b.fullName || b.username
-    );
+    const aName = a.firstName || a.fullName || a.username || "";
+    const bName = b.firstName || b.fullName || b.username || "";
+    return aName.localeCompare(bName);
   });
 
   // Avatar color generator based on name
