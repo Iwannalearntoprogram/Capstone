@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class SendProjectScreen extends StatefulWidget {
   const SendProjectScreen({super.key});
@@ -49,11 +50,14 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
 
   bool _isSubmitting = false;
 
+  DateTime? _startDate;
+  DateTime? _endDate;
+
   @override
   void initState() {
     super.initState();
     _setupTextControllerListeners();
-    _loadUserData(); // <-- Add this
+    _loadUserData();
   }
 
   Future<void> _loadUserData() async {
@@ -67,6 +71,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         _contactNumberController.text =
             user['phoneNumber']?.replaceFirst('+63', '') ?? '';
       });
+      print('Loaded user: $user');
     }
   }
 
@@ -124,7 +129,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         });
       }
     } catch (e) {
-      // Handle error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error picking images. Please try again.'),
@@ -404,6 +408,88 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 8),
+
+                  const SizedBox(height: 8),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _startDate ?? DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          _startDate = picked;
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _startDate != null
+                                ? "${_startDate!.year}-${_startDate!.month.toString().padLeft(2, '0')}-${_startDate!.day.toString().padLeft(2, '0')}"
+                                : 'Select start date',
+                            style:
+                                TextStyle(fontSize: 16, color: Colors.black87),
+                          ),
+                          const Icon(Icons.calendar_today,
+                              size: 20, color: Color(0xFF203B32)),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // End Date Picker
+                  const SizedBox(height: 8),
+
+                  const SizedBox(height: 8),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _endDate ?? (_startDate ?? DateTime.now()),
+                        firstDate: _startDate ?? DateTime.now(),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          _endDate = picked;
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _endDate != null
+                                ? "${_endDate!.year}-${_endDate!.month.toString().padLeft(2, '0')}-${_endDate!.day.toString().padLeft(2, '0')}"
+                                : 'Select end date',
+                            style:
+                                TextStyle(fontSize: 16, color: Colors.black87),
+                          ),
+                          const Icon(Icons.calendar_today,
+                              size: 20, color: Color(0xFF203B32)),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 16),
 
                   // Description
@@ -622,7 +708,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                           ? null
                           : () {
                               if (_formKey.currentState!.validate()) {
-                                _submitProject();
+                                _submitProjectProposal();
                               }
                             },
                       style: ElevatedButton.styleFrom(
@@ -691,92 +777,114 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     );
   }
 
-  void _submitProject() {
-    // Show loading state
+  Future<void> _submitProjectProposal() async {
     setState(() {
       _isSubmitting = true;
     });
 
-    // Simulate network request with a delay
-    Future.delayed(const Duration(seconds: 2), () {
-      // final projectData = {
-      //   'clientName': _clientNameController.text,
-      //   'contactNumber': _contactNumberController.text,
-      //   'email': _emailController.text,
-      //   'projectName': _projectNameController.text,
-      //   'roomType': _roomType,
-      //   'projectSize': _projectSizeController.text,
-      //   'location': _locationController.text,
-      //   'budget': _budgetController.text,
-      //   'description': _descriptionController.text,
-      //   'inspirationImages': _inspirationImages.length,
-      //   'inspirationLinks': _inspirationLinks,
-      //   'status': 'Pending Review',
-      //   'submissionDate': DateTime.now().toString(),
-      //   'company': 'Moss Design House',
-      // };
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final userString = prefs.getString('user');
+    if (token == null || userString == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('User not logged in'), backgroundColor: Colors.red),
+      );
+      setState(() {
+        _isSubmitting = false;
+      });
+      return;
+    }
+    final user = jsonDecode(userString);
 
-      // Hide loading state
+    final Map<String, dynamic> body = {
+      "title": _projectNameController.text,
+      "description": _descriptionController.text,
+      "budget": double.tryParse(_budgetController.text) ?? 0,
+      "startDate": _startDate != null ? _startDate!.toIso8601String() : null,
+      "endDate": _endDate != null ? _endDate!.toIso8601String() : null,
+      "projectCreator": user['_id'] ?? user['id'],
+      "roomType": _roomType,
+      "projectSize": double.tryParse(_projectSizeController.text) ?? 0,
+      "projectLocation": _locationController.text,
+      "designInspo":
+          _inspirationLinks.isNotEmpty ? _inspirationLinks.first : null,
+      // Add more fields as needed
+    };
+
+    // Remove null values (for commented out fields)
+    body.removeWhere((key, value) => value == null);
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://capstone-thl5.onrender.com/api/project'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body),
+      );
+
+      print(
+          'Project proposal response: ${response.statusCode} ${response.body}');
+
       setState(() {
         _isSubmitting = false;
       });
 
-      // Show successful submission message
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Row(
-              children: [
-                const Icon(
-                  Icons.check_circle,
-                  color: Color(0xFF203B32),
-                  size: 24,
-                ),
-                const SizedBox(width: 8),
-                const Text('Submission Successful'),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Your project has been submitted to Moss Design House for review. Our team will contact you shortly.',
-                  style: TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Reference #: MDH${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: Color(0xFF203B32),
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  // Return to previous screen after dialog is closed
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    Navigator.pop(context);
-                  });
-                },
-                child: const Text(
-                  'OK',
-                  style: TextStyle(color: Color(0xFF203B32)),
-                ),
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        // Success dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-            ],
-          );
-        },
+              title: Row(
+                children: [
+                  const Icon(Icons.check_circle,
+                      color: Color(0xFF203B32), size: 24),
+                  const SizedBox(width: 8),
+                  const Text('Submission Successful'),
+                ],
+              ),
+              content: const Text(
+                'Your project has been submitted to Moss Design House for review. Our team will contact you shortly.',
+                style: TextStyle(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.pop(context);
+                  },
+                  child: const Text('OK',
+                      style: TextStyle(color: Color(0xFF203B32))),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Submission failed: ${response.body}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isSubmitting = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
-    });
+    }
   }
 }
