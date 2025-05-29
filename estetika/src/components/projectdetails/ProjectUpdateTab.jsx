@@ -3,6 +3,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useOutletContext } from "react-router-dom";
 import Modal from "react-modal";
+import { FaTrash } from "react-icons/fa";
 
 const ProjectUpdateTab = () => {
   const [update, setUpdate] = useState(null);
@@ -15,6 +16,7 @@ const ProjectUpdateTab = () => {
     description: "",
     imageLink: "",
   });
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const { project } = useOutletContext();
 
@@ -25,7 +27,6 @@ const ProjectUpdateTab = () => {
       setMessage("");
       try {
         const token = Cookies.get("token");
-        console.log("Fetching update for project ID:", project._id);
         const res = await axios.get(
           `${import.meta.env.VITE_SERVER_URL}/api/project/update?projectId=${
             project._id
@@ -36,11 +37,9 @@ const ProjectUpdateTab = () => {
             },
           }
         );
-        console.log("Fetch update response:", res.data);
         setUpdate(res.data.update);
         setMessage(res.data.message || "Update fetched!");
       } catch (err) {
-        console.error("Error fetching update:", err);
         setMessage("Error fetching update.");
         setUpdate(null);
       } finally {
@@ -56,46 +55,90 @@ const ProjectUpdateTab = () => {
       setMessage("Description is required.");
       return;
     }
+    if (!selectedImage) {
+      setMessage("Image is required.");
+      return;
+    }
     setLoading(true);
     try {
       const token = Cookies.get("token");
       const currentUser = Cookies.get("user");
       let designerId = undefined;
       try {
-        designerId = currentUser ? JSON.parse(currentUser)._id : undefined;
+        designerId = currentUser ? JSON.parse(currentUser).id : undefined;
       } catch {
         designerId = undefined;
       }
-      const clientMember = Array.isArray(project.members)
-        ? project.members.find((m) => m.role === "client")
-        : null;
-      const clientId = clientMember?._id;
+
+      // 1. Upload image to server
+      const formData = new FormData();
+      formData.append("image", selectedImage);
+      const uploadRes = await axios.post(
+        `${
+          import.meta.env.VITE_SERVER_URL
+        }/api/upload/project/update?projectId=${project._id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      const imageLink = uploadRes.data.imageLink;
+
+      // 2. Post update with imageLink
+      const body = {
+        description: newUpdate.description,
+        imageLink: imageLink,
+        projectId: project._id,
+        clientId: project.projectCreator._id,
+        designerId: designerId,
+      };
 
       await axios.post(
         `${import.meta.env.VITE_SERVER_URL}/api/project/update`,
-        {
-          description: newUpdate.description,
-          imageLink: newUpdate.imageLink,
-          projectId: project._id,
-          clientId: clientId,
-          designerId: designerId,
-        },
+        body,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      setMessage("Update added successfully!");
+
       setClosing(true);
       setTimeout(() => {
         setModalOpen(false);
         setClosing(false);
         setNewUpdate({ description: "", imageLink: "" });
+        setSelectedImage(null);
       }, 300);
+      // Optionally, refetch updates here
       setTimeout(() => window.location.reload(), 400);
     } catch (err) {
       setMessage("Failed to add update.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteUpdate = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this update?")) return;
+    setLoading(true);
+    try {
+      const token = Cookies.get("token");
+      await axios.delete(
+        `https://capstone-thl5.onrender.com/api/project/update?id=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setMessage("Update deleted successfully.");
+      setUpdate((prev) => prev.filter((u) => u._id !== id));
+    } catch (err) {
+      setMessage("Failed to delete update.");
     } finally {
       setLoading(false);
     }
@@ -106,63 +149,83 @@ const ProjectUpdateTab = () => {
     setTimeout(() => {
       setModalOpen(false);
       setClosing(false);
+      setNewUpdate({ description: "", imageLink: "" });
+      setSelectedImage(null);
     }, 300);
   };
 
   return (
-    <div className="project-update-tab" style={{ padding: "2rem" }}>
-      <h2>Project Update</h2>
+    <div className="project-update-tab flex flex-col items-center min-h-[60vh] px-4">
       <button
         onClick={() => setModalOpen(true)}
-        className="border-[1px] border-dashed border-[#145c4b] p-4 py-2 rounded-lg shadow-sm bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-center text-gray-500 font-medium transition mb-4"
+        className="bg-[#145c4b] px-6 py-3 rounded-lg shadow-sm cursor-pointer flex items-center justify-center text-white font-medium transition mb-6"
         type="button"
       >
         + Add Update
       </button>
-      {message && (
-        <div
-          style={{
-            marginBottom: "1rem",
-            color:
-              message.startsWith("Error") || message.startsWith("Failed")
-                ? "red"
-                : "green",
-          }}
-        >
-          {message}
-        </div>
-      )}
-      {update ? (
-        <div
-          style={{
-            background: "#f5f5f5",
-            padding: "1rem",
-            borderRadius: "4px",
-          }}
-        >
-          <h3>Description:</h3>
-          <p>{update.description}</p>
-          {update.imageLink && (
-            <div>
-              <h4>Image:</h4>
-              <img
-                src={update.imageLink}
-                alt="Update"
-                style={{ maxWidth: "300px" }}
-              />
+
+      {Array.isArray(update) && update.length > 0 ? (
+        <div className="w-full max-w-xl flex flex-col gap-6">
+          {[...update].reverse().map((u) => (
+            <div
+              key={u._id}
+              className="bg-white rounded-lg shadow border border-gray-200 p-6 flex flex-col gap-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {/* Designer avatar */}
+                  <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
+                    {u.designerId?.profileImage ? (
+                      <div className="w-full h-full object-cover"></div>
+                    ) : (
+                      <span className="text-gray-400 text-xl">
+                        {u.designerId?.fullName?.[0] || "?"}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-800">
+                      {u.designerId?.fullName}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(u.createdAt).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleDeleteUpdate(u._id)}
+                  className="text-gray-400 hover:text-red-500 transition"
+                  title="Delete update"
+                  disabled={loading}
+                >
+                  <FaTrash />
+                </button>
+              </div>
+              <div className="mt-2 text-gray-800 text-base whitespace-pre-line">
+                {u.description}
+              </div>
+              {u.imageLink && u.imageLink.trim() !== "" && (
+                <div className="flex justify-center mt-2">
+                  <img
+                    src={u.imageLink}
+                    alt="Update"
+                    className="max-w-full max-h-72 rounded border"
+                  />
+                </div>
+              )}
+              <div className="flex items-center gap-2 mt-3 text-sm text-gray-500">
+                <span>
+                  <span className="font-medium">Client:</span>{" "}
+                  {u.clientId?.fullName}
+                </span>
+              </div>
             </div>
-          )}
-          <h4>Project Title:</h4>
-          <p>{update.projectId?.title}</p>
-          <h4>Client:</h4>
-          <p>{update.clientId?.fullName}</p>
-          <h4>Designer:</h4>
-          <p>{update.designerId?.fullName}</p>
-          <h4>Created At:</h4>
-          <p>{new Date(update.createdAt).toLocaleString()}</p>
+          ))}
         </div>
       ) : (
-        <div style={{ color: "#888", marginTop: "1rem" }}>No update yet.</div>
+        <div className="text-gray-400 mt-8 text-center text-lg">
+          No update yet.
+        </div>
       )}
 
       {/* Modal for Add Update */}
@@ -179,14 +242,16 @@ const ProjectUpdateTab = () => {
       <Modal
         isOpen={modalOpen || closing}
         onRequestClose={closeModal}
-        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 w-[90%] max-w-[400px] rounded-lg shadow-lg z-50 ${
+        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 w-[90%] max-w-[400px] rounded-lg shadow-lg z-50 ${
           closing ? "opacity-0 transition-opacity duration-300" : "opacity-100"
         }`}
         overlayClassName="fixed top-0 left-0 w-full h-full bg-black/20 z-50 backdrop-blur-xs"
         shouldCloseOnOverlayClick={false}
         ariaHideApp={false}
       >
-        <h2 className="text-lg font-semibold mb-4">Add Project Update</h2>
+        <h2 className="text-lg font-semibold mb-4 text-center">
+          Add Project Update
+        </h2>
         <label className="block mb-2">Description:</label>
         <textarea
           placeholder="Update Description"
@@ -196,23 +261,46 @@ const ProjectUpdateTab = () => {
           }
           className="w-full p-2 mb-4 border resize-none border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
-        <label className="block mb-2">Image Link:</label>
+        <label className="block mb-2">Image</label>
         <input
-          type="text"
-          placeholder="Image URL"
-          value={newUpdate.imageLink}
-          onChange={(e) =>
-            setNewUpdate({ ...newUpdate, imageLink: e.target.value })
-          }
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              setSelectedImage(e.target.files[0]);
+            }
+          }}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
         <div className="flex justify-end gap-2">
           <button
             onClick={handleAddUpdate}
-            className="px-4 py-2 bg-[#1D3C34] text-white rounded-md hover:bg-[#145c4b] transition"
+            className="px-4 py-2 bg-[#1D3C34] text-white rounded-md hover:bg-[#145c4b] transition flex items-center justify-center min-w-[100px]"
             disabled={loading}
           >
-            Add Update
+            {loading ? (
+              <svg
+                className="animate-spin h-5 w-5 mr-2 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            ) : null}
+            {loading ? "Adding..." : "Add Update"}
           </button>
           <button
             onClick={closeModal}
