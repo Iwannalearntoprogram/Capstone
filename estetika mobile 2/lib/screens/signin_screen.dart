@@ -72,16 +72,27 @@ class _SignInScreenState extends State<SigninScreen> {
       print('Response body: ${response.body}');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        final email = _emailController.text.trim();
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', data['token'] ?? '');
         await prefs.setString('user', jsonEncode(data['user'] ?? {}));
 
+        await _sendOtp(email);
+
         if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
+          final verified = await _showOtpDialog(email);
+          if (verified == true) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('OTP verification cancelled or failed')),
+            );
+          }
         }
       } else {
         throw Exception('Failed to sign in: ${response.body}');
@@ -90,6 +101,97 @@ class _SignInScreenState extends State<SigninScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Sign In Failed: $e')),
       );
+    }
+  }
+
+  Future<void> _sendOtp(String email) async {
+    final response = await http.post(
+      Uri.parse('https://capstone-thl5.onrender.com/api/auth/send-otp'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+    print('Send OTP response status: ${response.statusCode}');
+    print('Send OTP response body: ${response.body}');
+    if (response.statusCode != 200) {
+      throw Exception('Failed to send OTP');
+    }
+  }
+
+  Future<bool?> _showOtpDialog(String email) async {
+    final TextEditingController _otpController = TextEditingController();
+    bool isVerifying = false;
+    String? errorText;
+
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: const Text('Enter OTP'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _otpController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'OTP Code',
+                    errorText: errorText,
+                  ),
+                ),
+                if (isVerifying)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: CircularProgressIndicator(),
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: isVerifying
+                    ? null
+                    : () async {
+                        setState(() => isVerifying = true);
+                        final verified =
+                            await _verifyOtp(email, _otpController.text.trim());
+                        setState(() => isVerifying = false);
+                        if (verified) {
+                          Navigator.of(context).pop(true);
+                        } else {
+                          setState(() => errorText = 'Invalid OTP');
+                        }
+                      },
+                child: const Text('Verify'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<bool> _verifyOtp(String email, String otp) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://capstone-thl5.onrender.com/api/auth/verify-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'otp': otp}),
+      );
+      print('Verify OTP response status: ${response.statusCode}');
+      print('Verify OTP response body: ${response.body}');
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('Verify OTP error: $e');
+      return false;
     }
   }
 

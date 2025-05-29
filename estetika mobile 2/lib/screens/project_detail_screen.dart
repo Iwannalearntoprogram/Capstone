@@ -35,6 +35,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   bool _hasError = false;
   double _overallProgress = 0.0;
   List<Map<String, dynamic>> _timelinePhases = [];
+  List<dynamic> _projectUpdates = [];
 
   @override
   void initState() {
@@ -187,11 +188,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print('Decoded project data: $data');
-        if (data['project'] != null) {
+        if (data['update'] != null) {
           setState(() {
-            _projectData = data['project'];
+            _projectUpdates = data['update'];
           });
-          print('Project progress: ${_projectData['progress']}');
           await _fetchOverallProgress();
           await _fetchTimelinePhases();
         }
@@ -813,8 +813,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Widget _buildCommentsSection() {
-    final List<Map<String, dynamic>> comments =
-        (_projectData['comments'] ?? []).cast<Map<String, dynamic>>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -827,22 +825,18 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.grey[300]!),
           ),
-          child: comments.isEmpty
-              ? const Text('No comments yet.',
+          child: _projectUpdates.isEmpty
+              ? const Text('No updates yet.',
                   style: TextStyle(color: Colors.grey))
               : ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: comments.length,
+                  itemCount: _projectUpdates.length,
                   itemBuilder: (context, index) {
-                    final comment = comments[index];
-                    return _buildCommentItem(
-                      comment['user'],
-                      comment['message'],
-                      comment['date'],
-                      comments,
-                      index,
-                    );
+                    // Reverse the order: latest first
+                    final update =
+                        _projectUpdates[_projectUpdates.length - 1 - index];
+                    return _buildUpdateItem(update);
                   },
                 ),
         ),
@@ -851,42 +845,104 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  Widget _buildCommentItem(String user, String message, String date,
-      List<Map<String, dynamic>> comments, int index) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                user,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+  Widget _buildUpdateItem(Map<String, dynamic> update) {
+    final designer = update['designerId'];
+    final author = designer?['fullName'] ?? 'Unknown';
+    final description = update['description'] ?? '';
+    final imageLink = update['imageLink'];
+    final createdAt = update['createdAt'];
+    final formattedDate = createdAt != null ? _formatDateTime(createdAt) : '';
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: Color(0xFF203B32),
+                  child: Text(
+                    author.isNotEmpty ? author[0] : '',
+                    style: const TextStyle(fontSize: 18, color: Colors.white),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                date,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        author,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      if (formattedDate.isNotEmpty)
+                        Text(
+                          formattedDate,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              description,
+              style: const TextStyle(fontSize: 15),
+            ),
+            if (imageLink != null && imageLink.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  imageLink,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.broken_image,
+                      size: 48,
+                      color: Colors.grey),
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            message,
-            style: const TextStyle(fontSize: 14),
-          ),
-          // Only show divider if not the last comment
-          if (index != comments.length - 1) const Divider(height: 24),
-        ],
+            if (author.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Client: ${update['clientId'] != null && update['clientId']['fullName'] != null ? update['clientId']['fullName'] : 'Unknown'}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
+  }
+
+  // Helper for formatting date and time
+  String _formatDateTime(String dateTimeString) {
+    try {
+      final dateTime = DateTime.parse(dateTimeString);
+      return '${dateTime.month}/${dateTime.day}/${dateTime.year}, '
+          '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return dateTimeString;
+    }
   }
 
   Widget _buildActionButtons() {
@@ -1008,7 +1064,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  // Example for a detail section or card
   // Widget _buildProjectSummary(Map<String, dynamic> project) {
   //   return Column(
   //     crossAxisAlignment: CrossAxisAlignment.start,
