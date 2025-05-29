@@ -809,10 +809,8 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       "projectLocation": _locationController.text,
       "designInspo":
           _inspirationLinks.isNotEmpty ? _inspirationLinks.first : null,
-      // Add more fields as needed
     };
 
-    // Remove null values (for commented out fields)
     body.removeWhere((key, value) => value == null);
 
     try {
