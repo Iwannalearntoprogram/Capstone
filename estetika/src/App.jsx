@@ -24,6 +24,7 @@ import TasksTab from "./components/projectdetails/TasksTab";
 import ProgressTab from "./components/projectdetails/ProgressTab";
 import TimelineTab from "./components/projectdetails/TimelineTab";
 import FilesTab from "./components/projectdetails/FilesTab";
+import ProjectUpdateTab from "./components/projectdetails/ProjectUpdateTab";
 
 //materials
 import MaterialsPage from "./pages/MaterialsPage";
@@ -149,6 +150,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <FilesTab />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="update"
+              element={
+                <ProtectedRoute>
+                  <ProjectUpdateTab />
                 </ProtectedRoute>
               }
             />

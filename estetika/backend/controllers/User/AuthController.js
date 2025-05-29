@@ -108,6 +108,7 @@ const login = catchAsync(async (req, res, next) => {
   return res.json({
     user: {
       id: user._id,
+      fullName: user.fullName,
       username: user.username,
       email: user.email,
       phoneNumber: user.phoneNumber,
