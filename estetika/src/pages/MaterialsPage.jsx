@@ -67,9 +67,10 @@ const MaterialsPage = () => {
           },
         }
       );
+      console.log("Image upload response:", res);
       newMaterial.image = res.data.imageLink;
     } catch (error) {
-      console.error("Error adding material:", error);
+      console.error("Error adding material (image upload):", error);
     }
 
     try {
@@ -80,6 +81,13 @@ const MaterialsPage = () => {
         options: newMaterial.options.filter((opt) => opt !== ""),
       };
 
+      console.log("Material data to be sent:", materialData);
+
+      if (materialData.price.length !== materialData.options.length) {
+        alert("Price and options must have the same number of items.");
+        return;
+      }
+
       const res = await axios.post(`${serverUrl}/api/material`, materialData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -87,11 +95,13 @@ const MaterialsPage = () => {
         },
       });
 
+      console.log("Material add response:", res);
+
       setMaterialsData([...materialsData, res.data.material]);
       setShowModal(false);
       resetForm();
     } catch (err) {
-      console.error("Error adding material:", err);
+      console.error("Error adding material (material post):", err);
     }
   };
 

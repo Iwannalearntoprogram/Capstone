@@ -25,8 +25,9 @@ const ProjectUpdateTab = () => {
       setMessage("");
       try {
         const token = Cookies.get("token");
+        console.log("Fetching update for project ID:", project._id);
         const res = await axios.get(
-          `${import.meta.env.VITE_SERVER_URL}/api/project/update?id=${
+          `${import.meta.env.VITE_SERVER_URL}/api/project/update?projectId=${
             project._id
           }`,
           {
@@ -35,9 +36,11 @@ const ProjectUpdateTab = () => {
             },
           }
         );
+        console.log("Fetch update response:", res.data);
         setUpdate(res.data.update);
         setMessage(res.data.message || "Update fetched!");
       } catch (err) {
+        console.error("Error fetching update:", err);
         setMessage("Error fetching update.");
         setUpdate(null);
       } finally {
@@ -56,7 +59,6 @@ const ProjectUpdateTab = () => {
     setLoading(true);
     try {
       const token = Cookies.get("token");
-      // Get current user from cookie
       const currentUser = Cookies.get("user");
       let designerId = undefined;
       try {
@@ -64,7 +66,6 @@ const ProjectUpdateTab = () => {
       } catch {
         designerId = undefined;
       }
-      // Find client member
       const clientMember = Array.isArray(project.members)
         ? project.members.find((m) => m.role === "client")
         : null;
