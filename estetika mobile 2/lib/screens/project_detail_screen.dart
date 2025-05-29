@@ -184,11 +184,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           if (token != null) 'Authorization': 'Bearer $token',
         },
       );
-      print('Fetch updated project status: ${response.statusCode}');
-      print('Fetch updated project body: ${response.body}');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print('Decoded project data: $data'); // <-- Print the parsed result
+        print('Decoded project data: $data');
         if (data['project'] != null) {
           setState(() {
             _projectData = data['project'];
@@ -197,8 +195,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           await _fetchOverallProgress();
           await _fetchTimelinePhases();
         }
-      } else {
-        // Handle error if needed
       }
     } catch (e) {
       print('Error fetching updated project: $e');
@@ -704,8 +700,15 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Widget _buildInspirationLinksSection() {
-    List<String> links =
-        (_projectData['inspirationLinks'] ?? []).cast<String>();
+    List<String> links = [];
+    if (_projectData['designInspo'] != null &&
+        _projectData['designInspo'].toString().isNotEmpty) {
+      links.add(_projectData['designInspo']);
+    }
+    if (_projectData['inspirationLinks'] != null) {
+      links.addAll((_projectData['inspirationLinks'] as List).cast<String>());
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
