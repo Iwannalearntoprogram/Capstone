@@ -15,13 +15,8 @@ class InboxScreen extends StatefulWidget {
 
 class _InboxScreenState extends State<InboxScreen> {
   late IO.Socket _socket;
-
   final List<MessageItem> _messages = [];
-
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-  List<MessageItem> _filteredMessages = [];
-
   String? _userId;
   String? _userToken;
   List<Map<String, dynamic>> _users = [];
@@ -30,44 +25,58 @@ class _InboxScreenState extends State<InboxScreen> {
   @override
   void initState() {
     super.initState();
-    _filteredMessages = List.from(_messages);
     _initSocket();
     _fetchUsers();
   }
 
   void _initSocket() async {
-    // Make sure _userToken is set before calling this!
+    final prefs = await SharedPreferences.getInstance();
+    final userString = prefs.getString('user');
+    final token = prefs.getString('token');
+    if (userString == null || token == null) return;
+    final user = jsonDecode(userString);
+    _userId = user['_id'] ?? user['id'];
+    _userToken = token;
+
+    print('Initializing socket for user: $_userId');
+
     _socket = IO.io(
-      'https://capstone-thl5.onrender.com', // <-- Replace with your server URL
-      IO.OptionBuilder().setTransports(['websocket']).setAuth(
-              {'token': _userToken}) // Pass token as auth
-          .build(),
+      'https://capstone-thl5.onrender.com',
+      IO.OptionBuilder()
+          .setTransports(['websocket']).setAuth({'token': _userToken}).build(),
     );
-    _socket.connect();
 
-    // Announce online
-    if (_userId != null) {
-      _socket.emit('online', _userId);
-    }
+    _socket.on('connect', (_) {
+      print('Socket connected: ${_socket.id}');
+      if (_userId != null) {
+        _socket.emit('online', _userId);
+      }
+    });
 
-    // Listen for new messages
+    _socket.on('connect_error', (error) {
+      print('Socket connection error: $error');
+    });
+
     _socket.on('receive_private_message', (data) {
+      print('Received message: $data');
       setState(() {
-        _messages.insert(
-          0,
+        _messages.add(
           MessageItem(
             sender: data['sender'],
-            recipient: data['recipient'], // <-- Add this
+            recipient: data['recipient'] ?? _userId,
             content: data['content'],
-            timestamp: DateTime.parse(data['timestamp']),
+            timestamp: data['timestamp'] != null
+                ? DateTime.parse(data['timestamp'])
+                : DateTime.now(),
             isFromUser: data['sender'] == _userId,
             profileImage: null,
             isRead: false,
           ),
         );
-        _filteredMessages = List.from(_messages);
       });
     });
+
+    _socket.connect();
   }
 
   Future<void> _fetchUsers() async {
@@ -95,34 +104,38 @@ class _InboxScreenState extends State<InboxScreen> {
   Future<void> _fetchMessagesForUser(Map<String, dynamic> user) async {
     if (_userId == null || _userToken == null) return;
     try {
+      final otherUserId = user['id'] ?? user['_id'];
       final response = await http.get(
         Uri.parse(
-            'https://capstone-thl5.onrender.com/api/message?user1=$_userId&user2=${user['_id']}'),
+            'https://capstone-thl5.onrender.com/api/message?user1=$_userId&user2=$otherUserId'),
         headers: {
           'Authorization': 'Bearer $_userToken',
         },
       );
-      print(
-          'Message API response: ${response.body}'); // <-- Print the response here
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body);
+        final existingMessages = _messages
+            .where((m) =>
+                !((m.sender == otherUserId && m.recipient == _userId) ||
+                    (m.sender == _userId && m.recipient == otherUserId)))
+            .toList();
+
+        final newMessages = data
+            .map<MessageItem>((msg) => MessageItem(
+                  sender: msg['sender'],
+                  recipient: msg['recipient'],
+                  content: msg['content'],
+                  timestamp: DateTime.parse(msg['timestamp']),
+                  isFromUser: msg['sender'] == _userId,
+                  profileImage: null,
+                  isRead: true,
+                ))
+            .toList();
+
         setState(() {
           _messages.clear();
-          for (var msg in data) {
-            // Example in _fetchMessagesForUser and socket listener
-            _messages.add(
-              MessageItem(
-                sender: msg['sender'],
-                recipient: msg['recipient'], // <-- Add this
-                content: msg['content'],
-                timestamp: DateTime.parse(msg['timestamp']),
-                isFromUser: msg['sender'] == _userId,
-                profileImage: null,
-                isRead: true,
-              ),
-            );
-          }
-          _filteredMessages = List.from(_messages);
+          _messages.addAll(existingMessages);
+          _messages.addAll(newMessages);
         });
       }
     } catch (e) {
@@ -130,61 +143,33 @@ class _InboxScreenState extends State<InboxScreen> {
     }
   }
 
-  Widget _buildMessageItem(MessageItem message) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundImage: message.profileImage != null
-            ? AssetImage(message.profileImage!)
-            : null,
+  List<MessageItem> _getConversationMessages(String otherUserId) {
+    final conv = _messages
+        .where((m) =>
+            (m.sender == otherUserId && m.recipient == _userId) ||
+            (m.sender == _userId && m.recipient == otherUserId))
+        .toList();
+    conv.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    return conv;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: CustomAppBar(
+        title: 'Inbox',
+        actions: [],
+        isInboxScreen: true,
+        showBackButton: true,
       ),
-      title: Text(message.sender),
-      subtitle: Text(message.content),
-      trailing: Text(
-        _formatTimestamp(message.timestamp),
-        style: TextStyle(fontSize: 12, color: Colors.grey),
+      body: Column(
+        children: [
+          _buildUserSearchBar(),
+          Expanded(child: _buildConversationsList()),
+        ],
       ),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChatDetailScreen(
-              title: message.sender,
-              profileImage: message.profileImage,
-              messages: _messages
-                  .where((m) => m.sender == message.sender || m.isFromUser)
-                  .toList(),
-              isOnline: false, // <-- Add this line
-              onSendMessage: (text) {
-                setState(() {
-                  _messages.insert(
-                    0,
-                    MessageItem(
-                      sender: _userId ?? "You",
-                      recipient: message.sender,
-                      content: text,
-                      timestamp: DateTime.now(),
-                      isFromUser: true,
-                      isRead: true,
-                    ),
-                  );
-                });
-                // Optionally emit socket event here
-              },
-            ),
-          ),
-        );
-      },
     );
-  }
-
-  String _formatTimestamp(DateTime timestamp) {
-    // Format the timestamp as needed
-    return '${timestamp.hour}:${timestamp.minute}';
-  }
-
-  String _formatDate(DateTime date) {
-    // Example: 4/12/2025
-    return "${date.month}/${date.day}/${date.year}";
   }
 
   Widget _buildUserSearchBar() {
@@ -212,113 +197,65 @@ class _InboxScreenState extends State<InboxScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: CustomAppBar(
-        title: 'Inbox',
-        actions: [],
-        isInboxScreen: true,
-        showBackButton: true,
-      ),
-      body: Column(
-        children: [
-          _buildUserSearchBar(),
-          Expanded(child: _buildConversationsList()),
-        ],
-      ),
-    );
-  }
-
   Widget _buildConversationsList() {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       itemCount: _filteredUsers.length,
       itemBuilder: (context, index) {
         final user = _filteredUsers[index];
-        // Find the latest message with this user
-        final latestMessage = _messages
-                .where((m) =>
-                    m.sender == user['username'] ||
-                    m.sender == user['fullName'] ||
-                    m.sender == user['firstName'])
-                .toList()
-                .isNotEmpty
-            ? _messages
-                .where((m) =>
-                    m.sender == user['username'] ||
-                    m.sender == user['fullName'] ||
-                    m.sender == user['firstName'])
-                .toList()
-                .first
-            : null;
-
+        final otherUserId = user['id'] ?? user['_id'];
         final displayName = user['firstName'] ??
             user['fullName'] ??
             user['username'] ??
             'Unknown';
 
+        final conversationMessages = _getConversationMessages(otherUserId);
+        final latestMessage =
+            conversationMessages.isNotEmpty ? conversationMessages.first : null;
+
         return InkWell(
           onTap: () async {
-            // Mark as read if needed
-            if (latestMessage != null && !latestMessage.isRead) {
-              setState(() {
-                final idx = _messages.indexOf(latestMessage);
-                if (idx != -1) {
-                  _messages[idx] = MessageItem(
-                    sender: latestMessage.sender,
-                    recipient:
-                        latestMessage.recipient, // <-- Add recipient here
-                    content: latestMessage.content,
-                    timestamp: latestMessage.timestamp,
-                    isFromUser: latestMessage.isFromUser,
-                    profileImage: latestMessage.profileImage,
-                    isRead: true,
-                  );
-                }
-              });
-            }
-            // Fetch messages for this user first
             await _fetchMessagesForUser(user);
 
-            // Then open chat detail
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => ChatDetailScreen(
                   title: displayName,
                   profileImage: null,
-                  messages: _messages
-                      .where((m) =>
-                          (m.sender == user['_id'] && m.recipient == _userId) ||
-                          (m.sender == _userId && m.recipient == user['_id']))
-                      .toList(),
-                  isOnline: user['socketId'] != null, // <-- pass online status
+                  messages: _getConversationMessages(otherUserId),
+                  isOnline: user['socketId'] != null,
                   onSendMessage: (text) {
+                    print('onSendMessage: $text');
+                    if (otherUserId == null || otherUserId.toString().isEmpty) {
+                      print('Error: recipientId is null or empty');
+                      return;
+                    }
+
+                    final newMessage = MessageItem(
+                      sender: _userId ?? "You",
+                      recipient: otherUserId,
+                      content: text,
+                      timestamp: DateTime.now(),
+                      isFromUser: true,
+                      isRead: true,
+                    );
+
                     setState(() {
-                      _messages.insert(
-                        0,
-                        MessageItem(
-                          sender: _userId ?? "You",
-                          recipient: user['_id'],
-                          content: text,
-                          timestamp: DateTime.now(),
-                          isFromUser: true,
-                          isRead: true,
-                        ),
-                      );
+                      _messages.add(newMessage);
                     });
+
                     _socket.emit('send_private_message', {
                       'sender': _userId,
-                      'recipientId': user['_id'],
+                      'recipientId': otherUserId,
                       'content': text,
-                      'timestamp': DateTime.now().toIso8601String(),
                     });
                   },
                 ),
               ),
-            );
+            ).then((_) {
+              setState(() {});
+            });
           },
           child: Container(
             margin: const EdgeInsets.only(bottom: 16.0),
@@ -421,11 +358,21 @@ class _InboxScreenState extends State<InboxScreen> {
       },
     );
   }
+
+  String _formatDate(DateTime date) {
+    return "${date.month}/${date.day}/${date.year}";
+  }
+
+  @override
+  void dispose() {
+    _socket.disconnect();
+    super.dispose();
+  }
 }
 
 class MessageItem {
   final String sender;
-  final String recipient; // <-- Add this
+  final String recipient;
   final String content;
   final DateTime timestamp;
   final bool isFromUser;
@@ -434,7 +381,7 @@ class MessageItem {
 
   MessageItem({
     required this.sender,
-    required this.recipient, // <-- Add this
+    required this.recipient,
     required this.content,
     required this.timestamp,
     required this.isFromUser,
