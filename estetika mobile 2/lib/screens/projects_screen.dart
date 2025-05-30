@@ -47,8 +47,11 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           'Authorization': 'Bearer ${prefs.getString('token') ?? ''}',
         },
       );
+      // print('Response status: ${response.statusCode}');
+      // print('Response body: ${response.body}');
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
+        print('Projects fetched: ${decoded['project']}');
         final List<dynamic> data = decoded['project'] ?? [];
         setState(() {
           _projects = data.cast<Map<String, dynamic>>();
