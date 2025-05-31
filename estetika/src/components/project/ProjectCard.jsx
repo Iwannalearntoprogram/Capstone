@@ -346,8 +346,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
           <div className="flex-1">
             <h3 className="text-lg font-bold flex items-center gap-2 mb-1">
               {project.title}
-              {/* Only show edit icon if admin */}
-              {isAdmin && (
+              {/* Only show edit icon if NOT admin */}
+              {!isAdmin && (
                 <FiEdit2
                   className="text-gray-400 text-sm cursor-pointer hover:text-gray-600"
                   onClick={() => setShowEditModal(true)}

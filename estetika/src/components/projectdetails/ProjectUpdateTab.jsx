@@ -17,6 +17,7 @@ const ProjectUpdateTab = () => {
     imageLink: "",
   });
   const [selectedImage, setSelectedImage] = useState(null);
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   const { project } = useOutletContext();
 
@@ -28,9 +29,7 @@ const ProjectUpdateTab = () => {
       try {
         const token = Cookies.get("token");
         const res = await axios.get(
-          `${import.meta.env.VITE_SERVER_URL}/api/project/update?projectId=${
-            project._id
-          }`,
+          `${serverUrl}/api/project/update?projectId=${project._id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -74,9 +73,7 @@ const ProjectUpdateTab = () => {
       const formData = new FormData();
       formData.append("image", selectedImage);
       const uploadRes = await axios.post(
-        `${
-          import.meta.env.VITE_SERVER_URL
-        }/api/upload/project/update?projectId=${project._id}`,
+        `${serverUrl}/api/upload/project/update?projectId=${project._id}`,
         formData,
         {
           headers: {
@@ -96,15 +93,11 @@ const ProjectUpdateTab = () => {
         designerId: designerId,
       };
 
-      await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/api/project/update`,
-        body,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.post(`${serverUrl}/api/project/update`, body, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       setClosing(true);
       setTimeout(() => {
@@ -127,14 +120,11 @@ const ProjectUpdateTab = () => {
     setLoading(true);
     try {
       const token = Cookies.get("token");
-      await axios.delete(
-        `https://capstone-thl5.onrender.com/api/project/update?id=${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.delete(`${serverUrl}/api/project/update?id=${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setMessage("Update deleted successfully.");
       setUpdate((prev) => prev.filter((u) => u._id !== id));
     } catch (err) {
