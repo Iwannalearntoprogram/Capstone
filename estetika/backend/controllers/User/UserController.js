@@ -91,18 +91,26 @@ const user_update = catchAsync(async (req, res, next) => {
 
 // Get User by Id or Username
 const user_get = catchAsync(async (req, res, next) => {
-  const { id, username } = req.query;
+  const { id, username, role } = req.query;
 
   let user;
   if (id) {
     user = await User.findById(id).populate("projectsId");
   } else if (username) {
     user = await User.findOne({ username }).populate("projectsId");
+  } else if (role) {
+    user = await User.find({ role });
   }
 
   if (!user) return next(new AppError("User not found", 404));
 
-  const { password, __v, ...other } = user._doc;
+  let other;
+  if (Array.isArray(user)) {
+    other = user;
+  } else {
+    const { password, __v, ...rest } = user._doc;
+    other = rest;
+  }
 
   return res.status(200).json({ message: "User Fetched", user: other });
 });
