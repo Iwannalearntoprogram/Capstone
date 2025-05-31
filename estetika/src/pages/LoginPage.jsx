@@ -16,9 +16,11 @@ function LoginPage() {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
+  const [isSkippingOtp, setIsSkippingOtp] = useState(false);
 
   const navigate = useNavigate();
-  const { login, token, setUserAndToken } = useAuthStore();
+  const { login, token, setUserAndToken, checkRecentVerification } =
+    useAuthStore();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,7 +29,6 @@ function LoginPage() {
       [name]: value,
     }));
   };
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -37,13 +38,49 @@ function LoginPage() {
 
     setIsSubmitting(false);
     if (result.success) {
-      handleSendOtp();
-      setShowOtpModal(true); // show OTP modal
+      const recentlyVerified = checkRecentVerification();
+
+      if (recentlyVerified) {
+        setIsSkippingOtp(true);
+        await handleDirectAuthentication();
+      } else {
+        handleSendOtp();
+        setShowOtpModal(true);
+      }
     } else {
       setError(
         result.error?.response?.data?.message ||
           "Something went wrong. Please try again."
       );
+    }
+  };
+
+  const handleDirectAuthentication = async () => {
+    try {
+      const tempUser = Cookies.get("temp_user");
+      const tempToken = Cookies.get("temp_token");
+      const tempId = localStorage.getItem("temp_id");
+      const tempRole = localStorage.getItem("temp_role");
+
+      if (tempUser && tempToken && tempId && tempRole) {
+        Cookies.set("user", tempUser, { expires: 1 });
+        Cookies.set("token", tempToken, { expires: 1 });
+        localStorage.setItem("id", tempId);
+        localStorage.setItem("role", tempRole);
+
+        Cookies.remove("temp_user");
+        Cookies.remove("temp_token");
+        localStorage.removeItem("temp_id");
+        localStorage.removeItem("temp_role");
+
+        setUserAndToken(JSON.parse(tempUser), tempToken);
+
+        navigate("/home", { replace: true });
+      }
+    } catch (error) {
+      console.error("Error in direct authentication:", error);
+      setError("Authentication failed. Please try again.");
+      setIsSkippingOtp(false);
     }
   };
 
@@ -81,11 +118,12 @@ function LoginPage() {
           localStorage.removeItem("temp_id");
           localStorage.removeItem("temp_role");
         }
-
         useAuthStore.setState({
           user: JSON.parse(tempUser),
           token: tempToken,
         });
+
+        setUserAndToken(JSON.parse(tempUser), tempToken);
       }
     } catch (err) {
       setOtpError(err.response?.data?.message || "Invalid OTP. Try again.");
@@ -152,13 +190,17 @@ function LoginPage() {
               value={formData.password}
               onChange={handleChange}
               required
-            />
+            />{" "}
             <button
               type="submit"
               className="mb-8 w-full bg-[#1D3C34] text-white py-2 rounded-full hover:bg-[#16442A] transition"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSkippingOtp}
             >
-              {isSubmitting ? "Logging in..." : "Login"}
+              {isSubmitting
+                ? "Logging in..."
+                : isSkippingOtp
+                ? "Authenticating..."
+                : "Login"}
             </button>
           </form>
           {error && <p className="text-red-500 mt-4">{error}</p>}

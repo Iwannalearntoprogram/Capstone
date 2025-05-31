@@ -99,7 +99,7 @@ const user_get = catchAsync(async (req, res, next) => {
   } else if (username) {
     user = await User.findOne({ username }).populate("projectsId");
   } else if (role) {
-    user = await User.find({ role });
+    user = await User.find({ role }).select("-password -__v");
   }
 
   if (!user) return next(new AppError("User not found", 404));
