@@ -5,6 +5,9 @@ const {
   project_post,
   project_put,
   project_delete,
+  project_add_material,
+  project_remove_material,
+  project_update_material,
 } = require("../../controllers/Project/ProjectController");
 const {
   project_update_get,
@@ -25,6 +28,11 @@ router.get("/", project_get);
 router.post("/", project_post);
 router.put("/", project_put);
 router.delete("/", project_delete);
+
+// Project Materials
+router.post("/material", project_add_material);
+router.delete("/material", project_remove_material);
+router.put("/material", project_update_material);
 
 // Project Update
 router.get("/update", project_update_get);
