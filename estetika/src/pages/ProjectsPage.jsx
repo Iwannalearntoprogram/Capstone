@@ -133,16 +133,28 @@ const ProjectsPage = () => {
 
   // Group projects by status
   const groupedProjects = {
-    ongoing: filteredProjects.filter(
-      (project) => project.status === "ongoing" || project.status === "delayed"
-    ),
-    pending: filteredProjects.filter((project) => project.status === "pending"),
-    completed: filteredProjects.filter(
-      (project) => project.status === "completed"
-    ),
-    cancelled: filteredProjects.filter(
-      (project) => project.status === "cancelled"
-    ),
+    ongoing: Array.isArray(filteredProjects)
+      ? filteredProjects.filter(
+          (project) =>
+            project &&
+            (project.status === "ongoing" || project.status === "delayed")
+        )
+      : [],
+    pending: Array.isArray(filteredProjects)
+      ? filteredProjects.filter(
+          (project) => project && project.status === "pending"
+        )
+      : [],
+    completed: Array.isArray(filteredProjects)
+      ? filteredProjects.filter(
+          (project) => project && project.status === "completed"
+        )
+      : [],
+    cancelled: Array.isArray(filteredProjects)
+      ? filteredProjects.filter(
+          (project) => project && project.status === "cancelled"
+        )
+      : [],
   };
 
   const StatusSection = ({ title, projects, sectionKey }) => (
