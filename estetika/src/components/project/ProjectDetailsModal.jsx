@@ -94,11 +94,11 @@ const ProjectDetailsModal = ({ project, onClose }) => {
       console.log({ members: updatedMembers });
       console.log(res.data);
       setActionMessage("Designer assigned successfully.");
-      // setTimeout(() => {
-      //   setActionMessage("");
-      //   onClose();
-      //   window.location.reload();
-      // }, 1200);
+      setTimeout(() => {
+        setActionMessage("");
+        onClose();
+        window.location.reload();
+      }, 500);
     } catch (err) {
       setActionMessage("Failed to assign designer.");
     } finally {
@@ -163,7 +163,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                     )
                 )
                 .map((designer) => (
-                  <option key={designer._id} value={designer._id}>
+                  <option key={designer._id} value={designer.username}>
                     {designer.username}
                   </option>
                 ))}
