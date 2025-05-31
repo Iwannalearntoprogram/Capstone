@@ -76,6 +76,7 @@ export default function MaterialsTab() {
             signal: controller.signal,
           }
         );
+        console.log("response:", res.data);
         setBestMatch(res.data?.result?.bestMatch || null);
       } catch (err) {
         if (axios.isCancel(err)) {
@@ -223,6 +224,7 @@ export default function MaterialsTab() {
         return;
       }
       alert("Material added to project sheet successfully!");
+      location.reload();
       setShowAddToSheetModal(false);
       setSelectedSize("");
       setQuantity(1);
@@ -387,7 +389,7 @@ export default function MaterialsTab() {
         {/* Right Content Area */}
         <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#f8fffe] via-white to-[#f0fdf4]">
           <div className="p-8">
-            {loading && selectedSidebar ? (
+            {loading ? (
               <div className="text-center py-20">
                 <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center animate-pulse">
                   <FaShoppingCart className="h-12 w-12 text-gray-400" />
