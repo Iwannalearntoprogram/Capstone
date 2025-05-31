@@ -18,7 +18,7 @@ router.post("/document", upload.single("document"), document_post);
 router.post("/message", upload.single("file"), message_file_post);
 router.post("/project/update", upload.single("image"), update_image_post);
 router.post("/material", upload.array("image", 4), material_image_post);
-router.post("/image", upload.single("image"), design_image_post);
+router.post("/design", upload.single("image"), design_image_post);
 router.get("/fetch-csv", fetch_csv);
 
 module.exports = router;
