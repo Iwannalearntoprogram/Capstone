@@ -343,6 +343,48 @@ const material_image_post = catchAsync(async (req, res, next) => {
   });
 });
 
+const design_image_post = catchAsync(async (req, res, next) => {
+  if (!req.image) {
+    return next(new AppError("No image uploaded", 400));
+  }
+
+  if (!req.image.mimetype.startsWith("image/")) {
+    return next(new AppError("File is not an image.", 400));
+  }
+
+  const userId = req.id;
+
+  initializeApp(firebaseConfig);
+  const storage = getStorage();
+
+  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+  const storageRef = ref(
+    storage,
+    `design/${userId}/${req.image.originalname}-${uniqueSuffix}`
+  );
+
+  const metadata = {
+    contentType: req.image.mimetype,
+  };
+
+  const snapshot = await uploadBytesResumable(
+    storageRef,
+    req.image.buffer,
+    metadata
+  );
+
+  const downloadURL = await getDownloadURL(snapshot.ref);
+
+  if (!downloadURL) {
+    return next(new AppError("Failed to upload image", 500));
+  }
+
+  return res.status(200).json({
+    message: "Profile Picture Successfully Uploaded!",
+    imageLink: downloadURL,
+  });
+});
+
 // In fetch_csv, use dynamic import if fetch is not defined
 const fetch_csv = catchAsync(async (req, res) => {
   const { url } = req.query;
@@ -361,4 +403,5 @@ module.exports = {
   update_image_post,
   material_image_post,
   fetch_csv,
+  design_image_post,
 };
