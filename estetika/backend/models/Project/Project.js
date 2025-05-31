@@ -36,7 +36,12 @@ const projectSchema = new mongoose.Schema(
     },
     projectSize: Number,
     projectLocation: String,
-    designInspo: String,
+    designPreference: String,
+    designInspiration: String,
+    designRecommendation: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DesignRecommendation",
+    },
     projectUpdates: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "ProjectUpdate",

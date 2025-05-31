@@ -231,10 +231,126 @@ const vector_search = catchAsync(async (req, res) => {
   });
 });
 
+const material_search = catchAsync(async (req, res) => {
+  const { query } = req.query;
+
+  if (!query) return res.status(400).json({ error: "Query is required." });
+  const vector = await generateEmbedding(query);
+
+  const results = await Material.aggregate([
+    {
+      $vectorSearch: {
+        queryVector: vector,
+        path: "embedding",
+        numCandidates: 100,
+        limit: 10,
+        index: "materials_search",
+      },
+    },
+  ]);
+
+  if (!results.length) {
+    return res.json({ message: "No results found.", results: [] });
+  }
+
+  const sanitized = results.map(({ embedding, ...rest }) => rest);
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an AI assistant that filters search results. Only keep items clearly relevant to the query. Remove anything unrelated or weakly related.",
+      },
+      {
+        role: "user",
+        content: `Query: "${query}"\n\nResults:\n${JSON.stringify(
+          sanitized,
+          null,
+          2
+        )}\n\nReturn only the relevant ones as a JSON array. Do not include any markdown formatting.`,
+      },
+    ],
+    temperature: 0.2,
+  });
+
+  const filteredResults = JSON.parse(response.choices[0].message.content);
+
+  if (!filteredResults.length) {
+    return res.json({ message: "No relevant results found.", results: [] });
+  }
+
+  const getMinPrice = (item) =>
+    Array.isArray(item.price)
+      ? Math.min(...item.price.map(Number).filter((v) => !isNaN(v)))
+      : Number(item.price);
+
+  const sortedByPrice = [...filteredResults].sort(
+    (a, b) => getMinPrice(a) - getMinPrice(b)
+  );
+
+  const bestMatch = filteredResults[0];
+  const bestMatchPrice = getMinPrice(bestMatch);
+
+  let cheaper = sortedByPrice.find(
+    (item) => getMinPrice(item) < bestMatchPrice && item !== bestMatch
+  );
+  let moreExpensive = [...sortedByPrice]
+    .reverse()
+    .find((item) => getMinPrice(item) > bestMatchPrice && item !== bestMatch);
+
+  const percentDiff = (a, b) =>
+    b === 0 ? null : Math.round(((a - b) / b) * 100);
+
+  let optionsComparison = null;
+  if (
+    !cheaper &&
+    !moreExpensive &&
+    Array.isArray(bestMatch.options) &&
+    Array.isArray(bestMatch.price)
+  ) {
+    optionsComparison = bestMatch.options.map((option, idx) => ({
+      option,
+      price: Array.isArray(bestMatch.price)
+        ? bestMatch.price[idx]
+        : bestMatch.price,
+    }));
+  }
+
+  const result = {
+    bestMatch: {
+      ...bestMatch,
+      minPrice: bestMatchPrice,
+    },
+    cheaper: cheaper
+      ? {
+          ...cheaper,
+          minPrice: getMinPrice(cheaper),
+          percentCheaper: percentDiff(bestMatchPrice, getMinPrice(cheaper)),
+        }
+      : null,
+    moreExpensive: moreExpensive
+      ? {
+          ...moreExpensive,
+          minPrice: getMinPrice(moreExpensive),
+          percentMoreExpensive: percentDiff(
+            getMinPrice(moreExpensive),
+            bestMatchPrice
+          ),
+        }
+      : null,
+    optionsComparison: optionsComparison,
+  };
+
+  return res.json({ message: "Found this material.", result });
+});
+
 module.exports = {
   material_get,
   material_post,
   material_put,
   material_delete,
   vector_search,
+  material_search,
 };

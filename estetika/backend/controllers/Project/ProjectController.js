@@ -12,54 +12,23 @@ const project_get = catchAsync(async (req, res, next) => {
   if (!id && !projectCreator && !member && !index)
     return next(new AppError("Project identifier not found", 400));
 
+  const populateOptions = [
+    { path: "members", select: "-password" },
+    { path: "tasks" },
+    { path: "timeline", populate: { path: "tasks" } },
+    { path: "projectCreator", select: "-password" },
+    { path: "projectUpdates" },
+    { path: "designRecommendation" },
+  ];
+
   if (id) {
-    project = await Project.findById(id)
-      .populate("members", "-password")
-      .populate("tasks")
-      .populate({
-        path: "timeline",
-        populate: {
-          path: "tasks",
-        },
-      })
-      .populate("projectCreator", "-password")
-      .populate("projectUpdates");
+    project = await Project.findById(id).populate(populateOptions);
   } else if (projectCreator) {
-    project = await Project.find({ projectCreator })
-      .populate("members", "-password")
-      .populate("tasks")
-      .populate({
-        path: "timeline",
-        populate: {
-          path: "tasks",
-        },
-      })
-      .populate("projectCreator", "-password")
-      .populate("projectUpdates");
+    project = await Project.find({ projectCreator }).populate(populateOptions);
   } else if (member) {
-    project = await Project.find({ members: member })
-      .populate("members", "-password")
-      .populate("tasks")
-      .populate({
-        path: "timeline",
-        populate: {
-          path: "tasks",
-        },
-      })
-      .populate("projectCreator", "-password")
-      .populate("projectUpdates");
+    project = await Project.find({ members: member }).populate(populateOptions);
   } else if (index) {
-    project = await Project.find()
-      .populate("members", "-password")
-      .populate("tasks")
-      .populate({
-        path: "timeline",
-        populate: {
-          path: "tasks",
-        },
-      })
-      .populate("projectCreator", "-password")
-      .populate("projectUpdates");
+    project = await Project.find().populate(populateOptions);
   }
 
   if (!project || (Array.isArray(project) && project.length === 0))
@@ -171,7 +140,9 @@ const project_post = catchAsync(async (req, res, next) => {
     roomType,
     projectSize,
     projectLocation,
-    designInspo,
+    designPreference,
+    designInspiration,
+    designRecommendation,
   } = req.body;
 
   const isUserValid = await User.findById(projectCreator);
@@ -196,7 +167,9 @@ const project_post = catchAsync(async (req, res, next) => {
     roomType,
     projectSize,
     projectLocation,
-    designInspo,
+    designPreference,
+    designInspiration,
+    designRecommendation,
   });
 
   await newProject.save();
@@ -229,7 +202,9 @@ const project_put = catchAsync(async (req, res, next) => {
     roomType,
     projectSize,
     projectLocation,
-    designInspo,
+    designPreference,
+    designInspiration,
+    designRecommendation,
     projectUpdates,
   } = req.body;
 
@@ -268,7 +243,9 @@ const project_put = catchAsync(async (req, res, next) => {
   if (roomType) updates.roomType = roomType;
   if (projectSize !== undefined) updates.projectSize = projectSize;
   if (projectLocation) updates.projectLocation = projectLocation;
-  if (designInspo) updates.designInspo = designInspo;
+  if (designPreference) updates.designPreference = designPreference;
+  if (designInspiration) updates.designInspiration = designInspiration;
+  if (designRecommendation) updates.designRecommendation = designRecommendation;
   if (projectUpdates) updates.projectUpdates = projectUpdates;
 
   const updatedProject = await Project.findByIdAndUpdate(id, updates, {
