@@ -37,7 +37,7 @@ const ProjectsPage = () => {
   const handleProjectClick = (projectId) => {
     const project = projects.find((p) => p._id === projectId);
     if (userRole === "designer") {
-      navigate(`/projects/${projectId}`, { state: { project } });
+      navigate(`/projects/${projectId}/tasks`, { state: { project } });
     } else {
       setSelectedProject(project);
       setShowDetailsModal(true);
