@@ -42,15 +42,13 @@ const firebaseConfig = {
 
 // Upload Profile Picture
 const image_post = catchAsync(async (req, res, next) => {
-  if (!req.image) {
+  if (!req.file) {
     return next(new AppError("No image uploaded", 400));
   }
 
-  if (!req.image.mimetype.startsWith("image/")) {
+  if (!req.file.mimetype.startsWith("image/")) {
     return next(new AppError("File is not an image.", 400));
   }
-
-  const userId = req.id;
 
   initializeApp(firebaseConfig);
   const storage = getStorage();
@@ -58,16 +56,16 @@ const image_post = catchAsync(async (req, res, next) => {
   const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
   const storageRef = ref(
     storage,
-    `picture/${userId}/${req.image.originalname}-${uniqueSuffix}`
+    `picture/${req.id}/${req.file.originalname}-${uniqueSuffix}`
   );
 
   const metadata = {
-    contentType: req.image.mimetype,
+    contentType: req.file.mimetype,
   };
 
   const snapshot = await uploadBytesResumable(
     storageRef,
-    req.image.buffer,
+    req.file.buffer,
     metadata
   );
 
@@ -254,7 +252,7 @@ const update_image_post = catchAsync(async (req, res, next) => {
   const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
   const storageRef = ref(
     storage,
-    `${projectId}/updates/${userId}/${req.file.originalname}-${uniqueSuffix}`
+    `projects/${projectId}/updates/${userId}/${req.file.originalname}-${uniqueSuffix}`
   );
 
   const metadata = {
@@ -344,15 +342,15 @@ const material_image_post = catchAsync(async (req, res, next) => {
 });
 
 const design_image_post = catchAsync(async (req, res, next) => {
-  if (!req.image) {
+  const { id } = req.query;
+
+  if (!req.file) {
     return next(new AppError("No image uploaded", 400));
   }
 
-  if (!req.image.mimetype.startsWith("image/")) {
+  if (!req.file.mimetype.startsWith("image/")) {
     return next(new AppError("File is not an image.", 400));
   }
-
-  const userId = req.id;
 
   initializeApp(firebaseConfig);
   const storage = getStorage();
@@ -360,16 +358,16 @@ const design_image_post = catchAsync(async (req, res, next) => {
   const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
   const storageRef = ref(
     storage,
-    `design/${userId}/${req.image.originalname}-${uniqueSuffix}`
+    `design/${id}/${req.file.originalname}-${uniqueSuffix}`
   );
 
   const metadata = {
-    contentType: req.image.mimetype,
+    contentType: req.file.mimetype,
   };
 
   const snapshot = await uploadBytesResumable(
     storageRef,
-    req.image.buffer,
+    req.file.buffer,
     metadata
   );
 
@@ -380,7 +378,7 @@ const design_image_post = catchAsync(async (req, res, next) => {
   }
 
   return res.status(200).json({
-    message: "Profile Picture Successfully Uploaded!",
+    message: "Design Picture Successfully Uploaded!",
     imageLink: downloadURL,
   });
 });
