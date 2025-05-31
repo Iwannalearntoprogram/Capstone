@@ -5,6 +5,7 @@ import axios from "axios";
 export const useAuthStore = create((set) => ({
   user: null,
   token: null,
+  lastVerification: null,
 
   login: async (email, password, URL) => {
     const formData = { email, password };
@@ -33,18 +34,38 @@ export const useAuthStore = create((set) => ({
       return { success: false, error: e };
     }
   },
-
   logout: async () => {
     Cookies.remove("token");
     Cookies.remove("user");
     localStorage.removeItem("id");
     localStorage.removeItem("role");
-    set({ token: null, user: null });
+    localStorage.removeItem("lastVerification");
+    set({ token: null, user: null, lastVerification: null });
   },
 
+  setUserAndToken: (user, token) => {
+    const now = new Date().getTime();
+    set({ user, token, lastVerification: now });
+
+    localStorage.setItem("lastVerification", now.toString());
+    Cookies.set("user", JSON.stringify(user), { expires: 1 });
+    Cookies.set("token", token, { expires: 1 });
+  },
+
+  checkRecentVerification: () => {
+    const lastVerification = localStorage.getItem("lastVerification");
+    if (!lastVerification) return false;
+
+    const now = new Date().getTime();
+    const verificationTime = parseInt(lastVerification);
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    return now - verificationTime < twentyFourHours;
+  },
   rehydrate: () => {
     const token = Cookies.get("token");
     const userCookie = Cookies.get("user");
+    const lastVerification = localStorage.getItem("lastVerification");
     let user = null;
     if (userCookie) {
       try {
@@ -53,6 +74,10 @@ export const useAuthStore = create((set) => ({
         user = null;
       }
     }
-    set({ user, token });
+    set({
+      user,
+      token,
+      lastVerification: lastVerification ? parseInt(lastVerification) : null,
+    });
   },
 }));

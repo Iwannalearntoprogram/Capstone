@@ -36,11 +36,34 @@ const projectSchema = new mongoose.Schema(
     },
     projectSize: Number,
     projectLocation: String,
-    designInspo: String,
+    designPreference: String,
+    designInspiration: String,
+    designRecommendation: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DesignRecommendation",
+    },
     projectUpdates: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "ProjectUpdate",
     },
+    materials: [
+      {
+        material: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Material",
+          required: true,
+        },
+        option: {
+          type: String,
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: [1, "Quantity must be at least 1"],
+        },
+      },
+    ],
   },
   {
     timestamps: true,

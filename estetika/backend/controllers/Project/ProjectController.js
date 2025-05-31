@@ -11,55 +11,24 @@ const project_get = catchAsync(async (req, res, next) => {
 
   if (!id && !projectCreator && !member && !index)
     return next(new AppError("Project identifier not found", 400));
+  const populateOptions = [
+    { path: "members", select: "-password" },
+    { path: "tasks" },
+    { path: "timeline", populate: { path: "tasks" } },
+    { path: "projectCreator", select: "-password" },
+    { path: "projectUpdates" },
+    { path: "designRecommendation" },
+    { path: "materials.material" },
+  ];
 
   if (id) {
-    project = await Project.findById(id)
-      .populate("members", "-password")
-      .populate("tasks")
-      .populate({
-        path: "timeline",
-        populate: {
-          path: "tasks",
-        },
-      })
-      .populate("projectCreator", "-password")
-      .populate("projectUpdates");
+    project = await Project.findById(id).populate(populateOptions);
   } else if (projectCreator) {
-    project = await Project.find({ projectCreator })
-      .populate("members", "-password")
-      .populate("tasks")
-      .populate({
-        path: "timeline",
-        populate: {
-          path: "tasks",
-        },
-      })
-      .populate("projectCreator", "-password")
-      .populate("projectUpdates");
+    project = await Project.find({ projectCreator }).populate(populateOptions);
   } else if (member) {
-    project = await Project.find({ members: member })
-      .populate("members", "-password")
-      .populate("tasks")
-      .populate({
-        path: "timeline",
-        populate: {
-          path: "tasks",
-        },
-      })
-      .populate("projectCreator", "-password")
-      .populate("projectUpdates");
+    project = await Project.find({ members: member }).populate(populateOptions);
   } else if (index) {
-    project = await Project.find()
-      .populate("members", "-password")
-      .populate("tasks")
-      .populate({
-        path: "timeline",
-        populate: {
-          path: "tasks",
-        },
-      })
-      .populate("projectCreator", "-password")
-      .populate("projectUpdates");
+    project = await Project.find().populate(populateOptions);
   }
 
   if (!project || (Array.isArray(project) && project.length === 0))
@@ -171,7 +140,9 @@ const project_post = catchAsync(async (req, res, next) => {
     roomType,
     projectSize,
     projectLocation,
-    designInspo,
+    designPreference,
+    designInspiration,
+    designRecommendation,
   } = req.body;
 
   const isUserValid = await User.findById(projectCreator);
@@ -196,7 +167,9 @@ const project_post = catchAsync(async (req, res, next) => {
     roomType,
     projectSize,
     projectLocation,
-    designInspo,
+    designPreference,
+    designInspiration,
+    designRecommendation,
   });
 
   await newProject.save();
@@ -229,7 +202,9 @@ const project_put = catchAsync(async (req, res, next) => {
     roomType,
     projectSize,
     projectLocation,
-    designInspo,
+    designPreference,
+    designInspiration,
+    designRecommendation,
     projectUpdates,
   } = req.body;
 
@@ -268,7 +243,9 @@ const project_put = catchAsync(async (req, res, next) => {
   if (roomType) updates.roomType = roomType;
   if (projectSize !== undefined) updates.projectSize = projectSize;
   if (projectLocation) updates.projectLocation = projectLocation;
-  if (designInspo) updates.designInspo = designInspo;
+  if (designPreference) updates.designPreference = designPreference;
+  if (designInspiration) updates.designInspiration = designInspiration;
+  if (designRecommendation) updates.designRecommendation = designRecommendation;
   if (projectUpdates) updates.projectUpdates = projectUpdates;
 
   const updatedProject = await Project.findByIdAndUpdate(id, updates, {
@@ -322,9 +299,159 @@ const project_delete = catchAsync(async (req, res, next) => {
     .json({ message: "Project Successfully Deleted", deletedProject });
 });
 
+// Add Material to Project
+const project_add_material = catchAsync(async (req, res, next) => {
+  const { projectId } = req.query;
+  const { materialId, option, quantity } = req.body;
+
+  if (!projectId) {
+    return next(new AppError("Project ID is required", 400));
+  }
+
+  if (!materialId || !option || !quantity) {
+    return next(
+      new AppError("Material ID, option, and quantity are required", 400)
+    );
+  }
+
+  const project = await Project.findById(projectId);
+  if (!project) {
+    return next(new AppError("Project not found", 404));
+  }
+
+  // Check if material exists
+  const Material = require("../../models/Project/Material");
+  const material = await Material.findById(materialId);
+  if (!material) {
+    return next(new AppError("Material not found", 404));
+  }
+
+  // Check if the option exists for this material
+  if (!material.options.includes(option)) {
+    return next(new AppError("Invalid option for this material", 400));
+  }
+
+  // Check if material with same option already exists in project
+  const existingMaterialIndex = project.materials.findIndex(
+    (item) => item.material.toString() === materialId && item.option === option
+  );
+
+  if (existingMaterialIndex > -1) {
+    // Update quantity if material with same option already exists
+    project.materials[existingMaterialIndex].quantity = quantity;
+  } else {
+    // Add new material entry
+    project.materials.push({
+      material: materialId,
+      option,
+      quantity: parseInt(quantity),
+    });
+  }
+
+  await project.save();
+
+  const updatedProject = await Project.findById(projectId).populate([
+    { path: "materials.material" },
+  ]);
+
+  return res.status(200).json({
+    message: "Material added to project successfully",
+    project: updatedProject,
+  });
+});
+
+// Remove Material from Project
+const project_remove_material = catchAsync(async (req, res, next) => {
+  const { projectId } = req.query;
+  const { materialId, option } = req.body;
+
+  if (!projectId) {
+    return next(new AppError("Project ID is required", 400));
+  }
+
+  if (!materialId) {
+    return next(new AppError("Material ID is required", 400));
+  }
+
+  const project = await Project.findById(projectId);
+  if (!project) {
+    return next(new AppError("Project not found", 404));
+  }
+
+  // Find and remove the material
+  const materialIndex = project.materials.findIndex((item) => {
+    const materialMatch = item.material.toString() === materialId;
+    const optionMatch = option ? item.option === option : true;
+    return materialMatch && optionMatch;
+  });
+
+  if (materialIndex === -1) {
+    return next(new AppError("Material not found in project", 404));
+  }
+
+  project.materials.splice(materialIndex, 1);
+  await project.save();
+
+  const updatedProject = await Project.findById(projectId).populate([
+    { path: "materials.material" },
+  ]);
+
+  return res.status(200).json({
+    message: "Material removed from project successfully",
+    project: updatedProject,
+  });
+});
+
+// Update Material quantity in Project
+const project_update_material = catchAsync(async (req, res, next) => {
+  const { projectId } = req.query;
+  const { materialId, option, quantity } = req.body;
+
+  if (!projectId) {
+    return next(new AppError("Project ID is required", 400));
+  }
+
+  if (!materialId || !option || !quantity) {
+    return next(
+      new AppError("Material ID, option, and quantity are required", 400)
+    );
+  }
+
+  const project = await Project.findById(projectId);
+  if (!project) {
+    return next(new AppError("Project not found", 404));
+  }
+
+  // Find the material to update
+  const materialIndex = project.materials.findIndex(
+    (item) => item.material.toString() === materialId && item.option === option
+  );
+
+  if (materialIndex === -1) {
+    return next(
+      new AppError("Material with specified option not found in project", 404)
+    );
+  }
+
+  project.materials[materialIndex].quantity = parseInt(quantity);
+  await project.save();
+
+  const updatedProject = await Project.findById(projectId).populate([
+    { path: "materials.material" },
+  ]);
+
+  return res.status(200).json({
+    message: "Material quantity updated successfully",
+    project: updatedProject,
+  });
+});
+
 module.exports = {
   project_get,
   project_post,
   project_put,
   project_delete,
+  project_add_material,
+  project_remove_material,
+  project_update_material,
 };

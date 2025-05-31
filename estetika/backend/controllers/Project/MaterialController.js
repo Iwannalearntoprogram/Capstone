@@ -231,10 +231,179 @@ const vector_search = catchAsync(async (req, res) => {
   });
 });
 
+const material_search = catchAsync(async (req, res) => {
+  const { query } = req.query;
+
+  if (!query) return res.status(400).json({ error: "Query is required." });
+
+  const getMinPrice = (item) =>
+    Array.isArray(item.price)
+      ? Math.min(...item.price.map(Number).filter((v) => !isNaN(v)))
+      : Number(item.price);
+
+  const percentDiff = (a, b) =>
+    b === 0 ? null : Math.round(((a - b) / b) * 100);
+
+  const searchSingleItem = async (itemQuery) => {
+    const vector = await generateEmbedding(itemQuery);
+
+    const results = await Material.aggregate([
+      {
+        $vectorSearch: {
+          queryVector: vector,
+          path: "embedding",
+          numCandidates: 100,
+          limit: 10,
+          index: "materials_search",
+        },
+      },
+    ]);
+
+    if (!results.length) {
+      return null;
+    }
+
+    const sanitized = results.map(({ embedding, ...rest }) => rest);
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an AI assistant that filters search results. Only keep items clearly relevant to the query. Remove anything unrelated or weakly related.",
+        },
+        {
+          role: "user",
+          content: `Query: "${itemQuery}"\n\nResults:\n${JSON.stringify(
+            sanitized,
+            null,
+            2
+          )}\n\nReturn only the relevant ones as a JSON array. Do not include any markdown formatting.`,
+        },
+      ],
+      temperature: 0.2,
+    });
+
+    const filteredResults = JSON.parse(response.choices[0].message.content);
+
+    if (!filteredResults.length) {
+      return null;
+    }
+
+    const sortedByPrice = [...filteredResults].sort(
+      (a, b) => getMinPrice(a) - getMinPrice(b)
+    );
+
+    const bestMatch = filteredResults[0];
+    const bestMatchPrice = getMinPrice(bestMatch);
+
+    let cheaper = sortedByPrice.find(
+      (item) => getMinPrice(item) < bestMatchPrice && item !== bestMatch
+    );
+    let moreExpensive = [...sortedByPrice]
+      .reverse()
+      .find((item) => getMinPrice(item) > bestMatchPrice && item !== bestMatch);
+
+    let optionsComparison = null;
+    if (
+      !cheaper &&
+      !moreExpensive &&
+      Array.isArray(bestMatch.options) &&
+      Array.isArray(bestMatch.price)
+    ) {
+      optionsComparison = bestMatch.options.map((option, idx) => ({
+        option,
+        price: Array.isArray(bestMatch.price)
+          ? bestMatch.price[idx]
+          : bestMatch.price,
+      }));
+    }
+
+    return {
+      query: itemQuery,
+      bestMatch: {
+        ...bestMatch,
+        minPrice: bestMatchPrice,
+      },
+      cheaper: cheaper
+        ? {
+            ...cheaper,
+            minPrice: getMinPrice(cheaper),
+            percentCheaper: percentDiff(bestMatchPrice, getMinPrice(cheaper)),
+          }
+        : null,
+      moreExpensive: moreExpensive
+        ? {
+            ...moreExpensive,
+            minPrice: getMinPrice(moreExpensive),
+            percentMoreExpensive: percentDiff(
+              getMinPrice(moreExpensive),
+              bestMatchPrice
+            ),
+          }
+        : null,
+      optionsComparison: optionsComparison,
+    };
+  };
+
+  const itemDetectionResponse = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an AI assistant that analyzes search queries to detect if they contain multiple distinct material/product items. Return a JSON object with 'isMultiple' (boolean) and 'items' (array of individual item names if multiple, or the original query if single).",
+      },
+      {
+        role: "user",
+        content: `Analyze this query and determine if it contains multiple distinct material items: "${query}"\n\nExamples:\n- "wood and steel" -> multiple items\n- "wood planks and metal screws" -> multiple items\n- "red oak wood" -> single item\n- "cement, brick, and tiles" -> multiple items\n\nReturn JSON only, no markdown formatting.`,
+      },
+    ],
+    temperature: 0.1,
+  });
+
+  const itemDetection = JSON.parse(
+    itemDetectionResponse.choices[0].message.content
+  );
+
+  if (itemDetection.isMultiple && Array.isArray(itemDetection.items)) {
+    const results = [];
+    const notFound = [];
+
+    for (const item of itemDetection.items) {
+      const itemResult = await searchSingleItem(item.trim());
+      if (itemResult) {
+        results.push(itemResult);
+      } else {
+        notFound.push(item.trim());
+      }
+    }
+
+    return res.json({
+      message: `Found materials for ${results.length} out of ${itemDetection.items.length} requested items.`,
+      results: results,
+      notFound: notFound.length > 0 ? notFound : undefined,
+    });
+  } else {
+    const result = await searchSingleItem(query);
+
+    if (!result) {
+      return res.json({ message: "No relevant results found.", results: [] });
+    }
+
+    return res.json({
+      message: "Found this material.",
+      result: result,
+    });
+  }
+});
+
 module.exports = {
   material_get,
   material_post,
   material_put,
   material_delete,
   vector_search,
+  material_search,
 };
