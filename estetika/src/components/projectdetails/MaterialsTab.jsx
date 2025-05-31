@@ -96,6 +96,7 @@ export default function MaterialsTab() {
 
   // Update sidebar selection if materials change
   useEffect(() => {
+    setLoading(true);
     if (
       storedMaterials.length > 0 &&
       !storedMaterials.find((m) => m.name === selectedSidebar)
