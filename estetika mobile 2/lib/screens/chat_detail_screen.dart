@@ -26,6 +26,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isTyping = false;
 
+  late List<MessageItem> _localMessages; // <-- Add this
+
+  @override
+  void initState() {
+    super.initState();
+    _localMessages = List.from(widget.messages); // <-- Initialize local copy
+  }
+
   @override
   void dispose() {
     _messageController.dispose();
@@ -36,8 +44,23 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void _sendMessage() {
     if (_messageController.text.trim().isNotEmpty) {
       widget.onSendMessage(_messageController.text.trim());
+
+      // Add the new message locally for instant UI update
+      setState(() {
+        _localMessages.add(
+          MessageItem(
+            sender: "You", // or pass the actual userId if available
+            recipient: "", // you can fill this if needed
+            content: _messageController.text.trim(),
+            timestamp: DateTime.now(),
+            isFromUser: true,
+            isRead: true,
+          ),
+        );
+        _isTyping = false;
+      });
+
       _messageController.clear();
-      setState(() => _isTyping = false);
 
       // Scroll to bottom after sending message
       Future.delayed(const Duration(milliseconds: 100), () {
@@ -154,7 +177,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final sortedMessages = List<MessageItem>.from(widget.messages)
+    final sortedMessages = List<MessageItem>.from(_localMessages)
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
     return Scaffold(
