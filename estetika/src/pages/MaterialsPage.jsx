@@ -142,7 +142,7 @@ const MaterialsPage = () => {
     mat.name?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const canAddMaterial = userRole === "admin" || userRole === "designer";
+  const canAddMaterial = userRole === "admin";
 
   return (
     <div className="flex flex-col items-center">
