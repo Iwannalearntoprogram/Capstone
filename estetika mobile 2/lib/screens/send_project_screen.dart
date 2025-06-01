@@ -53,6 +53,11 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
 
+  // Add recommendation variables
+  Map<String, dynamic>? _recommendation;
+  bool _isRecommendationLoading = false;
+  bool _hasViewedRecommendation = false;
+
   @override
   void initState() {
     super.initState();
@@ -163,6 +168,172 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     setState(() {
       _inspirationLinks.removeAt(index);
     });
+  }
+
+  Future<void> _fetchRecommendation() async {
+    setState(() {
+      _isRecommendationLoading = true;
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final requestBody = {
+        "roomType": _roomType,
+        "designPreferences": _descriptionController.text,
+        "budget": double.tryParse(_budgetController.text) ?? 0,
+      };
+      print("Recommendation request body: $requestBody");
+      final response = await http.get(
+          Uri.parse(
+              'https://capstone-thl5.onrender.com/api/project/recommendation'),
+          headers: {
+            'Content-Type': 'application/json',
+            if (token != null) 'Authorization': 'Bearer $token',
+          });
+      print("request body: ${jsonEncode(requestBody)}");
+      print("Status Code: ${response.statusCode}");
+      print("recom:" + response.body);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _recommendation = data['recommendation'];
+          _isRecommendationLoading = false;
+          _hasViewedRecommendation = true;
+        });
+      } else {
+        setState(() {
+          _recommendation = null;
+          _isRecommendationLoading = false;
+          _hasViewedRecommendation = true;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _recommendation = null;
+        _isRecommendationLoading = false;
+        _hasViewedRecommendation = true;
+      });
+    }
+  }
+
+  Widget _buildRecommendationSection() {
+    final bool canViewRecommendation = _areAllRequiredFieldsFilled();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Design Recommendation'),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: _isRecommendationLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF203B32)))
+              : _hasViewedRecommendation && _recommendation != null
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_recommendation!['imageLink'] != null)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              _recommendation!['imageLink'],
+                              height: 180,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.broken_image,
+                                      size: 48, color: Colors.grey),
+                            ),
+                          ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _recommendation!['title'] ?? 'No Title',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF203B32),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _recommendation!['specification'] ?? '',
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                        const SizedBox(height: 8),
+                        if (_recommendation!['budgetRange'] != null)
+                          Text(
+                            'Budget Range: ₱${_recommendation!['budgetRange']['min']} - ₱${_recommendation!['budgetRange']['max']}',
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.grey),
+                          ),
+                        if (_recommendation!['type'] != null)
+                          Text(
+                            'Type: ${_recommendation!['type']}',
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.grey),
+                          ),
+                        if (_recommendation!['tags'] != null)
+                          Wrap(
+                            spacing: 6,
+                            children: (_recommendation!['tags'] as List)
+                                .map((tag) => Chip(
+                                      label: Text(tag),
+                                      backgroundColor: const Color(0xFFE8F5E9),
+                                      labelStyle: const TextStyle(
+                                          color: Color(0xFF203B32),
+                                          fontSize: 12),
+                                    ))
+                                .toList(),
+                          ),
+                      ],
+                    )
+                  : _hasViewedRecommendation && _recommendation == null
+                      ? const Text('No design recommendation available.',
+                          style: TextStyle(color: Colors.grey))
+                      : Column(
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: canViewRecommendation
+                                  ? _fetchRecommendation
+                                  : null,
+                              icon: const Icon(Icons.lightbulb_outline),
+                              label: const Text('View Recommendation'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: canViewRecommendation
+                                    ? const Color(0xFF203B32)
+                                    : Colors.grey[400],
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                            if (!canViewRecommendation) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                'Please fill all required fields to view recommendation',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ],
+                        ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
   }
 
   @override
@@ -699,6 +870,9 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
 
                   const SizedBox(height: 32),
 
+                  // Add recommendation section here, BEFORE the submit button
+                  _buildRecommendationSection(),
+
                   // Submit Button
                   SizedBox(
                     width: double.infinity,
@@ -775,6 +949,20 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         ],
       ),
     );
+  }
+
+  bool _areAllRequiredFieldsFilled() {
+    return _clientNameController.text.isNotEmpty &&
+        _emailController.text.isNotEmpty &&
+        _contactNumberController.text.isNotEmpty &&
+        _projectNameController.text.isNotEmpty &&
+        _roomType != null &&
+        _projectSizeController.text.isNotEmpty &&
+        _locationController.text.isNotEmpty &&
+        _budgetController.text.isNotEmpty &&
+        _descriptionController.text.isNotEmpty &&
+        _startDate != null &&
+        _endDate != null;
   }
 
   Future<void> _submitProjectProposal() async {

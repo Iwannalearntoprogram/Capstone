@@ -36,17 +36,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   double _overallProgress = 0.0;
   List<Map<String, dynamic>> _timelinePhases = [];
   List<dynamic> _projectUpdates = [];
-  Map<String, dynamic>? _recommendation;
-  bool _isRecommendationLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _projectData = widget.project; // <-- Initialize here!
+    _projectData = widget.project;
     _loadClientInfo();
     _loadProjectDetails();
     _fetchUpdatedProject();
-    _fetchRecommendation(); // <-- Add this
   }
 
   Future<void> _loadClientInfo() async {
@@ -204,42 +201,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     }
   }
 
-  Future<void> _fetchRecommendation() async {
-    setState(() {
-      _isRecommendationLoading = true;
-    });
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-      final response = await http.get(
-        Uri.parse(
-            'https://capstone-thl5.onrender.com/api/project/recommendation'),
-        headers: {
-          'Content-Type': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-      );
-      print("recom:" + response.body);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _recommendation = data['recommendation'];
-          _isRecommendationLoading = false;
-        });
-      } else {
-        setState(() {
-          _recommendation = null;
-          _isRecommendationLoading = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _recommendation = null;
-        _isRecommendationLoading = false;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -361,10 +322,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           _buildSectionHeader('Project Timeline'),
           _buildTimelineSection(),
           const SizedBox(height: 16),
-
-          // --- Display Recommendation Section here ---
-          _buildRecommendationSection(),
-          // ------------------------------------------
 
           // Comments Section
           _buildCommentsSection(),
@@ -1142,94 +1099,5 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       default:
         return Colors.blue;
     }
-  }
-
-  Widget _buildRecommendationSection() {
-    if (_isRecommendationLoading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child:
-            Center(child: CircularProgressIndicator(color: Color(0xFF203B32))),
-      );
-    }
-    if (_recommendation == null) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Text('No design recommendation available.',
-            style: TextStyle(color: Colors.grey)),
-      );
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionHeader('Design Recommendation'),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[300]!),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (_recommendation!['imageLink'] != null)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    _recommendation!['imageLink'],
-                    height: 180,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.broken_image,
-                        size: 48,
-                        color: Colors.grey),
-                  ),
-                ),
-              const SizedBox(height: 12),
-              Text(
-                _recommendation!['title'] ?? 'No Title',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF203B32),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _recommendation!['specification'] ?? '',
-                style: const TextStyle(fontSize: 15),
-              ),
-              const SizedBox(height: 8),
-              if (_recommendation!['budgetRange'] != null)
-                Text(
-                  'Budget Range: ₱${_recommendation!['budgetRange']['min']} - ₱${_recommendation!['budgetRange']['max']}',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-              if (_recommendation!['type'] != null)
-                Text(
-                  'Type: ${_recommendation!['type']}',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-              if (_recommendation!['tags'] != null)
-                Wrap(
-                  spacing: 6,
-                  children: (_recommendation!['tags'] as List)
-                      .map((tag) => Chip(
-                            label: Text(tag),
-                            backgroundColor: const Color(0xFFE8F5E9),
-                            labelStyle: const TextStyle(
-                                color: Color(0xFF203B32), fontSize: 12),
-                          ))
-                      .toList(),
-                ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
   }
 }
