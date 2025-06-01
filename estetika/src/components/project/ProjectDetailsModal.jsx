@@ -108,7 +108,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
 
   if (!project) return null;
 
-  if (status === "ongoing") {
+  if (status !== "pending" && status !== "cancelled") {
     const currentDesigners =
       Array.isArray(project.members) && project.members.length > 0
         ? project.members.filter((member) => member.role === "designer")
