@@ -158,7 +158,7 @@ const design_recommendation_get = catchAsync(async (req, res, next) => {
 });
 
 const design_recommendation_match = catchAsync(async (req, res, next) => {
-  const { roomType, designPreferences, budget } = req.body;
+  const { roomType, designPreferences, budget } = req.query;
 
   if (!roomType || !budget) {
     return next(
