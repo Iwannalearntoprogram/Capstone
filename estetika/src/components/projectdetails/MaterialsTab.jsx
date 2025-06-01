@@ -411,7 +411,7 @@ export default function MaterialsTab() {
         </div>
 
         {/* Right Content Area */}
-        <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#f8fffe] via-white to-[#f0fdf4]">
+        <div className="flex-1 overflow-y-auto ">
           <div className="p-8">
             {loading && selectedSidebar ? (
               <div className="text-center py-20">
@@ -440,7 +440,7 @@ export default function MaterialsTab() {
                     <div className="order-2 lg:order-1">
                       <div className="text-center mb-3">
                         <span className="text-xs text-green-700 font-bold uppercase bg-green-50 px-2 py-1 rounded-full">
-                          💰 Cheaper Alternative
+                          Cheaper Alternative
                         </span>
                       </div>
                       <div className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-green-200 transform hover:scale-[1.02] h-full">
@@ -525,7 +525,7 @@ export default function MaterialsTab() {
                           </div>
 
                           <button
-                            className="w-full px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2 shadow-lg"
+                            className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] transition flex items-center justify-center gap-2 shadow-lg"
                             onClick={() => setShowAddToSheetModal(true)}
                             disabled={!project || !project._id}
                           >
@@ -729,7 +729,7 @@ export default function MaterialsTab() {
                           </div>
 
                           <button
-                            className="w-full px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2 shadow-lg"
+                            className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] transition flex items-center justify-center gap-2 shadow-lg"
                             onClick={() => setShowAddToSheetModal(true)}
                             disabled={!project || !project._id}
                           >
