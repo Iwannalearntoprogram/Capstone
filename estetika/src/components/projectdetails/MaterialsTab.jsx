@@ -57,46 +57,8 @@ export default function MaterialsTab() {
     storedMaterials.length > 0 ? storedMaterials[0].name : ""
   );
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchBestMatch = async () => {
-      if (!selectedSidebar) {
-        setBestMatch(null);
-        return;
-      }
-      setLoading(true);
-      try {
-        const token = Cookies.get("token");
-        const res = await axios.get(
-          `${serverUrl}/api/material/match?query=${selectedSidebar}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            signal: controller.signal,
-          }
-        );
-        console.log("response:", res.data);
-        setBestMatch(res.data?.result?.bestMatch || null);
-      } catch (err) {
-        if (axios.isCancel(err)) {
-          // Request was cancelled
-        } else {
-          setBestMatch(null);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBestMatch();
-    return () => {
-      controller.abort();
-    };
-  }, [selectedSidebar, serverUrl]);
-
   // Update sidebar selection if materials change
   useEffect(() => {
-    setLoading(true);
     if (
       storedMaterials.length > 0 &&
       !storedMaterials.find((m) => m.name === selectedSidebar)
@@ -105,6 +67,41 @@ export default function MaterialsTab() {
     }
     if (storedMaterials.length === 0) setSelectedSidebar("");
   }, [storedMaterials]);
+
+  // Fetch best match when sidebar selection changes
+  useEffect(() => {
+    const controller = new AbortController();
+    let isMounted = true;
+    const fetchBestMatch = async () => {
+      if (!selectedSidebar) {
+        setBestMatch(null);
+        return;
+      }
+      setLoading(true); // <-- Set loading true when fetching best match
+      try {
+        const token = Cookies.get("token");
+        const res = await axios.get(
+          `${serverUrl}/api/material/match?query=${selectedSidebar}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log;
+        if (isMounted) setBestMatch(res.data?.result?.bestMatch || null);
+      } catch {
+        if (isMounted) setBestMatch(null);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchBestMatch();
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [selectedSidebar, serverUrl]);
 
   // Helper to get file name from URL
   const getFileName = (url) => {
@@ -225,7 +222,6 @@ export default function MaterialsTab() {
         return;
       }
       alert("Material added to project sheet successfully!");
-      location.reload();
       setShowAddToSheetModal(false);
       setSelectedSize("");
       setQuantity(1);
@@ -390,7 +386,7 @@ export default function MaterialsTab() {
         {/* Right Content Area */}
         <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#f8fffe] via-white to-[#f0fdf4]">
           <div className="p-8">
-            {loading ? (
+            {loading && selectedSidebar ? (
               <div className="text-center py-20">
                 <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center animate-pulse">
                   <FaShoppingCart className="h-12 w-12 text-gray-400" />
