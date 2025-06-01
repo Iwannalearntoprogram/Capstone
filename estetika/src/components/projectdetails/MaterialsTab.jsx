@@ -232,6 +232,25 @@ export default function MaterialsTab() {
     }
   };
 
+  useEffect(() => {
+    if (!showModal) return;
+    const fetchMaterials = async () => {
+      setLoading(true);
+      try {
+        const token = Cookies.get("token");
+        const res = await axios.get(`${serverUrl}/api/material`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setMaterials(res.data.material || []);
+      } catch {
+        setMaterials([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMaterials();
+  }, [showModal, serverUrl]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
       {/* Header */}
