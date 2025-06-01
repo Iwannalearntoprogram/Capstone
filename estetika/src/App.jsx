@@ -24,6 +24,9 @@ import TasksTab from "./components/projectdetails/TasksTab";
 import ProgressTab from "./components/projectdetails/ProgressTab";
 import TimelineTab from "./components/projectdetails/TimelineTab";
 import FilesTab from "./components/projectdetails/FilesTab";
+import ProjectUpdateTab from "./components/projectdetails/ProjectUpdateTab";
+import ProjectOverviewTab from "./components/projectdetails/ProjectOverviewTab";
+import MaterialsTab from "./components/projectdetails/MaterialsTab";
 
 //materials
 import MaterialsPage from "./pages/MaterialsPage";
@@ -121,6 +124,14 @@ function App() {
             }
           >
             <Route
+              path="overview"
+              element={
+                <ProtectedRoute>
+                  <ProjectOverviewTab />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="tasks"
               element={
                 <ProtectedRoute>
@@ -149,6 +160,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <FilesTab />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="update"
+              element={
+                <ProtectedRoute>
+                  <ProjectUpdateTab />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="material"
+              element={
+                <ProtectedRoute>
+                  <MaterialsTab />
                 </ProtectedRoute>
               }
             />

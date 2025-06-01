@@ -144,10 +144,10 @@ const ProjectCard = ({ project, onView, onDelete }) => {
 
   return (
     <>
-      {/* Edit Project Modal - Only show if admin */}
-      {showEditModal && isAdmin && (
+      {/* Edit Project Modal - Only show if NOT admin */}
+      {showEditModal && !isAdmin && (
         <div className="fixed inset-0 bg-black/30 h-full flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-lg relative max-h-[80vh] overflow-y-auto">
             <button
               className="absolute top-2 right-4 text-gray-500 text-2xl cursor-pointer"
               onClick={() => setShowEditModal(false)}
@@ -262,73 +262,7 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   <option value="cancelled">Cancelled</option>
                 </select>
               </label>
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Members
-                </label>
-                <ul className="mb-2">
-                  {editProjectForm.members &&
-                  editProjectForm.members.length > 0 ? (
-                    editProjectForm.members.map((member, index) => (
-                      <li
-                        key={member._id || index}
-                        className="flex items-center justify-between mb-1"
-                      >
-                        <input
-                          key={index}
-                          type="text"
-                          placeholder={`Member ${index + 1} Email or Username`}
-                          value={member.fullName}
-                          onChange={(e) => {
-                            const updatedMembers = [...editProjectForm.members];
-                            updatedMembers[index] = `${e.target.value}`;
-                            setEditProjectForm((prev) => ({
-                              ...prev,
-                              members: updatedMembers,
-                            }));
-                          }}
-                          className="w-full p-2 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
-                        />
-                        <button
-                          type="button"
-                          className="text-red-500 text-xs px-2 py-1 rounded hover:bg-red-100"
-                          onClick={async () => {
-                            try {
-                              const token = Cookies.get("token");
-                              await axios.put(
-                                `${serverUrl}/api/project/remove-member?id=${project._id}`,
-                                { memberId: member._id },
-                                {
-                                  headers: {
-                                    Authorization: `Bearer ${token}`,
-                                  },
-                                }
-                              );
-                              alert("Member removed!");
-                              window.location.reload();
-                            } catch (err) {
-                              alert("Failed to remove member.");
-                            }
-                          }}
-                        >
-                          Remove
-                        </button>
-                      </li>
-                    ))
-                  ) : (
-                    <li className="text-gray-400 text-xs">No members yet.</li>
-                  )}
-                  <li>
-                    <button
-                      type="button"
-                      onClick={addMemberField}
-                      className="text-[#1D3C34] text-sm hover:underline"
-                    >
-                      + Add Member
-                    </button>
-                  </li>
-                </ul>
-              </div>
+
               <button
                 type="submit"
                 className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition cursor-pointer"
@@ -346,8 +280,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
           <div className="flex-1">
             <h3 className="text-lg font-bold flex items-center gap-2 mb-1">
               {project.title}
-              {/* Only show edit icon if admin */}
-              {isAdmin && (
+              {/* Only show edit icon if NOT admin */}
+              {!isAdmin && (
                 <FiEdit2
                   className="text-gray-400 text-sm cursor-pointer hover:text-gray-600"
                   onClick={() => setShowEditModal(true)}
