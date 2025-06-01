@@ -183,13 +183,21 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         "budget": double.tryParse(_budgetController.text) ?? 0,
       };
       print("Recommendation request body: $requestBody");
+      final uri = Uri.parse(
+              'https://capstone-thl5.onrender.com/api/project/recommendation/match')
+          .replace(queryParameters: {
+        'roomType': _roomType ?? '',
+        'designPreferences': _descriptionController.text,
+        'budget': _budgetController.text,
+      });
+
       final response = await http.get(
-          Uri.parse(
-              'https://capstone-thl5.onrender.com/api/project/recommendation'),
-          headers: {
-            'Content-Type': 'application/json',
-            if (token != null) 'Authorization': 'Bearer $token',
-          });
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
       print("request body: ${jsonEncode(requestBody)}");
       print("Status Code: ${response.statusCode}");
       print("recom:" + response.body);
