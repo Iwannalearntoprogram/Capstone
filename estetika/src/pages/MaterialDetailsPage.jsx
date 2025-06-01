@@ -36,9 +36,6 @@ export default function MaterialDetailsPage() {
   useEffect(() => {
     const role = localStorage.getItem("role");
     setUserRole(role);
-  }, []);
-
-  useEffect(() => {
     const fetchProjects = async () => {
       if (!userRole) return;
 
@@ -59,7 +56,7 @@ export default function MaterialDetailsPage() {
         setProjects([]);
       }
     };
-    fetchProjects();
+    if (role === "designer") fetchProjects();
   }, [userRole, serverUrl, token, userId]);
 
   const [similarProducts, setSimilarProduct] = useState([]);
@@ -424,29 +421,31 @@ export default function MaterialDetailsPage() {
             </div>
           </div>
 
-          <div className="mt-6 flex items-center gap-4">
-            <div className="flex items-center border px-2 rounded">
+          {userRole === "designer" && (
+            <div className="mt-6 flex items-center gap-4">
+              <div className="flex items-center border px-2 rounded">
+                <Button
+                  className="px-2 py-1 hover:bg-gray-100"
+                  onClick={() => handleQuantityChange(-1)}
+                >
+                  -
+                </Button>
+                <span className="px-4 py-1">{quantity}</span>
+                <Button
+                  className="px-2 py-1 hover:bg-gray-100"
+                  onClick={() => handleQuantityChange(1)}
+                >
+                  +
+                </Button>
+              </div>
               <Button
-                className="px-2 py-1 hover:bg-gray-100"
-                onClick={() => handleQuantityChange(-1)}
+                className="bg-[#1D3C34] text-white px-6 py-2 rounded-full hover:bg-[#145c4b] transition"
+                onClick={handleAddToSheetClick}
               >
-                -
-              </Button>
-              <span className="px-4 py-1">{quantity}</span>
-              <Button
-                className="px-2 py-1 hover:bg-gray-100"
-                onClick={() => handleQuantityChange(1)}
-              >
-                +
+                Add to Sheet
               </Button>
             </div>
-            <Button
-              className="bg-[#1D3C34] text-white px-6 py-2 rounded-full hover:bg-[#145c4b] transition"
-              onClick={handleAddToSheetClick}
-            >
-              Add to Sheet
-            </Button>
-          </div>
+          )}
         </div>
 
         <div className="md:col-span-2 mt-10">
