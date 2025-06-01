@@ -88,8 +88,16 @@ export default function MaterialsTab() {
             },
           }
         );
-        console.log;
-        if (isMounted) setBestMatch(res.data?.result?.bestMatch || null);
+        console.log("Best match response:", res.data);
+        if (isMounted && res.data?.result?.bestMatch) {
+          setBestMatch({
+            ...res.data.result.bestMatch,
+            cheaper: res.data.result.cheaper,
+            moreExpensive: res.data.result.moreExpensive,
+          });
+        } else if (isMounted) {
+          setBestMatch(null);
+        }
       } catch {
         if (isMounted) setBestMatch(null);
       } finally {
@@ -419,109 +427,319 @@ export default function MaterialsTab() {
                 </p>
               </div>
             ) : bestMatch ? (
-              <div className="max-w-lg mx-auto">
+              <div className="max-w-7xl mx-auto">
                 {/* Best Match Heading */}
-                <h2 className="text-xl font-bold text-[#1D3C34] mb-4 text-center">
+                <h2 className="text-xl font-bold text-[#1D3C34] mb-6 text-center">
                   Best Match for: {selectedSidebar}
                 </h2>
-                {/* Material Card */}
-                <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 transform hover:scale-[1.02]">
-                  {/* Product Image */}
-                  <div className="relative overflow-hidden bg-gradient-to-br from-[#f0fdf4] to-[#ecfdf5]">
-                    <img
-                      src={
-                        Array.isArray(bestMatch.image)
-                          ? bestMatch.image[0]
-                          : bestMatch.image
-                      }
-                      alt={bestMatch.name}
-                      className="w-full h-80 object-cover hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                  </div>
 
-                  {/* Product Info */}
-                  <div className="p-4">
-                    {/* Title and Description */}
-                    <div className="mb-4">
-                      <h3 className="font-bold text-2xl text-gray-900 mb-3 tracking-tight">
-                        {bestMatch.name}
-                      </h3>
-                      <p className="text-gray-600 leading-relaxed font-medium">
-                        {bestMatch.description}
-                      </p>
-                    </div>
-
-                    {/* Price */}
-                    <div className="mb-8">
-                      <div className="flex items-baseline space-x-2">
-                        <span className="text-4xl font-bold text-[#1D3C34] tracking-tight">
-                          {formatPrice(bestMatch.price)}
-                        </span>
-                        <span className="text-sm text-gray-500 font-medium">
-                          per unit
+                {/* Side-by-Side Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Cheaper Alternative */}
+                  {bestMatch.cheaper && (
+                    <div className="order-2 lg:order-1">
+                      <div className="text-center mb-3">
+                        <span className="text-xs text-green-700 font-bold uppercase bg-green-50 px-2 py-1 rounded-full">
+                          💰 Cheaper Alternative
                         </span>
                       </div>
+                      <div className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-green-200 transform hover:scale-[1.02] h-full">
+                        {/* Product Image */}
+                        <div className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100">
+                          <img
+                            src={
+                              Array.isArray(bestMatch.cheaper.image)
+                                ? bestMatch.cheaper.image[0]
+                                : bestMatch.cheaper.image
+                            }
+                            alt={bestMatch.cheaper.name}
+                            className="w-full h-48 object-cover hover:scale-110 transition-transform duration-700"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                        </div>
+                        {/* Product Info */}
+                        <div className="p-4">
+                          <h3 className="font-bold text-xl text-gray-900 mb-3 tracking-tight">
+                            {bestMatch.cheaper.name}
+                          </h3>
+                          <p className="text-gray-600 leading-relaxed font-medium mb-4">
+                            {bestMatch.cheaper.description}
+                          </p>
+
+                          <div className="mb-6">
+                            <div className="flex items-baseline space-x-2">
+                              <span className="text-3xl font-bold text-green-700 tracking-tight">
+                                {formatPrice(bestMatch.cheaper.price)}
+                              </span>
+                              <span className="text-sm text-gray-500 font-medium">
+                                per unit
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-3 mb-6">
+                            <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                              <div className="w-6 h-6 bg-green-600 rounded-lg flex items-center justify-center">
+                                <FaIndustry className="h-3 w-3 text-white" />
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                  Company
+                                </span>
+                                <div className="text-sm font-bold text-gray-800">
+                                  {bestMatch.cheaper.company}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                              <div className="w-6 h-6 bg-green-600 rounded-lg flex items-center justify-center">
+                                <FaTags className="h-3 w-3 text-white" />
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                  Category
+                                </span>
+                                <div className="text-sm font-bold text-gray-800">
+                                  {bestMatch.cheaper.category}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                              <div className="w-6 h-6 bg-green-600 rounded-lg flex items-center justify-center">
+                                <FaBox className="h-3 w-3 text-white" />
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                  Options
+                                </span>
+                                <div className="text-sm font-bold text-gray-800">
+                                  {bestMatch.cheaper.options &&
+                                  bestMatch.cheaper.options.length > 0
+                                    ? bestMatch.cheaper.options.join(" • ")
+                                    : "Standard"}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            className="w-full px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2 shadow-lg"
+                            onClick={() => setShowAddToSheetModal(true)}
+                            disabled={!project || !project._id}
+                          >
+                            <FaShoppingCart />
+                            Add to Project
+                          </button>
+                        </div>
+                      </div>
                     </div>
+                  )}
 
-                    {/* Details Grid */}
-                    <div className="grid grid-cols-1 gap-4 mb-8">
-                      <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                        <div className="w-8 h-8 bg-[#1D3C34] rounded-lg flex items-center justify-center">
-                          <FaIndustry className="h-4 w-4 text-white" />
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                            Company
-                          </span>
-                          <div className="text-sm font-bold text-gray-800">
-                            {bestMatch.company}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                        <div className="w-8 h-8 bg-[#1D3C34] rounded-lg flex items-center justify-center">
-                          <FaTags className="h-4 w-4 text-white" />
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                            Category
-                          </span>
-                          <div className="text-sm font-bold text-gray-800">
-                            {bestMatch.category}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                        <div className="w-8 h-8 bg-[#1D3C34] rounded-lg flex items-center justify-center">
-                          <FaBox className="h-4 w-4 text-white" />
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                            Options
-                          </span>
-                          <div className="text-sm font-bold text-gray-800">
-                            {bestMatch.options && bestMatch.options.length > 0
-                              ? bestMatch.options.join(" • ")
-                              : "Standard"}
-                          </div>
-                        </div>
-                      </div>
+                  {/* Best Match - Main Card */}
+                  <div className="order-1 lg:order-2">
+                    <div className="text-center mb-3">
+                      <span className="text-xs text-[#1D3C34] font-bold uppercase bg-[#f0fdf4] px-2 py-1 rounded-full">
+                        Best Match
+                      </span>
                     </div>
-                    {/* Add to Project Button */}
-                    <div className="flex justify-center">
-                      <button
-                        className="px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] transition flex items-center gap-2 shadow-lg"
-                        onClick={() => setShowAddToSheetModal(true)}
-                        disabled={!project || !project._id || !bestMatch}
-                      >
-                        <FaShoppingCart />
-                        Add to Project
-                      </button>
+                    <div className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-[#1D3C34] transform hover:scale-[1.02] h-full">
+                      {/* Product Image */}
+                      <div className="relative overflow-hidden bg-gradient-to-br from-[#f0fdf4] to-[#ecfdf5]">
+                        <img
+                          src={
+                            Array.isArray(bestMatch.image)
+                              ? bestMatch.image[0]
+                              : bestMatch.image
+                          }
+                          alt={bestMatch.name}
+                          className="w-full h-48 object-cover hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                      </div>
+                      {/* Product Info */}
+                      <div className="p-4">
+                        <h3 className="font-bold text-xl text-gray-900 mb-3 tracking-tight">
+                          {bestMatch.name}
+                        </h3>
+                        <p className="text-gray-600 leading-relaxed font-medium mb-4">
+                          {bestMatch.description}
+                        </p>
+
+                        <div className="mb-6">
+                          <div className="flex items-baseline space-x-2">
+                            <span className="text-3xl font-bold text-[#1D3C34] tracking-tight">
+                              {formatPrice(bestMatch.price)}
+                            </span>
+                            <span className="text-sm text-gray-500 font-medium">
+                              per unit
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-3 mb-6">
+                          <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                            <div className="w-6 h-6 bg-[#1D3C34] rounded-lg flex items-center justify-center">
+                              <FaIndustry className="h-3 w-3 text-white" />
+                            </div>
+                            <div>
+                              <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                Company
+                              </span>
+                              <div className="text-sm font-bold text-gray-800">
+                                {bestMatch.company}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                            <div className="w-6 h-6 bg-[#1D3C34] rounded-lg flex items-center justify-center">
+                              <FaTags className="h-3 w-3 text-white" />
+                            </div>
+                            <div>
+                              <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                Category
+                              </span>
+                              <div className="text-sm font-bold text-gray-800">
+                                {bestMatch.category}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                            <div className="w-6 h-6 bg-[#1D3C34] rounded-lg flex items-center justify-center">
+                              <FaBox className="h-3 w-3 text-white" />
+                            </div>
+                            <div>
+                              <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                Options
+                              </span>
+                              <div className="text-sm font-bold text-gray-800">
+                                {bestMatch.options &&
+                                bestMatch.options.length > 0
+                                  ? bestMatch.options.join(" • ")
+                                  : "Standard"}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] transition flex items-center justify-center gap-2 shadow-lg"
+                          onClick={() => setShowAddToSheetModal(true)}
+                          disabled={!project || !project._id || !bestMatch}
+                        >
+                          <FaShoppingCart />
+                          Add to Project
+                        </button>
+                      </div>
                     </div>
                   </div>
+
+                  {/* More Expensive Alternative */}
+                  {bestMatch.moreExpensive && (
+                    <div className="order-3">
+                      <div className="text-center mb-3">
+                        <span className="text-xs text-red-700 font-bold uppercase bg-red-50 px-2 py-1 rounded-full">
+                          Expensive Alternative
+                        </span>
+                      </div>
+                      <div className="bg-white rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 border-2 border-red-200 transform hover:scale-[1.02] h-full">
+                        {/* Product Image */}
+                        <div className="relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100">
+                          <img
+                            src={
+                              Array.isArray(bestMatch.moreExpensive.image)
+                                ? bestMatch.moreExpensive.image[0]
+                                : bestMatch.moreExpensive.image
+                            }
+                            alt={bestMatch.moreExpensive.name}
+                            className="w-full h-48 object-cover hover:scale-110 transition-transform duration-700"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                        </div>
+                        {/* Product Info */}
+                        <div className="p-4">
+                          <h3 className="font-bold text-xl text-gray-900 mb-3 tracking-tight">
+                            {bestMatch.moreExpensive.name}
+                          </h3>
+                          <p className="text-gray-600 leading-relaxed font-medium mb-4">
+                            {bestMatch.moreExpensive.description}
+                          </p>
+
+                          <div className="mb-6">
+                            <div className="flex items-baseline space-x-2">
+                              <span className="text-3xl font-bold text-red-700 tracking-tight">
+                                {formatPrice(bestMatch.moreExpensive.price)}
+                              </span>
+                              <span className="text-sm text-gray-500 font-medium">
+                                per unit
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-3 mb-6">
+                            <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                              <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center">
+                                <FaIndustry className="h-3 w-3 text-white" />
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                  Company
+                                </span>
+                                <div className="text-sm font-bold text-gray-800">
+                                  {bestMatch.moreExpensive.company}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                              <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center">
+                                <FaTags className="h-3 w-3 text-white" />
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                  Category
+                                </span>
+                                <div className="text-sm font-bold text-gray-800">
+                                  {bestMatch.moreExpensive.category}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                              <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center">
+                                <FaBox className="h-3 w-3 text-white" />
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                  Options
+                                </span>
+                                <div className="text-sm font-bold text-gray-800">
+                                  {bestMatch.moreExpensive.options &&
+                                  bestMatch.moreExpensive.options.length > 0
+                                    ? bestMatch.moreExpensive.options.join(
+                                        " • "
+                                      )
+                                    : "Standard"}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            className="w-full px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2 shadow-lg"
+                            onClick={() => setShowAddToSheetModal(true)}
+                            disabled={!project || !project._id}
+                          >
+                            <FaShoppingCart />
+                            Add to Project
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
