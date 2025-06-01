@@ -53,13 +53,14 @@ function RingProgressBar({
 function PhaseCard({ phase, tasks, projectId }) {
   const [phaseProgress, setPhaseProgress] = useState(undefined);
   const [overallProgress, setOverallProgress] = useState(undefined);
+  const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   useEffect(() => {
     const fetchPhase = async () => {
       try {
         const token = Cookies.get("token");
         const response = await axios.get(
-          `http://localhost:3000/api/phase?id=${phase._id}`,
+          `${serverUrl}/api/phase?id=${phase._id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

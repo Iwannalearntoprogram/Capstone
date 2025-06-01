@@ -5,6 +5,7 @@ import SubNavbarProjects from "../components/SubNavbarProjects";
 import Cookies from "js-cookie";
 import axios from "axios";
 import ProjectCard from "../components/project/ProjectCard";
+import ProjectDetailsModal from "../components/project/ProjectDetailsModal";
 
 const ProjectsPage = () => {
   const token = Cookies.get("token");
@@ -27,12 +28,20 @@ const ProjectsPage = () => {
     startDate: "",
     endDate: "",
   });
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
 
   const navigate = useNavigate();
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   const handleProjectClick = (projectId) => {
-    navigate(`/projects/${projectId}/tasks`);
+    const project = projects.find((p) => p._id === projectId);
+    if (userRole === "designer") {
+      navigate(`/projects/${projectId}/tasks`, { state: { project } });
+    } else {
+      setSelectedProject(project);
+      setShowDetailsModal(true);
+    }
   };
 
   const handleDeleteProject = async (projectId) => {
@@ -136,6 +145,18 @@ const ProjectsPage = () => {
   };
 
   // Group projects by status
+  // const groupedProjects = {
+  //   ongoing: filteredProjects.filter(
+  //     (project) => project.status === "ongoing" || project.status === "delayed"
+  //   ),
+  //   pending: filteredProjects.filter((project) => project.status === "pending"),
+  //   completed: filteredProjects.filter(
+  //     (project) => project.status === "completed"
+  //   ),
+  //   cancelled: filteredProjects.filter(
+  //     (project) => project.status === "cancelled"
+  //   ),
+  // };
   const groupedProjects = {
     ongoing: Array.isArray(filteredProjects)
       ? filteredProjects.filter(
@@ -188,6 +209,7 @@ const ProjectsPage = () => {
                 project={project}
                 onView={handleProjectClick}
                 onDelete={handleDeleteProject}
+                hideEdit={isAdmin}
               />
             ))}
           </div>
@@ -317,15 +339,15 @@ const ProjectsPage = () => {
           </div>
 
           {/* Only show Add Project button if admin */}
-          {isAdmin && (
-            <button
+          {/* {isAdmin && ( */}
+          {/*   <button
               onClick={() => setShowModal(true)}
               className="bg-[#1D3C34] text-white px-4 py-2 rounded-full hover:bg-[#16442A] transition flex items-center gap-2 whitespace-nowrap"
             >
               <FaPlus size={14} />
               Add Project
             </button>
-          )}
+          )} */}
         </div>
       </div>
 
@@ -355,6 +377,13 @@ const ProjectsPage = () => {
           sectionKey="cancelled"
         />
       </div>
+
+      {showDetailsModal && selectedProject && (
+        <ProjectDetailsModal
+          project={selectedProject}
+          onClose={() => setShowDetailsModal(false)}
+        />
+      )}
     </div>
   );
 };

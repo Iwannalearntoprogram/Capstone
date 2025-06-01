@@ -37,10 +37,13 @@ function ProjectDetailsPage() {
   }, [id, project]);
 
   const tabs = [
+    { label: "Overview", path: "overview" },
     { label: "Tasks", path: "tasks" },
     { label: "Progress", path: "progress" },
     { label: "Timeline", path: "timeline" },
     { label: "Files", path: "files" },
+    { label: "Updates", path: "update" },
+    { label: "Materials", path: "material" },
   ];
 
   return (
