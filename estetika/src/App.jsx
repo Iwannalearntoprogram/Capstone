@@ -12,7 +12,7 @@ import ProfilePage from "./pages/ProfilePage";
 import Inbox from "./pages/Inbox";
 import CalendarPage from "./pages/CalendarPage";
 import NotificationPage from "./pages/NotificationPage";
-import AddUserPage from "./pages/AddUserPage";
+import UsersPage from "./pages/UsersPage";
 
 //project detail pages
 import ProjectsPage from "./pages/ProjectsPage";
@@ -212,7 +212,7 @@ function App() {
             path="/add-user"
             element={
               <ProtectedRoute>
-                <AddUserPage />
+                <UsersPage />
               </ProtectedRoute>
             }
           />
