@@ -1020,7 +1020,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         },
         body: jsonEncode(body),
       );
-
+      print('body: ${body}');
       print(
           'Project proposal response: ${response.statusCode} ${response.body}');
 
