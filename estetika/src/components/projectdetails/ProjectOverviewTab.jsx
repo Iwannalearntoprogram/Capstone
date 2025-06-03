@@ -6,6 +6,10 @@ import {
   FaDollarSign,
   FaRulerCombined,
   FaCheckCircle,
+  FaLightbulb,
+  FaImage,
+  FaTags,
+  FaHeart,
 } from "react-icons/fa";
 import { useOutletContext } from "react-router-dom";
 
@@ -87,6 +91,147 @@ export default function ProjectOverviewTab() {
           </div>
         </div>
       </div>
+
+      {/* Design Recommendation Section */}
+      {project.designRecommendation && (
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 mb-8">
+          <div className="flex items-center space-x-3 mb-6">
+            <div
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: "#fef3c7" }}
+            >
+              <FaLightbulb className="h-6 w-6" style={{ color: "#f59e0b" }} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Design Recommendation
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Design Image */}
+            {project.designRecommendation.imageLink && (
+              <div className="lg:col-span-1">
+                <div className="bg-gray-100 rounded-lg overflow-hidden aspect-square">
+                  <img
+                    src={project.designRecommendation.imageLink}
+                    alt={
+                      project.designRecommendation.title ||
+                      "Design Recommendation"
+                    }
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Design Details */}
+            <div
+              className={`${
+                project.designRecommendation.imageLink
+                  ? "lg:col-span-2"
+                  : "lg:col-span-3"
+              }`}
+            >
+              <div className="space-y-4">
+                {/* Title and Type */}
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {project.designRecommendation.title || "Recommended Design"}
+                  </h3>
+                  {project.designRecommendation.type && (
+                    <span className="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-lg">
+                      {project.designRecommendation.type}
+                    </span>
+                  )}
+                </div>
+
+                {/* Specification */}
+                {project.designRecommendation.specification && (
+                  <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-4 border-l-4 border-amber-400">
+                    <p className="text-gray-800 leading-relaxed">
+                      {project.designRecommendation.specification}
+                    </p>
+                  </div>
+                )}
+
+                {/* Budget Range */}
+                {project.designRecommendation.budgetRange && (
+                  <div className="flex items-center space-x-2">
+                    <FaDollarSign className="h-4 w-4 text-green-600" />
+                    <span className="text-sm font-medium text-gray-600">
+                      Budget Range:
+                    </span>
+                    <span className="text-green-700 font-semibold">
+                      ₱
+                      {project.designRecommendation.budgetRange.min?.toLocaleString()}{" "}
+                      - ₱
+                      {project.designRecommendation.budgetRange.max?.toLocaleString()}
+                    </span>
+                  </div>
+                )}
+
+                {/* Popularity */}
+                {project.designRecommendation.popularity !== undefined && (
+                  <div className="flex items-center space-x-2">
+                    <FaHeart className="h-4 w-4 text-red-500" />
+                    <span className="text-sm font-medium text-gray-600">
+                      Popularity:
+                    </span>
+                    <span className="text-gray-900 font-semibold">
+                      {project.designRecommendation.popularity} likes
+                    </span>
+                  </div>
+                )}
+
+                {/* Design Preferences */}
+                {project.designRecommendation.designPreferences &&
+                  project.designRecommendation.designPreferences.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-600 mb-2">
+                        Design Preferences:
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {project.designRecommendation.designPreferences.map(
+                          (preference, index) => (
+                            <span
+                              key={index}
+                              className="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-lg"
+                            >
+                              {preference
+                                .replace("-", " ")
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            </span>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                {/* Tags */}
+                {project.designRecommendation.tags &&
+                  project.designRecommendation.tags.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-600 mb-2 flex items-center">
+                        <FaTags className="h-3 w-3 mr-1" />
+                        Tags:
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {project.designRecommendation.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="bg-gray-100 text-gray-700 text-xs font-medium px-2 py-1 rounded-lg"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Project Details Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
