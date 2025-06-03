@@ -56,6 +56,7 @@ function RingProgressBar({
 function ProgressTab() {
   const { project } = useOutletContext();
   const [showModal, setShowModal] = useState(false);
+  const [userRole, setUserRole] = useState(null);
   const [phaseForm, setPhaseForm] = useState({
     title: "",
     startDate: "",
@@ -69,6 +70,12 @@ function ProgressTab() {
   const [overallProgress, setOverallProgress] = useState(undefined);
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
+
+  // Get user role from localStorage
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    setUserRole(role);
+  }, []);
 
   useEffect(() => {
     const fetchOverallProgress = async () => {
@@ -99,7 +106,6 @@ function ProgressTab() {
     };
     fetchOverallProgress();
   }, [project?._id]);
-  // ------------------------------------------
 
   const handlePhaseChange = (e) => {
     const { name, value } = e.target;
@@ -111,6 +117,13 @@ function ProgressTab() {
 
   const handleAddPhase = async (e) => {
     e.preventDefault();
+
+    // Prevent admin from creating phases
+    if (userRole === "admin") {
+      alert("Admins cannot create phases. Only designers can manage phases.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await axios.post(
@@ -136,9 +149,20 @@ function ProgressTab() {
     setIsSubmitting(false);
   };
 
+  const handleAddPhaseClick = () => {
+    if (userRole === "admin") {
+      alert("Admins cannot create phases. Only designers can manage phases.");
+      return;
+    }
+    setShowModal(true);
+  };
+
+  const isAdmin = userRole === "admin";
+
   return (
     <div className="space-y-8 bg-white rounded-xl shadow p-6">
-      {showModal && (
+      {/* Modal - Only show if not admin */}
+      {showModal && !isAdmin && (
         <div className="fixed inset-0 bg-black/30 h-full flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-md relative">
             <button
@@ -195,14 +219,27 @@ function ProgressTab() {
         </div>
       )}
 
-      <div className="flex justify-end mb-4">
-        <button
-          className="bg-[#1D3C34] text-white px-4 py-2 rounded font-semibold hover:bg-[#16442A] transition cursor-pointer"
-          onClick={() => setShowModal(true)}
-        >
-          Add Phase
-        </button>
-      </div>
+      {/* Add Phase button - Only show if not admin */}
+      {!isAdmin && (
+        <div className="flex justify-end mb-4">
+          <button
+            className="bg-[#1D3C34] text-white px-4 py-2 rounded font-semibold hover:bg-[#16442A] transition cursor-pointer"
+            onClick={handleAddPhaseClick}
+          >
+            Add Phase
+          </button>
+        </div>
+      )}
+
+      {/* Show admin message if admin and no phases */}
+      {isAdmin && phases.length === 0 && (
+        <div className="text-center text-gray-500 p-6 border border-dashed border-gray-300 rounded-lg">
+          <p className="mb-1">No phases created yet</p>
+          <p className="text-sm text-gray-400">
+            Only designers can create and manage phases
+          </p>
+        </div>
+      )}
 
       {overallProgress !== undefined && overallProgress !== null && (
         <div className="flex flex-col items-center">
@@ -211,15 +248,18 @@ function ProgressTab() {
         </div>
       )}
 
-      {phases.length === 0 && (
+      {/* Show regular no phases message if not admin */}
+      {!isAdmin && phases.length === 0 && (
         <div className="text-center text-gray-500">No phases yet.</div>
       )}
+
       {phases.map((phase, idx) => (
         <PhaseCard
           key={phase._id || idx}
           phase={phase}
           tasks={tasks}
           projectId={project._id}
+          userRole={userRole}
         />
       ))}
     </div>
