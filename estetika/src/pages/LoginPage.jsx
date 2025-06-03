@@ -210,16 +210,9 @@ function LoginPage() {
         </div>
 
         <div className="flex flex-col items-center justify-center bg-[#1D3C34] text-white p-8 md:w-1/2 rounded-r-lg">
-          <h2 className="text-2xl font-semibold mb-4">New Here?</h2>
           <p className="text-center mb-6">
-            Create an account and discover a smarter way to plan, track, and
-            collaborate!
+            Log in and keep your projects moving forward!
           </p>
-          <Link to="/signup">
-            <button className="font-semibold bg-white text-[#1D3C34] py-2 px-6 w-full rounded-full hover:bg-gray-200 transition">
-              Sign Up
-            </button>
-          </Link>
         </div>
       </div>
     </div>
