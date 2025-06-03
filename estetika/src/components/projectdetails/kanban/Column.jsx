@@ -1,6 +1,6 @@
 import TaskCard from "./TaskCard";
 import { useDroppable } from "@dnd-kit/core";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "react-modal"; // Make sure react-modal is installed
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -14,6 +14,7 @@ export default function Column({ column, tasks, project }) {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [userRole, setUserRole] = useState(null);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -23,7 +24,19 @@ export default function Column({ column, tasks, project }) {
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
+  // Get user role from localStorage
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    setUserRole(role);
+  }, []);
+
   const handleSaveTask = async () => {
+    // Prevent admin from creating tasks
+    if (userRole === "admin") {
+      alert("Admins cannot create tasks. Only designers can manage tasks.");
+      return;
+    }
+
     const body = {
       title: newTask.title,
       description: newTask.description,
@@ -72,6 +85,14 @@ export default function Column({ column, tasks, project }) {
     }, 300);
   };
 
+  const handleAddTaskClick = () => {
+    if (userRole === "admin") {
+      alert("Admins cannot create tasks. Only designers can manage tasks.");
+      return;
+    }
+    setModalOpen(true);
+  };
+
   // Find the selected phase object
   const selectedPhase = Array.isArray(project?.timeline)
     ? project.timeline.find((p) => p._id === newTask.phaseId)
@@ -84,6 +105,8 @@ export default function Column({ column, tasks, project }) {
     ? new Date(selectedPhase.endDate).toISOString().slice(0, 10)
     : "";
 
+  const isAdmin = userRole === "admin";
+
   return (
     <div className="flex-1 rounded-xl flex flex-col">
       <h3 className="bg-[#eac5b1] p-4 py-2 font-bold rounded-tl-xl rounded-tr-xl">
@@ -91,26 +114,37 @@ export default function Column({ column, tasks, project }) {
       </h3>
       <div className="bg-white shadow-md rounded-bl-xl rounded-br-xl">
         <div ref={setNodeRef} className="flex flex-col gap-4 p-4">
-          <button
-            onClick={() => setModalOpen(true)}
-            className="border-[1px] border-dashed border-[#145c4b] p-4 py-2 rounded-lg shadow-sm bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-center text-gray-500 font-medium transition"
-            type="button"
-          >
-            + Add Task
-          </button>
-          {tasks.length === 0 && (
+          {!isAdmin && (
+            <button
+              onClick={handleAddTaskClick}
+              className="border-[1px] border-dashed border-[#145c4b] p-4 py-2 rounded-lg shadow-sm bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-center text-gray-500 font-medium transition"
+              type="button"
+            >
+              + Add Task
+            </button>
+          )}
+          {isAdmin && tasks.length === 0 && (
+            <div className="text-center text-gray-500 p-4 border border-dashed border-gray-300 rounded-lg">
+              <p className="mb-1">No tasks in this column</p>
+              <p className="text-sm text-gray-400">
+                Only designers can create and manage tasks
+              </p>
+            </div>
+          )}
+          {/* Show regular no tasks message if not admin */}
+          {!isAdmin && tasks.length === 0 && (
             <div className="text-center text-gray-500">
               No tasks in this column
             </div>
           )}
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
+            <TaskCard key={task.id} task={task} userRole={userRole} />
           ))}
         </div>
       </div>
 
-      {/* Modal */}
-      {modalOpen && (
+      {/* Modal - Only show if not admin */}
+      {modalOpen && !isAdmin && (
         <div
           className={`fixed top-0 left-0 w-full h-full bg-black/20 z-50 ${
             closing
@@ -190,21 +224,6 @@ export default function Column({ column, tasks, project }) {
           onChange={(e) => setNewTask({ ...newTask, endDate: e.target.value })}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
-        {/* 
-        <label className="block mb-2">Assign To:</label>
-        <select
-          value={newTask.assignedTo}
-          onChange={(e) =>
-            setNewTask({ ...newTask, assignedTo: e.target.value })
-          }
-          className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
-        >
-          {users.map((user) => (
-            <option key={user} value={user}>
-              {user}
-            </option>
-          ))}
-        </select> */}
 
         <div className="flex justify-end gap-2">
           <button
