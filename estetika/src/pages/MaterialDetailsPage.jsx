@@ -104,9 +104,15 @@ export default function MaterialDetailsPage() {
             },
           }
         );
-        const filtered = (res.data.results || []).filter(
+        console.log(res.data);
+
+        // Use candidates instead of results for more products
+        const allProducts = res.data.candidates || res.data.results || [];
+
+        const filtered = allProducts.filter(
           (item) => item._id !== material._id
         );
+
         const sorted = [...filtered].sort((a, b) => {
           const priceA = Array.isArray(a.price)
             ? Math.min(...a.price)
@@ -116,7 +122,9 @@ export default function MaterialDetailsPage() {
             : b.price;
           return priceA - priceB;
         });
-        setSimilarProduct(sorted.slice(0, 4));
+
+        // Show more products (up to 8 instead of 4)
+        setSimilarProduct(sorted.slice(0, 8));
       } catch (err) {
         setSimilarProduct([]);
       } finally {
@@ -454,7 +462,8 @@ export default function MaterialDetailsPage() {
               similarProducts.length > 0 &&
               "Similar Products"}
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 min-h-[180px]">
+          {/* Updated grid to show more products */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 min-h-[180px]">
             {fetchingSimilarProduct ? (
               <div className="col-span-4 flex items-center justify-center text-gray-400 text-lg py-10">
                 Loading similar products...
@@ -473,7 +482,11 @@ export default function MaterialDetailsPage() {
                   onClick={() => handleProductClick(product._id)}
                 >
                   <img
-                    src={product.image}
+                    src={
+                      Array.isArray(product.image)
+                        ? product.image[0]
+                        : product.image
+                    }
                     alt={product.name}
                     className="w-full h-40 object-cover rounded-t-lg"
                   />
