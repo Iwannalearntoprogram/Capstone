@@ -42,7 +42,7 @@ export default function ProjectOverviewTab() {
 
   const InfoCard = ({ icon: Icon, label, value, className = "" }) => (
     <div
-      className={`bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow ${className}`}
+      className={`bg-white rounded-lg p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow ${className}`}
     >
       <div className="flex items-start space-x-3">
         <div className="p-2 rounded-lg" style={{ backgroundColor: "#f0fdf4" }}>
@@ -61,7 +61,7 @@ export default function ProjectOverviewTab() {
   return (
     <div className="mx-auto p-6 bg-gray-50 rounded-lg">
       <div
-        className="bg-gradient-to-r from-emerald-700 to-green-800 rounded-2xl p-8 mb-8 text-white"
+        className="bg-gradient-to-r from-emerald-700 to-green-800 rounded-lg p-8 mb-8 text-white"
         style={{ background: "linear-gradient(to right, #1D3C34, #15803d)" }}
       >
         <div className="flex items-center justify-between flex-wrap gap-4">
@@ -74,7 +74,7 @@ export default function ProjectOverviewTab() {
             </p>
           </div>
           <div
-            className={`px-4 py-2 rounded-full border ${getStatusColor(
+            className={`px-4 py-2 rounded-lg border ${getStatusColor(
               project.status
             )} bg-white flex-shrink-0`}
           >
@@ -127,7 +127,7 @@ export default function ProjectOverviewTab() {
       </div>
 
       {/* Designers Section */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 ">
+      <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 ">
         <div className="flex items-center space-x-3 mb-6">
           <div
             className="p-2 rounded-lg"
@@ -151,7 +151,7 @@ export default function ProjectOverviewTab() {
             {designers.map((designer, i) => (
               <div
                 key={designer._id || i}
-                className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
+                className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-all duration-300"
                 style={{
                   "--tw-border-opacity": "1",
                   borderColor: "rgb(229 231 235 / var(--tw-border-opacity))",
@@ -163,7 +163,7 @@ export default function ProjectOverviewTab() {
               >
                 <div className="flex items-center space-x-4 mb-4">
                   <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                    className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg"
                     style={{
                       background: "linear-gradient(135deg, #1D3C34, #22c55e)",
                     }}
@@ -185,7 +185,7 @@ export default function ProjectOverviewTab() {
                 <div className="space-y-3">
                   <div className="flex items-start space-x-2 text-sm">
                     <div
-                      className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
+                      className="w-2 h-2 rounded-lg mt-2 flex-shrink-0"
                       style={{ backgroundColor: "#22c55e" }}
                     ></div>
                     <div>
@@ -197,7 +197,7 @@ export default function ProjectOverviewTab() {
                   </div>
                   <div className="flex items-start space-x-2 text-sm">
                     <div
-                      className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
+                      className="w-2 h-2 rounded-lg mt-2 flex-shrink-0"
                       style={{ backgroundColor: "#16a34a" }}
                     ></div>
                     <div>

@@ -7,13 +7,16 @@ import {
   FaMapMarkerAlt,
   FaDollarSign,
   FaRulerCombined,
+  FaUserPlus,
 } from "react-icons/fa";
 import { FiEdit2 } from "react-icons/fi";
 import axios from "axios";
 import Cookies from "js-cookie";
+import ProjectDetailsModal from "./ProjectDetailsModal";
 
 const ProjectCard = ({ project, onView, onDelete }) => {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [editProjectForm, setEditProjectForm] = useState({
     title: project.title || "",
@@ -134,6 +137,14 @@ const ProjectCard = ({ project, onView, onDelete }) => {
   };
 
   const isAdmin = userRole === "admin";
+
+  // Check if admin can add designer (not pending or cancelled)
+  const canAddDesigner =
+    isAdmin && project.status !== "pending" && project.status !== "cancelled";
+
+  const handleAddDesigner = () => {
+    setShowDetailsModal(true);
+  };
 
   const addMemberField = () => {
     setEditProjectForm((prev) => ({
@@ -275,6 +286,14 @@ const ProjectCard = ({ project, onView, onDelete }) => {
         </div>
       )}
 
+      {/* Project Details Modal for Adding Designers */}
+      {showDetailsModal && (
+        <ProjectDetailsModal
+          project={project}
+          onClose={() => setShowDetailsModal(false)}
+        />
+      )}
+
       <div className="bg-white border rounded-xl p-4 shadow-md flex flex-col justify-between h-full">
         <div className="flex items-start justify-between border-b pb-2 mb-3">
           <div className="flex-1">
@@ -312,6 +331,16 @@ const ProjectCard = ({ project, onView, onDelete }) => {
             >
               View
             </button>
+            {/* Add Designer button - Only show if admin and can add designer */}
+            {canAddDesigner && (
+              <button
+                className="bg-blue-600 text-white text-sm px-2 py-1 rounded hover:bg-blue-700 transition flex items-center"
+                onClick={handleAddDesigner}
+                title="Add Designer"
+              >
+                <FaUserPlus size={12} />
+              </button>
+            )}
             {/* Only show delete button if admin */}
             {isAdmin && (
               <button
