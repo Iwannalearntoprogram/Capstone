@@ -70,6 +70,7 @@ class _SignInScreenState extends State<SigninScreen> {
       );
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final email = _emailController.text.trim();
@@ -78,20 +79,37 @@ class _SignInScreenState extends State<SigninScreen> {
         await prefs.setString('token', data['token'] ?? '');
         await prefs.setString('user', jsonEncode(data['user'] ?? {}));
 
-        await _sendOtp(email);
+        // Store remember me preference
+        await prefs.setBool('rememberMe', _rememberMe);
+        if (_rememberMe) {
+          await prefs.setString('rememberedEmail', email);
+          await prefs.setInt(
+              'lastLoginTime', DateTime.now().millisecondsSinceEpoch);
+        }
 
         if (mounted) {
-          final verified = await _showOtpDialog(email);
-          if (verified == true) {
+          // Check if we should skip OTP based on remember me
+          if (_rememberMe && await _shouldSkipOtp(email)) {
+            // Skip OTP and go directly to home
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const HomeScreen()),
             );
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('OTP verification cancelled or failed')),
-            );
+            // Proceed with OTP verification
+            await _sendOtp(email);
+            final verified = await _showOtpDialog(email);
+            if (verified == true) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text('OTP verification cancelled or failed')),
+              );
+            }
           }
         }
       } else {
@@ -191,6 +209,79 @@ class _SignInScreenState extends State<SigninScreen> {
       }
     } catch (e) {
       print('Verify OTP error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> _shouldSkipOtp(String email) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final rememberMe = prefs.getBool('rememberMe') ?? false;
+      final rememberedEmail = prefs.getString('rememberedEmail') ?? '';
+      final lastLoginTime = prefs.getInt('lastLoginTime') ?? 0;
+
+      if (!rememberMe || rememberedEmail != email) {
+        return false;
+      }
+
+      // Check if the remember me session is still valid (e.g., within 30 days)
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final daysSinceLastLogin = (now - lastLoginTime) / (1000 * 60 * 60 * 24);
+
+      return daysSinceLastLogin <= 30; // Remember for 30 days
+    } catch (e) {
+      print('Error checking remember me status: $e');
+      return false;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberMePreference();
+  }
+
+  Future<void> _loadRememberMePreference() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final rememberMe = prefs.getBool('rememberMe') ?? false;
+      final rememberedEmail = prefs.getString('rememberedEmail') ?? '';
+
+      setState(() {
+        _rememberMe = rememberMe;
+        if (rememberMe && rememberedEmail.isNotEmpty) {
+          _emailController.text = rememberedEmail;
+        }
+      });
+    } catch (e) {
+      print('Error loading remember me preference: $e');
+    }
+  }
+
+  // Future<void> _clearRememberMe() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.remove('rememberMe');
+  //   await prefs.remove('rememberedEmail');
+  //   await prefs.remove('lastLoginTime');
+  // }
+
+  Future<bool> checkAutoLogin() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final rememberMe = prefs.getBool('rememberMe') ?? false;
+      final lastLoginTime = prefs.getInt('lastLoginTime') ?? 0;
+
+      if (token == null || !rememberMe) {
+        return false;
+      }
+
+      // Check if remember me session is still valid
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final daysSinceLastLogin = (now - lastLoginTime) / (1000 * 60 * 60 * 24);
+
+      return daysSinceLastLogin <= 30;
+    } catch (e) {
       return false;
     }
   }

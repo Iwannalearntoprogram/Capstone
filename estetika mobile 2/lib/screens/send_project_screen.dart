@@ -1003,8 +1003,10 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       "roomType": _roomType,
       "projectSize": double.tryParse(_projectSizeController.text) ?? 0,
       "projectLocation": _locationController.text,
-      "designInspo":
+      "designInspiration":
           _inspirationLinks.isNotEmpty ? _inspirationLinks.first : null,
+      "designRecommendation":
+          _recommendation != null ? _recommendation!['_id'] : null,
     };
 
     body.removeWhere((key, value) => value == null);
