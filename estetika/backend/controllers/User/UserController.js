@@ -125,4 +125,35 @@ const user_get = catchAsync(async (req, res, next) => {
   return res.status(200).json({ message: "User Fetched", user: other });
 });
 
-module.exports = { users_index, user_update, user_get };
+// Delete User
+const user_delete = catchAsync(async (req, res, next) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return next(new AppError("User identifier not found", 400));
+  }
+
+  const user = await User.findById(id);
+
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
+  if (req.role !== "admin") {
+    return next(
+      new AppError("You are not authorized to delete this account", 403)
+    );
+  }
+
+  const deletedUser = await User.findByIdAndDelete(id);
+
+  if (!deletedUser) {
+    return next(new AppError("User not found", 404));
+  }
+
+  return res.status(200).json({
+    message: "User Successfully Deleted",
+    deletedUser,
+  });
+});
+
+module.exports = { users_index, user_update, user_get, user_delete };
