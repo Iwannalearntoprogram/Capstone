@@ -5,6 +5,7 @@ import marbleBg from "../assets/images/white-marble-bg.png";
 import { useAuthStore } from "../store/AuthStore";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 
@@ -17,6 +18,7 @@ function LoginPage() {
   const [otpCode, setOtpCode] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [isSkippingOtp, setIsSkippingOtp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
   const { login, token, setUserAndToken, checkRecentVerification } =
@@ -182,15 +184,28 @@ function LoginPage() {
               onChange={handleChange}
               required
             />
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              className="w-full p-2 px-4 mb-4 border border-gray-500 rounded-full"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />{" "}
+            <div className="relative mb-4">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                className="w-full p-2 px-4 border border-gray-500 rounded-full"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3"
+              >
+                {showPassword ? (
+                  <FaEyeSlash className="h-5 w-5 text-gray-500" />
+                ) : (
+                  <FaEye className="h-5 w-5 text-gray-500" />
+                )}
+              </button>
+            </div>
             <button
               type="submit"
               className="mb-8 w-full bg-[#1D3C34] text-white py-2 rounded-full hover:bg-[#16442A] transition"

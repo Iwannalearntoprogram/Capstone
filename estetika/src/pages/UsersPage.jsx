@@ -13,6 +13,8 @@ import {
   FaUserShield,
   FaUserTie,
   FaUsers,
+  FaEye,
+  FaEyeSlash,
 } from "react-icons/fa";
 import defaultProfile from "../assets/images/user.png";
 
@@ -33,6 +35,7 @@ export default function UsersPage() {
   const [message, setMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [showPassword, setShowPassword] = useState(false);
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   useEffect(() => {
@@ -505,16 +508,29 @@ export default function UsersPage() {
                     <FaLock className="w-4 h-4" style={{ color: "#1D3C34" }} />
                     Password
                   </label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                    placeholder="Enter password"
-                    required
-                    disabled={isLoading}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white pr-12"
+                      placeholder="Enter password"
+                      required
+                      disabled={isLoading}
+                    />
+                    <span
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Phone Number */}

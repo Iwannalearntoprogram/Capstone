@@ -11,6 +11,7 @@ import {
   FaTags,
   FaTrash,
   FaInfoCircle,
+  FaEdit,
 } from "react-icons/fa";
 import Papa from "papaparse"; // Make sure papaparse is installed
 
@@ -27,6 +28,9 @@ export default function MaterialsTab() {
   const [quantity, setQuantity] = useState(1);
   const [isAddingToSheet, setIsAddingToSheet] = useState(false);
   const [selectedMaterialOptions, setSelectedMaterialOptions] = useState({});
+  const [editMaterial, setEditMaterial] = useState(null);
+  const [editOption, setEditOption] = useState("");
+  const [editQuantity, setEditQuantity] = useState(1);
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   // Get user role from localStorage
@@ -438,19 +442,76 @@ export default function MaterialsTab() {
     }
   };
 
-  const handleRemoveMaterial = (itemId) => {
+  const handleEditMaterialSubmit = async (e) => {
+    e.preventDefault();
+    if (!editMaterial) return;
+    try {
+      const token = Cookies.get("token");
+      await axios.put(
+        `${serverUrl}/api/project/material?projectId=${project._id}`,
+        {
+          materialId: editMaterial.material._id,
+          options: [
+            ...(editMaterial.material.options || []).filter((opt) => {
+              const label =
+                opt.option || opt.size || opt.name || opt.type || "";
+              return label === editOption;
+            }),
+          ],
+          quantity: editQuantity,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      alert("Material updated!");
+      setEditMaterial(null);
+      window.location.reload(); // Or refetch project data
+    } catch (err) {
+      alert(
+        err?.response?.data?.message || "Failed to update material in project."
+      );
+    }
+  };
+
+  const handleDeleteMaterial = async (materialId, option) => {
     if (userRole === "admin") {
       alert(
         "Admins cannot remove materials. Only designers can manage materials."
       );
       return;
     }
-
-    // Remove from localStorage
-    if (project && project._id) {
-      const updated = storedMaterials.filter((mat) => mat._id !== itemId);
-      localStorage.setItem(project._id, JSON.stringify(updated));
-      window.location.reload();
+    if (!project || !project._id) {
+      alert("No project selected.");
+      return;
+    }
+    if (!window.confirm("Are you sure you want to remove this material?"))
+      return;
+    try {
+      const token = Cookies.get("token");
+      await axios.delete(
+        `${serverUrl}/api/project/material?projectId=${project._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          data: {
+            materialId,
+            option: option || undefined, // if no option, remove all for this materialId
+          },
+        }
+      );
+      alert("Material removed!");
+      window.location.reload(); // or refetch project data if you have a fetch function
+    } catch (err) {
+      alert(
+        err?.response?.data?.message ||
+          "Failed to remove material from project."
+      );
     }
   };
 
@@ -550,7 +611,10 @@ export default function MaterialsTab() {
               {project.materials && project.materials.length > 0 ? (
                 project.materials.map((item, index) => (
                   <div
-                    key={item.material._id}
+                    key={
+                      item.material._id +
+                      (item.option?.map((o) => o.option).join("-") || "")
+                    }
                     onClick={() => setSelectedSidebar(item.material.name)}
                     className={`group w-full text-left p-5 rounded-2xl transition-all duration-300 border-2 transform hover:scale-[1.02] relative ${
                       selectedSidebar === item.material.name
@@ -605,6 +669,46 @@ export default function MaterialsTab() {
                         </span>
                       </div>
                     </div>
+                    <button
+                      className="absolute top-3 right-10 text-gray-500 cursor-pointer hover:text-blue-500"
+                      title="Edit"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditMaterial(item);
+                        // Set the label of the first option as selected
+                        setEditOption(
+                          item.option && item.option.length > 0
+                            ? item.option[0].option ||
+                                item.option[0].size ||
+                                item.option[0].name ||
+                                item.option[0].type ||
+                                ""
+                            : ""
+                        );
+                        setEditQuantity(item.quantity);
+                      }}
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      className="absolute top-3 right-3 text-gray-500 cursor-pointer hover:text-red-500"
+                      title="Remove"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteMaterial(
+                          item.material._id,
+                          // If there are options, pass the first option's value, else undefined
+                          item.option && item.option.length > 0
+                            ? item.option[0].option ||
+                                item.option[0].size ||
+                                item.option[0].name ||
+                                item.option[0].type
+                            : undefined
+                        );
+                      }}
+                    >
+                      <FaTrash />
+                    </button>
                   </div>
                 ))
               ) : (
@@ -1181,6 +1285,43 @@ export default function MaterialsTab() {
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {editMaterial && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full relative">
+            <button
+              className="absolute top-2 right-4 text-gray-500 text-2xl"
+              onClick={() => setEditMaterial(null)}
+            >
+              &times;
+            </button>
+            <h3 className="text-xl font-bold mb-4 text-center">
+              Edit Material Quantity
+            </h3>
+            <form onSubmit={handleEditMaterialSubmit}>
+              <div className="mb-4">
+                <label className="block mb-1 font-medium">Quantity:</label>
+                <input
+                  type="number"
+                  min={1}
+                  className="w-full p-2 border border-gray-300 rounded"
+                  value={editQuantity}
+                  onChange={(e) => setEditQuantity(Number(e.target.value))}
+                  required
+                />
+              </div>
+              <div className="flex justify-center mt-4">
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#1D3C34] text-white rounded hover:bg-[#145c4b] transition flex items-center gap-2"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
