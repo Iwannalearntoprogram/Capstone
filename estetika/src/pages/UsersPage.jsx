@@ -525,7 +525,6 @@ export default function UsersPage() {
                   >
                     <option value="admin">Admin</option>
                     <option value="designer">Designer</option>
-                    <option value="client">Client</option>
                   </select>
                 </div>
               </div>
