@@ -70,6 +70,7 @@ const HomePage = () => {
   const [materialsLoading, setMaterialsLoading] = useState(true);
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [generatingMaterialsPDF, setGeneratingMaterialsPDF] = useState(false);
+  const [generatingDesignersPDF, setGeneratingDesignersPDF] = useState(false);
   const [designersLoading, setDesignersLoading] = useState(true);
   const [expandedDesigners, setExpandedDesigners] = useState({});
 
@@ -712,6 +713,355 @@ const HomePage = () => {
     }
   };
 
+  const generateDesignersPDF = async () => {
+    setGeneratingDesignersPDF(true);
+    try {
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+
+      pdf.setFillColor(99, 102, 241);
+      pdf.rect(0, 0, pageWidth, 50, "F");
+
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(24);
+      pdf.setFont(undefined, "bold");
+      pdf.text("Team Designers Report", pageWidth / 2, 30, {
+        align: "center",
+      });
+
+      pdf.setTextColor(240, 249, 255);
+      pdf.setFontSize(12);
+      pdf.setFont(undefined, "normal");
+      const currentDate = new Date().toLocaleDateString();
+      pdf.text(`Generated on: ${currentDate}`, pageWidth / 2, 42, {
+        align: "center",
+      });
+
+      pdf.setTextColor(0, 0, 0);
+      let yPosition = 70;
+
+      pdf.setFillColor(248, 250, 252);
+      pdf.setDrawColor(226, 232, 240);
+      pdf.rect(margin, yPosition, pageWidth - 2 * margin, 80, "FD");
+
+      yPosition += 15;
+      pdf.setFontSize(18);
+      pdf.setFont(undefined, "bold");
+      pdf.text("Designers Summary", margin + 10, yPosition);
+
+      yPosition += 20;
+      pdf.setFontSize(12);
+      pdf.setFont(undefined, "normal");
+
+      const totalDesigners = designers.length;
+      const verifiedDesigners = designers.filter((d) => d.emailVerified).length;
+      const totalProjects = projectsData.length;
+      const designersWithProjects = designers.filter((designer) =>
+        projectsData.some(
+          (project) =>
+            project.members &&
+            project.members.some((member) =>
+              typeof member === "object"
+                ? member._id === designer._id
+                : member === designer._id
+            )
+        )
+      ).length;
+
+      pdf.text(`Total Designers: ${totalDesigners}`, margin + 15, yPosition);
+      pdf.text(
+        `Verified Designers: ${verifiedDesigners}`,
+        margin + 15,
+        yPosition + 15
+      );
+
+      const rightColumnX = margin + (pageWidth - 2 * margin) * 0.5;
+      pdf.text(
+        `Active Designers: ${designersWithProjects}`,
+        rightColumnX,
+        yPosition
+      );
+      pdf.text(
+        `Total Projects: ${totalProjects}`,
+        rightColumnX,
+        yPosition + 15
+      );
+
+      yPosition += 60;
+
+      if (designers.length > 0) {
+        pdf.setFillColor(99, 102, 241);
+        pdf.rect(margin, yPosition, pageWidth - 2 * margin, 25, "F");
+
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(16);
+        pdf.setFont(undefined, "bold");
+        pdf.text("Designer Details", margin + 10, yPosition + 17);
+
+        pdf.setTextColor(0, 0, 0);
+        yPosition += 35;
+
+        designers.forEach((designer, index) => {
+          if (yPosition > pageHeight - 100) {
+            pdf.addPage();
+            yPosition = 30;
+          }
+
+          pdf.setFillColor(249, 250, 251);
+          pdf.setDrawColor(209, 213, 219);
+          pdf.rect(margin, yPosition, pageWidth - 2 * margin, 60, "FD");
+
+          yPosition += 15;
+
+          pdf.setFontSize(14);
+          pdf.setFont(undefined, "bold");
+          pdf.setTextColor(31, 41, 55);
+          const designerName =
+            designer?.fullName ||
+            `${designer?.firstName || ""} ${designer?.lastName || ""}`.trim() ||
+            designer?.username ||
+            "Unnamed Designer";
+          pdf.text(designerName, margin + 10, yPosition);
+
+          yPosition += 12;
+          pdf.setFontSize(10);
+          pdf.setFont(undefined, "normal");
+          pdf.setTextColor(107, 114, 128);
+          pdf.text(
+            `Email: ${designer?.email || "N/A"}`,
+            margin + 10,
+            yPosition
+          );
+
+          if (designer?.emailVerified) {
+            pdf.setTextColor(34, 197, 94);
+            pdf.text("✓ Verified", margin + 120, yPosition);
+          }
+
+          yPosition += 10;
+          pdf.setTextColor(107, 114, 128);
+          const joinDate = designer?.createdAt
+            ? new Date(designer.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : "N/A";
+          pdf.text(`Joined: ${joinDate}`, margin + 10, yPosition);
+
+          if (designer?.phoneNumber) {
+            pdf.text(`Phone: ${designer.phoneNumber}`, margin + 80, yPosition);
+          }
+
+          const designerProjects = projectsData.filter(
+            (project) =>
+              project.members &&
+              project.members.some((member) =>
+                typeof member === "object"
+                  ? member._id === designer._id
+                  : member === designer._id
+              )
+          );
+          yPosition += 10;
+          pdf.setTextColor(75, 85, 99);
+          pdf.text(
+            `Projects: ${designerProjects.length}`,
+            margin + 10,
+            yPosition
+          );
+
+          if (designerProjects.length > 0) {
+            const statuses = designerProjects.reduce((acc, project) => {
+              acc[project.status] = (acc[project.status] || 0) + 1;
+              return acc;
+            }, {});
+
+            let statusText = Object.entries(statuses)
+              .map(([status, count]) => `${status}: ${count}`)
+              .join(", ");
+
+            if (statusText.length > 50) {
+              statusText = statusText.substring(0, 47) + "...";
+            }
+
+            pdf.text(statusText, margin + 60, yPosition);
+          }
+
+          yPosition += 25;
+
+          if (designerProjects.length > 0) {
+            yPosition += 10;
+
+            pdf.setFillColor(239, 246, 255);
+            pdf.setDrawColor(191, 219, 254);
+            pdf.rect(
+              margin + 5,
+              yPosition,
+              pageWidth - 2 * margin - 10,
+              20,
+              "FD"
+            );
+
+            yPosition += 15;
+            pdf.setFontSize(12);
+            pdf.setFont(undefined, "bold");
+            pdf.setTextColor(59, 130, 246);
+            pdf.text(
+              `Project Details (${designerProjects.length} projects)`,
+              margin + 10,
+              yPosition
+            );
+
+            yPosition += 15;
+
+            designerProjects.forEach((project, projectIndex) => {
+              if (yPosition > pageHeight - 80) {
+                pdf.addPage();
+                yPosition = 30;
+              }
+
+              pdf.setFillColor(255, 255, 255);
+              pdf.setDrawColor(229, 231, 235);
+              pdf.rect(
+                margin + 10,
+                yPosition,
+                pageWidth - 2 * margin - 20,
+                60,
+                "FD"
+              );
+
+              yPosition += 15;
+
+              pdf.setFontSize(11);
+              pdf.setFont(undefined, "bold");
+              pdf.setTextColor(31, 41, 55);
+              const projectTitle = project.title || "Untitled Project";
+              const maxTitleLength = 45;
+              const displayTitle =
+                projectTitle.length > maxTitleLength
+                  ? projectTitle.substring(0, maxTitleLength) + "..."
+                  : projectTitle;
+              pdf.text(
+                `${projectIndex + 1}. ${displayTitle}`,
+                margin + 15,
+                yPosition
+              );
+
+              const status = project.status || "Unknown";
+              let statusColor = [75, 85, 99];
+
+              if (status === "completed") statusColor = [34, 197, 94];
+              else if (status === "ongoing") statusColor = [59, 130, 246];
+              else if (status === "delayed") statusColor = [239, 68, 68];
+              else if (status === "cancelled") statusColor = [156, 163, 175];
+              else if (status === "pending") statusColor = [251, 191, 36];
+
+              pdf.setTextColor(...statusColor);
+              pdf.setFont(undefined, "normal");
+              pdf.setFontSize(9);
+              pdf.text(
+                `[${status.toUpperCase()}]`,
+                pageWidth - margin - 50,
+                yPosition
+              );
+
+              yPosition += 12;
+
+              pdf.setTextColor(75, 85, 99);
+              pdf.setFontSize(9);
+              pdf.setFont(undefined, "normal");
+
+              const leftColumn = margin + 15;
+              const rightColumn = margin + (pageWidth - 2 * margin) * 0.6;
+
+              if (project.budget) {
+                pdf.text(
+                  `Budget: ₱${project.budget.toLocaleString()}`,
+                  leftColumn,
+                  yPosition
+                );
+              }
+              if (project.roomType) {
+                pdf.text(`Room: ${project.roomType}`, rightColumn, yPosition);
+              }
+
+              yPosition += 10;
+
+              if (project.startDate) {
+                const startDate = new Date(
+                  project.startDate
+                ).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                });
+                pdf.text(`Start: ${startDate}`, leftColumn, yPosition);
+              }
+              if (project.endDate) {
+                const endDate = new Date(project.endDate).toLocaleDateString(
+                  "en-US",
+                  {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  }
+                );
+                pdf.text(`End: ${endDate}`, rightColumn, yPosition);
+              }
+
+              yPosition += 10;
+
+              if (project.description) {
+                const maxDescLength = 80;
+                const desc =
+                  project.description.length > maxDescLength
+                    ? project.description.substring(0, maxDescLength) + "..."
+                    : project.description;
+                pdf.setFontSize(8);
+                pdf.setTextColor(107, 114, 128);
+                pdf.text(`Description: ${desc}`, leftColumn, yPosition);
+                yPosition += 8;
+              }
+
+              if (project.members && project.members.length > 1) {
+                pdf.setFontSize(8);
+                pdf.setTextColor(107, 114, 128);
+                pdf.text(
+                  `Team size: ${project.members.length} members`,
+                  rightColumn,
+                  yPosition - (project.description ? 8 : 0)
+                );
+              }
+
+              yPosition += 15;
+            });
+
+            yPosition += 10;
+          }
+        });
+      }
+
+      const footerY = pageHeight - 15;
+      pdf.setFontSize(8);
+      pdf.setTextColor(156, 163, 175);
+      pdf.text(
+        `Generated by Estetika Project Management System - ${new Date().toLocaleString()}`,
+        pageWidth / 2,
+        footerY,
+        { align: "center" }
+      );
+
+      pdf.save(`Designers_Report_${currentDate.replace(/\//g, "-")}.pdf`);
+    } catch (error) {
+      console.error("Error generating designers PDF:", error);
+      alert("Error generating designers PDF. Please try again.");
+    } finally {
+      setGeneratingDesignersPDF(false);
+    }
+  };
+
   useEffect(() => {
     const fetchDesigners = async () => {
       setDesignersLoading(true);
@@ -909,6 +1259,7 @@ const HomePage = () => {
       {/* Designers Section */}
       {role === "admin" && (
         <div className="col-span-8 bg-white rounded-xl p-4 shadow-md">
+          {" "}
           <div className="mb-4 flex justify-between items-center">
             <div>
               <h2 className="font-bold text-lg">Team Designers</h2>
@@ -916,11 +1267,41 @@ const HomePage = () => {
                 Active designers in the system
               </p>
             </div>
-            <div className="text-sm text-gray-500">
-              Total: {designers.length} designers
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-gray-500">
+                Total: {designers.length} designers
+              </div>
+              <button
+                onClick={generateDesignersPDF}
+                disabled={generatingDesignersPDF}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+              >
+                {generatingDesignersPDF ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    Export Designers Report
+                  </>
+                )}
+              </button>
             </div>
           </div>
-
           {designersLoading ? (
             <div className="flex justify-center items-center h-32">
               <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
