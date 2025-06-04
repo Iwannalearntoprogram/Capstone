@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import jsPDF from "jspdf";
 import { FaCheckCircle, FaPhone, FaBriefcase } from "react-icons/fa";
+import defaultProfile from "../assets/images/user.png";
 import html2canvas from "html2canvas";
 
 const calculateCategorySales = (materials = []) => {
@@ -958,20 +959,11 @@ const HomePage = () => {
                   {/* Header with Avatar and Basic Info */}
                   <div className="flex items-center space-x-4 mb-4">
                     {/* Avatar */}
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-105 transition-transform duration-300">
-                      {designer?.firstName && designer?.lastName
-                        ? `${designer.firstName[0]}${designer.lastName[0]}`.toUpperCase()
-                        : designer?.fullName
-                        ? designer.fullName
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .substring(0, 2)
-                            .toUpperCase()
-                        : designer?.username?.[0]?.toUpperCase() ||
-                          designer?.email?.[0]?.toUpperCase() ||
-                          "?"}
-                    </div>
+                    <img
+                      src={designer.profileImage || defaultProfile}
+                      alt="Profile"
+                      className="w-12 h-12 rounded-lg object-cover"
+                    />
 
                     {/* Name and Email */}
                     <div className="flex-1 min-w-0">
