@@ -47,6 +47,7 @@ const materialSchema = new mongoose.Schema(
       type: String,
       required: [true, "Material category is required"],
     },
+    sales: Number,
     designerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     embedding: {
       type: [Number],
