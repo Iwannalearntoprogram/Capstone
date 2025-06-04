@@ -12,7 +12,7 @@ export default function Material({ materialDetails }) {
     const max = Math.max(...price);
     priceDisplay = min === max ? `$${min}` : `$${min} - $${max}`;
   } else {
-    priceDisplay = `$${price}`;
+    priceDisplay = `₱${price}`;
   }
 
   return (

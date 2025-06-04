@@ -4,6 +4,7 @@ import ProjectStatesPieChart from "../components/dashboard/ProjectStatesPieChart
 import Cookies from "js-cookie";
 import axios from "axios";
 import jsPDF from "jspdf";
+import { FaCheckCircle, FaPhone, FaBriefcase } from "react-icons/fa";
 import html2canvas from "html2canvas";
 
 const calculateCategorySales = (materials = []) => {
@@ -67,11 +68,13 @@ const HomePage = () => {
   const [materialsLoading, setMaterialsLoading] = useState(true);
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [generatingMaterialsPDF, setGeneratingMaterialsPDF] = useState(false);
+  const [designersLoading, setDesignersLoading] = useState(true);
 
   const [projectsData, setProjectsData] = useState([]);
   const [projectStates, setProjectStates] = useState({});
   const [materials, setMaterials] = useState([]);
   const [topMaterialCategories, setTopMaterialCategories] = useState([]);
+  const [designers, setDesigners] = useState([]);
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   useEffect(() => {
@@ -117,9 +120,11 @@ const HomePage = () => {
     };
     fetchMaterials();
   }, []);
+
   useEffect(() => {
     checkProjectsState(projectsData);
   }, [projectsData]);
+
   const checkProjectsState = (projects) => {
     const safeProjects = Array.isArray(projects) ? projects : [];
     const activeProjects = safeProjects.filter(
@@ -143,6 +148,7 @@ const HomePage = () => {
     });
     setOverviewLoading(false);
   };
+
   const generateProjectPDF = async () => {
     setGeneratingPDF(true);
     try {
@@ -408,6 +414,7 @@ const HomePage = () => {
       setGeneratingPDF(false);
     }
   };
+
   const generateMaterialsPDF = async () => {
     setGeneratingMaterialsPDF(true);
     try {
@@ -686,6 +693,32 @@ const HomePage = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchDesigners = async () => {
+      setDesignersLoading(true);
+      try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${serverUrl}/api/user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        // Filter users with designer role
+        const designerUsers = response.data.filter(
+          (user) => user.role === "designer"
+        );
+        setDesigners(designerUsers);
+        console.log("Designers:", designerUsers);
+      } catch (err) {
+        console.error("Error fetching designers:", err);
+        setDesigners([]);
+      } finally {
+        setDesignersLoading(false);
+      }
+    };
+    fetchDesigners();
+  }, [serverUrl]);
+
   return (
     <div className="w-full min-h-screen grid grid-rows-3 grid-cols-8 gap-4 grid-auto-rows-[minmax(0, 1fr)]">
       {" "}
@@ -856,7 +889,203 @@ const HomePage = () => {
           </div>
         )}
       </div>
-      <div className="col-span-8 bg-white rounded-xl p-4 shadow-md"></div>
+      {/* Designers Section */}
+      <div className="col-span-8 bg-white rounded-xl p-4 shadow-md">
+        <div className="mb-4 flex justify-between items-center">
+          <div>
+            <h2 className="font-bold text-lg">Team Designers</h2>
+            <p className="text-sm text-gray-600">
+              Active designers in the system
+            </p>
+          </div>
+          <div className="text-sm text-gray-500">
+            Total: {designers.length} designers
+          </div>
+        </div>
+
+        {designersLoading ? (
+          <div className="flex justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+            <span className="ml-2 text-gray-600">Loading designers...</span>
+          </div>
+        ) : designers.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <svg
+              className="w-12 h-12 mx-auto mb-3 text-gray-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+              />
+            </svg>
+            <p>No designers found</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {designers.map((designer) => {
+              // Find projects for this designer
+              const designerProjects = projectsData.filter(
+                (project) =>
+                  project.members && project.members.includes(designer._id)
+              );
+
+              // Helper function for status colors
+              const getStatusColor = (status) => {
+                switch (status) {
+                  case "ongoing":
+                    return "bg-blue-100 text-blue-800";
+                  case "completed":
+                    return "bg-green-100 text-green-800";
+                  case "delayed":
+                    return "bg-red-100 text-red-800";
+                  case "pending":
+                    return "bg-yellow-100 text-yellow-800";
+                  default:
+                    return "bg-gray-100 text-gray-800";
+                }
+              };
+
+              return (
+                <div
+                  key={designer._id}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300 group"
+                >
+                  {/* Header with Avatar and Basic Info */}
+                  <div className="flex items-center space-x-4 mb-4">
+                    {/* Avatar */}
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-105 transition-transform duration-300">
+                      {designer?.firstName && designer?.lastName
+                        ? `${designer.firstName[0]}${designer.lastName[0]}`.toUpperCase()
+                        : designer?.fullName
+                        ? designer.fullName
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .substring(0, 2)
+                            .toUpperCase()
+                        : designer?.username?.[0]?.toUpperCase() ||
+                          designer?.email?.[0]?.toUpperCase() ||
+                          "?"}
+                    </div>
+
+                    {/* Name and Email */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-lg text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                        {designer?.fullName ||
+                          `${designer?.firstName || ""} ${
+                            designer?.lastName || ""
+                          }`.trim() ||
+                          designer?.username ||
+                          "Unnamed Designer"}
+                      </h3>
+                      <p className="text-sm text-gray-600 truncate">
+                        {designer?.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Status Badges */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                      Designer
+                    </span>
+                    {designer?.emailVerified && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                        <FaCheckCircle className="w-3 h-3 mr-1" />
+                        Verified
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Contact Info */}
+                  <div className="space-y-2 mb-4 text-sm text-gray-600">
+                    <div className="flex items-center justify-between">
+                      <span>Joined:</span>
+                      <span className="font-medium">
+                        {designer?.createdAt
+                          ? new Date(designer.createdAt).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                year: "numeric",
+                              }
+                            )
+                          : "N/A"}
+                      </span>
+                    </div>
+                    {designer?.phoneNumber && (
+                      <div className="flex items-center">
+                        <FaPhone className="w-4 h-4 mr-2 text-gray-400" />
+                        <span className="text-xs">{designer.phoneNumber}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Projects Section */}
+                  <div className="border-t border-gray-100 pt-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center">
+                        <FaBriefcase className="w-4 h-4 mr-2 text-gray-500" />
+                        <span className="text-sm font-semibold text-gray-700">
+                          Projects ({designerProjects.length})
+                        </span>
+                      </div>
+                    </div>
+
+                    {designerProjects.length > 0 ? (
+                      <div className="space-y-2">
+                        {designerProjects.slice(0, 2).map((project) => (
+                          <div
+                            key={project._id}
+                            className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium text-sm text-gray-800 truncate pr-2">
+                                {project.title}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                                  project.status
+                                )}`}
+                              >
+                                {project.status}
+                              </span>
+                              {project.budget && (
+                                <span className="text-xs text-gray-600 font-semibold">
+                                  ₱{project.budget.toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+
+                        {designerProjects.length > 2 && (
+                          <div className="text-center pt-2">
+                            <span className="text-xs text-blue-600 font-medium">
+                              +{designerProjects.length - 2} more projects
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 rounded-lg px-3 py-4 text-center border-2 border-dashed border-gray-200">
+                        <p className="text-xs text-gray-500">No projects yet</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
