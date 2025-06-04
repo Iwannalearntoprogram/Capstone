@@ -53,14 +53,19 @@ const projectSchema = new mongoose.Schema(
           ref: "Material",
           required: true,
         },
-        option: {
-          type: String,
-          required: true,
-        },
+        option: [
+          {
+            type: String,
+          },
+        ],
         quantity: {
           type: Number,
           required: true,
           min: [1, "Quantity must be at least 1"],
+        },
+        totalPrice: {
+          type: Number,
+          required: true,
         },
       },
     ],
