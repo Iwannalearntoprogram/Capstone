@@ -4,6 +4,7 @@ const {
   ref,
   getDownloadURL,
   uploadBytesResumable,
+  deleteObject,
 } = require("firebase/storage");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
@@ -393,6 +394,66 @@ const fetch_csv = catchAsync(async (req, res) => {
   return res.send(text);
 });
 
+// Delete File
+const file_delete = catchAsync(async (req, res, next) => {
+  const { projectId } = req.query;
+  const { fileUrl } = req.body;
+
+  if (!projectId) {
+    return next(new AppError("Project ID not provided", 400));
+  }
+
+  if (!fileUrl) {
+    return next(new AppError("File URL not provided", 400));
+  }
+
+  // Check if project exists
+  const project = await Project.findById(projectId);
+  if (!project) {
+    return next(new AppError("Project not found", 404));
+  }
+
+  // Check if file exists in project files array
+  if (!project.files || !project.files.includes(fileUrl)) {
+    return next(new AppError("File not found in project", 404));
+  }
+
+  initializeApp(firebaseConfig);
+  const storage = getStorage();
+
+  const url = new URL(fileUrl);
+  const pathMatch = url.pathname.match(/\/o\/(.+?)(\?|$)/);
+
+  if (!pathMatch) {
+    return next(new AppError("Invalid Firebase URL format", 400));
+  }
+
+  const filePath = decodeURIComponent(pathMatch[1]);
+  const fileRef = ref(storage, filePath);
+
+  // Delete file from Firebase Storage
+  await deleteObject(fileRef);
+
+  // Remove file URL from project's files array
+  const updatedProject = await Project.findByIdAndUpdate(
+    projectId,
+    { $pull: { files: fileUrl } },
+    { new: true }
+  );
+
+  if (!updatedProject) {
+    return next(new AppError("Failed to update project", 500));
+  }
+
+  return res.status(200).json({
+    status: "success",
+    message: "File successfully deleted",
+    data: {
+      project: updatedProject,
+    },
+  });
+});
+
 module.exports = {
   image_post,
   document_post,
@@ -401,4 +462,5 @@ module.exports = {
   material_image_post,
   fetch_csv,
   design_image_post,
+  file_delete,
 };
