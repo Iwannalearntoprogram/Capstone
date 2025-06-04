@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 
 const Sidebar = ({ isOpen }) => {
   const location = useLocation(); // React Router hook to get current path
+  const role = localStorage.getItem("role");
 
   return (
     <div
@@ -52,7 +53,7 @@ const Sidebar = ({ isOpen }) => {
           }`}
         >
           <Link to="/inbox" className="block text-inherit no-underline">
-            Inbox
+            Messages
           </Link>
         </li>
         {/* <li
@@ -91,17 +92,19 @@ const Sidebar = ({ isOpen }) => {
             Materials
           </Link>
         </li>
-        <li
-          className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
-            location.pathname === "/add-user"
-              ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
-              : "hover:translate-x-2"
-          }`}
-        >
-          <Link to="/add-user" className="block text-inherit no-underline">
-            Users
-          </Link>
-        </li>
+        {role === "admin" && (
+          <li
+            className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
+              location.pathname === "/add-user"
+                ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
+                : "hover:translate-x-2"
+            }`}
+          >
+            <Link to="/add-user" className="block text-inherit no-underline">
+              Account Management
+            </Link>
+          </li>
+        )}
       </ul>
     </div>
   );
