@@ -122,7 +122,6 @@ export default function UsersPage() {
           },
         }
       );
-      console.log("User created successfully:", response.data);
       setMessage("User created successfully!");
       // Reset form
       setFormData({

@@ -3,11 +3,6 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const ProjectDetailsModal = ({ project, onClose }) => {
-  // Print the project object for debugging
-  useEffect(() => {
-    console.log("Project details:", project);
-  }, [project]);
-
   const [loading, setLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
   const [status, setStatus] = useState(project.status);
@@ -25,7 +20,6 @@ const ProjectDetailsModal = ({ project, onClose }) => {
             headers: { Authorization: `Bearer ${token}` },
           });
           const designerList = res.data.filter((u) => u.role === "designer");
-          console.log(designerList);
           setDesigners(designerList);
         } catch (err) {
           setDesigners([]);
@@ -92,8 +86,6 @@ const ProjectDetailsModal = ({ project, onClose }) => {
           },
         }
       );
-      console.log({ members: updatedMembers });
-      console.log(res.data);
       setActionMessage("Designer assigned successfully.");
       setTimeout(() => {
         setActionMessage("");

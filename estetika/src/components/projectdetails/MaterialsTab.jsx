@@ -201,7 +201,6 @@ export default function MaterialsTab() {
             },
           }
         );
-        console.log("Best match response:", res.data);
         if (isMounted && res.data?.result?.bestMatch) {
           setBestMatch({
             ...res.data.result.bestMatch,

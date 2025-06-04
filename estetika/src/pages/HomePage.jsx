@@ -117,7 +117,6 @@ const HomePage = () => {
         });
         setMaterials(res.data.material || []);
         setTopMaterialCategories(calculateCategorySales(res.data.material));
-        console.log(res.data.material);
       } catch (err) {
         setMaterials([]);
       } finally {

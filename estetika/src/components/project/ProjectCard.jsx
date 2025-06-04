@@ -123,7 +123,7 @@ const ProjectCard = ({ project, onView, onDelete }) => {
   const canAddDesigner =
     isAdmin && project.status !== "pending" && project.status !== "cancelled";
 
-  const canEditStatus = isDesigner;
+  const canEditStatus = isAdmin;
 
   const handleAddDesigner = () => {
     setShowDetailsModal(true);
