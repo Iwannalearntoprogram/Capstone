@@ -350,9 +350,9 @@ const project_add_material = catchAsync(async (req, res, next) => {
   if (!material) {
     return next(new AppError("Material not found", 404));
   }
-
   // Check if the option exists for this material
-  if (!material.options.includes(option)) {
+  const validOption = material.options.find((opt) => opt.option === option);
+  if (!validOption) {
     return next(new AppError("Invalid option for this material", 400));
   }
 
