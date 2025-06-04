@@ -166,6 +166,33 @@ export default function UsersPage() {
     }
   };
 
+  const handleDeleteUser = async (userId) => {
+    // Show a confirmation dialog before deleting
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this user?"
+    );
+    if (!confirmed) return;
+
+    try {
+      setLoadingUsers(true);
+      const token = Cookies.get("token");
+      await axios.delete(`${serverUrl}/api/user`, {
+        params: { id: userId },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setUsers((prev) => prev.filter((u) => u._id !== userId));
+    } catch (error) {
+      alert(
+        error.response?.data?.message ||
+          "An error occurred while deleting the user"
+      );
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
   const closeModal = () => {
     setShowModal(false);
     setMessage("");
@@ -252,7 +279,6 @@ export default function UsersPage() {
             </nav>
           </div>
         </div>
-        {/* Users List */}
         <div className="bg-white rounded-lg shadow-xl overflow-hidden">
           <div className="p-6">
             {loadingUsers ? (
@@ -335,7 +361,10 @@ export default function UsersPage() {
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
-                            <button className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors">
+                            <button
+                              className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                              onClick={() => handleDeleteUser(user._id)}
+                            >
                               <FaTrash />
                             </button>
                           </div>
