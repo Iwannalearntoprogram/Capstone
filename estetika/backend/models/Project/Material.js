@@ -22,10 +22,6 @@ const materialSchema = new mongoose.Schema(
       type: [String],
       required: [true, "Material image is required"],
     },
-    options: {
-      type: [String],
-      required: [true, "Material options are required"],
-    },
     options: [
       {
         type: {
