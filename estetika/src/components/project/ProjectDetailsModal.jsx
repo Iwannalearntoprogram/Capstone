@@ -17,7 +17,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   useEffect(() => {
-    if (status === "ongoing") {
+    if (status === "ongoing" || status === "delayed") {
       const fetchDesigners = async () => {
         try {
           const token = Cookies.get("token");
@@ -25,6 +25,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
             headers: { Authorization: `Bearer ${token}` },
           });
           const designerList = res.data.filter((u) => u.role === "designer");
+          console.log(designerList);
           setDesigners(designerList);
         } catch (err) {
           setDesigners([]);

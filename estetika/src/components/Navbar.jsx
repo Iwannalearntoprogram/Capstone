@@ -4,7 +4,7 @@ import { FaRegBell } from "react-icons/fa";
 import axios from "axios";
 import Cookies from "js-cookie";
 import logo from "../assets/images/logo-moss.png";
-import profilePic from "../assets/images/sofa.jpg";
+import defaultProfile from "../assets/images/user.png";
 import { useAuthStore } from "../store/AuthStore";
 
 const Navbar = ({ toggleSidebar }) => {
@@ -97,7 +97,7 @@ const Navbar = ({ toggleSidebar }) => {
               <div className="text-xs text-gray-300">{role}</div>
             </div>
             <img
-              src={profilePic}
+              src={user?.profileImage || defaultProfile}
               alt="Profile"
               className="h-8 w-8 rounded-full border-2 border-white"
             />

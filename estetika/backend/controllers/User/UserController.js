@@ -84,9 +84,19 @@ const user_update = catchAsync(async (req, res, next) => {
   const payload = { user: JSON.stringify(updatedUser), exp: expiration };
   const token = jwt.sign(payload, KEY);
 
-  return res
-    .status(200)
-    .json({ message: "Account Successfully Updated", token });
+  return res.json({
+    message: "Account Successfully Updated",
+    user: {
+      id: updatedUser._id,
+      fullName: updatedUser.fullName,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      phoneNumber: updatedUser.phoneNumber,
+      role: updatedUser.role,
+      profileImage: updatedUser.profileImage,
+    },
+    token,
+  });
 });
 
 // Get User by Id or Username

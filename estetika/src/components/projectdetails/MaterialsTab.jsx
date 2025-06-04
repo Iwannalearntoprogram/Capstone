@@ -10,6 +10,7 @@ import {
   FaIndustry,
   FaTags,
   FaTrash,
+  FaInfoCircle,
 } from "react-icons/fa";
 import Papa from "papaparse"; // Make sure papaparse is installed
 
@@ -19,6 +20,7 @@ export default function MaterialsTab() {
   const [selectedMaterials, setSelectedMaterials] = useState([""]);
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState(null);
 
   const [bestMatch, setBestMatch] = useState(null);
   const [showAddToSheetModal, setShowAddToSheetModal] = useState(false);
@@ -27,6 +29,12 @@ export default function MaterialsTab() {
   const [isAddingToSheet, setIsAddingToSheet] = useState(false);
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
+
+  // Get user role from localStorage
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    setUserRole(role);
+  }, []);
 
   // Get materials from localStorage for this project
   const storedMaterials = (() => {
@@ -77,7 +85,7 @@ export default function MaterialsTab() {
         setBestMatch(null);
         return;
       }
-      setLoading(true); // <-- Set loading true when fetching best match
+      setLoading(true);
       try {
         const token = Cookies.get("token");
         const res = await axios.get(
@@ -120,7 +128,35 @@ export default function MaterialsTab() {
     }
   };
 
+  const handleAddClick = () => {
+    if (userRole === "admin") {
+      alert(
+        "Admins cannot add materials. Only designers can manage materials."
+      );
+      return;
+    }
+    setShowModal(true);
+  };
+
+  const handleAddToSheetClick = () => {
+    if (userRole === "admin") {
+      alert(
+        "Admins cannot add materials to project. Only designers can manage materials."
+      );
+      return;
+    }
+    setShowAddToSheetModal(true);
+  };
+
   const handleAddToSheet = async () => {
+    // Prevent admin from adding materials to project
+    if (userRole === "admin") {
+      alert(
+        "Admins cannot add materials to project. Only designers can manage materials."
+      );
+      return;
+    }
+
     if (!project || !project._id) {
       alert("Please select a project");
       return;
@@ -240,6 +276,22 @@ export default function MaterialsTab() {
     }
   };
 
+  const handleRemoveMaterial = (itemId) => {
+    if (userRole === "admin") {
+      alert(
+        "Admins cannot remove materials. Only designers can manage materials."
+      );
+      return;
+    }
+
+    // Remove from localStorage
+    if (project && project._id) {
+      const updated = storedMaterials.filter((mat) => mat._id !== itemId);
+      localStorage.setItem(project._id, JSON.stringify(updated));
+      window.location.reload();
+    }
+  };
+
   useEffect(() => {
     if (!showModal) return;
     const fetchMaterials = async () => {
@@ -259,6 +311,8 @@ export default function MaterialsTab() {
     fetchMaterials();
   }, [showModal, serverUrl]);
 
+  const isAdmin = userRole === "admin";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
       {/* Header */}
@@ -277,6 +331,16 @@ export default function MaterialsTab() {
           </div>
         </div>
       </div>
+
+      {/* Show admin message if admin */}
+      {isAdmin && (
+        <div className="mx-6 my-4 flex items-center gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <FaInfoCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
+          <span className="text-sm text-blue-800">
+            View only mode - Only designers can add and manage materials
+          </span>
+        </div>
+      )}
 
       <div className="flex h-screen">
         {/* Left Sidebar */}
@@ -298,14 +362,17 @@ export default function MaterialsTab() {
                   </span>
                 </div>
               </div>
-              <button
-                className="group bg-gradient-to-r from-[#1D3C34] to-[#145c4b] text-white px-4 py-3 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
-                onClick={() => setShowModal(true)}
-                title="Add Material"
-              >
-                <FaPlus className="text-sm group-hover:rotate-90 transition-transform duration-300" />
-                <span className="text-sm font-semibold">Add</span>
-              </button>
+              {/* Only show Add button if not admin */}
+              {!isAdmin && (
+                <button
+                  className="group bg-gradient-to-r from-[#1D3C34] to-[#145c4b] text-white px-4 py-3 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
+                  onClick={handleAddClick}
+                  title="Add Material"
+                >
+                  <FaPlus className="text-sm group-hover:rotate-90 transition-transform duration-300" />
+                  <span className="text-sm font-semibold">Add</span>
+                </button>
+              )}
             </div>
 
             {/* Materials List */}
@@ -321,25 +388,15 @@ export default function MaterialsTab() {
                         : "bg-gradient-to-r from-gray-50 to-gray-100 border-transparent hover:border-[#1D3C34]/30 hover:shadow-md"
                     }`}
                   >
-                    {/* Absolute Trash Button */}
-                    {selectedSidebar === item.name && (
+                    {/* Absolute Trash Button - Only show if not admin */}
+                    {selectedSidebar === item.name && !isAdmin && (
                       <button
                         type="button"
-                        className="absolute top-2 right-2 z-10  flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300"
+                        className="absolute top-2 right-2 z-10 flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300"
                         title="Remove Material"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Remove from localStorage
-                          if (project && project._id) {
-                            const updated = storedMaterials.filter(
-                              (mat) => mat._id !== item._id
-                            );
-                            localStorage.setItem(
-                              project._id,
-                              JSON.stringify(updated)
-                            );
-                            window.location.reload();
-                          }
+                          handleRemoveMaterial(item._id);
                         }}
                       >
                         <FaTrash className="h-3 w-3 text-gray-400 cursor-pointer hover:text-red-400" />
@@ -402,7 +459,9 @@ export default function MaterialsTab() {
                     No materials yet
                   </div>
                   <div className="text-xs text-gray-400 mt-1">
-                    Add materials to get started
+                    {isAdmin
+                      ? "Only designers can add materials"
+                      : "Add materials to get started"}
                   </div>
                 </div>
               )}
@@ -524,14 +583,21 @@ export default function MaterialsTab() {
                             </div>
                           </div>
 
-                          <button
-                            className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] transition flex items-center justify-center gap-2 shadow-lg"
-                            onClick={() => setShowAddToSheetModal(true)}
-                            disabled={!project || !project._id}
-                          >
-                            <FaShoppingCart />
-                            Add to Project
-                          </button>
+                          {/* Only show Add to Project button if not admin */}
+                          {!isAdmin ? (
+                            <button
+                              className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] transition flex items-center justify-center gap-2 shadow-lg"
+                              onClick={handleAddToSheetClick}
+                              disabled={!project || !project._id}
+                            >
+                              <FaShoppingCart />
+                              Add to Project
+                            </button>
+                          ) : (
+                            <div className="w-full text-center text-sm text-gray-500 py-3">
+                              Only designers can add materials to project
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -625,14 +691,21 @@ export default function MaterialsTab() {
                           </div>
                         </div>
 
-                        <button
-                          className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] transition flex items-center justify-center gap-2 shadow-lg"
-                          onClick={() => setShowAddToSheetModal(true)}
-                          disabled={!project || !project._id || !bestMatch}
-                        >
-                          <FaShoppingCart />
-                          Add to Project
-                        </button>
+                        {/* Only show Add to Project button if not admin */}
+                        {!isAdmin ? (
+                          <button
+                            className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] transition flex items-center justify-center gap-2 shadow-lg"
+                            onClick={handleAddToSheetClick}
+                            disabled={!project || !project._id || !bestMatch}
+                          >
+                            <FaShoppingCart />
+                            Add to Project
+                          </button>
+                        ) : (
+                          <div className="w-full text-center text-sm text-gray-500 py-3">
+                            Only designers can add materials to project
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -728,14 +801,21 @@ export default function MaterialsTab() {
                             </div>
                           </div>
 
-                          <button
-                            className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] transition flex items-center justify-center gap-2 shadow-lg"
-                            onClick={() => setShowAddToSheetModal(true)}
-                            disabled={!project || !project._id}
-                          >
-                            <FaShoppingCart />
-                            Add to Project
-                          </button>
+                          {/* Only show Add to Project button if not admin */}
+                          {!isAdmin ? (
+                            <button
+                              className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] transition flex items-center justify-center gap-2 shadow-lg"
+                              onClick={handleAddToSheetClick}
+                              disabled={!project || !project._id}
+                            >
+                              <FaShoppingCart />
+                              Add to Project
+                            </button>
+                          ) : (
+                            <div className="w-full text-center text-sm text-gray-500 py-3">
+                              Only designers can add materials to project
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -751,8 +831,9 @@ export default function MaterialsTab() {
                   No materials selected
                 </h3>
                 <p className="text-gray-500 font-medium max-w-md mx-auto leading-relaxed">
-                  Choose a material from the sidebar to view its details and add
-                  it to your project.
+                  {isAdmin
+                    ? "Select a material from the sidebar to view its details."
+                    : "Choose a material from the sidebar to view its details and add it to your project."}
                 </p>
               </div>
             )}
@@ -760,8 +841,8 @@ export default function MaterialsTab() {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
+      {/* Modal - Only show if not admin */}
+      {showModal && !isAdmin && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div
             className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full max-h-[80vh] overflow-y-auto overflow-x-hidden relative"
@@ -903,8 +984,8 @@ export default function MaterialsTab() {
         </div>
       )}
 
-      {/* Add to Sheet Modal */}
-      {showAddToSheetModal && (
+      {/* Add to Sheet Modal - Only show if not admin */}
+      {showAddToSheetModal && !isAdmin && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full relative">
             <button
@@ -915,9 +996,9 @@ export default function MaterialsTab() {
               &times;
             </button>
             <h3 className="text-xl font-bold mb-4 text-center">
-              Add "{bestMatch.name}" to Project Sheet
+              Add "{bestMatch?.name}" to Project Sheet
             </h3>
-            {bestMatch.options && bestMatch.options.length > 0 && (
+            {bestMatch?.options && bestMatch.options.length > 0 && (
               <div className="mb-4">
                 <label className="block mb-1 font-medium">Size/Option:</label>
                 <select
@@ -954,7 +1035,7 @@ export default function MaterialsTab() {
                 onClick={handleAddToSheet}
                 disabled={
                   isAddingToSheet ||
-                  (bestMatch.options?.length > 0 && !selectedSize)
+                  (bestMatch?.options?.length > 0 && !selectedSize)
                 }
               >
                 {isAddingToSheet ? (

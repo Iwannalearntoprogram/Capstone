@@ -36,8 +36,18 @@ const ProjectsPage = () => {
 
   const handleProjectClick = (projectId) => {
     const project = projects.find((p) => p._id === projectId);
+
     if (userRole === "designer") {
-      navigate(`/projects/${projectId}/tasks`, { state: { project } });
+      navigate(`/projects/${projectId}/overview`, { state: { project } });
+    } else if (userRole === "admin") {
+      // If admin and project is not pending, redirect to project detail page
+      if (project.status !== "pending") {
+        navigate(`/projects/${projectId}/overview`, { state: { project } });
+      } else {
+        // If pending, show the modal for adding designers
+        setSelectedProject(project);
+        setShowDetailsModal(true);
+      }
     } else {
       setSelectedProject(project);
       setShowDetailsModal(true);
@@ -144,19 +154,6 @@ const ProjectsPage = () => {
     }
   };
 
-  // Group projects by status
-  // const groupedProjects = {
-  //   ongoing: filteredProjects.filter(
-  //     (project) => project.status === "ongoing" || project.status === "delayed"
-  //   ),
-  //   pending: filteredProjects.filter((project) => project.status === "pending"),
-  //   completed: filteredProjects.filter(
-  //     (project) => project.status === "completed"
-  //   ),
-  //   cancelled: filteredProjects.filter(
-  //     (project) => project.status === "cancelled"
-  //   ),
-  // };
   const groupedProjects = {
     ongoing: Array.isArray(filteredProjects)
       ? filteredProjects.filter(
@@ -322,7 +319,7 @@ const ProjectsPage = () => {
         </div>
       )}
 
-      {/* Search Bar and Add Button */}
+      {/* Search Bar and Add Project Button */}
       <div className="flex justify-between items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">Projects</h1>
 
@@ -338,16 +335,16 @@ const ProjectsPage = () => {
             />
           </div>
 
-          {/* Only show Add Project button if admin */}
-          {/* {isAdmin && ( */}
-          {/*   <button
+          {/* Admin Add Project button */}
+          {isAdmin && (
+            <button
               onClick={() => setShowModal(true)}
               className="bg-[#1D3C34] text-white px-4 py-2 rounded-full hover:bg-[#16442A] transition flex items-center gap-2 whitespace-nowrap"
             >
               <FaPlus size={14} />
               Add Project
             </button>
-          )} */}
+          )}
         </div>
       </div>
 

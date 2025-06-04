@@ -7,13 +7,16 @@ import {
   FaMapMarkerAlt,
   FaDollarSign,
   FaRulerCombined,
+  FaUserPlus,
 } from "react-icons/fa";
 import { FiEdit2 } from "react-icons/fi";
 import axios from "axios";
 import Cookies from "js-cookie";
+import ProjectDetailsModal from "./ProjectDetailsModal";
 
 const ProjectCard = ({ project, onView, onDelete }) => {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [editProjectForm, setEditProjectForm] = useState({
     title: project.title || "",
@@ -135,6 +138,14 @@ const ProjectCard = ({ project, onView, onDelete }) => {
 
   const isAdmin = userRole === "admin";
 
+  // Check if admin can add designer (not pending or cancelled)
+  const canAddDesigner =
+    isAdmin && project.status !== "pending" && project.status !== "cancelled";
+
+  const handleAddDesigner = () => {
+    setShowDetailsModal(true);
+  };
+
   const addMemberField = () => {
     setEditProjectForm((prev) => ({
       ...prev,
@@ -154,7 +165,7 @@ const ProjectCard = ({ project, onView, onDelete }) => {
             >
               &times;
             </button>
-            <h2 className="text-xl font-bold mb-4">Edit Project</h2>
+            <h2 className="text-xl font-bold mb-4">Edit Project Status</h2>
             <form onSubmit={handleEditProject} className="flex flex-col gap-4">
               <label className="">
                 Project Title
@@ -165,7 +176,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   className="border rounded p-2 mt-1 w-full outline-black"
                   value={editProjectForm.title}
                   onChange={handleEditProjectChange}
-                  required
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -177,6 +189,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   value={editProjectForm.description}
                   onChange={handleEditProjectChange}
                   required
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -189,6 +203,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   value={editProjectForm.budget}
                   onChange={handleEditProjectChange}
                   required
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -200,6 +216,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   value={editProjectForm.startDate}
                   onChange={handleEditProjectChange}
                   required
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -211,6 +229,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   value={editProjectForm.endDate}
                   onChange={handleEditProjectChange}
                   required
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -222,6 +242,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   className="border rounded p-2 mt-1 w-full outline-black"
                   value={editProjectForm.projectLocation}
                   onChange={handleEditProjectChange}
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -233,6 +255,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   className="border rounded p-2 mt-1 w-full outline-black"
                   value={editProjectForm.projectSize}
                   onChange={handleEditProjectChange}
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -244,6 +268,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   className="border rounded p-2 mt-1 w-full outline-black"
                   value={editProjectForm.roomType}
                   onChange={handleEditProjectChange}
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -254,6 +280,13 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   value={editProjectForm.status}
                   onChange={handleEditProjectChange}
                   required
+                  {...(userRole === "admin" && project.status === "pending"
+                    ? {}
+                    : userRole === "designer" &&
+                      project.status !== "pending" &&
+                      project.status !== "cancelled"
+                    ? {}
+                    : { readOnly: true, disabled: true })}
                 >
                   <option value="">Select Status</option>
                   <option value="pending">Pending</option>
@@ -263,16 +296,29 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                 </select>
               </label>
 
-              <button
-                type="submit"
-                className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition cursor-pointer"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Updating..." : "Update Project"}
-              </button>
+              {(userRole === "admin" && project.status === "pending") ||
+              (userRole === "designer" &&
+                project.status !== "pending" &&
+                project.status !== "cancelled") ? (
+                <button
+                  type="submit"
+                  className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition cursor-pointer"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Updating..." : "Update Project"}
+                </button>
+              ) : null}
             </form>
           </div>
         </div>
+      )}
+
+      {/* Project Details Modal for Adding Designers */}
+      {showDetailsModal && (
+        <ProjectDetailsModal
+          project={project}
+          onClose={() => setShowDetailsModal(false)}
+        />
       )}
 
       <div className="bg-white border rounded-xl p-4 shadow-md flex flex-col justify-between h-full">
@@ -312,6 +358,16 @@ const ProjectCard = ({ project, onView, onDelete }) => {
             >
               View
             </button>
+            {/* Add Designer button - Only show if admin and can add designer */}
+            {canAddDesigner && (
+              <button
+                className="bg-blue-600 text-white text-sm px-2 py-1 rounded hover:bg-blue-700 transition flex items-center"
+                onClick={handleAddDesigner}
+                title="Add Designer"
+              >
+                <FaUserPlus size={12} />
+              </button>
+            )}
             {/* Only show delete button if admin */}
             {isAdmin && (
               <button

@@ -234,7 +234,7 @@ const project_put = catchAsync(async (req, res, next) => {
           return user ? user._id : null;
         })
       );
-      updates.members = resolvedMembers.filter(Boolean);
+      updates.memabers = resolvedMembers.filter(Boolean);
     }
   }
   if (tasks) updates.tasks = tasks;

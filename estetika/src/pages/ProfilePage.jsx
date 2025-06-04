@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import sofaImg from "../assets/images/sofa.jpg";
+import defaultProfile from "../assets/images/user.png";
 import Cookies from "js-cookie";
 import axios from "axios";
 
@@ -25,7 +25,7 @@ function ProfilePage() {
           <div className="flex flex-col items-center bg-white p-4 rounded-lg shadow-md">
             <div>
               <img
-                src={user?.profileImage || sofaImg}
+                src={user?.profileImage || defaultProfile}
                 alt="Profile"
                 className="w-32 h-32 object-cover rounded-full mb-2 ring-2 ring-[#1D3C34] ring-offset-2"
               />

@@ -3,12 +3,13 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useOutletContext } from "react-router-dom";
 import Modal from "react-modal";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaInfoCircle } from "react-icons/fa";
 
 const ProjectUpdateTab = () => {
   const [update, setUpdate] = useState(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userRole, setUserRole] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -20,6 +21,12 @@ const ProjectUpdateTab = () => {
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   const { project } = useOutletContext();
+
+  // Get user role from localStorage
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    setUserRole(role);
+  }, []);
 
   useEffect(() => {
     const fetchUpdate = async () => {
@@ -49,7 +56,25 @@ const ProjectUpdateTab = () => {
     fetchUpdate();
   }, [project?._id]);
 
+  const handleAddUpdateClick = () => {
+    if (userRole === "admin") {
+      alert(
+        "Admins cannot create updates. Only designers can manage project updates."
+      );
+      return;
+    }
+    setModalOpen(true);
+  };
+
   const handleAddUpdate = async () => {
+    // Prevent admin from creating updates
+    if (userRole === "admin") {
+      alert(
+        "Admins cannot create updates. Only designers can manage project updates."
+      );
+      return;
+    }
+
     if (!newUpdate.description) {
       setMessage("Description is required.");
       return;
@@ -116,6 +141,13 @@ const ProjectUpdateTab = () => {
   };
 
   const handleDeleteUpdate = async (id) => {
+    if (userRole === "admin") {
+      alert(
+        "Admins cannot delete updates. Only designers can manage project updates."
+      );
+      return;
+    }
+
     if (!window.confirm("Are you sure you want to delete this update?")) return;
     setLoading(true);
     try {
@@ -144,15 +176,31 @@ const ProjectUpdateTab = () => {
     }, 300);
   };
 
+  const isAdmin = userRole === "admin";
+
   return (
     <div className="project-update-tab flex flex-col items-center min-h-[60vh] px-4">
-      <button
-        onClick={() => setModalOpen(true)}
-        className="bg-[#145c4b] px-6 py-3 rounded-lg shadow-sm cursor-pointer flex items-center justify-center text-white font-medium transition mb-6"
-        type="button"
-      >
-        + Add Update
-      </button>
+      {/* Add Update button - Only show if not admin */}
+      {!isAdmin && (
+        <button
+          onClick={handleAddUpdateClick}
+          className="bg-[#145c4b] px-6 py-3 rounded-lg shadow-sm cursor-pointer flex items-center justify-center text-white font-medium transition mb-6"
+          type="button"
+        >
+          + Add Update
+        </button>
+      )}
+
+      {/* Show admin message if admin */}
+      {isAdmin && (
+        <div className="flex items-center gap-2 mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg max-w-xl w-full">
+          <FaInfoCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
+          <span className="text-sm text-blue-800">
+            View only mode - Only designers can create and manage project
+            updates
+          </span>
+        </div>
+      )}
 
       {Array.isArray(update) && update.length > 0 ? (
         <div className="w-full max-w-xl flex flex-col gap-6">
@@ -164,7 +212,7 @@ const ProjectUpdateTab = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {/* Designer avatar */}
-                  <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-gray-200 overflow-hidden flex items-center justify-center">
                     {u.designerId?.profileImage ? (
                       <div className="w-full h-full object-cover"></div>
                     ) : (
@@ -182,14 +230,17 @@ const ProjectUpdateTab = () => {
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDeleteUpdate(u._id)}
-                  className="text-gray-400 hover:text-red-500 transition"
-                  title="Delete update"
-                  disabled={loading}
-                >
-                  <FaTrash />
-                </button>
+                {/* Only show delete button if not admin */}
+                {!isAdmin && (
+                  <button
+                    onClick={() => handleDeleteUpdate(u._id)}
+                    className="text-gray-400 hover:text-red-500 transition"
+                    title="Delete update"
+                    disabled={loading}
+                  >
+                    <FaTrash />
+                  </button>
+                )}
               </div>
               <div className="mt-2 text-gray-800 text-base whitespace-pre-line">
                 {u.description}
@@ -199,7 +250,7 @@ const ProjectUpdateTab = () => {
                   <img
                     src={u.imageLink}
                     alt="Update"
-                    className="max-w-full max-h-72 rounded border"
+                    className="max-w-full max-h-72 rounded-lg border"
                   />
                 </div>
               )}
@@ -214,12 +265,21 @@ const ProjectUpdateTab = () => {
         </div>
       ) : (
         <div className="text-gray-400 mt-8 text-center text-lg">
-          No update yet.
+          {isAdmin ? (
+            <>
+              <p>No updates yet.</p>
+              <p className="text-sm mt-2">
+                Only designers can create project updates
+              </p>
+            </>
+          ) : (
+            "No update yet."
+          )}
         </div>
       )}
 
-      {/* Modal for Add Update */}
-      {modalOpen && (
+      {/* Modal for Add Update - Only show if not admin */}
+      {modalOpen && !isAdmin && (
         <div
           className={`fixed top-0 left-0 w-full h-full bg-black/20 z-50 ${
             closing

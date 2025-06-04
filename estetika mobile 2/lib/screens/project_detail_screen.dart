@@ -20,14 +20,14 @@ class ProjectDetailScreen extends StatefulWidget {
 
 class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   // Project milestone stages
-  final List<String> _projectStages = [
-    'Briefing',
-    'Concept Design',
-    'Design Development',
-    'Documentation',
-    'Implementation',
-    'Completion'
-  ];
+  // final List<String> _projectStages = [
+  //   'Briefing',
+  //   'Concept Design',
+  //   'Design Development',
+  //   'Documentation',
+  //   'Implementation',
+  //   'Completion'
+  // ];
 
   late Map<String, dynamic> _projectData;
   late Map<String, dynamic> _clientInfo = {};
@@ -36,17 +36,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   double _overallProgress = 0.0;
   List<Map<String, dynamic>> _timelinePhases = [];
   List<dynamic> _projectUpdates = [];
-  Map<String, dynamic>? _recommendation;
-  bool _isRecommendationLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _projectData = widget.project; // <-- Initialize here!
+    _projectData = widget.project;
     _loadClientInfo();
     _loadProjectDetails();
     _fetchUpdatedProject();
-    _fetchRecommendation(); // <-- Add this
   }
 
   Future<void> _loadClientInfo() async {
@@ -204,42 +201,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     }
   }
 
-  Future<void> _fetchRecommendation() async {
-    setState(() {
-      _isRecommendationLoading = true;
-    });
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-      final response = await http.get(
-        Uri.parse(
-            'https://capstone-thl5.onrender.com/api/project/recommendation'),
-        headers: {
-          'Content-Type': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-      );
-      print("recom:" + response.body);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _recommendation = data['recommendation'];
-          _isRecommendationLoading = false;
-        });
-      } else {
-        setState(() {
-          _recommendation = null;
-          _isRecommendationLoading = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _recommendation = null;
-        _isRecommendationLoading = false;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -362,9 +323,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           _buildTimelineSection(),
           const SizedBox(height: 16),
 
-          // --- Display Recommendation Section here ---
-          _buildRecommendationSection(),
-          // ------------------------------------------
+          // Design Recommendation Section (ADD THIS)
+          if (_projectData['designRecommendation'] != null)
+            _buildRecommendationSection(),
 
           // Comments Section
           _buildCommentsSection(),
@@ -1107,58 +1068,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  // Widget _buildProjectSummary(Map<String, dynamic> project) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       Text('Title: ${project['title'] ?? 'N/A'}'),
-  //       Text('Description: ${project['description'] ?? 'N/A'}'),
-  //       Text('Room Type: ${project['roomType'] ?? 'N/A'}'),
-  //       Text('Budget: ₱${project['budget'] ?? 'N/A'}'),
-  //       Text(
-  //           'Start Date: ${project['startDate']?.toString().substring(0, 10) ?? 'N/A'}'),
-  //       Text(
-  //           'End Date: ${project['endDate']?.toString().substring(0, 10) ?? 'N/A'}'),
-  //       Text('Status: ${project['status']?.toString().toUpperCase() ?? 'N/A'}'),
-  //       Text('Progress: ${(project['progress'] ?? 0).toString()}%'),
-  //       Text('Client: ${project['projectCreator']?['fullName'] ?? 'N/A'}'),
-  //       Text('Client Email: ${project['projectCreator']?['email'] ?? 'N/A'}'),
-  //       Text(
-  //           'Members: ${project['members'] != null ? project['members'].length.toString() : '0'}'),
-  //     ],
-  //   );
-  // }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'pending':
-        return Colors.orange;
-      case 'ongoing':
-        return Colors.blue;
-      case 'completed':
-        return Colors.green;
-      case 'cancelled':
-        return Colors.red;
-      default:
-        return Colors.blue;
-    }
-  }
-
   Widget _buildRecommendationSection() {
-    if (_isRecommendationLoading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child:
-            Center(child: CircularProgressIndicator(color: Color(0xFF203B32))),
-      );
+    final recommendation = _projectData['designRecommendation'];
+
+    if (recommendation == null) {
+      return const SizedBox.shrink();
     }
-    if (_recommendation == null) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Text('No design recommendation available.',
-            style: TextStyle(color: Colors.grey)),
-      );
-    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1174,11 +1090,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (_recommendation!['imageLink'] != null)
+              if (recommendation['imageLink'] != null)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    _recommendation!['imageLink'],
+                    recommendation['imageLink'],
                     height: 180,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -1190,7 +1106,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 ),
               const SizedBox(height: 12),
               Text(
-                _recommendation!['title'] ?? 'No Title',
+                recommendation['title'] ?? 'No Title',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -1199,26 +1115,26 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                _recommendation!['specification'] ?? '',
+                recommendation['specification'] ?? '',
                 style: const TextStyle(fontSize: 15),
               ),
               const SizedBox(height: 8),
-              if (_recommendation!['budgetRange'] != null)
+              if (recommendation['budgetRange'] != null)
                 Text(
-                  'Budget Range: ₱${_recommendation!['budgetRange']['min']} - ₱${_recommendation!['budgetRange']['max']}',
+                  'Budget Range: ₱${recommendation['budgetRange']['min']} - ₱${recommendation['budgetRange']['max']}',
                   style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
-              if (_recommendation!['type'] != null)
+              if (recommendation['type'] != null)
                 Text(
-                  'Type: ${_recommendation!['type']}',
+                  'Type: ${recommendation['type']}',
                   style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
-              if (_recommendation!['tags'] != null)
+              if (recommendation['tags'] != null)
                 Wrap(
                   spacing: 6,
-                  children: (_recommendation!['tags'] as List)
+                  children: (recommendation['tags'] as List)
                       .map((tag) => Chip(
-                            label: Text(tag),
+                            label: Text(tag.toString()),
                             backgroundColor: const Color(0xFFE8F5E9),
                             labelStyle: const TextStyle(
                                 color: Color(0xFF203B32), fontSize: 12),
@@ -1231,5 +1147,20 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         const SizedBox(height: 16),
       ],
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'pending':
+        return Colors.orange;
+      case 'ongoing':
+        return Colors.blue;
+      case 'completed':
+        return Colors.green;
+      case 'cancelled':
+        return Colors.red;
+      default:
+        return Colors.blue;
+    }
   }
 }

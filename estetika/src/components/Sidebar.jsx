@@ -4,6 +4,13 @@ import { Link, useLocation } from "react-router-dom";
 const Sidebar = ({ isOpen }) => {
   const location = useLocation(); // React Router hook to get current path
 
+  // Example: get user role from localStorage or context
+  const userRole = localStorage.getItem("role"); // or use context/provider
+
+  if (userRole !== "admin") {
+    return null;
+  }
+
   return (
     <div
       className={`fixed top-[50px] left-0 h-full min-w-[250px] pr-8 pl-2 pt-4 bg-[#1D3C34] text-white transition-transform duration-300 z-[999] ${
@@ -89,6 +96,17 @@ const Sidebar = ({ isOpen }) => {
             className="block text-inherit no-underline"
           >
             Materials
+          </Link>
+        </li>
+        <li
+          className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
+            location.pathname === "/add-user"
+              ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
+              : "hover:translate-x-2"
+          }`}
+        >
+          <Link to="/add-user" className="block text-inherit no-underline">
+            Users
           </Link>
         </li>
       </ul>

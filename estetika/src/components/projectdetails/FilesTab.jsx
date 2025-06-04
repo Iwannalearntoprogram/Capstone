@@ -15,61 +15,18 @@ import { useOutletContext } from "react-router-dom";
 export default function FilesTab() {
   const { project, refreshProject } = useOutletContext();
   const [selectedFile, setSelectedFile] = useState([]);
+  const [userRole, setUserRole] = useState(null);
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
-  // Sample file data
-  const files = [
-    {
-      id: 1,
-      name: "Materials design lists.csv",
-      type: "spreadsheet",
-      modified: "March 21, 2025",
-      modifiedBy: [
-        "https://images.unsplash.com/photo-1494790108755-2616b612b547?w=32&h=32&fit=crop&crop=face",
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face",
-      ],
-      createdBy: "Isabella Dela Cruz",
-    },
-    {
-      id: 2,
-      name: "Floor Plan Layout.pdf",
-      type: "pdf",
-      modified: "March 20, 2025",
-      modifiedBy: [
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face",
-      ],
-      createdBy: "John Smith",
-    },
-    {
-      id: 3,
-      name: "Interior Design Mockup.jpg",
-      type: "image",
-      modified: "March 19, 2025",
-      modifiedBy: [
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=32&h=32&fit=crop&crop=face",
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=32&h=32&fit=crop&crop=face",
-        "https://images.unsplash.com/photo-1494790108755-2616b612b547?w=32&h=32&fit=crop&crop=face",
-      ],
-      createdBy: "Sarah Johnson",
-    },
-    {
-      id: 4,
-      name: "Project Requirements.docx",
-      type: "document",
-      modified: "March 18, 2025",
-      modifiedBy: [
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face",
-      ],
-      createdBy: "Mike Wilson",
-    },
-  ];
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    setUserRole(role);
+  }, []);
 
   const getFileIcon = (typeOrUrl) => {
-    // Accepts either a type or a file URL/filename
     let ext = "";
     if (typeof typeOrUrl === "string" && typeOrUrl.includes(".")) {
-      // Try to extract extension from URL or filename
       const url = typeOrUrl.split("?")[0];
       ext = url.split(".").pop().toLowerCase();
     } else if (typeof typeOrUrl === "string") {
@@ -119,7 +76,34 @@ export default function FilesTab() {
     }
   };
 
+  const handleNewClick = () => {
+    if (userRole === "admin") {
+      alert("Admins cannot create new files. Only designers can manage files.");
+      return;
+    }
+    // Add your new file creation logic here
+  };
+
+  const handleFileSelect = (e) => {
+    if (userRole === "admin") {
+      alert("Admins cannot upload files. Only designers can manage files.");
+      e.target.value = ""; // Reset the input
+      return;
+    }
+
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile((prev) => [...prev, file || []]);
+    }
+  };
+
   const handleAddFile = async () => {
+    // Prevent admin from uploading files
+    if (userRole === "admin") {
+      alert("Admins cannot upload files. Only designers can manage files.");
+      return;
+    }
+
     const token = Cookies.get("token");
     const formData = new FormData();
     let fileLink;
@@ -181,45 +165,43 @@ export default function FilesTab() {
     }
   };
 
-  // Helper to guess file type from extension
-  const getFileType = (url) => {
-    const ext = url.split(".").pop().toLowerCase();
-    if (["csv", "xls", "xlsx"].includes(ext)) return "spreadsheet";
-    if (["pdf"].includes(ext)) return "pdf";
-    if (["doc", "docx", "txt", "rtf"].includes(ext)) return "document";
-    if (["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp"].includes(ext))
-      return "image";
-    if (["zip", "rar", "7z", "tar", "gz"].includes(ext)) return "zip";
-    if (["mp3", "wav", "ogg", "flac", "aac"].includes(ext)) return "audio";
-    if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) return "video";
-    return "document";
-  };
-
   // Use project.files if available, else empty array
   const projectFiles = Array.isArray(project?.files) ? project.files : [];
+  const isAdmin = userRole === "admin";
 
   return (
     <div className="mt-6">
-      <div className="flex items-center gap-4 mb-4">
-        <button className="bg-[#1D3C34] text-white px-4 py-2 rounded flex items-center text-sm hover:bg-[#16442A] transition">
-          <FaPlus className="w-4 h-4 mr-1" /> New
-        </button>
-        <label className="bg-[#1D3C34] text-white px-4 py-2 rounded flex items-center text-sm hover:bg-[#16442A] transition cursor-pointer">
-          <FaUpload className="w-4 h-4 mr-1" /> Upload
-          <input
-            type="file"
-            accept=".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,image/*"
-            onChange={(e) => {
-              const file = e.target.files[0];
-              if (file) {
-                setSelectedFile((prev) => [...prev, file || []]);
-              }
-            }}
-            className="hidden"
-          />
-        </label>
-        <FaInfoCircle className="w-4 h-4 text-gray-600" />
-      </div>
+      {/* Action buttons - Only show if not admin */}
+      {!isAdmin && (
+        <div className="flex items-center gap-4 mb-4">
+          <button
+            onClick={handleNewClick}
+            className="bg-[#1D3C34] text-white px-4 py-2 rounded flex items-center text-sm hover:bg-[#16442A] transition"
+          >
+            <FaPlus className="w-4 h-4 mr-1" /> New
+          </button>
+          <label className="bg-[#1D3C34] text-white px-4 py-2 rounded flex items-center text-sm hover:bg-[#16442A] transition cursor-pointer">
+            <FaUpload className="w-4 h-4 mr-1" /> Upload
+            <input
+              type="file"
+              accept=".csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </label>
+          <FaInfoCircle className="w-4 h-4 text-gray-600" />
+        </div>
+      )}
+
+      {/* Show admin message if admin */}
+      {isAdmin && (
+        <div className="flex items-center gap-2 mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <FaInfoCircle className="w-4 h-4 text-blue-600" />
+          <span className="text-sm text-blue-800">
+            View only mode - Only designers can upload and manage files
+          </span>
+        </div>
+      )}
 
       <div className="bg-white shadow rounded-lg overflow-hidden border">
         <table className="w-full text-sm">
@@ -267,13 +249,25 @@ export default function FilesTab() {
         </table>
       </div>
 
+      {/* Empty state - different messages for admin vs designer */}
       {projectFiles.length === 0 && (
         <div className="text-center py-12 text-gray-500">
           <FaFileAlt className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-          <p>No files uploaded yet</p>
-          <p className="text-sm">
-            Click "New" or "Upload" to add files to this project
-          </p>
+          {isAdmin ? (
+            <>
+              <p>No files uploaded yet</p>
+              <p className="text-sm">
+                Only designers can upload files to this project
+              </p>
+            </>
+          ) : (
+            <>
+              <p>No files uploaded yet</p>
+              <p className="text-sm">
+                Click "New" or "Upload" to add files to this project
+              </p>
+            </>
+          )}
         </div>
       )}
     </div>

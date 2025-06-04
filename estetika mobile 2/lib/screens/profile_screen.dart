@@ -231,8 +231,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
+
+    // Clear all authentication and user data
     await prefs.remove('token');
     await prefs.remove('user');
+
+    // Clear remember me preferences
+    await prefs.remove('rememberMe');
+    await prefs.remove('rememberedEmail');
+    await prefs.remove('lastLoginTime');
+
     if (mounted) {
       Navigator.pushAndRemoveUntil(
         context,
