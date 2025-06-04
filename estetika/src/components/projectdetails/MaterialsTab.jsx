@@ -489,7 +489,8 @@ export default function MaterialsTab() {
               <div className="max-w-7xl mx-auto">
                 {/* Best Match Heading */}
                 <h2 className="text-xl font-bold text-[#1D3C34] mb-6 text-center">
-                  Best Match for: {selectedSidebar}
+                  Based on your {selectedSidebar} preferences we've found this
+                  similar items:
                 </h2>
 
                 {/* Side-by-Side Layout */}

@@ -12,6 +12,7 @@ import {
   FiBell,
   FiMenu,
 } from "react-icons/fi";
+import defaultProfile from "../assets/images/user.png";
 
 function Inbox() {
   const storedUserId = localStorage.getItem("id");
@@ -89,7 +90,20 @@ function Inbox() {
           },
         }
       );
-      setMessages(res.data);
+
+      const processedMessages = res.data.map((msg) => {
+        if (msg.file && msg.file.url) {
+          return {
+            ...msg,
+            fileLink: msg.file.url,
+            fileType: msg.file.type,
+            fileName: msg.file.name,
+          };
+        }
+        return msg;
+      });
+
+      setMessages(processedMessages);
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
@@ -114,6 +128,48 @@ function Inbox() {
     setContent("");
   };
 
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await axios.post(
+        `${serverUrl}/api/upload/message`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const fileLink = response.data.fileLink;
+      const fileType = response.data.fileType;
+      const fileName = file.name;
+
+      const fileMessage = {
+        sender: userId,
+        recipientId: selectedUser._id,
+        fileLink,
+        fileType,
+        fileName,
+        timestamp: new Date(),
+      };
+
+      // Update sender's messages state
+      setMessages((prev) => [...prev, fileMessage]);
+
+      // Emit socket event
+      socket.emit("send_private_file", fileMessage);
+    } catch (error) {
+      console.error("File upload failed:", error);
+    }
+  };
+
   useEffect(() => {
     const handleMessage = (msg) => {
       const selected = selectedUserRef.current;
@@ -126,6 +182,21 @@ function Inbox() {
 
     return () => {
       socket.off("receive_private_message", handleMessage);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleFileMessage = (fileMessage) => {
+      const selected = selectedUserRef.current;
+      if (fileMessage.sender === selected?._id) {
+        setMessages((prev) => [...prev, fileMessage]);
+      }
+    };
+
+    socket.on("receive_private_file", handleFileMessage);
+
+    return () => {
+      socket.off("receive_private_file", handleFileMessage);
     };
   }, []);
 
@@ -155,12 +226,19 @@ function Inbox() {
         {selectedUser ? (
           <>
             <div className="bg-white px-6 py-4 border-b border-gray-200 flex items-center gap-3">
-              <div className="w-9 h-9 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold">
-                {(selectedUser.firstName ||
-                  selectedUser.fullName ||
-                  selectedUser.username ||
-                  "U")[0].toUpperCase()}
-              </div>
+              {selectedUser.profileImage ? (
+                <img
+                  src={selectedUser.profileImage}
+                  alt="Profile"
+                  className="w-9 h-9 rounded-full object-cover"
+                />
+              ) : (
+                <img
+                  src={defaultProfile}
+                  alt="Default Profile"
+                  className="w-9 h-9 rounded-full object-cover"
+                />
+              )}
               <div>
                 <h3 className="font-semibold text-base text-gray-900">
                   {selectedUser.firstName ||
@@ -187,15 +265,14 @@ function Inbox() {
                   onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                 />
                 <div className="flex items-center gap-2">
-                  <button className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+                  <label className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
                     <FiPaperclip size={16} />
-                  </button>
-                  <button className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
-                    <FiSmile size={16} />
-                  </button>
-                  <button className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
-                    <FiMic size={16} />
-                  </button>
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
+                  </label>
                   <button
                     className="w-8 h-8 flex items-center justify-center bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
                     onClick={sendMessage}
