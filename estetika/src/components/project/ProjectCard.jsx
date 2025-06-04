@@ -156,7 +156,7 @@ const ProjectCard = ({ project, onView, onDelete }) => {
   return (
     <>
       {/* Edit Project Modal - Only show if NOT admin */}
-      {showEditModal && !isAdmin && (
+      {showEditModal && isAdmin && (
         <div className="fixed inset-0 bg-black/30 h-full flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-lg relative max-h-[80vh] overflow-y-auto">
             <button
@@ -168,111 +168,6 @@ const ProjectCard = ({ project, onView, onDelete }) => {
             <h2 className="text-xl font-bold mb-4">Edit Project Status</h2>
             <form onSubmit={handleEditProject} className="flex flex-col gap-4">
               <label className="">
-                Project Title
-                <input
-                  type="text"
-                  name="title"
-                  placeholder="Project Title"
-                  className="border rounded p-2 mt-1 w-full outline-black"
-                  value={editProjectForm.title}
-                  onChange={handleEditProjectChange}
-                  readOnly
-                  disabled
-                />
-              </label>
-              <label className="">
-                Description
-                <textarea
-                  name="description"
-                  placeholder="Description"
-                  className="border rounded p-2 mt-1 w-full outline-black"
-                  value={editProjectForm.description}
-                  onChange={handleEditProjectChange}
-                  required
-                  readOnly
-                  disabled
-                />
-              </label>
-              <label className="">
-                Budget
-                <input
-                  type="number"
-                  name="budget"
-                  placeholder="Budget"
-                  className="border rounded p-2 mt-1 w-full outline-black"
-                  value={editProjectForm.budget}
-                  onChange={handleEditProjectChange}
-                  required
-                  readOnly
-                  disabled
-                />
-              </label>
-              <label className="">
-                Start Date
-                <input
-                  type="date"
-                  name="startDate"
-                  className="border rounded p-2 mt-1 w-full outline-black"
-                  value={editProjectForm.startDate}
-                  onChange={handleEditProjectChange}
-                  required
-                  readOnly
-                  disabled
-                />
-              </label>
-              <label className="">
-                End Date
-                <input
-                  type="date"
-                  name="endDate"
-                  className="border rounded p-2 mt-1 w-full outline-black"
-                  value={editProjectForm.endDate}
-                  onChange={handleEditProjectChange}
-                  required
-                  readOnly
-                  disabled
-                />
-              </label>
-              <label className="">
-                Project Location
-                <input
-                  type="text"
-                  name="projectLocation"
-                  placeholder="Project Location"
-                  className="border rounded p-2 mt-1 w-full outline-black"
-                  value={editProjectForm.projectLocation}
-                  onChange={handleEditProjectChange}
-                  readOnly
-                  disabled
-                />
-              </label>
-              <label className="">
-                Project Size (sq ft)
-                <input
-                  type="number"
-                  name="projectSize"
-                  placeholder="Project Size"
-                  className="border rounded p-2 mt-1 w-full outline-black"
-                  value={editProjectForm.projectSize}
-                  onChange={handleEditProjectChange}
-                  readOnly
-                  disabled
-                />
-              </label>
-              <label className="">
-                Room Type
-                <input
-                  type="text"
-                  name="roomType"
-                  placeholder="Room Type"
-                  className="border rounded p-2 mt-1 w-full outline-black"
-                  value={editProjectForm.roomType}
-                  onChange={handleEditProjectChange}
-                  readOnly
-                  disabled
-                />
-              </label>
-              <label className="">
                 Status
                 <select
                   name="status"
@@ -280,11 +175,7 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   value={editProjectForm.status}
                   onChange={handleEditProjectChange}
                   required
-                  {...(userRole === "admin" && project.status === "pending"
-                    ? {}
-                    : userRole === "designer" &&
-                      project.status !== "pending" &&
-                      project.status !== "cancelled"
+                  {...(userRole === "admin" && project.status !== "pending"
                     ? {}
                     : { readOnly: true, disabled: true })}
                 >
@@ -296,10 +187,7 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                 </select>
               </label>
 
-              {(userRole === "admin" && project.status === "pending") ||
-              (userRole === "designer" &&
-                project.status !== "pending" &&
-                project.status !== "cancelled") ? (
+              {userRole === "admin" && project.status !== "pending" ? (
                 <button
                   type="submit"
                   className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition cursor-pointer"
@@ -327,7 +215,7 @@ const ProjectCard = ({ project, onView, onDelete }) => {
             <h3 className="text-lg font-bold flex items-center gap-2 mb-1">
               {project.title}
               {/* Only show edit icon if NOT admin */}
-              {!isAdmin && (
+              {isAdmin && project.status !== "pending" && (
                 <FiEdit2
                   className="text-gray-400 text-sm cursor-pointer hover:text-gray-600"
                   onClick={() => setShowEditModal(true)}
