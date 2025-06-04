@@ -19,7 +19,7 @@ export default function MaterialDetailsPage() {
   const [material, setMaterial] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mainImageIdx, setMainImageIdx] = useState(0);
-  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedOptions, setSelectedOptions] = useState({});
   const [quantity, setQuantity] = useState(1);
 
   // Add to Sheet Modal States
@@ -72,8 +72,24 @@ export default function MaterialDetailsPage() {
           },
         });
         setMaterial(res.data.material);
+
+        // Initialize selected options with first option of each type
         if (res.data.material.options && res.data.material.options.length > 0) {
-          setSelectedSize(res.data.material.options[0]);
+          const initialOptions = {};
+          const optionTypes = [
+            ...new Set(res.data.material.options.map((opt) => opt.type)),
+          ];
+
+          optionTypes.forEach((type) => {
+            const firstOptionOfType = res.data.material.options.find(
+              (opt) => opt.type === type
+            );
+            if (firstOptionOfType) {
+              initialOptions[type] = firstOptionOfType;
+            }
+          });
+
+          setSelectedOptions(initialOptions);
         }
       } catch (err) {
         setMaterial(null);
@@ -104,26 +120,18 @@ export default function MaterialDetailsPage() {
             },
           }
         );
-        console.log(res.data);
 
-        // Use candidates instead of results for more products
         const allProducts = res.data.candidates || res.data.results || [];
-
         const filtered = allProducts.filter(
           (item) => item._id !== material._id
         );
 
         const sorted = [...filtered].sort((a, b) => {
-          const priceA = Array.isArray(a.price)
-            ? Math.min(...a.price)
-            : a.price;
-          const priceB = Array.isArray(b.price)
-            ? Math.min(...b.price)
-            : b.price;
+          const priceA = typeof a.price === "number" ? a.price : 0;
+          const priceB = typeof b.price === "number" ? b.price : 0;
           return priceA - priceB;
         });
 
-        // Show more products (up to 8 instead of 4)
         setSimilarProduct(sorted.slice(0, 8));
       } catch (err) {
         setSimilarProduct([]);
@@ -138,18 +146,45 @@ export default function MaterialDetailsPage() {
     setQuantity((prev) => Math.max(1, prev + increment));
   };
 
-  const handleSizeSelect = (size) => {
-    setSelectedSize(size);
+  const handleOptionSelect = (type, option) => {
+    setSelectedOptions((prev) => ({
+      ...prev,
+      [type]: option,
+    }));
   };
 
   const handleProductClick = (productId) => {
     navigate(`/materials/${productId}`);
   };
 
+  // Calculate final price based on base price + selected options
+  const calculateFinalPrice = () => {
+    if (!material) return 0;
+
+    let finalPrice = material.price || 0;
+    Object.values(selectedOptions).forEach((option) => {
+      finalPrice += option.addToPrice || 0;
+    });
+    return finalPrice;
+  };
+
   const handleAddToSheetClick = () => {
-    if (!selectedSize) {
-      alert("Please select a size first");
+    if (userRole === "admin") {
+      alert(
+        "Admins cannot add materials to project. Only designers can manage materials."
+      );
       return;
+    }
+
+    // Check if all option types have selections
+    if (material.options && material.options.length > 0) {
+      const optionTypes = [...new Set(material.options.map((opt) => opt.type))];
+      const selectedTypes = Object.keys(selectedOptions);
+
+      if (optionTypes.some((type) => !selectedTypes.includes(type))) {
+        alert("Please select all required options first");
+        return;
+      }
     }
     setShowAddToSheetModal(true);
   };
@@ -165,6 +200,13 @@ export default function MaterialDetailsPage() {
   };
 
   const handleAddToSheet = async () => {
+    if (userRole === "admin") {
+      alert(
+        "Admins cannot add materials to project. Only designers can manage materials."
+      );
+      return;
+    }
+
     if (!selectedProject) {
       alert("Please select a project");
       return;
@@ -172,7 +214,6 @@ export default function MaterialDetailsPage() {
 
     setIsAddingToSheet(true);
     try {
-      // 1. Fetch the selected project to get its files
       const token = Cookies.get("token");
       const projectRes = await axios.get(
         `${serverUrl}/api/project?id=${selectedProject}`,
@@ -184,23 +225,25 @@ export default function MaterialDetailsPage() {
       );
       const project = projectRes.data.project;
       const files = Array.isArray(project.files) ? project.files : [];
-      // 2. Find index.csv in files
+
       const indexCsvUrl = files.find((url) => getFileName(url) === "index.csv");
       let csvContent = "";
       let rows = [];
-      const unitPrice = Array.isArray(material.price)
-        ? material.price[material.options.indexOf(selectedSize)] ??
-          material.price[0]
-        : material.price;
+
+      const finalPrice = calculateFinalPrice();
+      const optionsDescription = Object.values(selectedOptions)
+        .map((opt) => `${opt.type}: ${opt.option}`)
+        .join(", ");
+
       const newRow = [
         material.name,
         material.company,
-        selectedSize,
+        optionsDescription || "Standard",
         quantity,
-        unitPrice * quantity,
+        finalPrice * quantity,
       ];
+
       if (indexCsvUrl) {
-        // Download and parse existing CSV
         const resp = await axios.get(
           `${serverUrl}/api/upload/fetch-csv?url=${encodeURIComponent(
             indexCsvUrl
@@ -214,18 +257,17 @@ export default function MaterialDetailsPage() {
         rows = parsed.data;
         rows.push(newRow);
       } else {
-        // Create new CSV with headers
         rows = [
-          ["Material Name", "Company", "Size", "Quantity", "Price"],
+          ["Material Name", "Company", "Options", "Quantity", "Price"],
           newRow,
         ];
       }
-      // Convert rows to CSV string
+
       csvContent = Papa.unparse(rows);
-      // Upload new CSV to backend
       const blob = new Blob([csvContent], { type: "text/csv" });
       const formData = new FormData();
       formData.append("document", blob, "index.csv");
+
       let uploadRes;
       try {
         uploadRes = await axios.post(
@@ -239,7 +281,6 @@ export default function MaterialDetailsPage() {
           }
         );
       } catch (uploadErr) {
-        console.error("Upload error:", uploadErr.response?.data || uploadErr);
         alert(
           "Failed to upload CSV: " +
             (uploadErr.response?.data?.message || uploadErr.message)
@@ -247,18 +288,19 @@ export default function MaterialDetailsPage() {
         setIsAddingToSheet(false);
         return;
       }
+
       const newCsvUrl = uploadRes.data.documentLink;
       if (!newCsvUrl) {
         alert("Upload failed: No documentLink returned");
         setIsAddingToSheet(false);
         return;
       }
-      // Update project.files (replace old index.csv if exists)
+
       let newFiles = files.filter((url) => getFileName(url) !== "index.csv");
       newFiles.push(newCsvUrl);
-      let updateRes;
+
       try {
-        updateRes = await axios.put(
+        await axios.put(
           `${serverUrl}/api/project?id=${selectedProject}`,
           { files: newFiles },
           {
@@ -268,10 +310,6 @@ export default function MaterialDetailsPage() {
           }
         );
       } catch (updateErr) {
-        console.error(
-          "Project update error:",
-          updateErr.response?.data || updateErr
-        );
         alert(
           "Failed to update project files: " +
             (updateErr.response?.data?.message || updateErr.message)
@@ -279,6 +317,7 @@ export default function MaterialDetailsPage() {
         setIsAddingToSheet(false);
         return;
       }
+
       alert("Material added to project sheet successfully!");
       setShowAddToSheetModal(false);
       setSelectedProject("");
@@ -290,6 +329,19 @@ export default function MaterialDetailsPage() {
     }
   };
 
+  // Group options by type
+  const groupedOptions = material?.options
+    ? material.options.reduce((acc, option) => {
+        if (!acc[option.type]) {
+          acc[option.type] = [];
+        }
+        acc[option.type].push(option);
+        return acc;
+      }, {})
+    : {};
+
+  const isAdmin = userRole === "admin";
+
   if (loading) {
     return <div className="p-10 text-gray-400">Loading material...</div>;
   }
@@ -300,7 +352,8 @@ export default function MaterialDetailsPage() {
 
   return (
     <>
-      {showAddToSheetModal && (
+      {/* Add to Sheet Modal - Only show if not admin */}
+      {showAddToSheetModal && !isAdmin && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Add to Project Sheet</h2>
@@ -310,14 +363,16 @@ export default function MaterialDetailsPage() {
               <p className="text-sm text-gray-600">
                 Company: {material.company}
               </p>
-              <p className="text-sm text-gray-600">Size: {selectedSize}</p>
+              {Object.entries(selectedOptions).map(([type, option]) => (
+                <p key={type} className="text-sm text-gray-600">
+                  {type}: {option.option}
+                  {option.addToPrice > 0 && ` (+₱${option.addToPrice})`}
+                </p>
+              ))}
               <p className="text-sm text-gray-600">Quantity: {quantity}</p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 font-semibold">
                 Final Price: ₱
-                {Array.isArray(material.price)
-                  ? (material.price[material.options.indexOf(selectedSize)] ??
-                      material.price[0]) * quantity
-                  : material.price * quantity}
+                {(calculateFinalPrice() * quantity).toLocaleString()}
               </p>
             </div>
 
@@ -400,59 +455,77 @@ export default function MaterialDetailsPage() {
           <h2 className="text-2xl font-bold">{material.name}</h2>
           <p className="text-sm text-gray-600">COMPANY: {material.company}</p>
           <p className="text-2xl font-semibold mt-4">
-            {Array.isArray(material.price)
-              ? selectedSize
-                ? `₱${material.price[material.options.indexOf(selectedSize)]}`
-                : `₱${material.price[0]} - ₱${
-                    material.price[material.price.length - 1]
-                  }`
-              : `₱${material.price}`}
+            ₱{calculateFinalPrice().toLocaleString()}
           </p>
+          {Object.values(selectedOptions).some((opt) => opt.addToPrice > 0) && (
+            <p className="text-sm text-gray-500">
+              Base price: ₱{material.price?.toLocaleString() || 0}
+            </p>
+          )}
           <p className="text-gray-600 mt-2 text-sm">{material.description}</p>
 
-          <div className="mt-6">
-            <p className="text-sm font-medium mb-2">Choose Size</p>
-            <div className="flex gap-2">
-              {material.options?.map((size) => (
-                <Button
-                  key={size}
-                  className={`px-3 py-1 rounded-full border transition-colors ${
-                    selectedSize === size
-                      ? "bg-[#1D3C34] text-white border-[#1D3C34]"
-                      : "bg-white border-gray-300 hover:border-[#1D3C34]"
-                  }`}
-                  onClick={() => handleSizeSelect(size)}
-                >
-                  {size}
-                </Button>
-              ))}
+          {/* Render options grouped by type */}
+          {Object.entries(groupedOptions).map(([type, options]) => (
+            <div key={type} className="mt-6">
+              <p className="text-sm font-medium mb-2 capitalize">
+                Choose {type}
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {options.map((option) => (
+                  <Button
+                    key={option._id}
+                    className={`px-3 py-1 rounded-full border transition-colors text-sm ${
+                      selectedOptions[type]?._id === option._id
+                        ? "bg-[#1D3C34] text-white border-[#1D3C34]"
+                        : "bg-white border-gray-300 hover:border-[#1D3C34]"
+                    }`}
+                    onClick={() => handleOptionSelect(type, option)}
+                  >
+                    {option.option}
+                    {option.addToPrice > 0 && (
+                      <span className="ml-1 text-xs">
+                        (+₱{option.addToPrice})
+                      </span>
+                    )}
+                  </Button>
+                ))}
+              </div>
             </div>
-          </div>
+          ))}
 
-          {userRole === "designer" && (
-            <div className="mt-6 flex items-center gap-4">
-              <div className="flex items-center border px-2 rounded">
+          {/* Show admin message or designer controls */}
+          {isAdmin ? (
+            <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                View only mode - Only designers can add materials to projects
+              </p>
+            </div>
+          ) : (
+            userRole === "designer" && (
+              <div className="mt-6 flex items-center gap-4">
+                <div className="flex items-center border px-2 rounded">
+                  <Button
+                    className="px-2 py-1 hover:bg-gray-100"
+                    onClick={() => handleQuantityChange(-1)}
+                  >
+                    -
+                  </Button>
+                  <span className="px-4 py-1">{quantity}</span>
+                  <Button
+                    className="px-2 py-1 hover:bg-gray-100"
+                    onClick={() => handleQuantityChange(1)}
+                  >
+                    +
+                  </Button>
+                </div>
                 <Button
-                  className="px-2 py-1 hover:bg-gray-100"
-                  onClick={() => handleQuantityChange(-1)}
+                  className="bg-[#1D3C34] text-white px-6 py-2 rounded-full hover:bg-[#145c4b] transition"
+                  onClick={handleAddToSheetClick}
                 >
-                  -
-                </Button>
-                <span className="px-4 py-1">{quantity}</span>
-                <Button
-                  className="px-2 py-1 hover:bg-gray-100"
-                  onClick={() => handleQuantityChange(1)}
-                >
-                  +
+                  Add to Sheet
                 </Button>
               </div>
-              <Button
-                className="bg-[#1D3C34] text-white px-6 py-2 rounded-full hover:bg-[#145c4b] transition"
-                onClick={handleAddToSheetClick}
-              >
-                Add to Sheet
-              </Button>
-            </div>
+            )
           )}
         </div>
 
@@ -462,7 +535,6 @@ export default function MaterialDetailsPage() {
               similarProducts.length > 0 &&
               "Similar Products"}
           </h3>
-          {/* Updated grid to show more products */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 min-h-[180px]">
             {fetchingSimilarProduct ? (
               <div className="col-span-4 flex items-center justify-center text-gray-400 text-lg py-10">
@@ -498,10 +570,7 @@ export default function MaterialDetailsPage() {
                       {product.company}
                     </p>
                     <p className="font-semibold text-[#1D3C34] mb-2">
-                      ₱
-                      {Array.isArray(product.price)
-                        ? product.price[0].toLocaleString()
-                        : product.price.toLocaleString()}
+                      ₱{(product.price || 0).toLocaleString()}
                     </p>
                     <div className="flex gap-1 flex-wrap">
                       {Array.isArray(product.options) &&
@@ -510,7 +579,7 @@ export default function MaterialDetailsPage() {
                             key={idx}
                             className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
                           >
-                            {option}
+                            {option.option}
                           </span>
                         ))}
                       {Array.isArray(product.options) &&

@@ -39,6 +39,7 @@ const MaterialsPage = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log(res.data.material);
         setMaterialsData(res.data.material || []);
       } catch (err) {
         setMaterialsData([]);
