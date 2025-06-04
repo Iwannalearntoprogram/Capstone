@@ -60,15 +60,33 @@ const material_post = catchAsync(async (req, res, next) => {
   ) {
     return next(new AppError("Cannot create material, missing fields.", 400));
   }
+  if (typeof price !== "number" || price <= 0) {
+    return next(new AppError("Price must be a positive number.", 400));
+  }
 
-  if (
-    !Array.isArray(price) ||
-    !Array.isArray(options) ||
-    price.length !== options.length
-  ) {
-    return next(
-      new AppError("Price must be an array matching options length.", 400)
-    );
+  if (!Array.isArray(options)) {
+    return next(new AppError("Options must be an array.", 400));
+  }
+
+  // Validate each option object
+  for (const option of options) {
+    if (
+      !option.type ||
+      !option.option ||
+      typeof option.addToPrice !== "number"
+    ) {
+      return next(
+        new AppError(
+          "Each option must have type, option, and addToPrice fields.",
+          400
+        )
+      );
+    }
+    if (!["color", "type", "size"].includes(option.type)) {
+      return next(
+        new AppError("Option type must be 'color', 'type', or 'size'.", 400)
+      );
+    }
   }
 
   const embedding = await generateEmbedding(`${name} ${description}`);
@@ -119,27 +137,45 @@ const material_put = catchAsync(async (req, res, next) => {
   }
 
   let updates = {};
-
   if (name) updates.name = name;
   if (company) updates.company = company;
   if (description) updates.description = description;
   if (image) updates.image = image;
   if (category) updates.category = category;
 
-  if (options || price) {
-    const newOptions = options || material.options;
-    const newPrice = price || material.price;
-    if (
-      !Array.isArray(newOptions) ||
-      !Array.isArray(newPrice) ||
-      newOptions.length !== newPrice.length
-    ) {
-      return next(
-        new AppError("Price must be an array matching options length.", 400)
-      );
+  if (price !== undefined) {
+    if (typeof price !== "number" || price <= 0) {
+      return next(new AppError("Price must be a positive number.", 400));
     }
-    updates.options = newOptions;
-    updates.price = newPrice;
+    updates.price = price;
+  }
+
+  if (options !== undefined) {
+    if (!Array.isArray(options)) {
+      return next(new AppError("Options must be an array.", 400));
+    }
+
+    // Validate each option object
+    for (const option of options) {
+      if (
+        !option.type ||
+        !option.option ||
+        typeof option.addToPrice !== "number"
+      ) {
+        return next(
+          new AppError(
+            "Each option must have type, option, and addToPrice fields.",
+            400
+          )
+        );
+      }
+      if (!["color", "type", "size"].includes(option.type)) {
+        return next(
+          new AppError("Option type must be 'color', 'type', or 'size'.", 400)
+        );
+      }
+    }
+    updates.options = options;
   }
 
   const updatedMaterial = await Material.findByIdAndUpdate(id, updates, {
@@ -238,11 +274,23 @@ const material_search = catchAsync(async (req, res) => {
   const { query } = req.query;
 
   if (!query) return res.status(400).json({ error: "Query is required." });
+  const getMinPrice = (item) => {
+    if (typeof item.price === "number") {
+      // Base price
+      const basePrice = item.price;
 
-  const getMinPrice = (item) =>
-    Array.isArray(item.price)
-      ? Math.min(...item.price.map(Number).filter((v) => !isNaN(v)))
-      : Number(item.price);
+      // If there are options, find the minimum addToPrice
+      if (Array.isArray(item.options) && item.options.length > 0) {
+        const minOptionPrice = Math.min(
+          ...item.options.map((opt) => opt.addToPrice || 0)
+        );
+        return basePrice + minOptionPrice;
+      }
+
+      return basePrice;
+    }
+    return 0;
+  };
 
   const percentDiff = (a, b) =>
     b === 0 ? null : Math.round(((a - b) / b) * 100);
@@ -307,19 +355,18 @@ const material_search = catchAsync(async (req, res) => {
     let moreExpensive = [...sortedByPrice]
       .reverse()
       .find((item) => getMinPrice(item) > bestMatchPrice && item !== bestMatch);
-
     let optionsComparison = null;
     if (
       !cheaper &&
       !moreExpensive &&
       Array.isArray(bestMatch.options) &&
-      Array.isArray(bestMatch.price)
+      bestMatch.options.length > 0
     ) {
-      optionsComparison = bestMatch.options.map((option, idx) => ({
-        option,
-        price: Array.isArray(bestMatch.price)
-          ? bestMatch.price[idx]
-          : bestMatch.price,
+      optionsComparison = bestMatch.options.map((option) => ({
+        type: option.type,
+        option: option.option,
+        totalPrice: bestMatch.price + (option.addToPrice || 0),
+        addToPrice: option.addToPrice || 0,
       }));
     }
 
