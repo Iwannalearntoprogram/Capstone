@@ -113,6 +113,7 @@ const login = catchAsync(async (req, res, next) => {
       email: user.email,
       phoneNumber: user.phoneNumber,
       role: user.role,
+      profileImage: user.profileImage,
     },
     token,
   });
