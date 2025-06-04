@@ -5,7 +5,6 @@ import {
   FaRegCalendarAlt,
   FaTrash,
   FaMapMarkerAlt,
-  FaDollarSign,
   FaRulerCombined,
   FaUserPlus,
 } from "react-icons/fa";
@@ -57,7 +56,7 @@ const ProjectCard = ({ project, onView, onDelete }) => {
   const formatBudget = (budget) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "PHP",
       minimumFractionDigits: 0,
     }).format(budget);
   };
@@ -268,7 +267,6 @@ const ProjectCard = ({ project, onView, onDelete }) => {
           <div className="space-y-2 text-sm">
             {project.budget && (
               <div className="flex items-center gap-2 text-green-600">
-                <FaDollarSign size={12} />
                 <span className="font-medium">
                   {formatBudget(project.budget)}
                 </span>

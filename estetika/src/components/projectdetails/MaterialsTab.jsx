@@ -28,6 +28,8 @@ export default function MaterialsTab() {
   const [quantity, setQuantity] = useState(1);
   const [isAddingToSheet, setIsAddingToSheet] = useState(false);
 
+  const [selectedMaterialOptions, setSelectedMaterialOptions] = useState({});
+
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   // Get user role from localStorage
@@ -50,14 +52,120 @@ export default function MaterialsTab() {
   })();
 
   // Helper for price formatting
-  const formatPrice = (priceArr) => {
-    if (!priceArr || !priceArr.length) return "-";
-    if (priceArr.length > 1) {
-      return `₱${priceArr[0].toLocaleString()} - ₱${priceArr[
-        priceArr.length - 1
-      ].toLocaleString()}`;
+  const formatPrice = (material) => {
+    // Handle new structure where material is an object with price and minPrice
+    if (
+      typeof material === "object" &&
+      material !== null &&
+      !Array.isArray(material)
+    ) {
+      if (material.minPrice !== undefined && material.price !== undefined) {
+        if (material.minPrice === material.price) {
+          return `₱${material.price.toLocaleString()}`;
+        }
+        return `₱${material.minPrice.toLocaleString()} - ₱${material.price.toLocaleString()}`;
+      }
+      if (material.price !== undefined) {
+        return `₱${material.price.toLocaleString()}`;
+      }
     }
-    return `₱${priceArr[0].toLocaleString()}`;
+
+    // Handle single number price
+    if (typeof material === "number") {
+      return `₱${material.toLocaleString()}`;
+    }
+
+    // Handle old structure (array of prices)
+    if (Array.isArray(material)) {
+      if (!material.length) return "-";
+      if (material.length > 1) {
+        return `₱${material[0].toLocaleString()} - ₱${material[
+          material.length - 1
+        ].toLocaleString()}`;
+      }
+      return `₱${material[0].toLocaleString()}`;
+    }
+
+    return "-";
+  };
+
+  // Helper to get options display text
+  const getOptionsDisplay = (options) => {
+    if (!options || !options.length) return "Standard";
+
+    // Handle new structure where options are objects with 'option' property
+    if (typeof options[0] === "object" && options[0].option) {
+      return options.map((opt) => opt.option).join(" • ");
+    }
+
+    // Handle old structure where options are objects with size/name/type
+    if (typeof options[0] === "object") {
+      return options
+        .map((opt) => opt.size || opt.name || opt.type || "Option")
+        .join(" • ");
+    }
+
+    // Handle very old structure where options are strings
+    if (typeof options[0] === "string") {
+      return options.join(" • ");
+    }
+
+    return "Standard";
+  };
+
+  // Helper to get option price
+  const getOptionPrice = (material, selectedOption = null) => {
+    if (!material) return 0;
+
+    let basePrice = material.price || 0;
+
+    if (selectedOption && material.options) {
+      const option = material.options.find(
+        (opt) =>
+          opt.option === selectedOption ||
+          opt.size === selectedOption ||
+          opt.name === selectedOption ||
+          opt.type === selectedOption
+      );
+
+      if (option && option.addToPrice !== undefined) {
+        return basePrice + option.addToPrice;
+      }
+    }
+
+    return basePrice;
+  };
+
+  const groupOptionsByType = (options) => {
+    if (!options || !Array.isArray(options)) return {};
+    return options.reduce((acc, opt) => {
+      const type = opt.type || "Option";
+      if (!acc[type]) acc[type] = [];
+      acc[type].push(opt);
+      return acc;
+    }, {});
+  };
+
+  const getMaterialTotalPrice = (mat, idx) => {
+    if (!mat || !mat.options || !mat.options.length) return mat?.price || 0;
+    let total = mat.price || 0;
+    const grouped = groupOptionsByType(mat.options);
+    Object.keys(grouped).forEach((type) => {
+      const selectedLabel = selectedMaterialOptions[`${idx}_${type}`];
+      if (selectedLabel) {
+        const opt = grouped[type].find(
+          (o) =>
+            o.option === selectedLabel ||
+            o.size === selectedLabel ||
+            o.name === selectedLabel ||
+            o.type === selectedLabel
+        );
+        if (opt && opt.addToPrice) {
+          total += opt.addToPrice;
+        }
+      }
+    });
+    return total;
   };
 
   // Sidebar state for selected material
@@ -119,7 +227,57 @@ export default function MaterialsTab() {
     };
   }, [selectedSidebar, serverUrl]);
 
-  // Helper to get file name from URL
+  const addMaterialToProj = async (e) => {
+    e.preventDefault();
+    if (!project || !project._id) return;
+    const selectedId = selectedMaterials[0];
+    const mat = materials.find((m) => m._id === selectedId);
+    if (!mat) return alert("Please select a material.");
+
+    // Gather all selected options by type
+    let selectedOptions = [];
+    if (mat.options && mat.options.length > 0) {
+      const grouped = groupOptionsByType(mat.options);
+      selectedOptions = Object.keys(grouped).map(
+        (type) => selectedMaterialOptions[`0_${type}`] || ""
+      );
+      if (selectedOptions.some((opt) => !opt)) {
+        return alert("Please select all options.");
+      }
+    }
+
+    if (quantity < 1) return alert("Quantity must be at least 1.");
+    try {
+      const token = Cookies.get("token");
+      const body = {
+        materialId: mat._id,
+        option: selectedOptions,
+        quantity,
+      };
+      await axios.post(
+        `${serverUrl}/api/project/material?projectId=${project._id}`,
+        body,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      alert("Material added to project!");
+      setShowModal(false);
+      setSelectedMaterials([""]);
+      setSelectedMaterialOptions({});
+      setQuantity(1);
+    } catch (err) {
+      console.error(err);
+      alert(
+        err?.response?.data?.message || "Failed to add material to project."
+      );
+    }
+  };
+
   const getFileName = (url) => {
     try {
       return url.split("/").pop().split("?")[0];
@@ -180,14 +338,15 @@ export default function MaterialsTab() {
       const indexCsvUrl = files.find((url) => getFileName(url) === "index.csv");
       let csvContent = "";
       let rows = [];
-      const unitPrice = Array.isArray(bestMatch.price)
-        ? bestMatch.price[bestMatch.options?.indexOf(selectedSize) ?? 0] ??
-          bestMatch.price[0]
-        : bestMatch.price;
+      // Calculate unit price based on new structure
+      let unitPrice = getOptionPrice(bestMatch, selectedSize);
+
       const newRow = [
         bestMatch.name,
         bestMatch.company,
-        selectedSize || (bestMatch.options?.[0] ?? "Standard"),
+        selectedSize ||
+          getOptionsDisplay(bestMatch.options).split(" • ")[0] ||
+          "Standard",
         quantity,
         unitPrice * quantity,
       ];
@@ -429,9 +588,7 @@ export default function MaterialsTab() {
                           </span>
                           <div className="flex items-center space-x-2 mt-1">
                             <span className="text-xs text-gray-500 font-medium">
-                              {item.options && item.options.length > 0
-                                ? item.options.join(" • ")
-                                : "Standard"}
+                              {getOptionsDisplay(item.options)}
                             </span>
                           </div>
                         </div>
@@ -489,8 +646,7 @@ export default function MaterialsTab() {
               <div className="max-w-7xl mx-auto">
                 {/* Best Match Heading */}
                 <h2 className="text-xl font-bold text-[#1D3C34] mb-6 text-center">
-                  Based on your {selectedSidebar} preferences we've found this
-                  similar items:
+                  Best Match for: {selectedSidebar}
                 </h2>
 
                 {/* Side-by-Side Layout */}
@@ -575,10 +731,7 @@ export default function MaterialsTab() {
                                   Options
                                 </span>
                                 <div className="text-sm font-bold text-gray-800">
-                                  {bestMatch.cheaper.options &&
-                                  bestMatch.cheaper.options.length > 0
-                                    ? bestMatch.cheaper.options.join(" • ")
-                                    : "Standard"}
+                                  {getOptionsDisplay(bestMatch.options)}
                                 </div>
                               </div>
                             </div>
@@ -683,10 +836,7 @@ export default function MaterialsTab() {
                                 Options
                               </span>
                               <div className="text-sm font-bold text-gray-800">
-                                {bestMatch.options &&
-                                bestMatch.options.length > 0
-                                  ? bestMatch.options.join(" • ")
-                                  : "Standard"}
+                                {getOptionsDisplay(bestMatch.options)}
                               </div>
                             </div>
                           </div>
@@ -791,12 +941,9 @@ export default function MaterialsTab() {
                                   Options
                                 </span>
                                 <div className="text-sm font-bold text-gray-800">
-                                  {bestMatch.moreExpensive.options &&
-                                  bestMatch.moreExpensive.options.length > 0
-                                    ? bestMatch.moreExpensive.options.join(
-                                        " • "
-                                      )
-                                    : "Standard"}
+                                  {getOptionsDisplay(
+                                    bestMatch.moreExpensive?.options
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -858,119 +1005,96 @@ export default function MaterialsTab() {
             <h3 className="text-2xl font-bold mb-4 text-center">
               Add Material
             </h3>
-            {/* Show current items in localStorage */}
-            {storedMaterials.length > 0 && (
-              <div className="mb-4">
-                <div className="font-semibold text-gray-700 mb-1 text-sm">
-                  Current Materials:
-                </div>
-                <ul className="mb-2 max-h-32 overflow-y-auto text-xs">
-                  {storedMaterials.map((mat) => (
-                    <li
-                      key={mat._id}
-                      className="flex items-center justify-between py-1 border-b border-gray-100 last:border-b-0"
-                    >
-                      <span>
-                        <span className="font-bold">{mat.name}</span>
-                        {mat.options && mat.options.length > 0 && (
-                          <span className="text-gray-500">
-                            {" "}
-                            ({mat.options.join(", ")})
-                          </span>
-                        )}
-                      </span>
-                      <span className="text-gray-600 font-medium">
-                        {formatPrice(mat.price)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (project && project._id) {
-                  // Get selected material objects that are not already in storedMaterials
-                  const selectedMaterialObjects = selectedMaterials
-                    .map((id) => materials.find((mat) => mat._id === id))
-                    .filter(
-                      (mat) =>
-                        mat &&
-                        !storedMaterials.some(
-                          (stored) => stored._id === mat._id
-                        )
-                    );
-                  // Append to existing storedMaterials
-                  const updated = [
-                    ...storedMaterials,
-                    ...selectedMaterialObjects,
-                  ];
-                  localStorage.setItem(project._id, JSON.stringify(updated));
-                }
-                setShowModal(false);
-                setSelectedMaterials([""]);
-              }}
-            >
-              <label className="block mb-2 font-medium">
-                Select Materials:
-              </label>
-              {selectedMaterials.map((selected, idx) => (
-                <div key={idx} className="flex items-center mb-2 gap-2">
-                  <select
-                    className="w-full p-2 border border-gray-300 rounded focus:outline-none"
-                    value={selected}
-                    onChange={(e) => {
-                      const updated = [...selectedMaterials];
-                      updated[idx] = e.target.value;
-                      setSelectedMaterials(updated);
-                    }}
-                    required
-                    disabled={loading}
-                  >
-                    <option value="">
-                      {loading
-                        ? "Loading materials..."
-                        : "-- Select Material --"}
+            <form onSubmit={addMaterialToProj}>
+              <label className="block mb-2 font-medium">Select Material:</label>
+              <div className="flex flex-col mb-2 gap-2">
+                <select
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none"
+                  value={selectedMaterials[0] || ""}
+                  onChange={(e) => {
+                    setSelectedMaterials([e.target.value]);
+                    setSelectedMaterialOptions({});
+                  }}
+                  required
+                  disabled={loading}
+                >
+                  <option value="">
+                    {loading ? "Loading materials..." : "-- Select Material --"}
+                  </option>
+                  {materials.map((mat) => (
+                    <option key={mat._id} value={mat._id}>
+                      {mat.name}
                     </option>
-                    {/* Only show materials not already in storedMaterials or already selected in another select */}
-                    {materials
-                      .filter(
-                        (mat) =>
-                          !storedMaterials.some(
-                            (stored) => stored._id === mat._id
-                          ) || selectedMaterials.includes(mat._id)
-                      )
-                      .map((mat) => (
-                        <option key={mat._id} value={mat._id}>
-                          {mat.name}
-                        </option>
-                      ))}
-                  </select>
-                  {selectedMaterials.length > 1 && (
-                    <button
-                      type="button"
-                      className="text-red-500 px-2 py-1 rounded hover:bg-red-100"
-                      onClick={() => {
-                        if (selectedMaterials.length === 1) return;
-                        setSelectedMaterials(
-                          selectedMaterials.filter((_, i) => i !== idx)
-                        );
-                      }}
-                      title="Remove"
-                    >
-                      &minus;
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                className="mb-4 px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition flex items-center gap-1"
-                onClick={() => setSelectedMaterials([...selectedMaterials, ""])}
-              >
-                <FaPlus /> Add More
-              </button>
+                  ))}
+                </select>
+              </div>
+              {/* Option selectors */}
+              {(() => {
+                const mat = materials.find(
+                  (m) => m._id === selectedMaterials[0]
+                );
+                if (mat && mat.options && mat.options.length > 0) {
+                  return Object.entries(groupOptionsByType(mat.options)).map(
+                    ([type, opts]) => (
+                      <div key={type} className="mb-2">
+                        <label className="block mb-1 font-medium capitalize">
+                          Choose {type}
+                        </label>
+                        <div className="flex gap-2 flex-wrap">
+                          {opts.map((opt, i) => {
+                            const label =
+                              opt.option ||
+                              opt.size ||
+                              opt.name ||
+                              opt.type ||
+                              `Option ${i + 1}`;
+                            const value = label;
+                            const addPrice =
+                              opt.addToPrice && opt.addToPrice > 0
+                                ? ` (+₱${opt.addToPrice.toLocaleString()})`
+                                : "";
+                            const isSelected =
+                              selectedMaterialOptions[`0_${type}`] === value;
+                            return (
+                              <button
+                                type="button"
+                                key={opt._id || i}
+                                className={`px-4 py-1 rounded-full border transition font-semibold ${
+                                  isSelected
+                                    ? "bg-[#1D3C34] text-white"
+                                    : "bg-white text-[#1D3C34] border-[#1D3C34]"
+                                }`}
+                                onClick={() =>
+                                  setSelectedMaterialOptions((prev) => ({
+                                    ...prev,
+                                    [`0_${type}`]: value,
+                                  }))
+                                }
+                              >
+                                {label}
+                                {addPrice}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )
+                  );
+                }
+                return null;
+              })()}
+              {/* Quantity */}
+              <div className="mb-4">
+                <label className="block mb-1 font-medium">Quantity:</label>
+                <input
+                  type="number"
+                  min={1}
+                  className="w-full p-2 border border-gray-300 rounded"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  required
+                />
+              </div>
               <div className="flex justify-center mt-4">
                 <button
                   type="submit"
@@ -1010,11 +1134,20 @@ export default function MaterialsTab() {
                   disabled={isAddingToSheet}
                 >
                   <option value="">-- Select --</option>
-                  {bestMatch.options.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
+                  {bestMatch.options.map((opt, index) => {
+                    const optionLabel =
+                      opt.option ||
+                      opt.size ||
+                      opt.name ||
+                      opt.type ||
+                      `Option ${index + 1}`;
+                    const optionPrice = getOptionPrice(bestMatch, optionLabel);
+                    return (
+                      <option key={opt._id || index} value={optionLabel}>
+                        {optionLabel} - ₱{optionPrice.toLocaleString()}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
             )}
