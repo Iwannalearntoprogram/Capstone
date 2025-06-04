@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:estetika_ui/widgets/custom_app_bar.dart';
 import 'package:intl/intl.dart';
+import 'package:estetika_ui/screens/projects_screen.dart';
+import 'package:estetika_ui/screens/inbox_screen.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -194,13 +196,32 @@ class _NotificationScreenState extends State<NotificationScreen> {
         if (!notification.isRead) {
           _markAsRead(notification.id);
         }
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                NotificationDetailScreen(notification: notification),
-          ),
-        );
+        // Navigation logic here based on description
+        final desc = notification.description.toLowerCase();
+        if (desc.contains('project')) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProjectsScreen(),
+            ),
+          );
+        } else if (desc.contains('message') || desc.contains('messaged')) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => InboxScreen(),
+            ),
+          );
+        } else {
+          // Default: show notification detail
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  NotificationDetailScreen(notification: notification),
+            ),
+          );
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(16.0),
@@ -381,36 +402,56 @@ class NotificationDetailScreen extends StatelessWidget {
         backgroundColor: const Color(0xff203B32),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              notification.title,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xff203B32),
+      body: GestureDetector(
+        onTap: () {
+          final desc = notification.description.toLowerCase();
+          if (desc.contains('project')) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProjectsScreen(),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              DateFormat('MMM d, yyyy • h:mm a').format(notification.time),
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
+            );
+          } else if (desc.contains('message') || desc.contains('messaged')) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => InboxScreen(),
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              notification.description,
-              style: const TextStyle(
-                fontSize: 18,
-                color: Colors.black87,
+            );
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                notification.title,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xff203B32),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              Text(
+                DateFormat('MMM d, yyyy • h:mm a').format(notification.time),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                notification.description,
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

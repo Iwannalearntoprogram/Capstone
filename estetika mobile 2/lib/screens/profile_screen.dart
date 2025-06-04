@@ -59,21 +59,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final picked = await _picker.pickImage(source: ImageSource.gallery);
     if (picked == null) return;
 
-    print('Picked image path: ${picked.path}'); // Log the picked image
+    // Validate file type (image) and size (max 5MB)
+    final file = File(picked.path);
+    final fileSize = await file.length();
+    final isImage = picked.mimeType?.startsWith('image/') ??
+        true; // fallback for most images
+
+    if (!isImage) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select an image file')),
+      );
+      return;
+    }
+    if (fileSize > 5 * 1024 * 1024) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('File size must be less than 5MB')),
+      );
+      return;
+    }
 
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
     if (token == null) return;
 
-    final imageLink = await _uploadProfileImage(File(picked.path), token);
+    // Show loading indicator (optional)
+    setState(() => _errorMessage = null);
+
+    final imageLink = await _uploadProfileImage(file, token);
     if (imageLink != null) {
       setState(() {
         _profileImage = imageLink;
       });
       await _updateProfileImage(imageLink);
+      // Update user data in SharedPreferences
+      final userString = prefs.getString('user');
+      if (userString != null) {
+        final user = jsonDecode(userString);
+        user['profileImage'] = imageLink;
+        await prefs.setString('user', jsonEncode(user));
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile picture updated successfully!')),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to upload image')),
+        const SnackBar(
+            content:
+                Text('Failed to update profile picture. Please try again.')),
       );
     }
   }
@@ -441,6 +473,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<String?> _uploadProfileImage(File imageFile, String token) async {
     try {
+      print(token);
       print('Uploading file: ${imageFile.path}');
       print('File exists: ${imageFile.existsSync()}');
       var uri =
@@ -456,6 +489,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (response.statusCode == 200) {
         final responseData = json.decode(responseBody);
+        print(responseData['imageLink']);
         return responseData['imageLink'];
       } else {
         print('Failed to upload image with status: ${response.statusCode}');

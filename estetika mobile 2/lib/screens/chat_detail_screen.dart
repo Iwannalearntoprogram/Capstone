@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:estetika_ui/screens/inbox_screen.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final String title;
@@ -117,7 +124,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       color: Colors.blue,
                       onTap: () {
                         Navigator.pop(context);
-                        // Implement photo gallery access
+                        _pickAndSendImage();
                       },
                     ),
                     _buildAttachmentOption(
@@ -135,7 +142,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       color: Colors.orange,
                       onTap: () {
                         Navigator.pop(context);
-                        // Implement file picker
+                        _pickAndSendFile();
                       },
                     ),
                   ],
@@ -336,6 +343,30 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   Widget _buildMessageItem(MessageItem message) {
     final isFromUser = message.isFromUser;
+    final content = message.content;
+
+    Widget contentWidget;
+    if (content.startsWith('[Image]')) {
+      final url = content.replaceFirst('[Image] ', '');
+      contentWidget = Image.network(url, width: 180, height: 180, fit: BoxFit.cover);
+    } else if (content.startsWith('[File]')) {
+      final url = content.replaceFirst('[File] ', '');
+      contentWidget = InkWell(
+        onTap: () {
+          // Open file link
+          launchUrl(Uri.parse(url));
+        },
+        child: Text('File: $url', style: TextStyle(decoration: TextDecoration.underline, color: Colors.blue)),
+      );
+    } else {
+      contentWidget = Text(
+        content,
+        style: TextStyle(
+          color: isFromUser ? Colors.white : Colors.black,
+          fontSize: 16,
+        ),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -347,14 +378,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           if (!isFromUser) ...[
             CircleAvatar(
               radius: 16,
-              backgroundImage: message.profileImage != null
-                  ? AssetImage(message.profileImage!)
-                  : null,
-              backgroundColor:
-                  message.profileImage == null ? Colors.grey[400] : null,
-              child: message.profileImage == null
-                  ? const Icon(Icons.person, color: Colors.white, size: 16)
-                  : null,
+              backgroundColor: Colors.grey[400],
+              child: const Icon(Icons.person, color: Colors.white, size: 16),
             ),
             const SizedBox(width: 8),
           ],
@@ -368,27 +393,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         topLeft: Radius.circular(16),
                         topRight: Radius.circular(16),
                         bottomLeft: Radius.circular(16),
-                        bottomRight:
-                            Radius.circular(4), // less rounded for user
+                        bottomRight: Radius.circular(4),
                       )
                     : const BorderRadius.only(
                         topLeft: Radius.circular(16),
                         topRight: Radius.circular(16),
                         bottomRight: Radius.circular(16),
-                        bottomLeft:
-                            Radius.circular(4), // less rounded for others
+                        bottomLeft: Radius.circular(4),
                       ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    message.content,
-                    style: TextStyle(
-                      color: isFromUser ? Colors.white : Colors.black,
-                      fontSize: 16,
-                    ),
-                  ),
+                  contentWidget,
                   const SizedBox(height: 4),
                   Text(
                     _formatTimestamp(message.timestamp),
@@ -410,5 +427,62 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final hour = timestamp.hour.toString();
     final minute = timestamp.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
+  }
+
+  Future<void> _pickAndSendImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+    await _uploadAndSendFile(File(picked.path), isImage: true);
+  }
+
+  Future<void> _pickAndSendFile() async {
+    final result = await FilePicker.platform.pickFiles();
+    if (result == null || result.files.isEmpty) return;
+    final file = File(result.files.single.path!);
+    await _uploadAndSendFile(file, isImage: false);
+  }
+
+  Future<void> _uploadAndSendFile(File file, {required bool isImage}) async {
+    // You may want to get the token from SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return;
+
+    final uri =
+        Uri.parse('https://capstone-thl5.onrender.com/api/upload/message');
+    final request = http.MultipartRequest('POST', uri)
+      ..headers['Authorization'] = 'Bearer $token'
+      ..files.add(await http.MultipartFile.fromPath('file', file.path));
+
+    final response = await request.send();
+    final responseBody = await response.stream.bytesToString();
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(responseBody);
+      final fileLink = data['fileLink'];
+      final fileType = data['fileType'];
+      final fileName = file.path.split('/').last;
+
+      // Call your onSendMessage or emit socket event here
+      widget.onSendMessage('[${isImage ? "Image" : "File"}] $fileLink');
+
+      setState(() {
+        _localMessages.add(
+          MessageItem(
+            sender: "You",
+            recipient: "",
+            content: '[${isImage ? "Image" : "File"}] $fileLink',
+            timestamp: DateTime.now(),
+            isFromUser: true,
+            isRead: true,
+          ),
+        );
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to upload file')),
+      );
+    }
   }
 }

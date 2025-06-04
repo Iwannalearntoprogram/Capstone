@@ -17,12 +17,13 @@ dependencies:
   cupertino_icons: ^1.0.8
   icons_plus: ^4.0.0
   flutter_carousel_slider: ^1.1.0
-  image_picker: ^1.1.2
+  file_picker: ^6.1.1
+  image_picker: ^1.0.7
   intl: ^0.18.1
   percent_indicator: ^4.2.5
   url_launcher: ^6.3.1
   flutter_dotenv: ^5.1.0
-  http: ^1.1.0
+  http: ^1.2.1
   shared_preferences: ^2.2.2
   socket_io_client: ^2.0.3
 
