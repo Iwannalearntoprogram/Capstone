@@ -16,21 +16,24 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Form controllers
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+  // Form controllers - keep only for password change
   final TextEditingController _currentPasswordController =
       TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
-  bool _isEditing = false;
+  // Remove these variables:
+  // bool _isEditing = false;
   bool _isChangingPassword = false;
   String? _errorMessage;
   String? _profileImage;
   final ImagePicker _picker = ImagePicker();
+
+  // Add these for display only
+  String _name = '';
+  String _email = '';
+  String _phone = '';
 
   @override
   void initState() {
@@ -44,9 +47,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (userString != null) {
       final user = jsonDecode(userString);
       setState(() {
-        _nameController.text = user['fullName'] ?? user['username'];
-        _emailController.text = user['email'] ?? '';
-        _phoneController.text = user['phoneNumber'] ?? '';
+        _name = user['fullName'] ?? user['username'] ?? '';
+        _email = user['email'] ?? '';
+        _phone = user['phoneNumber'] ?? '';
         _profileImage = user['profileImage'];
       });
     }
@@ -109,20 +112,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
+    // Remove these:
+    // _nameController.dispose();
+    // _emailController.dispose();
+    // _phoneController.dispose();
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
-  }
-
-  void _toggleEdit() {
-    setState(() {
-      _isEditing = !_isEditing;
-      _errorMessage = null;
-    });
   }
 
   void _toggleChangePassword() {
@@ -133,74 +130,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _confirmPasswordController.clear();
       _errorMessage = null;
     });
-  }
-
-  void _saveChanges() async {
-    if (_nameController.text.isEmpty || _emailController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Name and email cannot be empty';
-      });
-      return;
-    }
-
-    if (!_emailController.text.contains('@')) {
-      setState(() {
-        _errorMessage = 'Please enter a valid email address';
-      });
-      return;
-    }
-
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    final userString = prefs.getString('user');
-    if (token == null || userString == null) {
-      setState(() {
-        _errorMessage = 'User not logged in';
-      });
-      return;
-    }
-    final user = jsonDecode(userString);
-
-    final body = jsonEncode({
-      '_id': user['_id'],
-      'fullName': _nameController.text.trim(),
-      'email': _emailController.text.trim(),
-      'phoneNumber': _phoneController.text.trim(),
-    });
-
-    try {
-      final response = await http.put(
-        Uri.parse('https://capstone-thl5.onrender.com/api/user'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: body,
-      );
-      if (response.statusCode == 200) {
-        // Update local user object
-        user['fullName'] = _nameController.text.trim();
-        user['email'] = _emailController.text.trim();
-        user['phoneNumber'] = _phoneController.text.trim();
-        await prefs.setString('user', jsonEncode(user));
-        setState(() {
-          _isEditing = false;
-          _errorMessage = null;
-        });
-        await _loadUserInfo();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully')),
-        );
-      } else {
-        setState(() {
-          _errorMessage = 'Failed to update profile: ${response.body}';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Error: $e';
-      });
-    }
   }
 
   void _savePassword() {
@@ -299,22 +228,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           )
                         : null,
                   ),
-                  if (_isEditing)
-                    GestureDetector(
-                      onTap: _pickAndUploadImage,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF203B32),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          color: Colors.white,
-                          size: 20,
-                        ),
+                  GestureDetector(
+                    onTap: _pickAndUploadImage,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF203B32),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        color: Colors.white,
+                        size: 20,
                       ),
                     ),
+                  ),
                 ],
               ),
 
@@ -333,80 +261,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
 
-              // Edit button
-              if (!_isEditing && !_isChangingPassword)
-                ElevatedButton(
-                  onPressed: _toggleEdit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF203B32),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 12),
-                    elevation: 2,
-                  ),
-                  child: const Text('Edit Profile'),
-                ),
-
               const SizedBox(height: 24),
 
-              // Form fields
-              if (_isEditing)
-                Column(
-                  children: [
-                    _buildTextField('Name', _nameController),
-                    const SizedBox(height: 16),
-                    _buildTextField('Email', _emailController),
-                    const SizedBox(height: 16),
-                    _buildTextField('Phone', _phoneController),
-                    const SizedBox(height: 24),
-
-                    // Save and Cancel buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildActionButton(
-                          text: 'Save',
-                          isPrimary: true,
-                          onPressed: _saveChanges,
-                        ),
-                        const SizedBox(width: 16),
-                        _buildActionButton(
-                          text: 'Cancel',
-                          isPrimary: false,
-                          onPressed: _toggleEdit,
-                        ),
-                      ],
-                    ),
-                  ],
-                )
-              else if (!_isChangingPassword)
-                Column(
-                  children: [
-                    _buildInfoItem('Name', _nameController.text),
-                    const SizedBox(height: 16),
-                    _buildInfoItem('Email', _emailController.text),
-                    const SizedBox(height: 16),
-                    _buildInfoItem('Phone', _phoneController.text),
-                  ],
-                ),
+              // Display only
+              Column(
+                children: [
+                  _buildInfoItem('Name', _name),
+                  const SizedBox(height: 16),
+                  _buildInfoItem('Email', _email),
+                  const SizedBox(height: 16),
+                  _buildInfoItem('Phone', _phone),
+                ],
+              ),
 
               const SizedBox(height: 24),
 
               // Change Password Section
-              if (!_isEditing && !_isChangingPassword)
-                TextButton(
-                  onPressed: _toggleChangePassword,
-                  child: const Text(
-                    'Change Password',
-                    style: TextStyle(
-                      color: Color(0xFF203B32),
-                      fontWeight: FontWeight.w500,
-                    ),
+              TextButton(
+                onPressed: _toggleChangePassword,
+                child: const Text(
+                  'Change Password',
+                  style: TextStyle(
+                    color: Color(0xFF203B32),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
+              ),
 
               if (_isChangingPassword)
                 Column(
@@ -446,24 +326,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 40),
 
               // Logout button with shadow
-              if (!_isEditing && !_isChangingPassword)
-                ElevatedButton.icon(
-                  onPressed: () {
-                    _logout();
-                  },
-                  icon: const Icon(Icons.logout, size: 20),
-                  label: const Text('Logout'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[400],
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 12),
-                    elevation: 2,
+              ElevatedButton.icon(
+                onPressed: () {
+                  _logout();
+                },
+                icon: const Icon(Icons.logout, size: 20),
+                label: const Text('Logout'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red[400],
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
                   ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  elevation: 2,
                 ),
+              ),
             ],
           ),
         ),

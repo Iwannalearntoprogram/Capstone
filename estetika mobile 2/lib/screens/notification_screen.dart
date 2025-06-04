@@ -41,6 +41,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      print(data);
       final notif = data['notifications'];
       if (notif != null) {
         setState(() {
