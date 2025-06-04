@@ -12,22 +12,25 @@ const material_get = catchAsync(async (req, res, next) => {
   let material;
 
   if (id) {
-    material = await Material.findById(id).populate("designerId", "-password");
+    material = await Material.findById(id)
+      .populate("designerId", "-password")
+      .select("-embedding");
     if (!material)
       return next(
         new AppError("Material not found. Invalid Material Identifier.", 404)
       );
   } else if (designerId) {
-    material = await Material.find({ designerId }).populate(
-      "designerId",
-      "-password"
-    );
+    material = await Material.find({ designerId })
+      .populate("designerId", "-password")
+      .select("-embedding");
     if (!material || material.length === 0)
       return next(
         new AppError("Material not found. Invalid Material Identifier.", 404)
       );
   } else {
-    material = await Material.find().populate("designerId", "-password");
+    material = await Material.find()
+      .populate("designerId", "-password")
+      .select("-embedding");
   }
 
   return res
