@@ -71,7 +71,6 @@ const MaterialsPage = () => {
             },
           }
         );
-        console.log("Image upload response:", res);
         imageUrls = res.data.imageLink || [];
       } catch (error) {
         console.error("Error uploading images:", error);
@@ -92,8 +91,6 @@ const MaterialsPage = () => {
         category: newMaterial.category,
       };
 
-      console.log("Material data to be sent:", materialData);
-
       if (
         !materialData.name ||
         !materialData.company ||
@@ -109,8 +106,6 @@ const MaterialsPage = () => {
           "Content-Type": "application/json",
         },
       });
-
-      console.log("Material add response:", res);
 
       setMaterialsData([...materialsData, res.data.material]);
       setShowModal(false);
