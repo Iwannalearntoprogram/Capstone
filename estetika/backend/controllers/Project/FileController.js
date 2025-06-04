@@ -76,7 +76,7 @@ const image_post = catchAsync(async (req, res, next) => {
   }
 
   const changedProfilePicture = await User.findByIdAndUpdate(
-    userId,
+    req.id,
     { profileImage: downloadURL },
     { new: true }
   );
