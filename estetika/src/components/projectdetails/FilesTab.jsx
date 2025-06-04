@@ -7,6 +7,7 @@ import {
   FaFileImage,
   FaFilePdf,
   FaFileAlt,
+  FaTrash,
 } from "react-icons/fa";
 import Cookies from "js-cookie";
 import axios from "axios";
@@ -16,6 +17,7 @@ export default function FilesTab() {
   const { project, refreshProject } = useOutletContext();
   const [selectedFile, setSelectedFile] = useState([]);
   const [userRole, setUserRole] = useState(null);
+  const [deletingFiles, setDeletingFiles] = useState(new Set());
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -140,11 +142,73 @@ export default function FilesTab() {
           },
         }
       );
-
       refreshProject && refreshProject();
       setSelectedFile([]);
     } catch (error) {
       console.error("Error adding file:", error);
+    }
+  };
+
+  const handleDeleteFile = async (fileUrl) => {
+    // Prevent admin from deleting files
+    if (userRole === "admin") {
+      alert("Admins cannot delete files. Only designers can manage files.");
+      return;
+    }
+
+    // Confirm deletion
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this file? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    // Add file to deleting set to show loading state
+    setDeletingFiles((prev) => new Set(prev).add(fileUrl));
+    try {
+      const token = Cookies.get("token");
+
+      const res = await axios.delete(
+        `${serverUrl}/api/upload/document?projectId=${project?._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          data: {
+            fileUrl: fileUrl,
+          },
+        }
+      );
+
+      // Refresh the project data to update the files list
+      refreshProject && refreshProject();
+
+      // Show success message
+      alert("File deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting file:", error);
+
+      // Get detailed error message
+      let errorMessage = "Error deleting file. Please try again.";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.status === "fail") {
+        errorMessage = `Delete failed: ${
+          error.response.data.message || "Unknown error"
+        }`;
+      }
+
+      alert(errorMessage);
+    } finally {
+      // Remove file from deleting set
+      setDeletingFiles((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(fileUrl);
+        return newSet;
+      });
     }
   };
 
@@ -204,16 +268,19 @@ export default function FilesTab() {
       )}
 
       <div className="bg-white shadow rounded-lg overflow-hidden border">
+        {" "}
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left">
             <tr>
               <th className="w-10 p-3"></th>
               <th className="p-3 font-semibold text-gray-700">Name</th>
-              <th className="p-3 font-semibold text-gray-700">Modified</th>
-              <th className="p-3 font-semibold text-gray-700">Modified by</th>
-              <th className="p-3 font-semibold text-gray-700">Created by</th>
+              {!isAdmin && (
+                <th className="w-20 p-3 font-semibold text-gray-700">
+                  Actions
+                </th>
+              )}
             </tr>
-          </thead>
+          </thead>{" "}
           <tbody>
             {projectFiles.map((fileUrl, idx) => (
               <tr
@@ -231,18 +298,22 @@ export default function FilesTab() {
                     {getFileName(fileUrl)}
                   </a>
                 </td>
-                <td className="p-3 text-gray-600">—</td>
-                <td className="p-3">
-                  <div className="flex -space-x-2">
-                    {/* Placeholder avatar */}
-                    <img
-                      src="https://ui-avatars.com/api/?name=User"
-                      alt="Avatar"
-                      className="w-6 h-6 rounded-full border-2 border-white object-cover"
-                    />
-                  </div>
-                </td>
-                <td className="p-3 text-gray-600">—</td>
+                {!isAdmin && (
+                  <td className="p-3">
+                    <button
+                      onClick={() => handleDeleteFile(fileUrl)}
+                      disabled={deletingFiles.has(fileUrl)}
+                      className="text-red-600 hover:text-red-800 p-1 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Delete file"
+                    >
+                      {deletingFiles.has(fileUrl) ? (
+                        <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <FaTrash className="w-4 h-4" />
+                      )}
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
