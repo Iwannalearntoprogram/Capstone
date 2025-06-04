@@ -55,7 +55,19 @@ const projectSchema = new mongoose.Schema(
         },
         option: [
           {
-            type: String,
+            type: {
+              type: String,
+              required: true,
+              enum: ["color", "type", "size"],
+            },
+            option: {
+              type: String,
+              required: true,
+            },
+            addToPrice: {
+              type: Number,
+              required: true,
+            },
           },
         ],
         quantity: {
