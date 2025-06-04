@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import CustomerSatisfactionChart from "../components/dashboard/CustomerSatisfactionChart";
-import ProjectCompletionChart from "../components/dashboard/ProjectCompletionChart";
+import ProjectStatesPieChart from "../components/dashboard/ProjectStatesPieChart";
 import Cookies from "js-cookie";
 import axios from "axios";
 
@@ -62,12 +62,10 @@ const HomePage = () => {
   const id = localStorage.getItem("id");
   const role = localStorage.getItem("role");
   const [overviewLoading, setOverviewLoading] = useState(true);
-  const [completionLoading, setCompletionLoading] = useState(true);
   const [materialsLoading, setMaterialsLoading] = useState(true);
 
   const [projectsData, setProjectsData] = useState([]);
   const [projectStates, setProjectStates] = useState({});
-  const [projectCompletion, setProjectCompletion] = useState({});
   const [materials, setMaterials] = useState([]);
   const [topMaterialCategories, setTopMaterialCategories] = useState([]);
 
@@ -116,12 +114,9 @@ const HomePage = () => {
     };
     fetchMaterials();
   }, []);
-
   useEffect(() => {
     checkProjectsState(projectsData);
-    checkProjectCompletion(projectsData);
   }, [projectsData]);
-
   const checkProjectsState = (projects) => {
     const safeProjects = Array.isArray(projects) ? projects : [];
     const activeProjects = safeProjects.filter(
@@ -145,24 +140,6 @@ const HomePage = () => {
     });
 
     setOverviewLoading(false);
-  };
-
-  const checkProjectCompletion = (projects) => {
-    const safeProjects = Array.isArray(projects) ? projects : [];
-    const years = [2022, 2023, 2024, 2025, 2026, 2027, 2028];
-    const completionData = years.map((year) => ({
-      year: year.toString(),
-      sales: safeProjects.filter(
-        (project) =>
-          project.status === "completed" &&
-          project.endDate &&
-          new Date(project.endDate).getFullYear() === year
-      ).length,
-    }));
-
-    setProjectCompletion(completionData);
-
-    setCompletionLoading(false);
   };
 
   return (
@@ -210,16 +187,12 @@ const HomePage = () => {
         <div className="h-52 w-full">
           <CustomerSatisfactionChart />
         </div>
-      </div>
-      {/* project completion */}
+      </div>{" "}
+      {/* project states distribution */}
       <div className="col-span-4 bg-white rounded-xl p-8 shadow-md">
         <h2 className="font-bold mb-4">Project Completion</h2>
         <div className="h-52 w-full">
-          {completionLoading ? (
-            <ProjectCompletionChart />
-          ) : (
-            <ProjectCompletionChart data={projectCompletion} />
-          )}
+          <ProjectStatesPieChart data={projectStates} />
         </div>
       </div>
       {/* project top materials */}
