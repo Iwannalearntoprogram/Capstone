@@ -16,7 +16,7 @@ import {
 import Papa from "papaparse"; // Make sure papaparse is installed
 
 export default function MaterialsTab() {
-  const { project } = useOutletContext();
+  const { project, refreshProject } = useOutletContext();
   const [showModal, setShowModal] = useState(false);
   const [selectedMaterials, setSelectedMaterials] = useState([""]);
   const [materials, setMaterials] = useState([]);
@@ -270,12 +270,12 @@ export default function MaterialsTab() {
           },
         }
       );
-
       alert("Material added to project!");
       setShowModal(false);
       setSelectedMaterials([""]);
       setSelectedMaterialOptions({});
       setQuantity(1);
+      if (refreshProject) refreshProject(); // Refresh project data
     } catch (err) {
       console.error(err);
       alert(
@@ -434,6 +434,7 @@ export default function MaterialsTab() {
       setShowAddToSheetModal(false);
       setSelectedSize("");
       setQuantity(1);
+      if (refreshProject) refreshProject(); // Refresh project data
     } catch (err) {
       alert("Failed to add material to sheet");
     } finally {
@@ -468,7 +469,7 @@ export default function MaterialsTab() {
       );
       alert("Material updated!");
       setEditMaterial(null);
-      window.location.reload(); // Or refetch project data
+      if (refreshProject) refreshProject(); // Refresh project data
     } catch (err) {
       alert(
         err?.response?.data?.message || "Failed to update material in project."
@@ -505,7 +506,7 @@ export default function MaterialsTab() {
         }
       );
       alert("Material removed!");
-      window.location.reload(); // or refetch project data if you have a fetch function
+      if (refreshProject) refreshProject(); // Refresh project data
     } catch (err) {
       alert(
         err?.response?.data?.message ||
