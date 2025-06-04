@@ -4,6 +4,7 @@ const {
   users_index,
   user_update,
   user_get,
+  user_delete,
 } = require("../../controllers/User/UserController");
 
 const {
@@ -16,6 +17,7 @@ const {
 router.get("/", users_index);
 router.get("/data", user_get);
 router.put("/", user_update);
+router.delete("/", user_delete);
 
 router.get("/notification", notification_get);
 router.post("/notification", notification_post);
