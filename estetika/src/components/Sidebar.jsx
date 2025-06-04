@@ -4,13 +4,6 @@ import { Link, useLocation } from "react-router-dom";
 const Sidebar = ({ isOpen }) => {
   const location = useLocation(); // React Router hook to get current path
 
-  // Example: get user role from localStorage or context
-  const userRole = localStorage.getItem("role"); // or use context/provider
-
-  if (userRole !== "admin") {
-    return null;
-  }
-
   return (
     <div
       className={`fixed top-[50px] left-0 h-full min-w-[250px] pr-8 pl-2 pt-4 bg-[#1D3C34] text-white transition-transform duration-300 z-[999] ${
