@@ -198,12 +198,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         ),
         title: Row(
           children: [
-            if (widget.profileImage != null)
+            if (widget.profileImage != null && widget.profileImage!.isNotEmpty)
               CircleAvatar(
                 radius: 18,
-                backgroundImage: AssetImage(widget.profileImage!),
-              ),
-            if (widget.profileImage == null)
+                backgroundImage: NetworkImage(widget.profileImage!),
+              )
+            else
               CircleAvatar(
                 radius: 18,
                 backgroundColor: const Color(0xff203B32),
@@ -222,9 +222,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  widget.isOnline
-                      ? 'Online'
-                      : 'Offline', // <-- use the passed value
+                  widget.isOnline ? 'Online' : 'Offline',
                   style: TextStyle(
                     color: widget.isOnline ? Colors.green : Colors.grey,
                     fontSize: 12,
@@ -348,7 +346,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     Widget contentWidget;
     if (content.startsWith('[Image]')) {
       final url = content.replaceFirst('[Image] ', '');
-      contentWidget = Image.network(url, width: 180, height: 180, fit: BoxFit.cover);
+      contentWidget =
+          Image.network(url, width: 180, height: 180, fit: BoxFit.cover);
     } else if (content.startsWith('[File]')) {
       final url = content.replaceFirst('[File] ', '');
       contentWidget = InkWell(
@@ -356,7 +355,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           // Open file link
           launchUrl(Uri.parse(url));
         },
-        child: Text('File: $url', style: TextStyle(decoration: TextDecoration.underline, color: Colors.blue)),
+        child: Text('File: $url',
+            style: TextStyle(
+                decoration: TextDecoration.underline, color: Colors.blue)),
       );
     } else {
       contentWidget = Text(

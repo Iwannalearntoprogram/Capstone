@@ -44,8 +44,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadUserInfo() async {
     final prefs = await SharedPreferences.getInstance();
     final userString = prefs.getString('user');
+
     if (userString != null) {
       final user = jsonDecode(userString);
+      print(user);
       setState(() {
         _name = user['fullName'] ?? user['username'] ?? '';
         _email = user['email'] ?? '';
