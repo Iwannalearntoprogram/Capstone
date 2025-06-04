@@ -52,7 +52,7 @@ function ProfilePage() {
     try {
       const formData = new FormData();
       formData.append("image", file);
-
+      console.log(formData);
       const token = Cookies.get("token");
       const response = await api.post(
         `${serverUrl}/api/upload/image`,

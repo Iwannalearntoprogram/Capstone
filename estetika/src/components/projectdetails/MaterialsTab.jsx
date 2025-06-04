@@ -234,13 +234,23 @@ export default function MaterialsTab() {
     const mat = materials.find((m) => m._id === selectedId);
     if (!mat) return alert("Please select a material.");
 
-    // Gather all selected options by type
+    // Gather all selected options by type, as objects
     let selectedOptions = [];
     if (mat.options && mat.options.length > 0) {
       const grouped = groupOptionsByType(mat.options);
-      selectedOptions = Object.keys(grouped).map(
-        (type) => selectedMaterialOptions[`0_${type}`] || ""
-      );
+      selectedOptions = Object.keys(grouped).map((type) => {
+        const selectedLabel = selectedMaterialOptions[`0_${type}`];
+        if (!selectedLabel) return null;
+        // Find the full option object
+        const optObj = grouped[type].find(
+          (o) =>
+            o.option === selectedLabel ||
+            o.size === selectedLabel ||
+            o.name === selectedLabel ||
+            o.type === selectedLabel
+        );
+        return optObj || null;
+      });
       if (selectedOptions.some((opt) => !opt)) {
         return alert("Please select all options.");
       }
@@ -251,7 +261,7 @@ export default function MaterialsTab() {
       const token = Cookies.get("token");
       const body = {
         materialId: mat._id,
-        option: selectedOptions,
+        options: selectedOptions,
         quantity,
       };
       await axios.post(
