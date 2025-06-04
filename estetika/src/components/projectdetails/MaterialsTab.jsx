@@ -21,15 +21,12 @@ export default function MaterialsTab() {
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState(null);
-
   const [bestMatch, setBestMatch] = useState(null);
   const [showAddToSheetModal, setShowAddToSheetModal] = useState(false);
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isAddingToSheet, setIsAddingToSheet] = useState(false);
-
   const [selectedMaterialOptions, setSelectedMaterialOptions] = useState({});
-
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   // Get user role from localStorage
@@ -146,43 +143,39 @@ export default function MaterialsTab() {
     }, {});
   };
 
-  const getMaterialTotalPrice = (mat, idx) => {
-    if (!mat || !mat.options || !mat.options.length) return mat?.price || 0;
-    let total = mat.price || 0;
-    const grouped = groupOptionsByType(mat.options);
-    Object.keys(grouped).forEach((type) => {
-      const selectedLabel = selectedMaterialOptions[`${idx}_${type}`];
-      if (selectedLabel) {
-        const opt = grouped[type].find(
-          (o) =>
-            o.option === selectedLabel ||
-            o.size === selectedLabel ||
-            o.name === selectedLabel ||
-            o.type === selectedLabel
-        );
-        if (opt && opt.addToPrice) {
-          total += opt.addToPrice;
-        }
-      }
-    });
-    return total;
-  };
+  // const getMaterialTotalPrice = (mat, idx) => {
+  //   if (!mat || !mat.options || !mat.options.length) return mat?.price || 0;
+  //   let total = mat.price || 0;
+  //   const grouped = groupOptionsByType(mat.options);
+  //   Object.keys(grouped).forEach((type) => {
+  //     const selectedLabel = selectedMaterialOptions[`${idx}_${type}`];
+  //     if (selectedLabel) {
+  //       const opt = grouped[type].find(
+  //         (o) =>
+  //           o.option === selectedLabel ||
+  //           o.size === selectedLabel ||
+  //           o.name === selectedLabel ||
+  //           o.type === selectedLabel
+  //       );
+  //       if (opt && opt.addToPrice) {
+  //         total += opt.addToPrice;
+  //       }
+  //     }
+  //   });
+  //   return total;
+  // };
 
   // Sidebar state for selected material
-  const [selectedSidebar, setSelectedSidebar] = useState(
-    storedMaterials.length > 0 ? storedMaterials[0].name : ""
-  );
+  const [selectedSidebar, setSelectedSidebar] = useState("");
 
-  // Update sidebar selection if materials change
+  // Update sidebar selection if project.materials change
   useEffect(() => {
-    if (
-      storedMaterials.length > 0 &&
-      !storedMaterials.find((m) => m.name === selectedSidebar)
-    ) {
-      setSelectedSidebar(storedMaterials[0].name);
+    if (project && project.materials && project.materials.length > 0) {
+      setSelectedSidebar(project.materials[0].material.name);
+    } else {
+      setSelectedSidebar("");
     }
-    if (storedMaterials.length === 0) setSelectedSidebar("");
-  }, [storedMaterials]);
+  }, [project]);
 
   // Fetch best match when sidebar selection changes
   useEffect(() => {
@@ -482,6 +475,14 @@ export default function MaterialsTab() {
 
   const isAdmin = userRole === "admin";
 
+  if (!project) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-500 text-lg">Loading project...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
       {/* Header */}
@@ -546,59 +547,48 @@ export default function MaterialsTab() {
 
             {/* Materials List */}
             <div className="space-y-3">
-              {storedMaterials.length > 0 ? (
-                storedMaterials.map((item, index) => (
+              {project.materials && project.materials.length > 0 ? (
+                project.materials.map((item, index) => (
                   <div
-                    key={item._id}
-                    onClick={() => setSelectedSidebar(item.name)}
+                    key={item.material._id}
+                    onClick={() => setSelectedSidebar(item.material.name)}
                     className={`group w-full text-left p-5 rounded-2xl transition-all duration-300 border-2 transform hover:scale-[1.02] relative ${
-                      selectedSidebar === item.name
+                      selectedSidebar === item.material.name
                         ? " border-[#1D3C34] shadow-lg shadow-[#1D3C34]/10"
                         : "bg-gradient-to-r from-gray-50 to-gray-100 border-transparent hover:border-[#1D3C34]/30 hover:shadow-md"
                     }`}
                   >
-                    {/* Absolute Trash Button - Only show if not admin */}
-                    {selectedSidebar === item.name && !isAdmin && (
-                      <button
-                        type="button"
-                        className="absolute top-2 right-2 z-10 flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300"
-                        title="Remove Material"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveMaterial(item._id);
-                        }}
-                      >
-                        <FaTrash className="h-3 w-3 text-gray-400 cursor-pointer hover:text-red-400" />
-                      </button>
-                    )}
                     {/* Card Content */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className="relative">
                           <div
                             className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                              selectedSidebar === item.name
+                              selectedSidebar === item.material.name
                                 ? "bg-[#1D3C34] shadow-lg shadow-[#1D3C34]/30"
                                 : "bg-gray-300 group-hover:bg-[#1D3C34]/50"
                             }`}
                           ></div>
-                          {selectedSidebar === item.name && (
+                          {selectedSidebar === item.material.name && (
                             <div className="absolute -inset-1 bg-[#1D3C34]/20 rounded-full animate-pulse"></div>
                           )}
                         </div>
                         <div>
                           <span
                             className={`font-bold text-sm tracking-wide ${
-                              selectedSidebar === item.name
+                              selectedSidebar === item.material.name
                                 ? "text-[#1D3C34]"
                                 : "text-gray-700 group-hover:text-[#1D3C34]"
                             }`}
                           >
-                            {item.name}
+                            {item.material.name}
                           </span>
                           <div className="flex items-center space-x-2 mt-1">
                             <span className="text-xs text-gray-500 font-medium">
-                              {getOptionsDisplay(item.options)}
+                              {getOptionsDisplay(item.option)}
+                            </span>
+                            <span className="text-xs text-gray-400 font-medium">
+                              × {item.quantity}
                             </span>
                           </div>
                         </div>
@@ -606,12 +596,12 @@ export default function MaterialsTab() {
                       <div className="flex items-center space-x-3">
                         <span
                           className={`text-sm font-bold ${
-                            selectedSidebar === item.name
+                            selectedSidebar === item.material.name
                               ? "text-[#1D3C34]"
                               : "text-gray-600"
                           }`}
                         >
-                          {formatPrice(item.price)}
+                          {formatPrice(item.totalPrice)}
                         </span>
                       </div>
                     </div>
