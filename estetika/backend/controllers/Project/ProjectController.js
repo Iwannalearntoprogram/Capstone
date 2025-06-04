@@ -2,6 +2,7 @@ const Project = require("../../models/Project/Project");
 const User = require("../../models/User/User");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
+const Material = require("../../models/Project/Material");
 
 // Get Project by Id or projectCreator
 const project_get = catchAsync(async (req, res, next) => {
@@ -234,7 +235,7 @@ const project_put = catchAsync(async (req, res, next) => {
           return user ? user._id : null;
         })
       );
-      updates.memabers = resolvedMembers.filter(Boolean);
+      updates.members = resolvedMembers.filter(Boolean);
     }
   }
   if (tasks) updates.tasks = tasks;
@@ -253,6 +254,30 @@ const project_put = catchAsync(async (req, res, next) => {
   });
 
   if (!updatedProject) return next(new AppError("Project not found", 404));
+
+  if (status === "completed" && project.status !== "completed") {
+    await Promise.all(
+      project.materials.map(async (materialEntry) => {
+        const material = await Material.findById(materialEntry.material);
+        if (material) {
+          material.sales += materialEntry.quantity;
+          await material.save();
+        }
+      })
+    );
+  }
+
+  if (project.status === "completed" && status !== "completed") {
+    await Promise.all(
+      project.materials.map(async (materialEntry) => {
+        const material = await Material.findById(materialEntry.material);
+        if (material) {
+          material.sales -= materialEntry.quantity;
+          await material.save();
+        }
+      })
+    );
+  }
 
   return res
     .status(200)
