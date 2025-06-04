@@ -327,15 +327,15 @@ const project_delete = catchAsync(async (req, res, next) => {
 // Add Material to Project
 const project_add_material = catchAsync(async (req, res, next) => {
   const { projectId } = req.query;
-  const { materialId, option, quantity } = req.body;
+  const { materialId, options, quantity } = req.body;
 
   if (!projectId) {
     return next(new AppError("Project ID is required", 400));
   }
 
-  if (!materialId || !option || !quantity) {
+  if (!materialId || !options || !quantity) {
     return next(
-      new AppError("Material ID, option, and quantity are required", 400)
+      new AppError("Material ID, options, and quantity are required", 400)
     );
   }
 
@@ -345,31 +345,94 @@ const project_add_material = catchAsync(async (req, res, next) => {
   }
 
   // Check if material exists
-  const Material = require("../../models/Project/Material");
   const material = await Material.findById(materialId);
   if (!material) {
     return next(new AppError("Material not found", 404));
   }
-  // Check if the option exists for this material
-  const validOption = material.options.find((opt) => opt.option === option);
-  if (!validOption) {
-    return next(new AppError("Invalid option for this material", 400));
+  // Validate options - ensure all provided options exist for this material
+  if (Array.isArray(options)) {
+    for (const optionValue of options) {
+      // Handle both string options and option objects
+      const optionToCheck =
+        typeof optionValue === "string" ? optionValue : optionValue.option;
+      const validOption = material.options.find(
+        (opt) => opt.option === optionToCheck
+      );
+      if (!validOption) {
+        return next(
+          new AppError(
+            `Invalid option '${optionToCheck}' for this material`,
+            400
+          )
+        );
+      }
+    }
   }
+  // Calculate total price including option prices
+  let totalPrice = material.price * parseInt(quantity);
+  if (Array.isArray(options)) {
+    for (const optionValue of options) {
+      // Handle both string options and option objects
+      const optionToCheck =
+        typeof optionValue === "string" ? optionValue : optionValue.option;
+      const optionObj = material.options.find(
+        (opt) => opt.option === optionToCheck
+      );
+      if (optionObj) {
+        totalPrice += optionObj.addToPrice * parseInt(quantity);
+      }
+    }
+  }
+  // Create option array with full option objects (not strings)
+  const optionArray = Array.isArray(options)
+    ? options.map((opt) => {
+        if (typeof opt === "string") {
+          // If it's a string, find the full option object from material
+          const fullOption = material.options.find(
+            (materialOpt) => materialOpt.option === opt
+          );
+          return fullOption || { type: "unknown", option: opt, addToPrice: 0 };
+        } else {
+          // If it's already an object, use it as is
+          return opt;
+        }
+      })
+    : [
+        typeof options === "string"
+          ? material.options.find(
+              (materialOpt) => materialOpt.option === options
+            ) || { type: "unknown", option: options, addToPrice: 0 }
+          : options,
+      ];
+  // Check if material with same options already exists in project
+  const existingMaterialIndex = project.materials.findIndex((item) => {
+    if (item.material.toString() !== materialId) return false;
 
-  // Check if material with same option already exists in project
-  const existingMaterialIndex = project.materials.findIndex(
-    (item) => item.material.toString() === materialId && item.option === option
-  );
+    // Compare option arrays by option values
+    const itemOptions = Array.isArray(item.option)
+      ? item.option.map((opt) => opt.option)
+      : [item.option.option];
+    const newOptions = optionArray.map((opt) => opt.option);
+
+    if (itemOptions.length !== newOptions.length) return false;
+
+    return (
+      itemOptions.every((opt) => newOptions.includes(opt)) &&
+      newOptions.every((opt) => itemOptions.includes(opt))
+    );
+  });
 
   if (existingMaterialIndex > -1) {
-    // Update quantity if material with same option already exists
-    project.materials[existingMaterialIndex].quantity = quantity;
+    // Update quantity and total price if material with same options already exists
+    project.materials[existingMaterialIndex].quantity = parseInt(quantity);
+    project.materials[existingMaterialIndex].totalPrice = totalPrice;
   } else {
     // Add new material entry
     project.materials.push({
       material: materialId,
-      option,
+      option: optionArray,
       quantity: parseInt(quantity),
+      totalPrice: totalPrice,
     });
   }
 
@@ -388,7 +451,7 @@ const project_add_material = catchAsync(async (req, res, next) => {
 // Remove Material from Project
 const project_remove_material = catchAsync(async (req, res, next) => {
   const { projectId } = req.query;
-  const { materialId, option } = req.body;
+  const { materialId, options } = req.body;
 
   if (!projectId) {
     return next(new AppError("Project ID is required", 400));
@@ -401,13 +464,28 @@ const project_remove_material = catchAsync(async (req, res, next) => {
   const project = await Project.findById(projectId);
   if (!project) {
     return next(new AppError("Project not found", 404));
-  }
-
-  // Find and remove the material
+  } // Find and remove the material
   const materialIndex = project.materials.findIndex((item) => {
-    const materialMatch = item.material.toString() === materialId;
-    const optionMatch = option ? item.option === option : true;
-    return materialMatch && optionMatch;
+    if (item.material.toString() !== materialId) return false;
+
+    // If options is provided, match options as well
+    if (options) {
+      const optionArray = Array.isArray(options)
+        ? options.map((opt) => (typeof opt === "string" ? opt : opt.option))
+        : [typeof options === "string" ? options : options.option];
+      const itemOptions = Array.isArray(item.option)
+        ? item.option.map((opt) => opt.option)
+        : [item.option.option];
+
+      return (
+        itemOptions.length === optionArray.length &&
+        itemOptions.every((opt) => optionArray.includes(opt)) &&
+        optionArray.every((opt) => itemOptions.includes(opt))
+      );
+    }
+
+    // If no options provided, just match material ID
+    return true;
   });
 
   if (materialIndex === -1) {
@@ -430,16 +508,14 @@ const project_remove_material = catchAsync(async (req, res, next) => {
 // Update Material quantity in Project
 const project_update_material = catchAsync(async (req, res, next) => {
   const { projectId } = req.query;
-  const { materialId, option, quantity } = req.body;
+  const { materialId, options, quantity } = req.body;
 
   if (!projectId) {
     return next(new AppError("Project ID is required", 400));
   }
 
-  if (!materialId || !option || !quantity) {
-    return next(
-      new AppError("Material ID, option, and quantity are required", 400)
-    );
+  if (!materialId || !quantity) {
+    return next(new AppError("Material ID and quantity are required", 400));
   }
 
   const project = await Project.findById(projectId);
@@ -447,18 +523,52 @@ const project_update_material = catchAsync(async (req, res, next) => {
     return next(new AppError("Project not found", 404));
   }
 
-  // Find the material to update
-  const materialIndex = project.materials.findIndex(
-    (item) => item.material.toString() === materialId && item.option === option
-  );
+  // Get the material to calculate new total price
+  const Material = require("../../models/Project/Material");
+  const material = await Material.findById(materialId);
+  if (!material) {
+    return next(new AppError("Material not found", 404));
+  } // Find the material to update
+  const materialIndex = project.materials.findIndex((item) => {
+    if (item.material.toString() !== materialId) return false;
+
+    // If options is provided, match options as well
+    if (options) {
+      const optionArray = Array.isArray(options)
+        ? options.map((opt) => (typeof opt === "string" ? opt : opt.option))
+        : [typeof options === "string" ? options : options.option];
+      const itemOptions = Array.isArray(item.option)
+        ? item.option.map((opt) => opt.option)
+        : [item.option.option];
+
+      return (
+        itemOptions.length === optionArray.length &&
+        itemOptions.every((opt) => optionArray.includes(opt)) &&
+        optionArray.every((opt) => itemOptions.includes(opt))
+      );
+    }
+
+    // If no options provided, find first matching material
+    return true;
+  });
 
   if (materialIndex === -1) {
     return next(
-      new AppError("Material with specified option not found in project", 404)
+      new AppError("Material with specified options not found in project", 404)
     );
+  }
+  // Calculate new total price
+  const existingOptions = project.materials[materialIndex].option;
+  let totalPrice = material.price * parseInt(quantity);
+
+  if (Array.isArray(existingOptions)) {
+    for (const optionObj of existingOptions) {
+      totalPrice += optionObj.addToPrice * parseInt(quantity);
+    }
   }
 
   project.materials[materialIndex].quantity = parseInt(quantity);
+  project.materials[materialIndex].totalPrice = totalPrice;
   await project.save();
 
   const updatedProject = await Project.findById(projectId).populate([
