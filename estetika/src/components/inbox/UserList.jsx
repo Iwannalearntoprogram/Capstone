@@ -10,32 +10,9 @@ const UserList = ({ users, selectedUser, onSelect }) => {
     return aName.localeCompare(bName);
   });
 
-  // Avatar color generator based on name
-  const getAvatarColor = (name) => {
-    const colors = [
-      "bg-yellow-500",
-      "bg-orange-500",
-      "bg-blue-500",
-      "bg-green-500",
-      "bg-red-500",
-      "bg-purple-500",
-      "bg-pink-500",
-      "bg-teal-500",
-      "bg-indigo-500",
-      "bg-cyan-500",
-    ];
-
-    const index = name.charCodeAt(0) % colors.length;
-    return colors[index];
-  };
-
   const formatTime = () => {
     const now = new Date();
     return now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
-
-  const getPreviewMessage = (user) => {
-    return "No messages yet...";
   };
 
   return (
@@ -60,9 +37,6 @@ const UserList = ({ users, selectedUser, onSelect }) => {
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-gray-900 text-sm mb-0.5">
                 {userName}
-              </div>
-              <div className="text-xs text-gray-500 truncate">
-                {getPreviewMessage(user)}
               </div>
             </div>
             <div className="flex flex-col items-end gap-1 ml-2">

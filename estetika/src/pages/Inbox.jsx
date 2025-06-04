@@ -12,6 +12,7 @@ import {
   FiBell,
   FiMenu,
 } from "react-icons/fi";
+import defaultProfile from "../assets/images/user.png";
 
 function Inbox() {
   const storedUserId = localStorage.getItem("id");
@@ -155,12 +156,19 @@ function Inbox() {
         {selectedUser ? (
           <>
             <div className="bg-white px-6 py-4 border-b border-gray-200 flex items-center gap-3">
-              <div className="w-9 h-9 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold">
-                {(selectedUser.firstName ||
-                  selectedUser.fullName ||
-                  selectedUser.username ||
-                  "U")[0].toUpperCase()}
-              </div>
+              {selectedUser.profileImage ? (
+                <img
+                  src={selectedUser.profileImage}
+                  alt="Profile"
+                  className="w-9 h-9 rounded-full object-cover"
+                />
+              ) : (
+                <img
+                  src={defaultProfile}
+                  alt="Default Profile"
+                  className="w-9 h-9 rounded-full object-cover"
+                />
+              )}
               <div>
                 <h3 className="font-semibold text-base text-gray-900">
                   {selectedUser.firstName ||
@@ -189,12 +197,6 @@ function Inbox() {
                 <div className="flex items-center gap-2">
                   <button className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
                     <FiPaperclip size={16} />
-                  </button>
-                  <button className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
-                    <FiSmile size={16} />
-                  </button>
-                  <button className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
-                    <FiMic size={16} />
                   </button>
                   <button
                     className="w-8 h-8 flex items-center justify-center bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
