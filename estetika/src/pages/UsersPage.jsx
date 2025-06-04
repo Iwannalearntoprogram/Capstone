@@ -14,6 +14,7 @@ import {
   FaUserTie,
   FaUsers,
 } from "react-icons/fa";
+import defaultProfile from "../assets/images/user.png";
 
 export default function UsersPage() {
   const [formData, setFormData] = useState({
@@ -218,7 +219,6 @@ export default function UsersPage() {
             </div>
           </div>
         </div>
-
         {/* Tabs */}
         <div className="bg-white rounded-lg shadow-xl overflow-hidden mb-6">
           <div className="border-b border-gray-200">
@@ -252,7 +252,6 @@ export default function UsersPage() {
             </nav>
           </div>
         </div>
-
         {/* Users List */}
         <div className="bg-white rounded-lg shadow-xl overflow-hidden">
           <div className="p-6">
@@ -302,9 +301,11 @@ export default function UsersPage() {
                       >
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-[#1D3C34] rounded-lg flex items-center justify-center">
-                              <FaUser className="text-white text-sm" />
-                            </div>
+                            <img
+                              src={user.profileImage || defaultProfile}
+                              alt="Profile"
+                              className="w-10 h-10 rounded-lg object-cover"
+                            />
                             <div>
                               <div className="font-semibold text-gray-900">
                                 {user.firstName} {user.lastName}

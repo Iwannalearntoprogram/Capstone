@@ -1,4 +1,5 @@
 import React from "react";
+import defaultProfile from "../../assets/images/user.png";
 
 const UserList = ({ users, selectedUser, onSelect }) => {
   const sorted = [...users].sort((a, b) => {
@@ -28,11 +29,6 @@ const UserList = ({ users, selectedUser, onSelect }) => {
     return colors[index];
   };
 
-  const getInitials = (user) => {
-    const name = user.firstName || user.fullName || user.username || "U";
-    return name.charAt(0).toUpperCase();
-  };
-
   const formatTime = () => {
     const now = new Date();
     return now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -56,13 +52,11 @@ const UserList = ({ users, selectedUser, onSelect }) => {
             }`}
             onClick={() => onSelect(user)}
           >
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm mr-3 ${getAvatarColor(
-                userName
-              )}`}
-            >
-              {getInitials(user)}
-            </div>
+            <img
+              src={user.profileImage || defaultProfile}
+              alt={userName}
+              className="w-10 h-10 rounded-full object-cover mr-3"
+            />
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-gray-900 text-sm mb-0.5">
                 {userName}
