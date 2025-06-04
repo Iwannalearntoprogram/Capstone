@@ -193,11 +193,10 @@ const message_file_post = catchAsync(async (req, res, next) => {
   initializeApp(firebaseConfig);
   const storage = getStorage();
 
-  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
   const folder = isImage ? "message-images" : "message-documents";
   const storageRef = ref(
     storage,
-    `${folder}/${userId}/${req.file.originalname}-${uniqueSuffix}`
+    `${folder}/${userId}/${req.file.originalname}`
   );
 
   const metadata = {
