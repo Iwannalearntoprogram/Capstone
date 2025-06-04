@@ -12,6 +12,7 @@ import {
   FaHeart,
 } from "react-icons/fa";
 import { useOutletContext } from "react-router-dom";
+import defaultProfile from "../../assets/images/user.png";
 
 export default function ProjectOverviewTab() {
   const { project } = useOutletContext();
@@ -307,16 +308,11 @@ export default function ProjectOverviewTab() {
                 }
               >
                 <div className="flex items-center space-x-4 mb-4">
-                  <div
-                    className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg"
-                    style={{
-                      background: "linear-gradient(135deg, #1D3C34, #22c55e)",
-                    }}
-                  >
-                    {designer.fullName
-                      ? designer.fullName.charAt(0).toUpperCase()
-                      : designer.username?.charAt(0).toUpperCase() || "?"}
-                  </div>
+                  <img
+                    src={designer.profileImage || defaultProfile}
+                    alt={designer.fullName || designer.username || "Designer"}
+                    className="w-12 h-12 rounded-lg object-cover bg-gray-100"
+                  />
                   <div>
                     <h3 className="font-bold text-gray-900 text-lg">
                       {designer.fullName || designer.username || "Unknown"}

@@ -165,7 +165,7 @@ const ProjectCard = ({ project, onView, onDelete }) => {
             >
               &times;
             </button>
-            <h2 className="text-xl font-bold mb-4">Edit Project</h2>
+            <h2 className="text-xl font-bold mb-4">Edit Project Status</h2>
             <form onSubmit={handleEditProject} className="flex flex-col gap-4">
               <label className="">
                 Project Title
@@ -176,7 +176,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   className="border rounded p-2 mt-1 w-full outline-black"
                   value={editProjectForm.title}
                   onChange={handleEditProjectChange}
-                  required
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -188,6 +189,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   value={editProjectForm.description}
                   onChange={handleEditProjectChange}
                   required
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -200,6 +203,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   value={editProjectForm.budget}
                   onChange={handleEditProjectChange}
                   required
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -211,6 +216,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   value={editProjectForm.startDate}
                   onChange={handleEditProjectChange}
                   required
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -222,6 +229,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   value={editProjectForm.endDate}
                   onChange={handleEditProjectChange}
                   required
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -233,6 +242,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   className="border rounded p-2 mt-1 w-full outline-black"
                   value={editProjectForm.projectLocation}
                   onChange={handleEditProjectChange}
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -244,6 +255,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   className="border rounded p-2 mt-1 w-full outline-black"
                   value={editProjectForm.projectSize}
                   onChange={handleEditProjectChange}
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -255,6 +268,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   className="border rounded p-2 mt-1 w-full outline-black"
                   value={editProjectForm.roomType}
                   onChange={handleEditProjectChange}
+                  readOnly
+                  disabled
                 />
               </label>
               <label className="">
@@ -265,6 +280,13 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   value={editProjectForm.status}
                   onChange={handleEditProjectChange}
                   required
+                  {...(userRole === "admin" && project.status === "pending"
+                    ? {}
+                    : userRole === "designer" &&
+                      project.status !== "pending" &&
+                      project.status !== "cancelled"
+                    ? {}
+                    : { readOnly: true, disabled: true })}
                 >
                   <option value="">Select Status</option>
                   <option value="pending">Pending</option>
@@ -274,13 +296,18 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                 </select>
               </label>
 
-              <button
-                type="submit"
-                className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition cursor-pointer"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Updating..." : "Update Project"}
-              </button>
+              {(userRole === "admin" && project.status === "pending") ||
+              (userRole === "designer" &&
+                project.status !== "pending" &&
+                project.status !== "cancelled") ? (
+                <button
+                  type="submit"
+                  className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition cursor-pointer"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Updating..." : "Update Project"}
+                </button>
+              ) : null}
             </form>
           </div>
         </div>

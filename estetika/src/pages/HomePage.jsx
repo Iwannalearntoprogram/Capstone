@@ -123,7 +123,7 @@ const HomePage = () => {
           <p className="text-sm">Projects Summary</p>
         </div>
         <div className="flex gap-4 justify-center">
-          <div className="h-40 w-40 bg-red-100 rounded-xl relative">
+          <div className="h-40 w-40 bg-green-100 rounded-xl relative">
             <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
               {`${overviewLoading ? "0" : projectStates.active}`}
             </p>
@@ -139,7 +139,7 @@ const HomePage = () => {
               Completed Projects
             </p>
           </div>
-          <div className="h-40 w-40 bg-green-100 rounded-xl relative">
+          <div className="h-40 w-40 bg-red-100 rounded-xl relative">
             <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
               {`${overviewLoading ? "0" : projectStates.delayed}`}
             </p>
