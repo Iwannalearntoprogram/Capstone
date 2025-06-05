@@ -59,13 +59,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _pickAndUploadImage() async {
     final picked = await _picker.pickImage(source: ImageSource.gallery);
-    if (picked != null) {
-      final file = File(picked.path);
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-      if (token != null) {
-        await _uploadProfileImage(file, token);
-      }
+    if (picked == null) return;
+
+    print('Picked image path: ${picked.path}'); // Log the picked image
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return;
+
+    final imageLink = await _uploadProfileImage(File(picked.path), token);
+    if (imageLink != null) {
+      setState(() {
+        _profileImage = imageLink;
+      });
+      await _updateProfileImage(imageLink);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to upload image')),
+      );
     }
   }
 
@@ -100,6 +111,94 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
   }
+
+  // Future<void> _pickAndUploadImage() async {
+  //   final picked = await _picker.pickImage(source: ImageSource.gallery);
+  //   if (picked == null) return;
+
+  //   // Validate file type (image) and size (max 5MB)
+  //   final file = File(picked.path);
+  //   final fileSize = await file.length();
+
+  //   // final isImage = picked.mimeType?.startsWith('image/') ??
+  //   //     false;
+
+  //   // if (!isImage) {
+  //   //   ScaffoldMessenger.of(context).showSnackBar(
+  //   //     const SnackBar(content: Text('Please select an image file')),
+  //   //   );
+  //   //   return;
+  //   // }
+  //   if (fileSize > 5 * 1024 * 1024) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('File size must be less than 5MB')),
+  //     );
+  //     return;
+  //   }
+
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final token = prefs.getString('token');
+  //   if (token == null) return;
+
+  //   // Show loading indicator (optional)
+  //   setState(() => _errorMessage = null);
+
+  //   final imageLink = await _uploadProfileImage(file, token);
+  //   if (imageLink != null) {
+  //     setState(() {
+  //       _profileImage = imageLink;
+  //     });
+  //     await _updateProfileImage(imageLink);
+  //     // Update user data in SharedPreferences
+  //     final userString = prefs.getString('user');
+  //     if (userString != null) {
+  //       final user = jsonDecode(userString);
+  //       user['profileImage'] = imageLink;
+  //       await prefs.setString('user', jsonEncode(user));
+  //     }
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Profile picture updated successfully!')),
+  //     );
+  //   } else {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //           content:
+  //               Text('Failed to update profile picture. Please try again.')),
+  //     );
+  //   }
+  // }
+
+  // Future<void> _updateProfileImage(String imageLink) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final token = prefs.getString('token');
+  //   final userString = prefs.getString('user');
+  //   if (token == null || userString == null) return;
+  //   final user = jsonDecode(userString);
+
+  //   final body = jsonEncode({
+  //     '_id': user['_id'],
+  //     'profileImage': imageLink,
+  //   });
+
+  //   final response = await http.put(
+  //     Uri.parse('https://capstone-thl5.onrender.com/api/user'),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'Authorization': 'Bearer $token',
+  //     },
+  //     body: body,
+  //   );
+  //   if (response.statusCode == 200) {
+  //     user['profileImage'] = imageLink;
+  //     await prefs.setString('user', jsonEncode(user));
+  //     setState(() {
+  //       _profileImage = imageLink;
+  //     });
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Profile picture updated!')),
+  //     );
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -204,20 +303,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           offset: const Offset(0, 3),
                         ),
                       ],
-                      image: _profileImage != null
-                          ? DecorationImage(
-                              image: NetworkImage(_profileImage!),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
                     ),
-                    child: _profileImage == null
-                        ? const Icon(
-                            Icons.person,
-                            size: 80,
-                            color: Colors.grey,
-                          )
-                        : null,
+                    child: ClipOval(
+                      child: _profileImage != null
+                          ? Image.network(
+                              _profileImage!,
+                              fit: BoxFit.cover,
+                              width: 120,
+                              height: 120,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                Icons.person,
+                                size: 80,
+                                color: Colors.grey,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.person,
+                              size: 80,
+                              color: Colors.grey,
+                            ),
+                    ),
                   ),
                   GestureDetector(
                     onTap: _pickAndUploadImage,
@@ -430,35 +536,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> _uploadProfileImage(File imageFile, String token) async {
-    final bytes = await imageFile.readAsBytes();
-    final base64Image = base64Encode(bytes);
+  Future<String?> _uploadProfileImage(File imageFile, String token) async {
+    try {
+      print('Uploading file: ${imageFile.path}');
+      print('File exists: ${imageFile.existsSync()}');
+      var uri =
+          Uri.parse('https://capstone-thl5.onrender.com/api/upload/image');
+      var request = http.MultipartRequest('POST', uri)
+        ..headers['Authorization'] = 'Bearer $token'
+        ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
 
-    final response = await http.post(
-      Uri.parse('https://capstone-thl5.onrender.com/api/upload/image'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({
-        'image': base64Image,
-        'fileName': imageFile.path.split('/').last,
-      }),
-    );
+      var response = await request.send();
 
-    print('Upload response: ${response.body}');
+      final responseBody = await response.stream.bytesToString();
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final imageLink = data['imageLink']; // Adjust based on your API response
-
-      if (imageLink != null) {
-        await _updateProfileImage(imageLink);
+      if (response.statusCode == 200) {
+        final responseData = json.decode(responseBody);
+        return responseData['imageLink'];
+      } else {
+        // Throw an exception to enter the catch block
+        throw Exception(
+            'Failed to upload image with status: ${response.statusCode}\nError body: $responseBody');
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to upload image')),
-      );
+    } catch (e) {
+      print('Error uploading image: $e');
+      return null;
     }
   }
+
+  // Future<String?> _uploadProfileImage(File imageFile, String token) async {
+  //   try {
+  //     print(token);
+  //     print('Uploading file: ${imageFile.path}');
+  //     print('File exists: ${imageFile.existsSync()}');
+  //     var uri =
+  //         Uri.parse('https://capstone-thl5.onrender.com/api/upload/image');
+  //     var request = http.MultipartRequest('POST', uri)
+  //       ..headers['Authorization'] = 'Bearer $token'
+  //       ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+  //     var response = await request.send();
+
+  //     final responseBody = await response.stream.bytesToString();
+  //     print('Upload response: $responseBody');
+
+  //     if (response.statusCode == 200) {
+  //       final responseData = json.decode(responseBody);
+  //       print(responseData['imageLink']);
+  //       return responseData['imageLink'];
+  //     } else {
+  //       print('Failed to upload image with status: ${response.statusCode}');
+  //       print('Error body: $responseBody');
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     print('Error uploading image: $e');
+  //     return null;
+  //   }
+  // }
 }
