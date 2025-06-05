@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "designer", "client"],
       default: "client",
     },
+    isArchived: { type: Boolean, default: false },
     projectsId: { type: [mongoose.Schema.Types.ObjectId], ref: "Project" },
     emailVerified: { type: Boolean, default: false },
     otp: { type: String },
