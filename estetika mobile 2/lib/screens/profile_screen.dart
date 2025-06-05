@@ -59,56 +59,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _pickAndUploadImage() async {
     final picked = await _picker.pickImage(source: ImageSource.gallery);
-    if (picked == null) return;
-
-    // Validate file type (image) and size (max 5MB)
-    final file = File(picked.path);
-    final fileSize = await file.length();
-    final isImage = picked.mimeType?.startsWith('image/') ??
-        true; // fallback for most images
-
-    if (!isImage) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an image file')),
-      );
-      return;
-    }
-    if (fileSize > 5 * 1024 * 1024) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('File size must be less than 5MB')),
-      );
-      return;
-    }
-
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    if (token == null) return;
-
-    // Show loading indicator (optional)
-    setState(() => _errorMessage = null);
-
-    final imageLink = await _uploadProfileImage(file, token);
-    if (imageLink != null) {
-      setState(() {
-        _profileImage = imageLink;
-      });
-      await _updateProfileImage(imageLink);
-      // Update user data in SharedPreferences
-      final userString = prefs.getString('user');
-      if (userString != null) {
-        final user = jsonDecode(userString);
-        user['profileImage'] = imageLink;
-        await prefs.setString('user', jsonEncode(user));
+    if (picked != null) {
+      final file = File(picked.path);
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      if (token != null) {
+        await _uploadProfileImage(file, token);
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile picture updated successfully!')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Failed to update profile picture. Please try again.')),
-      );
     }
   }
 
@@ -473,34 +430,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<String?> _uploadProfileImage(File imageFile, String token) async {
-    try {
-      print(token);
-      print('Uploading file: ${imageFile.path}');
-      print('File exists: ${imageFile.existsSync()}');
-      var uri =
-          Uri.parse('https://capstone-thl5.onrender.com/api/upload/image');
-      var request = http.MultipartRequest('POST', uri)
-        ..headers['Authorization'] = 'Bearer $token'
-        ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+  Future<void> _uploadProfileImage(File imageFile, String token) async {
+    final bytes = await imageFile.readAsBytes();
+    final base64Image = base64Encode(bytes);
 
-      var response = await request.send();
+    final response = await http.post(
+      Uri.parse('https://capstone-thl5.onrender.com/api/upload/image'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'image': base64Image,
+        'fileName': imageFile.path.split('/').last,
+      }),
+    );
 
-      final responseBody = await response.stream.bytesToString();
-      print('Upload response: $responseBody');
+    print('Upload response: ${response.body}');
 
-      if (response.statusCode == 200) {
-        final responseData = json.decode(responseBody);
-        print(responseData['imageLink']);
-        return responseData['imageLink'];
-      } else {
-        print('Failed to upload image with status: ${response.statusCode}');
-        print('Error body: $responseBody');
-        return null;
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final imageLink = data['imageLink']; // Adjust based on your API response
+
+      if (imageLink != null) {
+        await _updateProfileImage(imageLink);
       }
-    } catch (e) {
-      print('Error uploading image: $e');
-      return null;
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to upload image')),
+      );
     }
   }
 }

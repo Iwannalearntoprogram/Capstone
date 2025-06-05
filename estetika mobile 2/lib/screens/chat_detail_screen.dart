@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:estetika_ui/screens/inbox_screen.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
+// import 'package:url_launcher/url_launcher.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final String title;
   final String? profileImage;
   final List<MessageItem> messages;
-  final bool isOnline; // <-- add this
+  final bool isOnline;
   final Function(String) onSendMessage;
 
   const ChatDetailScreen({
@@ -20,7 +19,7 @@ class ChatDetailScreen extends StatefulWidget {
     required this.title,
     this.profileImage,
     required this.messages,
-    required this.isOnline, // <-- add this
+    required this.isOnline,
     required this.onSendMessage,
   });
 
@@ -33,12 +32,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isTyping = false;
 
-  late List<MessageItem> _localMessages; // <-- Add this
+  late List<MessageItem> _localMessages;
 
   @override
   void initState() {
     super.initState();
-    _localMessages = List.from(widget.messages); // <-- Initialize local copy
+    _localMessages = List.from(widget.messages);
   }
 
   @override
@@ -52,12 +51,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (_messageController.text.trim().isNotEmpty) {
       widget.onSendMessage(_messageController.text.trim());
 
-      // Add the new message locally for instant UI update
       setState(() {
         _localMessages.add(
           MessageItem(
-            sender: "You", // or pass the actual userId if available
-            recipient: "", // you can fill this if needed
+            sender: "You",
+            recipient: "",
             content: _messageController.text.trim(),
             timestamp: DateTime.now(),
             isFromUser: true,
@@ -69,7 +67,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
       _messageController.clear();
 
-      // Scroll to bottom after sending message
       Future.delayed(const Duration(milliseconds: 100), () {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
@@ -134,15 +131,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       onTap: () {
                         Navigator.pop(context);
                         // Implement camera access
-                      },
-                    ),
-                    _buildAttachmentOption(
-                      icon: Icons.insert_drive_file,
-                      label: 'File',
-                      color: Colors.orange,
-                      onTap: () {
-                        Navigator.pop(context);
-                        _pickAndSendFile();
                       },
                     ),
                   ],
@@ -348,17 +336,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       final url = content.replaceFirst('[Image] ', '');
       contentWidget =
           Image.network(url, width: 180, height: 180, fit: BoxFit.cover);
-    } else if (content.startsWith('[File]')) {
-      final url = content.replaceFirst('[File] ', '');
-      contentWidget = InkWell(
-        onTap: () {
-          // Open file link
-          launchUrl(Uri.parse(url));
-        },
-        child: Text('File: $url',
-            style: TextStyle(
-                decoration: TextDecoration.underline, color: Colors.blue)),
-      );
     } else {
       contentWidget = Text(
         content,
@@ -437,15 +414,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     await _uploadAndSendFile(File(picked.path), isImage: true);
   }
 
-  Future<void> _pickAndSendFile() async {
-    final result = await FilePicker.platform.pickFiles();
-    if (result == null || result.files.isEmpty) return;
-    final file = File(result.files.single.path!);
-    await _uploadAndSendFile(file, isImage: false);
-  }
-
   Future<void> _uploadAndSendFile(File file, {required bool isImage}) async {
-    // You may want to get the token from SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
     if (token == null) return;
@@ -462,10 +431,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (response.statusCode == 200) {
       final data = jsonDecode(responseBody);
       final fileLink = data['fileLink'];
-      final fileType = data['fileType'];
       final fileName = file.path.split('/').last;
 
-      // Call your onSendMessage or emit socket event here
       widget.onSendMessage('[${isImage ? "Image" : "File"}] $fileLink');
 
       setState(() {
