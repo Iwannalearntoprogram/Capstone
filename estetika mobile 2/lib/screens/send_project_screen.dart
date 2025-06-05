@@ -250,7 +250,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Image.network(
-                              _recommendation!['imageLink'],
+                              getDirectImageLink(_recommendation!['imageLink']),
                               height: 180,
                               width: double.infinity,
                               fit: BoxFit.cover,
@@ -1082,5 +1082,15 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         ),
       );
     }
+  }
+
+  String getDirectImageLink(String url) {
+    final regExp = RegExp(r'drive\.google\.com\/file\/d\/([^\/]+)');
+    final match = regExp.firstMatch(url);
+    if (match != null && match.groupCount >= 1) {
+      final id = match.group(1);
+      return 'https://drive.google.com/uc?export=view&id=$id';
+    }
+    return url; // fallback to original
   }
 }

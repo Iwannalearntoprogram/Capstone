@@ -12,12 +12,14 @@ class ChatDetailScreen extends StatefulWidget {
   final String? profileImage;
   final List<MessageItem> messages;
   final bool isOnline;
+  final String recipientId;
   final Function(String) onSendMessage;
   final Function({
     required String fileLink,
     required String fileType,
     required String fileName,
   }) onSendFile;
+  final Stream<List<MessageItem>>? messageStream; // Add this
 
   const ChatDetailScreen({
     super.key,
@@ -25,8 +27,10 @@ class ChatDetailScreen extends StatefulWidget {
     this.profileImage,
     required this.messages,
     required this.isOnline,
+    required this.recipientId,
     required this.onSendMessage,
     required this.onSendFile,
+    this.messageStream, // Add this
   });
 
   @override
@@ -44,6 +48,42 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void initState() {
     super.initState();
     _localMessages = List.from(widget.messages);
+
+    // Listen to message stream for real-time updates
+    if (widget.messageStream != null) {
+      widget.messageStream!.listen((allMessages) {
+        if (!mounted) return;
+
+        // Get current user ID to properly filter messages
+        _getCurrentUserId().then((currentUserId) {
+          if (currentUserId == null) return;
+
+          // Filter messages for this conversation - FIX THE LOGIC HERE
+          final conversationMessages = allMessages
+              .where((m) =>
+                  (m.sender == widget.recipientId &&
+                      m.recipient == currentUserId) ||
+                  (m.sender == currentUserId &&
+                      m.recipient == widget.recipientId))
+              .toList();
+
+          setState(() {
+            _localMessages = conversationMessages;
+          });
+
+          // Auto-scroll to bottom when new message arrives
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (_scrollController.hasClients) {
+              _scrollController.animateTo(
+                0.0,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+            }
+          });
+        });
+      });
+    }
   }
 
   @override
@@ -61,7 +101,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         _localMessages.add(
           MessageItem(
             sender: "You",
-            recipient: "",
+            recipient: widget.recipientId, // <-- Use correct recipient
             content: _messageController.text.trim(),
             timestamp: DateTime.now(),
             isFromUser: true,
@@ -180,12 +220,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   Widget build(BuildContext context) {
     final sortedMessages = List<MessageItem>.from(_localMessages)
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
-
-    // Print all message data for debugging
-    for (var msg in sortedMessages) {
-      print(
-          'Message: sender=${msg.sender}, recipient=${msg.recipient}, content=${msg.content}, fileLink=${msg.fileLink}, fileType=${msg.fileType}, fileName=${msg.fileName}, timestamp=${msg.timestamp}');
-    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -530,11 +564,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         fileName: fileName,
       );
 
+      if (!mounted) return; // <-- Add this line
       setState(() {
         _localMessages.add(
           MessageItem(
             sender: "You",
-            recipient: '', // <-- make sure this is not null
+            recipient: widget.recipientId,
             content: '[${isImage ? "Image" : "File"}] $fileLink',
             timestamp: DateTime.now(),
             isFromUser: true,
@@ -546,9 +581,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         );
       });
     } else {
+      if (!mounted) return; // <-- Add this line
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to upload file')),
       );
     }
+  }
+
+  // Add this helper method
+  Future<String?> _getCurrentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userString = prefs.getString('user');
+    if (userString == null) return null;
+    final user = jsonDecode(userString);
+    return user['_id'] ?? user['id'];
   }
 }
