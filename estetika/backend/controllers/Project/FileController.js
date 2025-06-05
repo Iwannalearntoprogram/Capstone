@@ -178,26 +178,14 @@ const message_file_post = catchAsync(async (req, res, next) => {
     return next(new AppError("No file uploaded", 400));
   }
 
-  const isImage = allowedImageTypes.includes(req.file.mimetype);
-  const isDocument = allowedDocumentTypes.includes(req.file.mimetype);
-
-  if (!isImage && !isDocument) {
-    return next(
-      new AppError(
-        "File type not allowed. Only images and supported documents are allowed.",
-        400
-      )
-    );
-  }
-
   const userId = req.id;
   initializeApp(firebaseConfig);
   const storage = getStorage();
 
-  const folder = isImage ? "message-images" : "message-documents";
+  // Always upload to "message-files" folder regardless of type
   const storageRef = ref(
     storage,
-    `${folder}/${userId}/${req.file.originalname}`
+    `message-files/${userId}/${req.file.originalname}`
   );
 
   const metadata = {

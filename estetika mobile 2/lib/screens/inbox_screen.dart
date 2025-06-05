@@ -62,15 +62,18 @@ class _InboxScreenState extends State<InboxScreen> {
       setState(() {
         _messages.add(
           MessageItem(
-            sender: data['sender'],
-            recipient: data['recipient'] ?? _userId,
-            content: data['content'],
+            sender: data['sender']?.toString() ?? '',
+            recipient: data['recipient']?.toString() ?? '',
+            content: data['content']?.toString() ?? '',
             timestamp: data['timestamp'] != null
-                ? DateTime.parse(data['timestamp'])
+                ? DateTime.tryParse(data['timestamp'].toString()) ??
+                    DateTime.now()
                 : DateTime.now(),
             isFromUser: data['sender'] == _userId,
-            profileImage: null,
-            isRead: false,
+            isRead: data['isRead'] ?? false,
+            fileLink: data['fileLink'],
+            fileType: data['fileType'],
+            fileName: data['fileName'],
           ),
         );
       });
@@ -114,6 +117,7 @@ class _InboxScreenState extends State<InboxScreen> {
       );
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body);
+
         final existingMessages = _messages
             .where((m) =>
                 !((m.sender == otherUserId && m.recipient == _userId) ||
@@ -122,13 +126,19 @@ class _InboxScreenState extends State<InboxScreen> {
 
         final newMessages = data
             .map<MessageItem>((msg) => MessageItem(
-                  sender: msg['sender'],
-                  recipient: msg['recipient'],
-                  content: msg['content'],
-                  timestamp: DateTime.parse(msg['timestamp']),
+                  sender: msg['sender']?.toString() ?? '',
+                  recipient: msg['recipient']?.toString() ?? '',
+                  content: msg['content']?.toString() ?? '',
+                  timestamp: msg['timestamp'] != null
+                      ? DateTime.tryParse(msg['timestamp'].toString()) ??
+                          DateTime.now()
+                      : DateTime.now(),
                   isFromUser: msg['sender'] == _userId,
                   profileImage: null,
-                  isRead: true,
+                  isRead: msg['isRead'] ?? true,
+                  fileLink: msg['fileLink'],
+                  fileType: msg['fileType'],
+                  fileName: msg['fileName'],
                 ))
             .toList();
 
@@ -252,6 +262,39 @@ class _InboxScreenState extends State<InboxScreen> {
                       'sender': _userId,
                       'recipientId': otherUserId,
                       'content': text,
+                    });
+                  },
+                  onSendFile: ({
+                    required String fileLink,
+                    required String fileType,
+                    required String fileName,
+                  }) {
+                    if (otherUserId == null || otherUserId.toString().isEmpty) {
+                      print('Error: recipientId is null or empty');
+                      return;
+                    }
+
+                    final newMessage = MessageItem(
+                      sender: _userId ?? "You",
+                      recipient: otherUserId,
+                      content: '', // Not used for file messages
+                      timestamp: DateTime.now(),
+                      isFromUser: true,
+                      isRead: true,
+                      fileLink: fileLink,
+                      fileType: fileType,
+                      fileName: fileName,
+                    );
+
+                    setState(() {
+                      _messages.add(newMessage);
+                    });
+
+                    _socket.emit('send_private_file', {
+                      'recipientId': otherUserId,
+                      'fileLink': fileLink,
+                      'fileType': fileType,
+                      'fileName': fileName,
                     });
                   },
                 ),
@@ -389,6 +432,9 @@ class MessageItem {
   final bool isFromUser;
   final String? profileImage;
   final bool isRead;
+  final String? fileLink;
+  final String? fileType;
+  final String? fileName;
 
   MessageItem({
     required this.sender,
@@ -398,5 +444,8 @@ class MessageItem {
     required this.isFromUser,
     this.profileImage,
     required this.isRead,
+    this.fileLink,
+    this.fileType,
+    this.fileName,
   });
 }
