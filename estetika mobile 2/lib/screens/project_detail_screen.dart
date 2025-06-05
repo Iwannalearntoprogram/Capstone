@@ -922,7 +922,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  imageLink,
+                  getDirectImageLink(imageLink),
                   fit: BoxFit.cover,
                   width: double.infinity,
                   errorBuilder: (context, error, stackTrace) => const Icon(
@@ -1105,7 +1105,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    recommendation['imageLink'],
+                    getDirectImageLink(recommendation['imageLink']),
                     height: 180,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -1380,5 +1380,15 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       default:
         return Colors.blue;
     }
+  }
+
+  String getDirectImageLink(String url) {
+    final regExp = RegExp(r'drive\.google\.com\/file\/d\/([^\/]+)');
+    final match = regExp.firstMatch(url);
+    if (match != null && match.groupCount >= 1) {
+      final id = match.group(1);
+      return 'https://drive.google.com/uc?export=view&id=$id';
+    }
+    return url;
   }
 }

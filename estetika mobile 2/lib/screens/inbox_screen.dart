@@ -108,6 +108,10 @@ class _InboxScreenState extends State<InboxScreen> {
     if (_userId == null || _userToken == null) return;
     try {
       final otherUserId = user['id'] ?? user['_id'];
+      if (otherUserId == null) {
+        print('Error: otherUserId is null');
+        return;
+      }
       final response = await http.get(
         Uri.parse(
             'https://capstone-thl5.onrender.com/api/message?user1=$_userId&user2=$otherUserId'),
@@ -238,6 +242,7 @@ class _InboxScreenState extends State<InboxScreen> {
                       : null,
                   messages: _getConversationMessages(otherUserId),
                   isOnline: user['socketId'] != null,
+                  recipientId: otherUserId, // <-- Add this
                   onSendMessage: (text) {
                     print('onSendMessage: $text');
                     if (otherUserId == null || otherUserId.toString().isEmpty) {

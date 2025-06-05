@@ -12,6 +12,7 @@ class ChatDetailScreen extends StatefulWidget {
   final String? profileImage;
   final List<MessageItem> messages;
   final bool isOnline;
+  final String recipientId; // <-- Add this
   final Function(String) onSendMessage;
   final Function({
     required String fileLink,
@@ -25,6 +26,7 @@ class ChatDetailScreen extends StatefulWidget {
     this.profileImage,
     required this.messages,
     required this.isOnline,
+    required this.recipientId, // <-- Add this
     required this.onSendMessage,
     required this.onSendFile,
   });
@@ -61,7 +63,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         _localMessages.add(
           MessageItem(
             sender: "You",
-            recipient: "",
+            recipient: widget.recipientId, // <-- Use correct recipient
             content: _messageController.text.trim(),
             timestamp: DateTime.now(),
             isFromUser: true,
@@ -534,7 +536,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         _localMessages.add(
           MessageItem(
             sender: "You",
-            recipient: '', // <-- make sure this is not null
+            recipient: widget.recipientId, // <-- Use correct recipient
             content: '[${isImage ? "Image" : "File"}] $fileLink',
             timestamp: DateTime.now(),
             isFromUser: true,
