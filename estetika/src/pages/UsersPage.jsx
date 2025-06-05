@@ -9,12 +9,12 @@ import {
   FaLock,
   FaUserTag,
   FaPlus,
-  FaTrash,
   FaUserShield,
   FaUserTie,
   FaUsers,
   FaEye,
   FaEyeSlash,
+  FaUserSlash,
 } from "react-icons/fa";
 import defaultProfile from "../assets/images/user.png";
 
@@ -62,7 +62,8 @@ export default function UsersPage() {
   // Filter users based on active tab
   const filteredUsers = users.filter((user) => {
     if (activeTab === "all") return true;
-    return user.role === activeTab;
+    if (activeTab === "archived") return user.isArchived;
+    return user.role === activeTab && !user.isArchived;
   });
 
   // Get user counts for each role
@@ -95,6 +96,12 @@ export default function UsersPage() {
       label: "Client",
       icon: FaUser,
       count: getUserCount("client"),
+    },
+    {
+      id: "archived",
+      label: "Archived",
+      icon: FaUserSlash,
+      count: users.filter((u) => u.isArchived).length,
     },
   ];
 
@@ -168,27 +175,26 @@ export default function UsersPage() {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    // Show a confirmation dialog before deleting
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this user?"
-    );
-    if (!confirmed) return;
-
+  const handleArchiveUser = async (userId, isArchived) => {
     try {
       setLoadingUsers(true);
       const token = Cookies.get("token");
-      await axios.delete(`${serverUrl}/api/user`, {
-        params: { id: userId },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setUsers((prev) => prev.filter((u) => u._id !== userId));
+      await axios.put(
+        `${serverUrl}/api/user`,
+        { id: userId, isArchived },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setUsers((prev) =>
+        prev.map((u) => (u._id === userId ? { ...u, isArchived } : u))
+      );
     } catch (error) {
       alert(
         error.response?.data?.message ||
-          "An error occurred while deleting the user"
+          "An error occurred while updating the user status"
       );
     } finally {
       setLoadingUsers(false);
@@ -362,12 +368,24 @@ export default function UsersPage() {
                           </span>
                         </td>
                         <td className="py-4 px-4">
-                          <div className="flex items-center gap-2">
+                          <div className={`flex items-center gap-2`}>
                             <button
-                              className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
-                              onClick={() => handleDeleteUser(user._id)}
+                              className={`p-2 ${
+                                user.isArchived
+                                  ? "text-red-600"
+                                  : "text-gray-400"
+                              } hover:bg-yellow-100 rounded-lg transition-colors`}
+                              onClick={() =>
+                                handleArchiveUser(user._id, !user.isArchived)
+                              }
+                              disabled={loadingUsers}
+                              title={
+                                user.isArchived
+                                  ? "Unarchive User"
+                                  : "Archive User"
+                              }
                             >
-                              <FaTrash />
+                              <FaUserSlash />
                             </button>
                           </div>
                         </td>
