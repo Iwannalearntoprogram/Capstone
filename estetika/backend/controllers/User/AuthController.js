@@ -114,6 +114,7 @@ const login = catchAsync(async (req, res, next) => {
       phoneNumber: user.phoneNumber,
       role: user.role,
       profileImage: user.profileImage,
+      isArchived: user.isArchived,
     },
     token,
   });

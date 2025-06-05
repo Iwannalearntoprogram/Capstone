@@ -40,6 +40,14 @@ function LoginPage() {
 
     setIsSubmitting(false);
     if (result.success) {
+      // Check if user is archived
+      const user = result.user || (result.data && result.data.user);
+      console.log("User data:", user);
+      if (user && user.isArchived) {
+        alert("You are currently archived. Please contact the admins.");
+        return;
+      }
+
       const recentlyVerified = checkRecentVerification();
 
       if (recentlyVerified) {

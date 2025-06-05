@@ -179,9 +179,10 @@ export default function UsersPage() {
     try {
       setLoadingUsers(true);
       const token = Cookies.get("token");
+      console.log(token);
       await axios.put(
-        `${serverUrl}/api/user`,
-        { id: userId, isArchived },
+        `${serverUrl}/api/user?id=${userId}`,
+        { isArchived },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -192,6 +193,7 @@ export default function UsersPage() {
         prev.map((u) => (u._id === userId ? { ...u, isArchived } : u))
       );
     } catch (error) {
+      console.error("Error updating user status:", error);
       alert(
         error.response?.data?.message ||
           "An error occurred while updating the user status"
