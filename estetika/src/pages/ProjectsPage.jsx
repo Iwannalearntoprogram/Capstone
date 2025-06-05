@@ -336,6 +336,7 @@ const ProjectsPage = () => {
           </div>
 
           {/* Admin Add Project button */}
+          {/*
           {isAdmin && (
             <button
               onClick={() => setShowModal(true)}
@@ -345,6 +346,7 @@ const ProjectsPage = () => {
               Add Project
             </button>
           )}
+          */}
         </div>
       </div>
 
