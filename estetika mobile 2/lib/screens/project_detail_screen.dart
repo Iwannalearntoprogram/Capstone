@@ -550,18 +550,25 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: Colors.grey[300],
-                // Use a placeholder if no image
-                child: Text(
-                  designer['fullName'] != null &&
-                          designer['fullName'].isNotEmpty
-                      ? designer['fullName'][0]
-                      : '',
-                  style: const TextStyle(fontSize: 24, color: Colors.black),
-                ),
-              ),
+              designer['profileImage'] != null &&
+                      designer['profileImage'].toString().isNotEmpty
+                  ? CircleAvatar(
+                      radius: 30,
+                      backgroundImage: NetworkImage(designer['profileImage']),
+                      backgroundColor: Colors.grey[300],
+                    )
+                  : CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.grey[300],
+                      child: Text(
+                        designer['fullName'] != null &&
+                                designer['fullName'].isNotEmpty
+                            ? designer['fullName'][0]
+                            : '',
+                        style:
+                            const TextStyle(fontSize: 24, color: Colors.black),
+                      ),
+                    ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
