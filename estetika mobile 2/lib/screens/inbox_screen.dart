@@ -121,30 +121,62 @@ class _InboxScreenState extends State<InboxScreen> {
       );
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body);
-
+        print(data);
         final existingMessages = _messages
             .where((m) =>
                 !((m.sender == otherUserId && m.recipient == _userId) ||
                     (m.sender == _userId && m.recipient == otherUserId)))
             .toList();
 
-        final newMessages = data
-            .map<MessageItem>((msg) => MessageItem(
-                  sender: msg['sender']?.toString() ?? '',
-                  recipient: msg['recipient']?.toString() ?? '',
-                  content: msg['content']?.toString() ?? '',
-                  timestamp: msg['timestamp'] != null
-                      ? DateTime.tryParse(msg['timestamp'].toString()) ??
-                          DateTime.now()
-                      : DateTime.now(),
-                  isFromUser: msg['sender'] == _userId,
-                  profileImage: null,
-                  isRead: msg['isRead'] ?? true,
-                  fileLink: msg['fileLink'],
-                  fileType: msg['fileType'],
-                  fileName: msg['fileName'],
-                ))
-            .toList();
+        final newMessages = data.map<MessageItem>((msg) {
+          // Handle file messages
+          String? fileLink;
+          String? fileType;
+          String? fileName;
+          String content = msg['content']?.toString() ?? '';
+
+          if (msg['file'] != null) {
+            fileLink = msg['file']['url']?.toString();
+            fileType = msg['file']['type']?.toString();
+            fileName = msg['file']['name']?.toString();
+            // For preview, set content if not present
+            if (content.isEmpty && fileLink != null && fileType != null) {
+              if (fileType.toLowerCase().contains('image')) {
+                content = '[Image] $fileLink';
+              } else {
+                content = '[File] $fileLink';
+              }
+            }
+          } else {
+            // Fallback to flat fields if present
+            fileLink = msg['fileLink'];
+            fileType = msg['fileType'];
+            fileName = msg['fileName'];
+            if (content.isEmpty && fileLink != null && fileType != null) {
+              if (fileType.toLowerCase().contains('image')) {
+                content = '[Image] $fileLink';
+              } else {
+                content = '[File] $fileLink';
+              }
+            }
+          }
+
+          return MessageItem(
+            sender: msg['sender']?.toString() ?? '',
+            recipient: msg['recipient']?.toString() ?? '',
+            content: content,
+            timestamp: msg['timestamp'] != null
+                ? DateTime.tryParse(msg['timestamp'].toString()) ??
+                    DateTime.now()
+                : DateTime.now(),
+            isFromUser: msg['sender'] == _userId,
+            profileImage: null,
+            isRead: msg['isRead'] ?? true,
+            fileLink: fileLink,
+            fileType: fileType,
+            fileName: fileName,
+          );
+        }).toList();
 
         setState(() {
           _messages.clear();
@@ -282,7 +314,8 @@ class _InboxScreenState extends State<InboxScreen> {
                     final newMessage = MessageItem(
                       sender: _userId ?? "You",
                       recipient: otherUserId,
-                      content: '', // Not used for file messages
+                      content:
+                          '', // You can set content if you want, but web leaves it empty
                       timestamp: DateTime.now(),
                       isFromUser: true,
                       isRead: true,
@@ -295,11 +328,14 @@ class _InboxScreenState extends State<InboxScreen> {
                       _messages.add(newMessage);
                     });
 
+                    // Emit the same structure as your web version
                     _socket.emit('send_private_file', {
+                      'sender': _userId,
                       'recipientId': otherUserId,
                       'fileLink': fileLink,
                       'fileType': fileType,
                       'fileName': fileName,
+                      'timestamp': DateTime.now().toIso8601String(),
                     });
                   },
                 ),
@@ -448,7 +484,7 @@ class MessageItem {
     required this.timestamp,
     required this.isFromUser,
     this.profileImage,
-    required this.isRead,
+    this.isRead = true,
     this.fileLink,
     this.fileType,
     this.fileName,

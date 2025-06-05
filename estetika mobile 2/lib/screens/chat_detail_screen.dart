@@ -26,7 +26,7 @@ class ChatDetailScreen extends StatefulWidget {
     this.profileImage,
     required this.messages,
     required this.isOnline,
-    required this.recipientId, // <-- Add this
+    required this.recipientId,
     required this.onSendMessage,
     required this.onSendFile,
   });
@@ -182,12 +182,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   Widget build(BuildContext context) {
     final sortedMessages = List<MessageItem>.from(_localMessages)
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
-
-    // Print all message data for debugging
-    for (var msg in sortedMessages) {
-      print(
-          'Message: sender=${msg.sender}, recipient=${msg.recipient}, content=${msg.content}, fileLink=${msg.fileLink}, fileType=${msg.fileType}, fileName=${msg.fileName}, timestamp=${msg.timestamp}');
-    }
 
     return Scaffold(
       backgroundColor: Colors.white,
