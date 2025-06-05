@@ -5,6 +5,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
 
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
@@ -14,7 +15,7 @@ class InboxScreen extends StatefulWidget {
 }
 
 class _InboxScreenState extends State<InboxScreen> {
-  late IO.Socket _socket;
+  IO.Socket? _socket;
   final List<MessageItem> _messages = [];
   final TextEditingController _searchController = TextEditingController();
   String? _userId;
@@ -22,9 +23,18 @@ class _InboxScreenState extends State<InboxScreen> {
   List<Map<String, dynamic>> _users = [];
   List<Map<String, dynamic>> _filteredUsers = [];
 
+  Function(dynamic)? _onReceivePrivateMessage;
+  Function(dynamic)? _onReceivePrivateFile;
+
+  // Add StreamController
+  StreamController<List<MessageItem>>? _messageStreamController;
+  Stream<List<MessageItem>>? _messageStream;
+
   @override
   void initState() {
     super.initState();
+    _messageStreamController = StreamController<List<MessageItem>>.broadcast();
+    _messageStream = _messageStreamController!.stream;
     _initSocket();
     _fetchUsers();
   }
@@ -46,40 +56,72 @@ class _InboxScreenState extends State<InboxScreen> {
           .setTransports(['websocket']).setAuth({'token': _userToken}).build(),
     );
 
-    _socket.on('connect', (_) {
-      print('Socket connected: ${_socket.id}');
+    _socket!.on('connect', (_) {
+      print('Socket connected: ${_socket!.id}');
       if (_userId != null) {
-        _socket.emit('online', _userId);
+        _socket!.emit('online', _userId);
       }
     });
 
-    _socket.on('connect_error', (error) {
+    _socket!.on('connect_error', (error) {
       print('Socket connection error: $error');
     });
 
-    _socket.on('receive_private_message', (data) {
+    _onReceivePrivateMessage = (data) {
       print('Received message: $data');
-      setState(() {
-        _messages.add(
-          MessageItem(
-            sender: data['sender']?.toString() ?? '',
-            recipient: data['recipient']?.toString() ?? '',
-            content: data['content']?.toString() ?? '',
-            timestamp: data['timestamp'] != null
-                ? DateTime.tryParse(data['timestamp'].toString()) ??
-                    DateTime.now()
-                : DateTime.now(),
-            isFromUser: data['sender'] == _userId,
-            isRead: data['isRead'] ?? false,
-            fileLink: data['fileLink'],
-            fileType: data['fileType'],
-            fileName: data['fileName'],
-          ),
-        );
-      });
-    });
+      if (!mounted) return;
 
-    _socket.connect();
+      final newMessage = MessageItem(
+        sender: data['sender']?.toString() ?? '',
+        recipient: data['recipient']?.toString() ?? '',
+        content: data['content']?.toString() ?? '',
+        timestamp: data['timestamp'] != null
+            ? DateTime.tryParse(data['timestamp'].toString()) ?? DateTime.now()
+            : DateTime.now(),
+        isFromUser: data['sender'] == _userId,
+        isRead: data['isRead'] ?? false,
+        fileLink: data['fileLink'],
+        fileType: data['fileType'],
+        fileName: data['fileName'],
+      );
+
+      setState(() {
+        _messages.add(newMessage);
+      });
+
+      // Notify stream listeners
+      _messageStreamController?.add(List.from(_messages));
+    };
+
+    _onReceivePrivateFile = (data) {
+      if (!mounted) return;
+
+      final newMessage = MessageItem(
+        sender: data['sender']?.toString() ?? '',
+        recipient: data['recipient']?.toString() ?? '',
+        content: data['content']?.toString() ?? '',
+        timestamp: data['timestamp'] != null
+            ? DateTime.tryParse(data['timestamp'].toString()) ?? DateTime.now()
+            : DateTime.now(),
+        isFromUser: data['sender'] == _userId,
+        isRead: data['isRead'] ?? false,
+        fileLink: data['fileLink'],
+        fileType: data['fileType'],
+        fileName: data['fileName'],
+      );
+
+      setState(() {
+        _messages.add(newMessage);
+      });
+
+      // Notify stream listeners
+      _messageStreamController?.add(List.from(_messages));
+    };
+
+    _socket!.on('receive_private_message', _onReceivePrivateMessage!);
+    _socket!.on('receive_private_file', _onReceivePrivateFile!);
+
+    _socket!.connect();
   }
 
   Future<void> _fetchUsers() async {
@@ -190,11 +232,14 @@ class _InboxScreenState extends State<InboxScreen> {
   }
 
   List<MessageItem> _getConversationMessages(String otherUserId) {
-    final conv = _messages
-        .where((m) =>
-            (m.sender == otherUserId && m.recipient == _userId) ||
-            (m.sender == _userId && m.recipient == otherUserId))
-        .toList();
+    final conv = _messages.where((m) {
+      final isConversation =
+          (m.sender == otherUserId && m.recipient == _userId) ||
+              (m.sender == _userId && m.recipient == otherUserId);
+
+      return isConversation;
+    }).toList();
+
     conv.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     return conv;
   }
@@ -274,7 +319,8 @@ class _InboxScreenState extends State<InboxScreen> {
                       : null,
                   messages: _getConversationMessages(otherUserId),
                   isOnline: user['socketId'] != null,
-                  recipientId: otherUserId, // <-- Add this
+                  recipientId: otherUserId,
+                  messageStream: _messageStream, // Add this line
                   onSendMessage: (text) {
                     print('onSendMessage: $text');
                     if (otherUserId == null || otherUserId.toString().isEmpty) {
@@ -291,15 +337,21 @@ class _InboxScreenState extends State<InboxScreen> {
                       isRead: true,
                     );
 
-                    setState(() {
-                      _messages.add(newMessage);
-                    });
+                    if (mounted) {
+                      setState(() {
+                        _messages.add(newMessage);
+                      });
+                      // Notify stream listeners
+                      _messageStreamController?.add(List.from(_messages));
+                    }
 
-                    _socket.emit('send_private_message', {
-                      'sender': _userId,
-                      'recipientId': otherUserId,
-                      'content': text,
-                    });
+                    if (_socket != null && _socket!.connected) {
+                      _socket!.emit('send_private_message', {
+                        'sender': _userId,
+                        'recipientId': otherUserId,
+                        'content': text,
+                      });
+                    }
                   },
                   onSendFile: ({
                     required String fileLink,
@@ -314,8 +366,7 @@ class _InboxScreenState extends State<InboxScreen> {
                     final newMessage = MessageItem(
                       sender: _userId ?? "You",
                       recipient: otherUserId,
-                      content:
-                          '', // You can set content if you want, but web leaves it empty
+                      content: '',
                       timestamp: DateTime.now(),
                       isFromUser: true,
                       isRead: true,
@@ -324,19 +375,24 @@ class _InboxScreenState extends State<InboxScreen> {
                       fileName: fileName,
                     );
 
-                    setState(() {
-                      _messages.add(newMessage);
-                    });
+                    if (mounted) {
+                      setState(() {
+                        _messages.add(newMessage);
+                      });
+                      // Notify stream listeners
+                      _messageStreamController?.add(List.from(_messages));
+                    }
 
-                    // Emit the same structure as your web version
-                    _socket.emit('send_private_file', {
-                      'sender': _userId,
-                      'recipientId': otherUserId,
-                      'fileLink': fileLink,
-                      'fileType': fileType,
-                      'fileName': fileName,
-                      'timestamp': DateTime.now().toIso8601String(),
-                    });
+                    if (_socket != null && _socket!.connected) {
+                      _socket!.emit('send_private_file', {
+                        'sender': _userId,
+                        'recipientId': otherUserId,
+                        'fileLink': fileLink,
+                        'fileType': fileType,
+                        'fileName': fileName,
+                        'timestamp': DateTime.now().toIso8601String(),
+                      });
+                    }
                   },
                 ),
               ),
@@ -460,7 +516,26 @@ class _InboxScreenState extends State<InboxScreen> {
 
   @override
   void dispose() {
-    _socket.disconnect();
+    _messageStreamController?.close(); // Close the stream controller
+
+    // Clean up socket listeners and disconnect
+    if (_socket != null) {
+      if (_onReceivePrivateMessage != null) {
+        _socket!.off('receive_private_message', _onReceivePrivateMessage!);
+      }
+      if (_onReceivePrivateFile != null) {
+        _socket!.off('receive_private_file', _onReceivePrivateFile!);
+      }
+      _socket!.disconnect();
+      _socket!.dispose();
+      _socket = null;
+    }
+
+    // Clear the callback references
+    _onReceivePrivateMessage = null;
+    _onReceivePrivateFile = null;
+
+    _searchController.dispose();
     super.dispose();
   }
 }
