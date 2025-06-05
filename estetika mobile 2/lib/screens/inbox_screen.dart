@@ -222,7 +222,10 @@ class _InboxScreenState extends State<InboxScreen> {
               MaterialPageRoute(
                 builder: (context) => ChatDetailScreen(
                   title: displayName,
-                  profileImage: null,
+                  profileImage: user['profileImage'] != null &&
+                          user['profileImage'].toString().isNotEmpty
+                      ? user['profileImage']
+                      : null,
                   messages: _getConversationMessages(otherUserId),
                   isOnline: user['socketId'] != null,
                   onSendMessage: (text) {
@@ -275,11 +278,19 @@ class _InboxScreenState extends State<InboxScreen> {
                     CircleAvatar(
                       radius: 24,
                       backgroundColor: Colors.green[700],
-                      child: Text(
-                        displayName[0].toUpperCase(),
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
+                      backgroundImage: user['profileImage'] != null &&
+                              user['profileImage'].toString().isNotEmpty
+                          ? NetworkImage(user['profileImage'])
+                          : null,
+                      child: (user['profileImage'] == null ||
+                              user['profileImage'].toString().isEmpty)
+                          ? Text(
+                              displayName[0].toUpperCase(),
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            )
+                          : null,
                     ),
                     if (latestMessage != null && !latestMessage.isRead)
                       Positioned(

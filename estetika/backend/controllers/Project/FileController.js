@@ -47,9 +47,9 @@ const image_post = catchAsync(async (req, res, next) => {
     return next(new AppError("No image uploaded", 400));
   }
 
-  if (!req.file.mimetype.startsWith("image/")) {
-    return next(new AppError("File is not an image.", 400));
-  }
+  // if (!req.file.mimetype.startsWith("image/")) {
+  //   return next(new AppError("File is not an image.", 400));
+  // }
 
   initializeApp(firebaseConfig);
   const storage = getStorage();
