@@ -35,6 +35,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _email = '';
   String _phone = '';
 
+  // Add these variables to manage password visibility
+  bool _showCurrentPassword = false;
+  bool _showNewPassword = false;
+  bool _showConfirmPassword = false;
+
   @override
   void initState() {
     super.initState();
@@ -222,7 +227,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  void _savePassword() {
+  void _savePassword() async {
     if (_currentPasswordController.text.isEmpty ||
         _newPasswordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
@@ -239,13 +244,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
-    setState(() {
-      _isChangingPassword = false;
-      _errorMessage = null;
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final userString = prefs.getString('user');
+    if (token == null || userString == null) {
+      setState(() {
+        _errorMessage = 'Not authenticated';
+      });
+      return;
+    }
+    final user = jsonDecode(userString);
+
+    final body = jsonEncode({
+      '_id': user['_id'],
+      'password': _currentPasswordController.text,
+      'newPassword': _newPasswordController.text,
+    });
+
+    final response = await http.put(
+      Uri.parse('https://capstone-thl5.onrender.com/api/user'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        _isChangingPassword = false;
+        _errorMessage = null;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password updated successfully')),
       );
-    });
+    } else {
+      final resp = jsonDecode(response.body);
+      setState(() {
+        _errorMessage = resp['message'] ?? 'Failed to update password';
+      });
+    }
   }
 
   Future<void> _logout() async {
@@ -449,9 +487,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildTextField(String label, TextEditingController controller,
       {bool isPassword = false}) {
+    // Determine which visibility toggle to use
+    bool isCurrent = label.toLowerCase().contains('current');
+    bool isNew = label.toLowerCase().contains('new') &&
+        !label.toLowerCase().contains('confirm');
+    bool isConfirm = label.toLowerCase().contains('confirm');
+
+    bool obscure = isPassword
+        ? (isCurrent
+            ? !_showCurrentPassword
+            : isNew
+                ? !_showNewPassword
+                : isConfirm
+                    ? !_showConfirmPassword
+                    : true)
+        : false;
+
     return TextField(
       controller: controller,
-      obscureText: isPassword,
+      obscureText: obscure,
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(
@@ -466,6 +520,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFF203B32)),
         ),
+        // Add the eye icon for password fields
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  (isCurrent && _showCurrentPassword) ||
+                          (isNew && _showNewPassword) ||
+                          (isConfirm && _showConfirmPassword)
+                      ? Icons.visibility
+                      : Icons.visibility_off,
+                  color: Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    if (isCurrent) {
+                      _showCurrentPassword = !_showCurrentPassword;
+                    } else if (isNew) {
+                      _showNewPassword = !_showNewPassword;
+                    } else if (isConfirm) {
+                      _showConfirmPassword = !_showConfirmPassword;
+                    }
+                  });
+                },
+              )
+            : null,
       ),
     );
   }
