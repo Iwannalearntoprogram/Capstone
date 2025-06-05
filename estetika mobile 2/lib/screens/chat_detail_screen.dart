@@ -13,6 +13,11 @@ class ChatDetailScreen extends StatefulWidget {
   final List<MessageItem> messages;
   final bool isOnline;
   final Function(String) onSendMessage;
+  final Function({
+    required String fileLink,
+    required String fileType,
+    required String fileName,
+  }) onSendFile;
 
   const ChatDetailScreen({
     super.key,
@@ -21,6 +26,7 @@ class ChatDetailScreen extends StatefulWidget {
     required this.messages,
     required this.isOnline,
     required this.onSendMessage,
+    required this.onSendFile,
   });
 
   @override
@@ -174,6 +180,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   Widget build(BuildContext context) {
     final sortedMessages = List<MessageItem>.from(_localMessages)
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+    // Print all message data for debugging
+    for (var msg in sortedMessages) {
+      print(
+          'Message: sender=${msg.sender}, recipient=${msg.recipient}, content=${msg.content}, fileLink=${msg.fileLink}, fileType=${msg.fileType}, fileName=${msg.fileName}, timestamp=${msg.timestamp}');
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -329,16 +341,96 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   Widget _buildMessageItem(MessageItem message) {
     final isFromUser = message.isFromUser;
-    final content = message.content;
 
     Widget contentWidget;
-    if (content.startsWith('[Image]')) {
-      final url = content.replaceFirst('[Image] ', '');
-      contentWidget =
-          Image.network(url, width: 180, height: 180, fit: BoxFit.cover);
+
+    // If fileLink and fileType are present, show image or file
+    if (message.fileLink != null && message.fileType != null) {
+      if (message.fileType!.toLowerCase().contains('image')) {
+        contentWidget = Image.network(
+          message.fileLink!,
+          width: 180,
+          height: 180,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              Icon(Icons.broken_image, size: 48, color: Colors.grey),
+        );
+      } else {
+        final fileName = message.fileName ?? message.fileLink!.split('/').last;
+        IconData icon = Icons.insert_drive_file;
+        if (fileName.toLowerCase().endsWith('.pdf')) {
+          icon = Icons.picture_as_pdf;
+        }
+        contentWidget = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                size: 20, color: isFromUser ? Colors.white : Colors.blue),
+            const SizedBox(width: 6),
+            Flexible(
+              child: InkWell(
+                onTap: () {
+                  // Use url_launcher to open the file link
+                  // launchUrl(Uri.parse(message.fileLink!));
+                },
+                child: Text(
+                  fileName,
+                  style: TextStyle(
+                    decoration: TextDecoration.underline,
+                    color: isFromUser ? Colors.white : Colors.blue,
+                    fontSize: 15,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ],
+        );
+      }
+    } else if (message.content.startsWith('[Image]')) {
+      final url = message.content.replaceFirst('[Image] ', '');
+      contentWidget = Image.network(
+        url,
+        width: 180,
+        height: 180,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            Icon(Icons.broken_image, size: 48, color: Colors.grey),
+      );
+    } else if (message.content.startsWith('[File]')) {
+      final url = message.content.replaceFirst('[File] ', '');
+      final fileName = url.split('/').last;
+      IconData icon = Icons.insert_drive_file;
+      if (fileName.toLowerCase().endsWith('.pdf')) {
+        icon = Icons.picture_as_pdf;
+      }
+      contentWidget = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 20, color: isFromUser ? Colors.white : Colors.blue),
+          const SizedBox(width: 6),
+          Flexible(
+            child: InkWell(
+              onTap: () {
+                // Use url_launcher to open the file link
+                // launchUrl(Uri.parse(url));
+              },
+              child: Text(
+                fileName,
+                style: TextStyle(
+                  decoration: TextDecoration.underline,
+                  color: isFromUser ? Colors.white : Colors.blue,
+                  fontSize: 15,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      );
     } else {
       contentWidget = Text(
-        content,
+        message.content,
         style: TextStyle(
           color: isFromUser ? Colors.white : Colors.black,
           fontSize: 16,
@@ -419,31 +511,37 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final token = prefs.getString('token');
     if (token == null) return;
 
-    final uri =
-        Uri.parse('https://capstone-thl5.onrender.com/api/upload/message');
+    final uri = Uri.parse('http://10.0.2.2:3000/api/upload/message');
     final request = http.MultipartRequest('POST', uri)
       ..headers['Authorization'] = 'Bearer $token'
       ..files.add(await http.MultipartFile.fromPath('file', file.path));
 
     final response = await request.send();
     final responseBody = await response.stream.bytesToString();
-
+    print('Response status: ${response.statusCode}');
     if (response.statusCode == 200) {
       final data = jsonDecode(responseBody);
       final fileLink = data['fileLink'];
       final fileName = file.path.split('/').last;
 
-      widget.onSendMessage('[${isImage ? "Image" : "File"}] $fileLink');
+      widget.onSendFile(
+        fileLink: fileLink,
+        fileType: isImage ? 'Image' : 'File',
+        fileName: fileName,
+      );
 
       setState(() {
         _localMessages.add(
           MessageItem(
             sender: "You",
-            recipient: "",
+            recipient: '', // <-- make sure this is not null
             content: '[${isImage ? "Image" : "File"}] $fileLink',
             timestamp: DateTime.now(),
             isFromUser: true,
             isRead: true,
+            fileLink: fileLink,
+            fileType: isImage ? 'Image' : 'File',
+            fileName: fileName,
           ),
         );
       });
