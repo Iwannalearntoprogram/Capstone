@@ -179,6 +179,7 @@ export default function MaterialsTab() {
     } else {
       setSelectedSidebar("");
     }
+    console.log(project);
   }, [project]);
 
   // Fetch best match when sidebar selection changes
