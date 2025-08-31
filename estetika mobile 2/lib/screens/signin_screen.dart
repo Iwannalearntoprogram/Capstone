@@ -64,7 +64,7 @@ class _SignInScreenState extends State<SigninScreen> {
       print('Request body: $body');
 
       final response = await http.post(
-        Uri.parse('https://capstone-thl5.onrender.com/api/auth/login'),
+        Uri.parse('https://capstone-moss.onrender.com/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
       );
@@ -124,7 +124,7 @@ class _SignInScreenState extends State<SigninScreen> {
 
   Future<void> _sendOtp(String email) async {
     final response = await http.post(
-      Uri.parse('https://capstone-thl5.onrender.com/api/auth/send-otp'),
+      Uri.parse('https://capstone-moss.onrender.com/api/auth/send-otp'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email}),
     );
@@ -196,7 +196,7 @@ class _SignInScreenState extends State<SigninScreen> {
   Future<bool> _verifyOtp(String email, String otp) async {
     try {
       final response = await http.post(
-        Uri.parse('https://capstone-thl5.onrender.com/api/auth/verify-otp'),
+        Uri.parse('https://capstone-moss.onrender.com/api/auth/verify-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'otp': otp}),
       );
