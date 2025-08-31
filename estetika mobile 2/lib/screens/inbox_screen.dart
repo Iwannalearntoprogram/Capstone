@@ -51,7 +51,7 @@ class _InboxScreenState extends State<InboxScreen> {
     print('Initializing socket for user: $_userId');
 
     _socket = IO.io(
-      'https://capstone-thl5.onrender.com',
+      'https://capstone-moss.onrender.com',
       IO.OptionBuilder()
           .setTransports(['websocket']).setAuth({'token': _userToken}).build(),
     );
@@ -134,7 +134,7 @@ class _InboxScreenState extends State<InboxScreen> {
     _userToken = token;
 
     final response = await http.get(
-      Uri.parse('https://capstone-thl5.onrender.com/api/user?exclude=$_userId'),
+      Uri.parse('https://capstone-moss.onrender.com/api/user?exclude=$_userId'),
       headers: {'Authorization': 'Bearer $token'},
     );
     if (response.statusCode == 200) {
@@ -156,7 +156,7 @@ class _InboxScreenState extends State<InboxScreen> {
       }
       final response = await http.get(
         Uri.parse(
-            'https://capstone-thl5.onrender.com/api/message?user1=$_userId&user2=$otherUserId'),
+            'https://capstone-moss.onrender.com/api/message?user1=$_userId&user2=$otherUserId'),
         headers: {
           'Authorization': 'Bearer $_userToken',
         },

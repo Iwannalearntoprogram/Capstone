@@ -96,7 +96,6 @@ const HomePage = () => {
             },
           }
         );
-        console.log(res.data);
         setProjectsData(res.data.project);
       } catch (err) {
         setProjectsData([]);
