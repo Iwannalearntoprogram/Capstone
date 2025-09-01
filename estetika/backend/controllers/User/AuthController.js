@@ -24,7 +24,7 @@ const register = catchAsync(async (req, res, next) => {
 
   // Check if email already exists
   const userExists = await User.findOne({ email });
-  if (userExists) next(new AppError("Email already in use", 400));
+  if (userExists) return next(new AppError("Email already in use", 400));
 
   // Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -53,7 +53,7 @@ const verifyEmail = catchAsync(async (req, res, next) => {
   const { email } = req.body;
 
   const user = await User.findOne({ email });
-  if (!user) next(new AppError("User not found", 404));
+  if (!user) return next(new AppError("User not found", 404));
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
@@ -71,11 +71,11 @@ const verifyOTP = catchAsync(async (req, res, next) => {
   const { email, otp } = req.body;
 
   const user = await User.findOne({ email });
-  if (!user) next(new AppError("User not found", 404));
+  if (!user) return next(new AppError("User not found", 404));
 
   const now = new Date();
   if (user.otp !== otp || user.otpExpiresAt < now) {
-    next(new AppError("Invalid or expired OTP", 400));
+    return next(new AppError("Invalid or expired OTP", 400));
   }
 
   user.emailVerified = true;
@@ -92,11 +92,11 @@ const login = catchAsync(async (req, res, next) => {
 
   // Find user by email
   const user = await User.findOne({ email });
-  if (!user) next(new AppError("User not found", 404));
+  if (!user) return next(new AppError("User not found", 404));
 
   // Check if password matches
   const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) next(new AppError("Invalid credentials", 400));
+  if (!isMatch) return next(new AppError("Invalid credentials", 400));
 
   // Create JWT token
   const token = jwt.sign(
@@ -123,6 +123,9 @@ const login = catchAsync(async (req, res, next) => {
 // Logout route
 const logout = catchAsync(async (req, res, next) => {
   const authHeader = req.header("Authorization");
+  if (!authHeader) {
+    return next(new AppError("Authorization header missing", 401));
+  }
   const token = authHeader.split(" ")[1];
 
   const invalidToken = new InvalidToken({

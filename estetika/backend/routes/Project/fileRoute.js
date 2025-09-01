@@ -7,6 +7,7 @@ const {
   update_image_post,
   material_image_post,
   design_image_post,
+  carousel_image_post,
   fetch_csv,
   file_delete,
 } = require("../../controllers/Project/FileController");
@@ -20,6 +21,7 @@ router.post("/message", upload.single("file"), message_file_post);
 router.post("/project/update", upload.single("image"), update_image_post);
 router.post("/material", upload.array("image", 4), material_image_post);
 router.post("/design", upload.single("image"), design_image_post);
+router.post("/carousel", upload.single("image"), carousel_image_post);
 router.delete("/document", file_delete);
 router.get("/fetch-csv", fetch_csv);
 

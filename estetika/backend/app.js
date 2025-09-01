@@ -18,9 +18,11 @@ const materialRoute = require("./routes/Project/materialRoute");
 const phaseRoute = require("./routes/Project/phaseRoute");
 const projectRoute = require("./routes/Project/projectRoute");
 const taskRoute = require("./routes/Project/taskRoute");
+const ratingRoute = require("./routes/Project/ratingRoute");
 
 // utility
 const aliveRoute = require("./routes/utils/aliveRoute");
+const mobileHomeContentRoute = require("./routes/utils/mobileHomeContentRoute");
 const AppError = require("./utils/appError");
 const checkAuth = require("./utils/checkAuth");
 const globalErrorHandler = require("./controllers/utils/ErrorController");
@@ -75,9 +77,11 @@ app.use("/api/material", checkAuth, materialRoute);
 app.use("/api/phase", checkAuth, phaseRoute);
 app.use("/api/project", checkAuth, projectRoute);
 app.use("/api/task", checkAuth, taskRoute);
+app.use("/api/rating", ratingRoute);
 
 // utility
 app.use("/api/alive", aliveRoute);
+app.use("/api/mobile-home-content", mobileHomeContentRoute);
 
 // route catch
 app.all("/{*splat}", (req, res, next) => {
