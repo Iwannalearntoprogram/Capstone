@@ -50,10 +50,21 @@ function LoginPage() {
         setShowOtpModal(true);
       }
     } else {
-      setError(
-        result.error?.response?.data?.message ||
-          "Something went wrong. Please try again."
-      );
+      const status = result?.error?.response?.status;
+      const backendMsg = result?.error?.response?.data?.message;
+
+      if (
+        status === 400 ||
+        status === 404 ||
+        backendMsg === "Invalid credentials" ||
+        backendMsg === "User not found"
+      ) {
+        setError("Incorrect email or password.");
+      } else if (!result?.error?.response) {
+        setError("Unable to connect to the server. Please try again.");
+      } else {
+        setError(backendMsg || "Something went wrong. Please try again.");
+      }
     }
   };
 
