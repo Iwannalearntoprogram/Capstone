@@ -172,7 +172,9 @@ function LoginPage() {
             </button>
             <div className="mt-2 min-h-[20px]">
               {otpError && (
-                <p className="text-red-500 text-sm" aria-live="polite">{otpError}</p>
+                <p className="text-red-500 text-sm" aria-live="polite">
+                  {otpError}
+                </p>
               )}
             </div>
           </div>
@@ -234,7 +236,9 @@ function LoginPage() {
           </form>
           <div className="mt-4 min-h-[20px]">
             {error && (
-              <p className="text-red-500 text-sm" aria-live="polite">{error}</p>
+              <p className="text-red-500 text-sm" aria-live="polite">
+                {error}
+              </p>
             )}
           </div>
           <p className="mt-4 text-sm text-gray-600 hover:underline cursor-pointer">
