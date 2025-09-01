@@ -21,6 +21,7 @@ const taskRoute = require("./routes/Project/taskRoute");
 
 // utility
 const aliveRoute = require("./routes/utils/aliveRoute");
+const mobileHomeContentRoute = require("./routes/utils/mobileHomeContentRoute");
 const AppError = require("./utils/appError");
 const checkAuth = require("./utils/checkAuth");
 const globalErrorHandler = require("./controllers/utils/ErrorController");
@@ -78,6 +79,7 @@ app.use("/api/task", checkAuth, taskRoute);
 
 // utility
 app.use("/api/alive", aliveRoute);
+app.use("/api/mobile-home-content", mobileHomeContentRoute);
 
 // route catch
 app.all("/{*splat}", (req, res, next) => {

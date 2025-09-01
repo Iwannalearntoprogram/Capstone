@@ -371,6 +371,48 @@ const design_image_post = catchAsync(async (req, res, next) => {
   });
 });
 
+const carousel_image_post = catchAsync(async (req, res, next) => {
+  if (!req.file) {
+    return next(new AppError("No image uploaded", 400));
+  }
+
+  if (!req.file.mimetype.startsWith("image/")) {
+    return next(new AppError("File is not an image.", 400));
+  }
+
+  const userId = req.id;
+
+  initializeApp(firebaseConfig);
+  const storage = getStorage();
+
+  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+  const storageRef = ref(
+    storage,
+    `mobile-carousel/${userId}/${uniqueSuffix}-${req.file.originalname}`
+  );
+
+  const metadata = {
+    contentType: req.file.mimetype,
+  };
+
+  const snapshot = await uploadBytesResumable(
+    storageRef,
+    req.file.buffer,
+    metadata
+  );
+
+  const downloadURL = await getDownloadURL(snapshot.ref);
+
+  if (!downloadURL) {
+    return next(new AppError("Failed to upload image", 500));
+  }
+
+  return res.status(200).json({
+    message: "Carousel Image Successfully Uploaded!",
+    imageLink: downloadURL,
+  });
+});
+
 // In fetch_csv, use dynamic import if fetch is not defined
 const fetch_csv = catchAsync(async (req, res) => {
   const { url } = req.query;
@@ -450,5 +492,6 @@ module.exports = {
   material_image_post,
   fetch_csv,
   design_image_post,
+  carousel_image_post,
   file_delete,
 };
