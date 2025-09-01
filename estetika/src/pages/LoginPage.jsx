@@ -137,11 +137,10 @@ function LoginPage() {
         });
 
         setUserAndToken(JSON.parse(tempUser), tempToken);
+        navigate("/home", { replace: true });
       }
     } catch (err) {
       setOtpError(err.response?.data?.message || "Invalid OTP. Try again.");
-    } finally {
-      navigate("/home", { replace: true });
     }
   };
 
@@ -171,7 +170,11 @@ function LoginPage() {
             >
               Verify OTP
             </button>
-            {otpError && <p className="text-red-500 mt-2">{otpError}</p>}
+            <div className="mt-2 min-h-[20px]">
+              {otpError && (
+                <p className="text-red-500 text-sm" aria-live="polite">{otpError}</p>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -229,7 +232,11 @@ function LoginPage() {
                 : "Login"}
             </button>
           </form>
-          {error && <p className="text-red-500 mt-4">{error}</p>}
+          <div className="mt-4 min-h-[20px]">
+            {error && (
+              <p className="text-red-500 text-sm" aria-live="polite">{error}</p>
+            )}
+          </div>
           <p className="mt-4 text-sm text-gray-600 hover:underline cursor-pointer">
             Forgot Password?
           </p>
