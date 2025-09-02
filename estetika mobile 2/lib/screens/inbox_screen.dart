@@ -5,6 +5,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
 
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
@@ -14,7 +15,7 @@ class InboxScreen extends StatefulWidget {
 }
 
 class _InboxScreenState extends State<InboxScreen> {
-  late IO.Socket _socket;
+  IO.Socket? _socket;
   final List<MessageItem> _messages = [];
   final TextEditingController _searchController = TextEditingController();
   String? _userId;
@@ -22,9 +23,18 @@ class _InboxScreenState extends State<InboxScreen> {
   List<Map<String, dynamic>> _users = [];
   List<Map<String, dynamic>> _filteredUsers = [];
 
+  Function(dynamic)? _onReceivePrivateMessage;
+  Function(dynamic)? _onReceivePrivateFile;
+
+  // Add StreamController
+  StreamController<List<MessageItem>>? _messageStreamController;
+  Stream<List<MessageItem>>? _messageStream;
+
   @override
   void initState() {
     super.initState();
+    _messageStreamController = StreamController<List<MessageItem>>.broadcast();
+    _messageStream = _messageStreamController!.stream;
     _initSocket();
     _fetchUsers();
   }
@@ -41,42 +51,77 @@ class _InboxScreenState extends State<InboxScreen> {
     print('Initializing socket for user: $_userId');
 
     _socket = IO.io(
-      'https://capstone-thl5.onrender.com',
+      'https://capstone-moss.onrender.com',
       IO.OptionBuilder()
           .setTransports(['websocket']).setAuth({'token': _userToken}).build(),
     );
 
-    _socket.on('connect', (_) {
-      print('Socket connected: ${_socket.id}');
+    _socket!.on('connect', (_) {
+      print('Socket connected: ${_socket!.id}');
       if (_userId != null) {
-        _socket.emit('online', _userId);
+        _socket!.emit('online', _userId);
       }
     });
 
-    _socket.on('connect_error', (error) {
+    _socket!.on('connect_error', (error) {
       print('Socket connection error: $error');
     });
 
-    _socket.on('receive_private_message', (data) {
+    _onReceivePrivateMessage = (data) {
       print('Received message: $data');
-      setState(() {
-        _messages.add(
-          MessageItem(
-            sender: data['sender'],
-            recipient: data['recipient'] ?? _userId,
-            content: data['content'],
-            timestamp: data['timestamp'] != null
-                ? DateTime.parse(data['timestamp'])
-                : DateTime.now(),
-            isFromUser: data['sender'] == _userId,
-            profileImage: null,
-            isRead: false,
-          ),
-        );
-      });
-    });
+      if (!mounted) return;
 
-    _socket.connect();
+      final newMessage = MessageItem(
+        sender: data['sender']?.toString() ?? '',
+        recipient: data['recipient']?.toString() ?? '',
+        content: data['content']?.toString() ?? '',
+        timestamp: data['timestamp'] != null
+            ? DateTime.tryParse(data['timestamp'].toString()) ?? DateTime.now()
+            : DateTime.now(),
+        isFromUser: data['sender'] == _userId,
+        isRead: data['isRead'] ?? false,
+        fileLink: data['fileLink'],
+        fileType: data['fileType'],
+        fileName: data['fileName'],
+      );
+
+      setState(() {
+        _messages.add(newMessage);
+      });
+
+      // Notify stream listeners
+      _messageStreamController?.add(List.from(_messages));
+    };
+
+    _onReceivePrivateFile = (data) {
+      if (!mounted) return;
+
+      final newMessage = MessageItem(
+        sender: data['sender']?.toString() ?? '',
+        recipient: data['recipient']?.toString() ?? '',
+        content: data['content']?.toString() ?? '',
+        timestamp: data['timestamp'] != null
+            ? DateTime.tryParse(data['timestamp'].toString()) ?? DateTime.now()
+            : DateTime.now(),
+        isFromUser: data['sender'] == _userId,
+        isRead: data['isRead'] ?? false,
+        fileLink: data['fileLink'],
+        fileType: data['fileType'],
+        fileName: data['fileName'],
+      );
+
+      setState(() {
+        _messages.add(newMessage);
+      });
+
+      // Notify stream listeners
+      _messageStreamController?.add(List.from(_messages));
+    };
+
+    _socket!.on('receive_private_message', _onReceivePrivateMessage!);
+    _socket!.on('receive_private_file', _onReceivePrivateFile!);
+
+    _socket!.connect();
   }
 
   Future<void> _fetchUsers() async {
@@ -89,7 +134,7 @@ class _InboxScreenState extends State<InboxScreen> {
     _userToken = token;
 
     final response = await http.get(
-      Uri.parse('https://capstone-thl5.onrender.com/api/user?exclude=$_userId'),
+      Uri.parse('https://capstone-moss.onrender.com/api/user?exclude=$_userId'),
       headers: {'Authorization': 'Bearer $token'},
     );
     if (response.statusCode == 200) {
@@ -105,32 +150,75 @@ class _InboxScreenState extends State<InboxScreen> {
     if (_userId == null || _userToken == null) return;
     try {
       final otherUserId = user['id'] ?? user['_id'];
+      if (otherUserId == null) {
+        print('Error: otherUserId is null');
+        return;
+      }
       final response = await http.get(
         Uri.parse(
-            'https://capstone-thl5.onrender.com/api/message?user1=$_userId&user2=$otherUserId'),
+            'https://capstone-moss.onrender.com/api/message?user1=$_userId&user2=$otherUserId'),
         headers: {
           'Authorization': 'Bearer $_userToken',
         },
       );
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body);
+        print(data);
         final existingMessages = _messages
             .where((m) =>
                 !((m.sender == otherUserId && m.recipient == _userId) ||
                     (m.sender == _userId && m.recipient == otherUserId)))
             .toList();
 
-        final newMessages = data
-            .map<MessageItem>((msg) => MessageItem(
-                  sender: msg['sender'],
-                  recipient: msg['recipient'],
-                  content: msg['content'],
-                  timestamp: DateTime.parse(msg['timestamp']),
-                  isFromUser: msg['sender'] == _userId,
-                  profileImage: null,
-                  isRead: true,
-                ))
-            .toList();
+        final newMessages = data.map<MessageItem>((msg) {
+          // Handle file messages
+          String? fileLink;
+          String? fileType;
+          String? fileName;
+          String content = msg['content']?.toString() ?? '';
+
+          if (msg['file'] != null) {
+            fileLink = msg['file']['url']?.toString();
+            fileType = msg['file']['type']?.toString();
+            fileName = msg['file']['name']?.toString();
+            // For preview, set content if not present
+            if (content.isEmpty && fileLink != null && fileType != null) {
+              if (fileType.toLowerCase().contains('image')) {
+                content = '[Image] $fileLink';
+              } else {
+                content = '[File] $fileLink';
+              }
+            }
+          } else {
+            // Fallback to flat fields if present
+            fileLink = msg['fileLink'];
+            fileType = msg['fileType'];
+            fileName = msg['fileName'];
+            if (content.isEmpty && fileLink != null && fileType != null) {
+              if (fileType.toLowerCase().contains('image')) {
+                content = '[Image] $fileLink';
+              } else {
+                content = '[File] $fileLink';
+              }
+            }
+          }
+
+          return MessageItem(
+            sender: msg['sender']?.toString() ?? '',
+            recipient: msg['recipient']?.toString() ?? '',
+            content: content,
+            timestamp: msg['timestamp'] != null
+                ? DateTime.tryParse(msg['timestamp'].toString()) ??
+                    DateTime.now()
+                : DateTime.now(),
+            isFromUser: msg['sender'] == _userId,
+            profileImage: null,
+            isRead: msg['isRead'] ?? true,
+            fileLink: fileLink,
+            fileType: fileType,
+            fileName: fileName,
+          );
+        }).toList();
 
         setState(() {
           _messages.clear();
@@ -144,11 +232,14 @@ class _InboxScreenState extends State<InboxScreen> {
   }
 
   List<MessageItem> _getConversationMessages(String otherUserId) {
-    final conv = _messages
-        .where((m) =>
-            (m.sender == otherUserId && m.recipient == _userId) ||
-            (m.sender == _userId && m.recipient == otherUserId))
-        .toList();
+    final conv = _messages.where((m) {
+      final isConversation =
+          (m.sender == otherUserId && m.recipient == _userId) ||
+              (m.sender == _userId && m.recipient == otherUserId);
+
+      return isConversation;
+    }).toList();
+
     conv.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     return conv;
   }
@@ -222,9 +313,14 @@ class _InboxScreenState extends State<InboxScreen> {
               MaterialPageRoute(
                 builder: (context) => ChatDetailScreen(
                   title: displayName,
-                  profileImage: null,
+                  profileImage: user['profileImage'] != null &&
+                          user['profileImage'].toString().isNotEmpty
+                      ? user['profileImage']
+                      : null,
                   messages: _getConversationMessages(otherUserId),
                   isOnline: user['socketId'] != null,
+                  recipientId: otherUserId,
+                  messageStream: _messageStream, // Add this line
                   onSendMessage: (text) {
                     print('onSendMessage: $text');
                     if (otherUserId == null || otherUserId.toString().isEmpty) {
@@ -241,15 +337,62 @@ class _InboxScreenState extends State<InboxScreen> {
                       isRead: true,
                     );
 
-                    setState(() {
-                      _messages.add(newMessage);
-                    });
+                    if (mounted) {
+                      setState(() {
+                        _messages.add(newMessage);
+                      });
+                      // Notify stream listeners
+                      _messageStreamController?.add(List.from(_messages));
+                    }
 
-                    _socket.emit('send_private_message', {
-                      'sender': _userId,
-                      'recipientId': otherUserId,
-                      'content': text,
-                    });
+                    if (_socket != null && _socket!.connected) {
+                      _socket!.emit('send_private_message', {
+                        'sender': _userId,
+                        'recipientId': otherUserId,
+                        'content': text,
+                      });
+                    }
+                  },
+                  onSendFile: ({
+                    required String fileLink,
+                    required String fileType,
+                    required String fileName,
+                  }) {
+                    if (otherUserId == null || otherUserId.toString().isEmpty) {
+                      print('Error: recipientId is null or empty');
+                      return;
+                    }
+
+                    final newMessage = MessageItem(
+                      sender: _userId ?? "You",
+                      recipient: otherUserId,
+                      content: '',
+                      timestamp: DateTime.now(),
+                      isFromUser: true,
+                      isRead: true,
+                      fileLink: fileLink,
+                      fileType: fileType,
+                      fileName: fileName,
+                    );
+
+                    if (mounted) {
+                      setState(() {
+                        _messages.add(newMessage);
+                      });
+                      // Notify stream listeners
+                      _messageStreamController?.add(List.from(_messages));
+                    }
+
+                    if (_socket != null && _socket!.connected) {
+                      _socket!.emit('send_private_file', {
+                        'sender': _userId,
+                        'recipientId': otherUserId,
+                        'fileLink': fileLink,
+                        'fileType': fileType,
+                        'fileName': fileName,
+                        'timestamp': DateTime.now().toIso8601String(),
+                      });
+                    }
                   },
                 ),
               ),
@@ -275,11 +418,19 @@ class _InboxScreenState extends State<InboxScreen> {
                     CircleAvatar(
                       radius: 24,
                       backgroundColor: Colors.green[700],
-                      child: Text(
-                        displayName[0].toUpperCase(),
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
+                      backgroundImage: user['profileImage'] != null &&
+                              user['profileImage'].toString().isNotEmpty
+                          ? NetworkImage(user['profileImage'])
+                          : null,
+                      child: (user['profileImage'] == null ||
+                              user['profileImage'].toString().isEmpty)
+                          ? Text(
+                              displayName[0].toUpperCase(),
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            )
+                          : null,
                     ),
                     if (latestMessage != null && !latestMessage.isRead)
                       Positioned(
@@ -365,7 +516,26 @@ class _InboxScreenState extends State<InboxScreen> {
 
   @override
   void dispose() {
-    _socket.disconnect();
+    _messageStreamController?.close(); // Close the stream controller
+
+    // Clean up socket listeners and disconnect
+    if (_socket != null) {
+      if (_onReceivePrivateMessage != null) {
+        _socket!.off('receive_private_message', _onReceivePrivateMessage!);
+      }
+      if (_onReceivePrivateFile != null) {
+        _socket!.off('receive_private_file', _onReceivePrivateFile!);
+      }
+      _socket!.disconnect();
+      _socket!.dispose();
+      _socket = null;
+    }
+
+    // Clear the callback references
+    _onReceivePrivateMessage = null;
+    _onReceivePrivateFile = null;
+
+    _searchController.dispose();
     super.dispose();
   }
 }
@@ -378,6 +548,9 @@ class MessageItem {
   final bool isFromUser;
   final String? profileImage;
   final bool isRead;
+  final String? fileLink;
+  final String? fileType;
+  final String? fileName;
 
   MessageItem({
     required this.sender,
@@ -386,6 +559,9 @@ class MessageItem {
     required this.timestamp,
     required this.isFromUser,
     this.profileImage,
-    required this.isRead,
+    this.isRead = true,
+    this.fileLink,
+    this.fileType,
+    this.fileName,
   });
 }

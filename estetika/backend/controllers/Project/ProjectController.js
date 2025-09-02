@@ -254,13 +254,17 @@ const project_put = catchAsync(async (req, res, next) => {
   });
 
   if (!updatedProject) return next(new AppError("Project not found", 404));
-
   if (status === "completed" && project.status !== "completed") {
     await Promise.all(
       project.materials.map(async (materialEntry) => {
         const material = await Material.findById(materialEntry.material);
         if (material) {
-          material.sales += materialEntry.quantity;
+          // Ensure sales is a valid number, default to 0 if undefined/null/NaN
+          const currentSales =
+            isNaN(material.sales) || material.sales == null
+              ? 0
+              : Number(material.sales);
+          material.sales = Math.max(0, currentSales + materialEntry.quantity);
           await material.save();
         }
       })
@@ -272,7 +276,12 @@ const project_put = catchAsync(async (req, res, next) => {
       project.materials.map(async (materialEntry) => {
         const material = await Material.findById(materialEntry.material);
         if (material) {
-          material.sales -= materialEntry.quantity;
+          // Ensure sales is a valid number, default to 0 if undefined/null/NaN
+          const currentSales =
+            isNaN(material.sales) || material.sales == null
+              ? 0
+              : Number(material.sales);
+          material.sales = Math.max(0, currentSales - materialEntry.quantity);
           await material.save();
         }
       })
@@ -289,11 +298,13 @@ const project_delete = catchAsync(async (req, res, next) => {
   const { id } = req.query;
 
   if (!id) return next(new AppError("Project identifier not found", 400));
-
   const project = await Project.findById(id);
   if (!project) return next(new AppError("Project not found", 404));
 
-  if (project.projectCreator.toString() !== req.id && req.role !== "admin") {
+  if (
+    project.projectCreator.toString() !== req.id &&
+    !["admin", "storage_admin"].includes(req.role)
+  ) {
     return next(
       new AppError("You are not authorized to delete this project", 403)
     );
@@ -421,7 +432,6 @@ const project_add_material = catchAsync(async (req, res, next) => {
       newOptions.every((opt) => itemOptions.includes(opt))
     );
   });
-
   if (existingMaterialIndex > -1) {
     // Update quantity and total price if material with same options already exists
     project.materials[existingMaterialIndex].quantity = parseInt(quantity);
@@ -487,7 +497,6 @@ const project_remove_material = catchAsync(async (req, res, next) => {
     // If no options provided, just match material ID
     return true;
   });
-
   if (materialIndex === -1) {
     return next(new AppError("Material not found in project", 404));
   }
@@ -556,8 +565,7 @@ const project_update_material = catchAsync(async (req, res, next) => {
     return next(
       new AppError("Material with specified options not found in project", 404)
     );
-  }
-  // Calculate new total price
+  } // Calculate new total price
   const existingOptions = project.materials[materialIndex].option;
   let totalPrice = material.price * parseInt(quantity);
 

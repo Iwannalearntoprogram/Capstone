@@ -82,7 +82,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       final projectId = _projectData['_id'];
       final response = await http.get(
         Uri.parse(
-            'https://capstone-thl5.onrender.com/api/phase?projectId=$projectId'),
+            'https://capstone-moss.onrender.com/api/phase?projectId=$projectId'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
@@ -128,7 +128,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         final phaseId =
             id is Map && id.containsKey('_id') ? id['_id'] : id.toString();
         final response = await http.get(
-          Uri.parse('https://capstone-thl5.onrender.com/api/phase?id=$phaseId'),
+          Uri.parse('https://capstone-moss.onrender.com/api/phase?id=$phaseId'),
           headers: {
             'Content-Type': 'application/json',
             if (token != null) 'Authorization': 'Bearer $token',
@@ -179,7 +179,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-            'https://capstone-thl5.onrender.com/api/project/update?projectId=$projectId'),
+            'https://capstone-moss.onrender.com/api/project/update?projectId=$projectId'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
@@ -326,6 +326,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           // Design Recommendation Section (ADD THIS)
           if (_projectData['designRecommendation'] != null)
             _buildRecommendationSection(),
+
+          if (_projectData['materials'] != null &&
+              _projectData['materials'].isNotEmpty)
+            _buildMaterialsSection(),
 
           // Comments Section
           _buildCommentsSection(),
@@ -546,18 +550,25 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: Colors.grey[300],
-                // Use a placeholder if no image
-                child: Text(
-                  designer['fullName'] != null &&
-                          designer['fullName'].isNotEmpty
-                      ? designer['fullName'][0]
-                      : '',
-                  style: const TextStyle(fontSize: 24, color: Colors.black),
-                ),
-              ),
+              designer['profileImage'] != null &&
+                      designer['profileImage'].toString().isNotEmpty
+                  ? CircleAvatar(
+                      radius: 30,
+                      backgroundImage: NetworkImage(designer['profileImage']),
+                      backgroundColor: Colors.grey[300],
+                    )
+                  : CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.grey[300],
+                      child: Text(
+                        designer['fullName'] != null &&
+                                designer['fullName'].isNotEmpty
+                            ? designer['fullName'][0]
+                            : '',
+                        style:
+                            const TextStyle(fontSize: 24, color: Colors.black),
+                      ),
+                    ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -911,7 +922,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  imageLink,
+                  getDirectImageLink(imageLink),
                   fit: BoxFit.cover,
                   width: double.infinity,
                   errorBuilder: (context, error, stackTrace) => const Icon(
@@ -1094,7 +1105,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    recommendation['imageLink'],
+                    getDirectImageLink(recommendation['imageLink']),
                     height: 180,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -1149,6 +1160,213 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
+  Widget _buildMaterialsSection() {
+    final List<dynamic> materials = _projectData['materials'] ?? [];
+
+    if (materials.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Project Materials'),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: Column(
+            children: [
+              ...materials.map((materialItem) {
+                final material = materialItem['material'];
+                final options = materialItem['option'] ?? [];
+                final quantity = materialItem['quantity'] ?? 1;
+                final totalPrice = materialItem['totalPrice'] ?? 0;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Material Name
+                      Text(
+                        material['name'] ?? 'Unknown Material',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF203B32),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Company
+                      if (material['company'] != null)
+                        Text(
+                          'Company: ${material['company']}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+
+                      const SizedBox(height: 12),
+
+                      // Options (Type, Color, Size)
+                      if (options.isNotEmpty) ...[
+                        const Text(
+                          'Options:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Color(0xFF203B32),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ...options
+                            .map((option) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue.withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          option['type']
+                                                  ?.toString()
+                                                  .toUpperCase() ??
+                                              'OPTION',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          option['option'] ?? 'N/A',
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                      Text(
+                                        '+₱${option['addToPrice']?.toStringAsFixed(2) ?? '0.00'}',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ))
+                            .toList(),
+                        const SizedBox(height: 12),
+                      ],
+
+                      // Quantity and Total Price
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF203B32).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.inventory_2_outlined,
+                                  size: 16,
+                                  color: Color(0xFF203B32),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Quantity: $quantity',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF203B32),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              '₱${totalPrice.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF203B32),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+
+              // Total Materials Cost
+              const Divider(thickness: 1),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF203B32),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Total Materials Cost:',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '₱${_calculateTotalMaterialsCost(materials).toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+// Add this helper method
+  double _calculateTotalMaterialsCost(List<dynamic> materials) {
+    return materials.fold(0.0, (sum, item) => sum + (item['totalPrice'] ?? 0));
+  }
+
   Color _getStatusColor(String status) {
     switch (status) {
       case 'pending':
@@ -1162,5 +1380,15 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       default:
         return Colors.blue;
     }
+  }
+
+  String getDirectImageLink(String url) {
+    final regExp = RegExp(r'drive\.google\.com\/file\/d\/([^\/]+)');
+    final match = regExp.firstMatch(url);
+    if (match != null && match.groupCount >= 1) {
+      final id = match.group(1);
+      return 'https://drive.google.com/uc?export=view&id=$id';
+    }
+    return url;
   }
 }

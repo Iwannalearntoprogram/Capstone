@@ -184,7 +184,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       };
       print("Recommendation request body: $requestBody");
       final uri = Uri.parse(
-              'https://capstone-thl5.onrender.com/api/project/recommendation/match')
+              'https://capstone-moss.onrender.com/api/project/recommendation/match')
           .replace(queryParameters: {
         'roomType': _roomType ?? '',
         'designPreferences': _descriptionController.text,
@@ -250,7 +250,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Image.network(
-                              _recommendation!['imageLink'],
+                              getDirectImageLink(_recommendation!['imageLink']),
                               height: 180,
                               width: double.infinity,
                               fit: BoxFit.cover,
@@ -1013,7 +1013,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://capstone-thl5.onrender.com/api/project'),
+        Uri.parse('https://capstone-moss.onrender.com/api/project'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -1082,5 +1082,15 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         ),
       );
     }
+  }
+
+  String getDirectImageLink(String url) {
+    final regExp = RegExp(r'drive\.google\.com\/file\/d\/([^\/]+)');
+    final match = regExp.firstMatch(url);
+    if (match != null && match.groupCount >= 1) {
+      final id = match.group(1);
+      return 'https://drive.google.com/uc?export=view&id=$id';
+    }
+    return url; // fallback to original
   }
 }

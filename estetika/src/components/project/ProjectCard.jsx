@@ -5,7 +5,6 @@ import {
   FaRegCalendarAlt,
   FaTrash,
   FaMapMarkerAlt,
-  FaDollarSign,
   FaRulerCombined,
   FaUserPlus,
 } from "react-icons/fa";
@@ -18,26 +17,20 @@ const ProjectCard = ({ project, onView, onDelete }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [userId, setUserId] = useState(null);
   const [editProjectForm, setEditProjectForm] = useState({
-    title: project.title || "",
-    description: project.description || "",
-    budget: project.budget || "",
-    startDate: project.startDate ? project.startDate.split("T")[0] : "",
-    endDate: project.endDate ? project.endDate.split("T")[0] : "",
-    projectLocation: project.projectLocation || "",
-    projectSize: project.projectSize || "",
-    roomType: project.roomType || "",
     status: project.status || "",
-    members: project.members || [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
-  // Get user role from localStorage
+  // Get user role and ID from localStorage
   useEffect(() => {
     const role = localStorage.getItem("role");
+    const id = localStorage.getItem("id");
     setUserRole(role);
+    setUserId(id);
   }, []);
 
   let formattedEndDate = "";
@@ -63,7 +56,7 @@ const ProjectCard = ({ project, onView, onDelete }) => {
   const formatBudget = (budget) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "PHP",
       minimumFractionDigits: 0,
     }).format(budget);
   };
@@ -96,25 +89,10 @@ const ProjectCard = ({ project, onView, onDelete }) => {
     setIsSubmitting(true);
     try {
       const token = Cookies.get("token");
+
+      // Only send status update for designers
       const updatedProject = {
-        title: editProjectForm.title,
-        description: editProjectForm.description,
-        budget: Number(editProjectForm.budget),
-        startDate: new Date(editProjectForm.startDate).toISOString(),
-        endDate: new Date(editProjectForm.endDate).toISOString(),
-        projectLocation: editProjectForm.projectLocation,
-        projectSize: editProjectForm.projectSize
-          ? Number(editProjectForm.projectSize)
-          : null,
-        roomType: editProjectForm.roomType,
         status: editProjectForm.status,
-        members: Array.isArray(editProjectForm.members)
-          ? editProjectForm.members.map((member) =>
-              typeof member === "object" && member !== null && member._id
-                ? member._id
-                : member
-            )
-          : [],
       };
 
       await axios.put(
@@ -126,46 +104,56 @@ const ProjectCard = ({ project, onView, onDelete }) => {
           },
         }
       );
+
       setShowEditModal(false);
-      alert("Project updated successfully!");
+      alert("Project status updated successfully!");
       window.location.reload();
     } catch (err) {
       console.error(err);
-      alert("Failed to update project.");
+      alert("Failed to update project status.");
     }
     setIsSubmitting(false);
   };
 
   const isAdmin = userRole === "admin";
+  const isDesigner = userRole === "designer";
 
-  // Check if admin can add designer (not pending or cancelled)
+  const isProjectMember = project.members?.includes(userId);
+
   const canAddDesigner =
     isAdmin && project.status !== "pending" && project.status !== "cancelled";
+
+  const canEditStatus = isAdmin;
 
   const handleAddDesigner = () => {
     setShowDetailsModal(true);
   };
 
-  const addMemberField = () => {
-    setEditProjectForm((prev) => ({
-      ...prev,
-      members: [...editProjectForm.members, ""],
-    }));
+  // Get available status options for designers
+  const getStatusOptions = () => {
+    return [
+      { value: "pending", label: "Pending" },
+      { value: "ongoing", label: "Ongoing" },
+      { value: "completed", label: "Completed" },
+      { value: "cancelled", label: "Cancelled" },
+    ];
   };
+
+  const statusOptions = getStatusOptions();
 
   return (
     <>
-      {/* Edit Project Modal - Only show if NOT admin */}
-      {showEditModal && isAdmin && (
+      {/* Edit Project Modal - Only show for designers who can edit status */}
+      {showEditModal && canEditStatus && (
         <div className="fixed inset-0 bg-black/30 h-full flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-lg relative max-h-[80vh] overflow-y-auto">
+          <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
             <button
               className="absolute top-2 right-4 text-gray-500 text-2xl cursor-pointer"
               onClick={() => setShowEditModal(false)}
             >
               &times;
             </button>
-            <h2 className="text-xl font-bold mb-4">Edit Project Status</h2>
+            <h2 className="text-xl font-bold mb-4">Update Project Status</h2>
             <form onSubmit={handleEditProject} className="flex flex-col gap-4">
               <label className="">
                 Status
@@ -175,27 +163,23 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                   value={editProjectForm.status}
                   onChange={handleEditProjectChange}
                   required
-                  {...(userRole === "admin" && project.status !== "pending"
-                    ? {}
-                    : { readOnly: true, disabled: true })}
                 >
                   <option value="">Select Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="ongoing">Ongoing</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
+                  {statusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </label>
 
-              {userRole === "admin" && project.status !== "pending" ? (
-                <button
-                  type="submit"
-                  className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition cursor-pointer"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Updating..." : "Update Project"}
-                </button>
-              ) : null}
+              <button
+                type="submit"
+                className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition cursor-pointer"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Updating..." : "Update Status"}
+              </button>
             </form>
           </div>
         </div>
@@ -214,12 +198,12 @@ const ProjectCard = ({ project, onView, onDelete }) => {
           <div className="flex-1">
             <h3 className="text-lg font-bold flex items-center gap-2 mb-1">
               {project.title}
-              {/* Only show edit icon if NOT admin */}
-              {isAdmin && project.status !== "pending" && (
+              {/* Only show edit icon for designers who can edit status */}
+              {canEditStatus && (
                 <FiEdit2
                   className="text-gray-400 text-sm cursor-pointer hover:text-gray-600"
                   onClick={() => setShowEditModal(true)}
-                  title="Edit Project"
+                  title="Update Status"
                 />
               )}
             </h3>
@@ -235,6 +219,12 @@ const ProjectCard = ({ project, onView, onDelete }) => {
               {project.roomType && (
                 <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
                   {project.roomType}
+                </span>
+              )}
+              {/* Show member badge for designers */}
+              {isDesigner && isProjectMember && (
+                <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                  Member
                 </span>
               )}
             </div>
@@ -277,7 +267,6 @@ const ProjectCard = ({ project, onView, onDelete }) => {
           <div className="space-y-2 text-sm">
             {project.budget && (
               <div className="flex items-center gap-2 text-green-600">
-                <FaDollarSign size={12} />
                 <span className="font-medium">
                   {formatBudget(project.budget)}
                 </span>

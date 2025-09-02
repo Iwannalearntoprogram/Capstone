@@ -5,6 +5,9 @@ const sendEmail = require("../../utils/sendEmail");
 const catchAsync = require("../../utils/catchAsync");
 const AppError = require("../../utils/appError");
 const InvalidToken = require("../../models/utils/InvalidToken");
+const { OAuth2Client } = require("google-auth-library");
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ✅ Register route
 const register = catchAsync(async (req, res, next) => {
@@ -24,7 +27,7 @@ const register = catchAsync(async (req, res, next) => {
 
   // Check if email already exists
   const userExists = await User.findOne({ email });
-  if (userExists) next(new AppError("Email already in use", 400));
+  if (userExists) return next(new AppError("Email already in use", 400));
 
   // Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -53,7 +56,7 @@ const verifyEmail = catchAsync(async (req, res, next) => {
   const { email } = req.body;
 
   const user = await User.findOne({ email });
-  if (!user) next(new AppError("User not found", 404));
+  if (!user) return next(new AppError("User not found", 404));
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
@@ -71,11 +74,11 @@ const verifyOTP = catchAsync(async (req, res, next) => {
   const { email, otp } = req.body;
 
   const user = await User.findOne({ email });
-  if (!user) next(new AppError("User not found", 404));
+  if (!user) return next(new AppError("User not found", 404));
 
   const now = new Date();
   if (user.otp !== otp || user.otpExpiresAt < now) {
-    next(new AppError("Invalid or expired OTP", 400));
+    return next(new AppError("Invalid or expired OTP", 400));
   }
 
   user.emailVerified = true;
@@ -92,11 +95,11 @@ const login = catchAsync(async (req, res, next) => {
 
   // Find user by email
   const user = await User.findOne({ email });
-  if (!user) next(new AppError("User not found", 404));
+  if (!user) return next(new AppError("User not found", 404));
 
   // Check if password matches
   const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) next(new AppError("Invalid credentials", 400));
+  if (!isMatch) return next(new AppError("Invalid credentials", 400));
 
   // Create JWT token
   const token = jwt.sign(
@@ -114,6 +117,7 @@ const login = catchAsync(async (req, res, next) => {
       phoneNumber: user.phoneNumber,
       role: user.role,
       profileImage: user.profileImage,
+      isArchived: user.isArchived,
     },
     token,
   });
@@ -122,6 +126,9 @@ const login = catchAsync(async (req, res, next) => {
 // Logout route
 const logout = catchAsync(async (req, res, next) => {
   const authHeader = req.header("Authorization");
+  if (!authHeader) {
+    return next(new AppError("Authorization header missing", 401));
+  }
   const token = authHeader.split(" ")[1];
 
   const invalidToken = new InvalidToken({
@@ -135,10 +142,111 @@ const logout = catchAsync(async (req, res, next) => {
     .json({ message: "Logged Out Successfully", invalidToken });
 });
 
+// ✅ Google OAuth Route
+const googleAuth = catchAsync(async (req, res, next) => {
+  console.log("🚀 Google auth request received");
+  console.log("📡 Request body:", req.body);
+
+  const { access_token } = req.body;
+
+  if (!access_token) {
+    console.log("❌ No access token provided");
+    return next(new AppError("Access token is required", 400));
+  }
+
+  try {
+    console.log("🔍 Verifying access token with Google...");
+    // Verify the access token with Google
+    const response = await fetch(
+      `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${access_token}`
+    );
+    const googleUser = await response.json();
+
+    console.log("📱 Google user data:", googleUser);
+
+    if (!googleUser.email) {
+      console.log("❌ Failed to get email from Google response");
+      return next(
+        new AppError("Failed to get user information from Google", 400)
+      );
+    }
+
+    console.log("🔍 Looking for existing user with Google ID:", googleUser.id);
+    let user = await User.findOne({ googleId: googleUser.id });
+
+    if (!user) {
+      console.log(
+        "🔍 No user found with Google ID, checking email:",
+        googleUser.email
+      );
+      // Check if user exists with this email
+      user = await User.findOne({ email: googleUser.email });
+
+      if (user) {
+        console.log(
+          "✅ Found existing user with email, linking Google account"
+        );
+        // Link existing account with Google
+        user.googleId = googleUser.id;
+        user.avatar = googleUser.picture;
+        await user.save();
+      } else {
+        console.log("🆕 Creating new user from Google data");
+        // Create new user
+        user = new User({
+          googleId: googleUser.id,
+          firstName: googleUser.given_name || googleUser.name.split(" ")[0],
+          lastName:
+            googleUser.family_name ||
+            googleUser.name.split(" ").slice(1).join(" "),
+          username: googleUser.email.split("@")[0],
+          email: googleUser.email,
+          avatar: googleUser.picture,
+          emailVerified: true,
+          role: "client",
+        });
+
+        await user.save();
+        console.log("✅ New user created successfully");
+      }
+    } else {
+      console.log("✅ Found existing user with Google ID");
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    console.log("✅ JWT token generated, sending response");
+
+    return res.status(200).json({
+      message: "Google authentication successful",
+      token,
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        emailVerified: user.emailVerified,
+      },
+    });
+  } catch (error) {
+    console.log("💥 Google authentication error:", error);
+    return next(new AppError("Google authentication failed", 400));
+  }
+});
+
 module.exports = {
   register,
   login,
   verifyEmail,
   verifyOTP,
   logout,
+  googleAuth,
 };

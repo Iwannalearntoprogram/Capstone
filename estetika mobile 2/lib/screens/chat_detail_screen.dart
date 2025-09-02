@@ -1,20 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:estetika_ui/screens/inbox_screen.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:url_launcher/url_launcher.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final String title;
   final String? profileImage;
   final List<MessageItem> messages;
-  final bool isOnline; // <-- add this
+  final bool isOnline;
+  final String recipientId;
   final Function(String) onSendMessage;
+  final Function({
+    required String fileLink,
+    required String fileType,
+    required String fileName,
+  }) onSendFile;
+  final Stream<List<MessageItem>>? messageStream; // Add this
 
   const ChatDetailScreen({
     super.key,
     required this.title,
     this.profileImage,
     required this.messages,
-    required this.isOnline, // <-- add this
+    required this.isOnline,
+    required this.recipientId,
     required this.onSendMessage,
+    required this.onSendFile,
+    this.messageStream, // Add this
   });
 
   @override
@@ -26,12 +42,48 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isTyping = false;
 
-  late List<MessageItem> _localMessages; // <-- Add this
+  late List<MessageItem> _localMessages;
 
   @override
   void initState() {
     super.initState();
-    _localMessages = List.from(widget.messages); // <-- Initialize local copy
+    _localMessages = List.from(widget.messages);
+
+    // Listen to message stream for real-time updates
+    if (widget.messageStream != null) {
+      widget.messageStream!.listen((allMessages) {
+        if (!mounted) return;
+
+        // Get current user ID to properly filter messages
+        _getCurrentUserId().then((currentUserId) {
+          if (currentUserId == null) return;
+
+          // Filter messages for this conversation - FIX THE LOGIC HERE
+          final conversationMessages = allMessages
+              .where((m) =>
+                  (m.sender == widget.recipientId &&
+                      m.recipient == currentUserId) ||
+                  (m.sender == currentUserId &&
+                      m.recipient == widget.recipientId))
+              .toList();
+
+          setState(() {
+            _localMessages = conversationMessages;
+          });
+
+          // Auto-scroll to bottom when new message arrives
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (_scrollController.hasClients) {
+              _scrollController.animateTo(
+                0.0,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+            }
+          });
+        });
+      });
+    }
   }
 
   @override
@@ -45,12 +97,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (_messageController.text.trim().isNotEmpty) {
       widget.onSendMessage(_messageController.text.trim());
 
-      // Add the new message locally for instant UI update
       setState(() {
         _localMessages.add(
           MessageItem(
-            sender: "You", // or pass the actual userId if available
-            recipient: "", // you can fill this if needed
+            sender: "You",
+            recipient: widget.recipientId, // <-- Use correct recipient
             content: _messageController.text.trim(),
             timestamp: DateTime.now(),
             isFromUser: true,
@@ -62,7 +113,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
       _messageController.clear();
 
-      // Scroll to bottom after sending message
       Future.delayed(const Duration(milliseconds: 100), () {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
@@ -117,7 +167,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       color: Colors.blue,
                       onTap: () {
                         Navigator.pop(context);
-                        // Implement photo gallery access
+                        _pickAndSendImage();
                       },
                     ),
                     _buildAttachmentOption(
@@ -127,15 +177,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       onTap: () {
                         Navigator.pop(context);
                         // Implement camera access
-                      },
-                    ),
-                    _buildAttachmentOption(
-                      icon: Icons.insert_drive_file,
-                      label: 'File',
-                      color: Colors.orange,
-                      onTap: () {
-                        Navigator.pop(context);
-                        // Implement file picker
                       },
                     ),
                   ],
@@ -191,12 +232,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         ),
         title: Row(
           children: [
-            if (widget.profileImage != null)
+            if (widget.profileImage != null && widget.profileImage!.isNotEmpty)
               CircleAvatar(
                 radius: 18,
-                backgroundImage: AssetImage(widget.profileImage!),
-              ),
-            if (widget.profileImage == null)
+                backgroundImage: NetworkImage(widget.profileImage!),
+              )
+            else
               CircleAvatar(
                 radius: 18,
                 backgroundColor: const Color(0xff203B32),
@@ -215,9 +256,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  widget.isOnline
-                      ? 'Online'
-                      : 'Offline', // <-- use the passed value
+                  widget.isOnline ? 'Online' : 'Offline',
                   style: TextStyle(
                     color: widget.isOnline ? Colors.green : Colors.grey,
                     fontSize: 12,
@@ -337,6 +376,102 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   Widget _buildMessageItem(MessageItem message) {
     final isFromUser = message.isFromUser;
 
+    Widget contentWidget;
+
+    // If fileLink and fileType are present, show image or file
+    if (message.fileLink != null && message.fileType != null) {
+      if (message.fileType!.toLowerCase().contains('image')) {
+        contentWidget = Image.network(
+          message.fileLink!,
+          width: 180,
+          height: 180,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              Icon(Icons.broken_image, size: 48, color: Colors.grey),
+        );
+      } else {
+        final fileName = message.fileName ?? message.fileLink!.split('/').last;
+        IconData icon = Icons.insert_drive_file;
+        if (fileName.toLowerCase().endsWith('.pdf')) {
+          icon = Icons.picture_as_pdf;
+        }
+        contentWidget = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                size: 20, color: isFromUser ? Colors.white : Colors.blue),
+            const SizedBox(width: 6),
+            Flexible(
+              child: InkWell(
+                onTap: () {
+                  // Use url_launcher to open the file link
+                  // launchUrl(Uri.parse(message.fileLink!));
+                },
+                child: Text(
+                  fileName,
+                  style: TextStyle(
+                    decoration: TextDecoration.underline,
+                    color: isFromUser ? Colors.white : Colors.blue,
+                    fontSize: 15,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ],
+        );
+      }
+    } else if (message.content.startsWith('[Image]')) {
+      final url = message.content.replaceFirst('[Image] ', '');
+      contentWidget = Image.network(
+        url,
+        width: 180,
+        height: 180,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            Icon(Icons.broken_image, size: 48, color: Colors.grey),
+      );
+    } else if (message.content.startsWith('[File]')) {
+      final url = message.content.replaceFirst('[File] ', '');
+      final fileName = url.split('/').last;
+      IconData icon = Icons.insert_drive_file;
+      if (fileName.toLowerCase().endsWith('.pdf')) {
+        icon = Icons.picture_as_pdf;
+      }
+      contentWidget = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 20, color: isFromUser ? Colors.white : Colors.blue),
+          const SizedBox(width: 6),
+          Flexible(
+            child: InkWell(
+              onTap: () {
+                // Use url_launcher to open the file link
+                // launchUrl(Uri.parse(url));
+              },
+              child: Text(
+                fileName,
+                style: TextStyle(
+                  decoration: TextDecoration.underline,
+                  color: isFromUser ? Colors.white : Colors.blue,
+                  fontSize: 15,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      contentWidget = Text(
+        message.content,
+        style: TextStyle(
+          color: isFromUser ? Colors.white : Colors.black,
+          fontSize: 16,
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -347,14 +482,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           if (!isFromUser) ...[
             CircleAvatar(
               radius: 16,
-              backgroundImage: message.profileImage != null
-                  ? AssetImage(message.profileImage!)
-                  : null,
-              backgroundColor:
-                  message.profileImage == null ? Colors.grey[400] : null,
-              child: message.profileImage == null
-                  ? const Icon(Icons.person, color: Colors.white, size: 16)
-                  : null,
+              backgroundColor: Colors.grey[400],
+              child: const Icon(Icons.person, color: Colors.white, size: 16),
             ),
             const SizedBox(width: 8),
           ],
@@ -368,27 +497,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         topLeft: Radius.circular(16),
                         topRight: Radius.circular(16),
                         bottomLeft: Radius.circular(16),
-                        bottomRight:
-                            Radius.circular(4), // less rounded for user
+                        bottomRight: Radius.circular(4),
                       )
                     : const BorderRadius.only(
                         topLeft: Radius.circular(16),
                         topRight: Radius.circular(16),
                         bottomRight: Radius.circular(16),
-                        bottomLeft:
-                            Radius.circular(4), // less rounded for others
+                        bottomLeft: Radius.circular(4),
                       ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    message.content,
-                    style: TextStyle(
-                      color: isFromUser ? Colors.white : Colors.black,
-                      fontSize: 16,
-                    ),
-                  ),
+                  contentWidget,
                   const SizedBox(height: 4),
                   Text(
                     _formatTimestamp(message.timestamp),
@@ -410,5 +531,69 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final hour = timestamp.hour.toString();
     final minute = timestamp.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
+  }
+
+  Future<void> _pickAndSendImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+    await _uploadAndSendFile(File(picked.path), isImage: true);
+  }
+
+  Future<void> _uploadAndSendFile(File file, {required bool isImage}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return;
+
+    final uri = Uri.parse('http://10.0.2.2:3000/api/upload/message');
+    final request = http.MultipartRequest('POST', uri)
+      ..headers['Authorization'] = 'Bearer $token'
+      ..files.add(await http.MultipartFile.fromPath('file', file.path));
+
+    final response = await request.send();
+    final responseBody = await response.stream.bytesToString();
+    print('Response status: ${response.statusCode}');
+    if (response.statusCode == 200) {
+      final data = jsonDecode(responseBody);
+      final fileLink = data['fileLink'];
+      final fileName = file.path.split('/').last;
+
+      widget.onSendFile(
+        fileLink: fileLink,
+        fileType: isImage ? 'Image' : 'File',
+        fileName: fileName,
+      );
+
+      if (!mounted) return; // <-- Add this line
+      setState(() {
+        _localMessages.add(
+          MessageItem(
+            sender: "You",
+            recipient: widget.recipientId,
+            content: '[${isImage ? "Image" : "File"}] $fileLink',
+            timestamp: DateTime.now(),
+            isFromUser: true,
+            isRead: true,
+            fileLink: fileLink,
+            fileType: isImage ? 'Image' : 'File',
+            fileName: fileName,
+          ),
+        );
+      });
+    } else {
+      if (!mounted) return; // <-- Add this line
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to upload file')),
+      );
+    }
+  }
+
+  // Add this helper method
+  Future<String?> _getCurrentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userString = prefs.getString('user');
+    if (userString == null) return null;
+    final user = jsonDecode(userString);
+    return user['_id'] ?? user['id'];
   }
 }

@@ -62,6 +62,7 @@ const user_update = catchAsync(async (req, res, next) => {
     "phoneNumber",
     "profileImage",
     "role",
+    "isArchived",
     "projectsId",
     "password",
   ];
@@ -91,6 +92,7 @@ const user_update = catchAsync(async (req, res, next) => {
       fullName: updatedUser.fullName,
       username: updatedUser.username,
       email: updatedUser.email,
+      isArchived: updatedUser.isArchived,
       phoneNumber: updatedUser.phoneNumber,
       role: updatedUser.role,
       profileImage: updatedUser.profileImage,

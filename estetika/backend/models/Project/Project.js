@@ -81,6 +81,17 @@ const projectSchema = new mongoose.Schema(
         },
       },
     ],
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: [0, "Average rating cannot be negative"],
+      max: [5, "Average rating cannot exceed 5"],
+    },
+    totalRatings: {
+      type: Number,
+      default: 0,
+      min: [0, "Total ratings cannot be negative"],
+    },
   },
   {
     timestamps: true,

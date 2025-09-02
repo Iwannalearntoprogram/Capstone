@@ -4,6 +4,7 @@ const {
   ref,
   getDownloadURL,
   uploadBytesResumable,
+  deleteObject,
 } = require("firebase/storage");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
@@ -46,9 +47,9 @@ const image_post = catchAsync(async (req, res, next) => {
     return next(new AppError("No image uploaded", 400));
   }
 
-  if (!req.file.mimetype.startsWith("image/")) {
-    return next(new AppError("File is not an image.", 400));
-  }
+  // if (!req.file.mimetype.startsWith("image/")) {
+  //   return next(new AppError("File is not an image.", 400));
+  // }
 
   initializeApp(firebaseConfig);
   const storage = getStorage();
@@ -177,26 +178,14 @@ const message_file_post = catchAsync(async (req, res, next) => {
     return next(new AppError("No file uploaded", 400));
   }
 
-  const isImage = allowedImageTypes.includes(req.file.mimetype);
-  const isDocument = allowedDocumentTypes.includes(req.file.mimetype);
-
-  if (!isImage && !isDocument) {
-    return next(
-      new AppError(
-        "File type not allowed. Only images and supported documents are allowed.",
-        400
-      )
-    );
-  }
-
   const userId = req.id;
   initializeApp(firebaseConfig);
   const storage = getStorage();
 
-  const folder = isImage ? "message-images" : "message-documents";
+  // Always upload to "message-files" folder regardless of type
   const storageRef = ref(
     storage,
-    `${folder}/${userId}/${req.file.originalname}`
+    `message-files/${userId}/${req.file.originalname}`
   );
 
   const metadata = {
@@ -382,6 +371,48 @@ const design_image_post = catchAsync(async (req, res, next) => {
   });
 });
 
+const carousel_image_post = catchAsync(async (req, res, next) => {
+  if (!req.file) {
+    return next(new AppError("No image uploaded", 400));
+  }
+
+  if (!req.file.mimetype.startsWith("image/")) {
+    return next(new AppError("File is not an image.", 400));
+  }
+
+  const userId = req.id;
+
+  initializeApp(firebaseConfig);
+  const storage = getStorage();
+
+  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+  const storageRef = ref(
+    storage,
+    `mobile-carousel/${userId}/${uniqueSuffix}-${req.file.originalname}`
+  );
+
+  const metadata = {
+    contentType: req.file.mimetype,
+  };
+
+  const snapshot = await uploadBytesResumable(
+    storageRef,
+    req.file.buffer,
+    metadata
+  );
+
+  const downloadURL = await getDownloadURL(snapshot.ref);
+
+  if (!downloadURL) {
+    return next(new AppError("Failed to upload image", 500));
+  }
+
+  return res.status(200).json({
+    message: "Carousel Image Successfully Uploaded!",
+    imageLink: downloadURL,
+  });
+});
+
 // In fetch_csv, use dynamic import if fetch is not defined
 const fetch_csv = catchAsync(async (req, res) => {
   const { url } = req.query;
@@ -393,6 +424,79 @@ const fetch_csv = catchAsync(async (req, res) => {
   return res.send(text);
 });
 
+// Delete File
+const file_delete = catchAsync(async (req, res, next) => {
+  const { projectId } = req.query;
+  const { fileUrl } = req.body;
+
+  if (!projectId) {
+    return next(new AppError("Project ID not provided", 400));
+  }
+
+  if (!fileUrl) {
+    return next(new AppError("File URL not provided", 400));
+  }
+
+  // Check if project exists
+  const project = await Project.findById(projectId);
+  if (!project) {
+    return next(new AppError("Project not found", 404));
+  }
+
+  // Authorization: allow if project owner, admin, or storage_admin
+  if (
+    project.projectCreator?.toString() !== req.id &&
+    !["admin", "storage_admin"].includes(req.role)
+  ) {
+    return next(
+      new AppError(
+        "You are not authorized to delete files for this project",
+        403
+      )
+    );
+  }
+
+  // Check if file exists in project files array
+  if (!project.files || !project.files.includes(fileUrl)) {
+    return next(new AppError("File not found in project", 404));
+  }
+
+  initializeApp(firebaseConfig);
+  const storage = getStorage();
+
+  const url = new URL(fileUrl);
+  const pathMatch = url.pathname.match(/\/o\/(.+?)(\?|$)/);
+
+  if (!pathMatch) {
+    return next(new AppError("Invalid Firebase URL format", 400));
+  }
+
+  const filePath = decodeURIComponent(pathMatch[1]);
+  const fileRef = ref(storage, filePath);
+
+  // Delete file from Firebase Storage
+  await deleteObject(fileRef);
+
+  // Remove file URL from project's files array
+  const updatedProject = await Project.findByIdAndUpdate(
+    projectId,
+    { $pull: { files: fileUrl } },
+    { new: true }
+  );
+
+  if (!updatedProject) {
+    return next(new AppError("Failed to update project", 500));
+  }
+
+  return res.status(200).json({
+    status: "success",
+    message: "File successfully deleted",
+    data: {
+      project: updatedProject,
+    },
+  });
+});
+
 module.exports = {
   image_post,
   document_post,
@@ -401,4 +505,6 @@ module.exports = {
   material_image_post,
   fetch_csv,
   design_image_post,
+  carousel_image_post,
+  file_delete,
 };

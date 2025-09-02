@@ -9,10 +9,12 @@ import {
   FaLock,
   FaUserTag,
   FaPlus,
-  FaTrash,
   FaUserShield,
   FaUserTie,
   FaUsers,
+  FaEye,
+  FaEyeSlash,
+  FaUserSlash,
 } from "react-icons/fa";
 import defaultProfile from "../assets/images/user.png";
 
@@ -33,6 +35,7 @@ export default function UsersPage() {
   const [message, setMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [showPassword, setShowPassword] = useState(false);
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   useEffect(() => {
@@ -59,7 +62,8 @@ export default function UsersPage() {
   // Filter users based on active tab
   const filteredUsers = users.filter((user) => {
     if (activeTab === "all") return true;
-    return user.role === activeTab;
+    if (activeTab === "archived") return user.isArchived;
+    return user.role === activeTab && !user.isArchived;
   });
 
   // Get user counts for each role
@@ -93,6 +97,12 @@ export default function UsersPage() {
       icon: FaUser,
       count: getUserCount("client"),
     },
+    {
+      id: "archived",
+      label: "Archived",
+      icon: FaUserSlash,
+      count: users.filter((u) => u.isArchived).length,
+    },
   ];
 
   const handleInputChange = (e) => {
@@ -119,7 +129,6 @@ export default function UsersPage() {
           },
         }
       );
-      console.log("User created successfully:", response.data);
       setMessage("User created successfully!");
       // Reset form
       setFormData({
@@ -166,27 +175,28 @@ export default function UsersPage() {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    // Show a confirmation dialog before deleting
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this user?"
-    );
-    if (!confirmed) return;
-
+  const handleArchiveUser = async (userId, isArchived) => {
     try {
       setLoadingUsers(true);
       const token = Cookies.get("token");
-      await axios.delete(`${serverUrl}/api/user`, {
-        params: { id: userId },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setUsers((prev) => prev.filter((u) => u._id !== userId));
+      console.log(token);
+      await axios.put(
+        `${serverUrl}/api/user?id=${userId}`,
+        { isArchived },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setUsers((prev) =>
+        prev.map((u) => (u._id === userId ? { ...u, isArchived } : u))
+      );
     } catch (error) {
+      console.error("Error updating user status:", error);
       alert(
         error.response?.data?.message ||
-          "An error occurred while deleting the user"
+          "An error occurred while updating the user status"
       );
     } finally {
       setLoadingUsers(false);
@@ -360,12 +370,24 @@ export default function UsersPage() {
                           </span>
                         </td>
                         <td className="py-4 px-4">
-                          <div className="flex items-center gap-2">
+                          <div className={`flex items-center gap-2`}>
                             <button
-                              className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
-                              onClick={() => handleDeleteUser(user._id)}
+                              className={`p-2 ${
+                                user.isArchived
+                                  ? "text-red-600"
+                                  : "text-gray-400"
+                              } hover:bg-yellow-100 rounded-lg transition-colors`}
+                              onClick={() =>
+                                handleArchiveUser(user._id, !user.isArchived)
+                              }
+                              disabled={loadingUsers}
+                              title={
+                                user.isArchived
+                                  ? "Unarchive User"
+                                  : "Archive User"
+                              }
                             >
-                              <FaTrash />
+                              <FaUserSlash />
                             </button>
                           </div>
                         </td>
@@ -505,16 +527,29 @@ export default function UsersPage() {
                     <FaLock className="w-4 h-4" style={{ color: "#1D3C34" }} />
                     Password
                   </label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                    placeholder="Enter password"
-                    required
-                    disabled={isLoading}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white pr-12"
+                      placeholder="Enter password"
+                      required
+                      disabled={isLoading}
+                    />
+                    <span
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Phone Number */}

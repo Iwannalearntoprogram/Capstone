@@ -118,6 +118,13 @@ const material_put = catchAsync(async (req, res, next) => {
 
   if (!id) return next(new AppError("Material identifier not found", 400));
 
+  // Only storage_admin can update materials
+  if (req.role !== "storage_admin") {
+    return next(
+      new AppError("You are not authorized to update this material", 403)
+    );
+  }
+
   if (
     !name &&
     !company &&
@@ -199,7 +206,8 @@ const material_delete = catchAsync(async (req, res, next) => {
   const material = await Material.findById(id);
   if (!material) return next(new AppError("Material not found", 404));
 
-  if (material.designerId.toString() !== req.id && req.role !== "admin") {
+  // Only storage_admin can delete materials
+  if (req.role !== "storage_admin") {
     return next(
       new AppError("You are not authorized to delete this material", 403)
     );

@@ -16,21 +16,29 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Form controllers
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+  // Form controllers - keep only for password change
   final TextEditingController _currentPasswordController =
       TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
-  bool _isEditing = false;
+  // Remove these variables:
+  // bool _isEditing = false;
   bool _isChangingPassword = false;
   String? _errorMessage;
   String? _profileImage;
   final ImagePicker _picker = ImagePicker();
+
+  // Add these for display only
+  String _name = '';
+  String _email = '';
+  String _phone = '';
+
+  // Add these variables to manage password visibility
+  bool _showCurrentPassword = false;
+  bool _showNewPassword = false;
+  bool _showConfirmPassword = false;
 
   @override
   void initState() {
@@ -41,12 +49,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadUserInfo() async {
     final prefs = await SharedPreferences.getInstance();
     final userString = prefs.getString('user');
+
     if (userString != null) {
       final user = jsonDecode(userString);
+      print(user);
       setState(() {
-        _nameController.text = user['fullName'] ?? user['username'];
-        _emailController.text = user['email'] ?? '';
-        _phoneController.text = user['phoneNumber'] ?? '';
+        _name = user['fullName'] ?? user['username'] ?? '';
+        _email = user['email'] ?? '';
+        _phone = user['phoneNumber'] ?? '';
         _profileImage = user['profileImage'];
       });
     }
@@ -88,7 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     final response = await http.put(
-      Uri.parse('https://capstone-thl5.onrender.com/api/user'),
+      Uri.parse('https://capstone-moss.onrender.com/api/user'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -107,22 +117,104 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Future<void> _pickAndUploadImage() async {
+  //   final picked = await _picker.pickImage(source: ImageSource.gallery);
+  //   if (picked == null) return;
+
+  //   // Validate file type (image) and size (max 5MB)
+  //   final file = File(picked.path);
+  //   final fileSize = await file.length();
+
+  //   // final isImage = picked.mimeType?.startsWith('image/') ??
+  //   //     false;
+
+  //   // if (!isImage) {
+  //   //   ScaffoldMessenger.of(context).showSnackBar(
+  //   //     const SnackBar(content: Text('Please select an image file')),
+  //   //   );
+  //   //   return;
+  //   // }
+  //   if (fileSize > 5 * 1024 * 1024) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('File size must be less than 5MB')),
+  //     );
+  //     return;
+  //   }
+
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final token = prefs.getString('token');
+  //   if (token == null) return;
+
+  //   // Show loading indicator (optional)
+  //   setState(() => _errorMessage = null);
+
+  //   final imageLink = await _uploadProfileImage(file, token);
+  //   if (imageLink != null) {
+  //     setState(() {
+  //       _profileImage = imageLink;
+  //     });
+  //     await _updateProfileImage(imageLink);
+  //     // Update user data in SharedPreferences
+  //     final userString = prefs.getString('user');
+  //     if (userString != null) {
+  //       final user = jsonDecode(userString);
+  //       user['profileImage'] = imageLink;
+  //       await prefs.setString('user', jsonEncode(user));
+  //     }
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Profile picture updated successfully!')),
+  //     );
+  //   } else {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //           content:
+  //               Text('Failed to update profile picture. Please try again.')),
+  //     );
+  //   }
+  // }
+
+  // Future<void> _updateProfileImage(String imageLink) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final token = prefs.getString('token');
+  //   final userString = prefs.getString('user');
+  //   if (token == null || userString == null) return;
+  //   final user = jsonDecode(userString);
+
+  //   final body = jsonEncode({
+  //     '_id': user['_id'],
+  //     'profileImage': imageLink,
+  //   });
+
+  //   final response = await http.put(
+  //     Uri.parse('https://capstone-moss.onrender.com/api/user'),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'Authorization': 'Bearer $token',
+  //     },
+  //     body: body,
+  //   );
+  //   if (response.statusCode == 200) {
+  //     user['profileImage'] = imageLink;
+  //     await prefs.setString('user', jsonEncode(user));
+  //     setState(() {
+  //       _profileImage = imageLink;
+  //     });
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Profile picture updated!')),
+  //     );
+  //   }
+  // }
+
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
+    // Remove these:
+    // _nameController.dispose();
+    // _emailController.dispose();
+    // _phoneController.dispose();
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
-  }
-
-  void _toggleEdit() {
-    setState(() {
-      _isEditing = !_isEditing;
-      _errorMessage = null;
-    });
   }
 
   void _toggleChangePassword() {
@@ -135,75 +227,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  void _saveChanges() async {
-    if (_nameController.text.isEmpty || _emailController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Name and email cannot be empty';
-      });
-      return;
-    }
-
-    if (!_emailController.text.contains('@')) {
-      setState(() {
-        _errorMessage = 'Please enter a valid email address';
-      });
-      return;
-    }
-
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    final userString = prefs.getString('user');
-    if (token == null || userString == null) {
-      setState(() {
-        _errorMessage = 'User not logged in';
-      });
-      return;
-    }
-    final user = jsonDecode(userString);
-
-    final body = jsonEncode({
-      '_id': user['_id'],
-      'fullName': _nameController.text.trim(),
-      'email': _emailController.text.trim(),
-      'phoneNumber': _phoneController.text.trim(),
-    });
-
-    try {
-      final response = await http.put(
-        Uri.parse('https://capstone-thl5.onrender.com/api/user'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: body,
-      );
-      if (response.statusCode == 200) {
-        // Update local user object
-        user['fullName'] = _nameController.text.trim();
-        user['email'] = _emailController.text.trim();
-        user['phoneNumber'] = _phoneController.text.trim();
-        await prefs.setString('user', jsonEncode(user));
-        setState(() {
-          _isEditing = false;
-          _errorMessage = null;
-        });
-        await _loadUserInfo();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully')),
-        );
-      } else {
-        setState(() {
-          _errorMessage = 'Failed to update profile: ${response.body}';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Error: $e';
-      });
-    }
-  }
-
-  void _savePassword() {
+  void _savePassword() async {
     if (_currentPasswordController.text.isEmpty ||
         _newPasswordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
@@ -220,13 +244,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
-    setState(() {
-      _isChangingPassword = false;
-      _errorMessage = null;
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final userString = prefs.getString('user');
+    if (token == null || userString == null) {
+      setState(() {
+        _errorMessage = 'Not authenticated';
+      });
+      return;
+    }
+    final user = jsonDecode(userString);
+
+    final body = jsonEncode({
+      '_id': user['_id'],
+      'password': _currentPasswordController.text,
+      'newPassword': _newPasswordController.text,
+    });
+
+    final response = await http.put(
+      Uri.parse('https://capstone-moss.onrender.com/api/user'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        _isChangingPassword = false;
+        _errorMessage = null;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password updated successfully')),
       );
-    });
+    } else {
+      final resp = jsonDecode(response.body);
+      setState(() {
+        _errorMessage = resp['message'] ?? 'Failed to update password';
+      });
+    }
   }
 
   Future<void> _logout() async {
@@ -284,37 +341,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           offset: const Offset(0, 3),
                         ),
                       ],
-                      image: _profileImage != null
-                          ? DecorationImage(
-                              image: NetworkImage(_profileImage!),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
                     ),
-                    child: _profileImage == null
-                        ? const Icon(
-                            Icons.person,
-                            size: 80,
-                            color: Colors.grey,
-                          )
-                        : null,
+                    child: ClipOval(
+                      child: _profileImage != null
+                          ? Image.network(
+                              _profileImage!,
+                              fit: BoxFit.cover,
+                              width: 120,
+                              height: 120,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                Icons.person,
+                                size: 80,
+                                color: Colors.grey,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.person,
+                              size: 80,
+                              color: Colors.grey,
+                            ),
+                    ),
                   ),
-                  if (_isEditing)
-                    GestureDetector(
-                      onTap: _pickAndUploadImage,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF203B32),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          color: Colors.white,
-                          size: 20,
-                        ),
+                  GestureDetector(
+                    onTap: _pickAndUploadImage,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF203B32),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        color: Colors.white,
+                        size: 20,
                       ),
                     ),
+                  ),
                 ],
               ),
 
@@ -333,80 +396,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
 
-              // Edit button
-              if (!_isEditing && !_isChangingPassword)
-                ElevatedButton(
-                  onPressed: _toggleEdit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF203B32),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 12),
-                    elevation: 2,
-                  ),
-                  child: const Text('Edit Profile'),
-                ),
-
               const SizedBox(height: 24),
 
-              // Form fields
-              if (_isEditing)
-                Column(
-                  children: [
-                    _buildTextField('Name', _nameController),
-                    const SizedBox(height: 16),
-                    _buildTextField('Email', _emailController),
-                    const SizedBox(height: 16),
-                    _buildTextField('Phone', _phoneController),
-                    const SizedBox(height: 24),
-
-                    // Save and Cancel buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildActionButton(
-                          text: 'Save',
-                          isPrimary: true,
-                          onPressed: _saveChanges,
-                        ),
-                        const SizedBox(width: 16),
-                        _buildActionButton(
-                          text: 'Cancel',
-                          isPrimary: false,
-                          onPressed: _toggleEdit,
-                        ),
-                      ],
-                    ),
-                  ],
-                )
-              else if (!_isChangingPassword)
-                Column(
-                  children: [
-                    _buildInfoItem('Name', _nameController.text),
-                    const SizedBox(height: 16),
-                    _buildInfoItem('Email', _emailController.text),
-                    const SizedBox(height: 16),
-                    _buildInfoItem('Phone', _phoneController.text),
-                  ],
-                ),
+              // Display only
+              Column(
+                children: [
+                  _buildInfoItem('Name', _name),
+                  const SizedBox(height: 16),
+                  _buildInfoItem('Email', _email),
+                  const SizedBox(height: 16),
+                  _buildInfoItem('Phone', _phone),
+                ],
+              ),
 
               const SizedBox(height: 24),
 
               // Change Password Section
-              if (!_isEditing && !_isChangingPassword)
-                TextButton(
-                  onPressed: _toggleChangePassword,
-                  child: const Text(
-                    'Change Password',
-                    style: TextStyle(
-                      color: Color(0xFF203B32),
-                      fontWeight: FontWeight.w500,
-                    ),
+              TextButton(
+                onPressed: _toggleChangePassword,
+                child: const Text(
+                  'Change Password',
+                  style: TextStyle(
+                    color: Color(0xFF203B32),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
+              ),
 
               if (_isChangingPassword)
                 Column(
@@ -446,24 +461,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 40),
 
               // Logout button with shadow
-              if (!_isEditing && !_isChangingPassword)
-                ElevatedButton.icon(
-                  onPressed: () {
-                    _logout();
-                  },
-                  icon: const Icon(Icons.logout, size: 20),
-                  label: const Text('Logout'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red[400],
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 12),
-                    elevation: 2,
+              ElevatedButton.icon(
+                onPressed: () {
+                  _logout();
+                },
+                icon: const Icon(Icons.logout, size: 20),
+                label: const Text('Logout'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red[400],
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
                   ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  elevation: 2,
                 ),
+              ),
             ],
           ),
         ),
@@ -473,9 +487,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildTextField(String label, TextEditingController controller,
       {bool isPassword = false}) {
+    // Determine which visibility toggle to use
+    bool isCurrent = label.toLowerCase().contains('current');
+    bool isNew = label.toLowerCase().contains('new') &&
+        !label.toLowerCase().contains('confirm');
+    bool isConfirm = label.toLowerCase().contains('confirm');
+
+    bool obscure = isPassword
+        ? (isCurrent
+            ? !_showCurrentPassword
+            : isNew
+                ? !_showNewPassword
+                : isConfirm
+                    ? !_showConfirmPassword
+                    : true)
+        : false;
+
     return TextField(
       controller: controller,
-      obscureText: isPassword,
+      obscureText: obscure,
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(
@@ -490,6 +520,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFF203B32)),
         ),
+        // Add the eye icon for password fields
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  (isCurrent && _showCurrentPassword) ||
+                          (isNew && _showNewPassword) ||
+                          (isConfirm && _showConfirmPassword)
+                      ? Icons.visibility
+                      : Icons.visibility_off,
+                  color: Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    if (isCurrent) {
+                      _showCurrentPassword = !_showCurrentPassword;
+                    } else if (isNew) {
+                      _showNewPassword = !_showNewPassword;
+                    } else if (isConfirm) {
+                      _showConfirmPassword = !_showConfirmPassword;
+                    }
+                  });
+                },
+              )
+            : null,
       ),
     );
   }
@@ -565,7 +619,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       print('Uploading file: ${imageFile.path}');
       print('File exists: ${imageFile.existsSync()}');
       var uri =
-          Uri.parse('https://capstone-thl5.onrender.com/api/upload/image');
+          Uri.parse('https://capstone-moss.onrender.com/api/upload/image');
       var request = http.MultipartRequest('POST', uri)
         ..headers['Authorization'] = 'Bearer $token'
         ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
@@ -573,19 +627,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
       var response = await request.send();
 
       final responseBody = await response.stream.bytesToString();
-      print('Upload response: $responseBody');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(responseBody);
         return responseData['imageLink'];
       } else {
-        print('Failed to upload image with status: ${response.statusCode}');
-        print('Error body: $responseBody');
-        return null;
+        // Throw an exception to enter the catch block
+        throw Exception(
+            'Failed to upload image with status: ${response.statusCode}\nError body: $responseBody');
       }
     } catch (e) {
       print('Error uploading image: $e');
       return null;
     }
   }
+
+  // Future<String?> _uploadProfileImage(File imageFile, String token) async {
+  //   try {
+  //     print(token);
+  //     print('Uploading file: ${imageFile.path}');
+  //     print('File exists: ${imageFile.existsSync()}');
+  //     var uri =
+  //         Uri.parse('https://capstone-moss.onrender.com/api/upload/image');
+  //     var request = http.MultipartRequest('POST', uri)
+  //       ..headers['Authorization'] = 'Bearer $token'
+  //       ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+  //     var response = await request.send();
+
+  //     final responseBody = await response.stream.bytesToString();
+  //     print('Upload response: $responseBody');
+
+  //     if (response.statusCode == 200) {
+  //       final responseData = json.decode(responseBody);
+  //       print(responseData['imageLink']);
+  //       return responseData['imageLink'];
+  //     } else {
+  //       print('Failed to upload image with status: ${response.statusCode}');
+  //       print('Error body: $responseBody');
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     print('Error uploading image: $e');
+  //     return null;
+  //   }
+  // }
 }
