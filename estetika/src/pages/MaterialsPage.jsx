@@ -301,8 +301,8 @@ const MaterialsPage = () => {
 
   const resetForm = () => {
     // Clean up any existing preview URLs to prevent memory leaks
-    selectedImagePreviews.forEach(url => URL.revokeObjectURL(url));
-    
+    selectedImagePreviews.forEach((url) => URL.revokeObjectURL(url));
+
     setNewMaterial({
       name: "",
       company: "",
@@ -348,9 +348,9 @@ const MaterialsPage = () => {
   const handleImageSelection = (e) => {
     const files = Array.from(e.target.files);
     setSelectedImages((prev) => [...prev, ...files]);
-    
+
     // Create preview URLs for the new files
-    const newPreviews = files.map(file => URL.createObjectURL(file));
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
     setSelectedImagePreviews((prev) => [...prev, ...newPreviews]);
   };
 
@@ -360,7 +360,7 @@ const MaterialsPage = () => {
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
-    
+
     setSelectedImages((prev) => prev.filter((_, i) => i !== index));
     setSelectedImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
