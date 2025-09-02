@@ -16,7 +16,8 @@ export const useAuthStore = create((set) => ({
       const data = response.data;
 
       if (data.user.role === "client") {
-        return alert("Clients can only login through our mobile app.");
+        alert("Clients can only login through our mobile app.");
+        return { success: false };
       }
 
       Cookies.set("temp_user", JSON.stringify(data.user), { expires: 1 });
@@ -28,7 +29,8 @@ export const useAuthStore = create((set) => ({
         user: data.user,
         token: data.token,
       });
-      return { success: true };
+      // Return user and token here!
+      return { success: true, user: data.user, token: data.token };
     } catch (e) {
       set({ isLoading: false });
       return { success: false, error: e };

@@ -71,7 +71,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Future<void> _registerUser() async {
     final url =
-        Uri.parse('https://capstone-thl5.onrender.com/api/auth/register');
+        Uri.parse('https://capstone-moss.onrender.com/api/auth/register');
     final body = {
       "username": _usernameController.text.trim(),
       "firstName": _firstNameController.text.trim(),

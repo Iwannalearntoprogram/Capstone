@@ -82,7 +82,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       final projectId = _projectData['_id'];
       final response = await http.get(
         Uri.parse(
-            'https://capstone-thl5.onrender.com/api/phase?projectId=$projectId'),
+            'https://capstone-moss.onrender.com/api/phase?projectId=$projectId'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
@@ -128,7 +128,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         final phaseId =
             id is Map && id.containsKey('_id') ? id['_id'] : id.toString();
         final response = await http.get(
-          Uri.parse('https://capstone-thl5.onrender.com/api/phase?id=$phaseId'),
+          Uri.parse('https://capstone-moss.onrender.com/api/phase?id=$phaseId'),
           headers: {
             'Content-Type': 'application/json',
             if (token != null) 'Authorization': 'Bearer $token',
@@ -179,7 +179,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-            'https://capstone-thl5.onrender.com/api/project/update?projectId=$projectId'),
+            'https://capstone-moss.onrender.com/api/project/update?projectId=$projectId'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
