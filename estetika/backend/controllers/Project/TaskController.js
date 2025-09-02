@@ -154,7 +154,10 @@ const task_delete = catchAsync(async (req, res, next) => {
   const task = await Task.findById(id);
   if (!task) return next(new AppError("Task not found", 404));
 
-  if (task.userId.toString() !== req.id && req.role !== "admin") {
+  if (
+    task.userId.toString() !== req.id &&
+    !["admin", "storage_admin"].includes(req.role)
+  ) {
     return next(
       new AppError("You are not authorized to delete this task", 403)
     );

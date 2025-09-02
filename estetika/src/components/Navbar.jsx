@@ -18,10 +18,16 @@ const Navbar = ({ toggleSidebar }) => {
   // Get user from auth store
   const { user } = useAuthStore();
   const username = user?.fullName || user?.username || "User";
-  const role =
-    user?.role && typeof user.role === "string"
-      ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
-      : "";
+  const role = (() => {
+    if (!user?.role || typeof user.role !== "string") return "";
+    const roleLower = user.role.toLowerCase();
+    if (roleLower === "storage_admin") return "Storage Admin";
+    const formatted = user.role.replace(/[_-]+/g, " ");
+    return formatted
+      .split(" ")
+      .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ""))
+      .join(" ");
+  })();
 
   // Fetch notifications from API
   useEffect(() => {

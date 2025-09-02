@@ -23,17 +23,19 @@ const Sidebar = ({ isOpen }) => {
             Home
           </Link>
         </li>
-        <li
-          className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
-            location.pathname === "/projects"
-              ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
-              : "hover:translate-x-2"
-          }`}
-        >
-          <Link to="/projects" className="block text-inherit no-underline">
-            Projects
-          </Link>
-        </li>
+        {role !== "storage_admin" && (
+          <li
+            className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
+              location.pathname === "/projects"
+                ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
+                : "hover:translate-x-2"
+            }`}
+          >
+            <Link to="/projects" className="block text-inherit no-underline">
+              Projects
+            </Link>
+          </li>
+        )}
         <li
           className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
             location.pathname === "/inbox"
@@ -45,17 +47,6 @@ const Sidebar = ({ isOpen }) => {
             Messages
           </Link>
         </li>
-        {/* <li
-          className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
-            location.pathname === "/notification"
-              ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
-              : "hover:translate-x-2"
-          }`}
-        >
-          <Link to="/notification" className="block text-inherit no-underline ">
-            Notification
-          </Link>
-        </li> */}
         <li
           className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
             location.pathname === "/calendar"
@@ -67,20 +58,22 @@ const Sidebar = ({ isOpen }) => {
             Calendar
           </Link>
         </li>
-        <li
-          className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
-            location.pathname.includes("/materials")
-              ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
-              : "hover:translate-x-2"
-          }`}
-        >
-          <Link
-            to="/materials/items"
-            className="block text-inherit no-underline"
+        {role !== "designer" && (
+          <li
+            className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
+              location.pathname.includes("/materials")
+                ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
+                : "hover:translate-x-2"
+            }`}
           >
-            Materials
-          </Link>
-        </li>
+            <Link
+              to="/materials/items"
+              className="block text-inherit no-underline"
+            >
+              Materials
+            </Link>
+          </li>
+        )}
         {role === "admin" && (
           <li
             className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
