@@ -308,10 +308,7 @@ const MaterialModal = ({
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {selectedImages.map((image, index) => (
-                        <div
-                          key={index}
-                          className="relative group"
-                        >
+                        <div key={index} className="relative group">
                           <div className="aspect-square rounded-lg overflow-hidden border border-gray-200">
                             <img
                               src={selectedImagePreviews[index]}
@@ -320,7 +317,10 @@ const MaterialModal = ({
                             />
                           </div>
                           <div className="mt-2 px-2">
-                            <p className="text-xs text-gray-600 truncate" title={image.name}>
+                            <p
+                              className="text-xs text-gray-600 truncate"
+                              title={image.name}
+                            >
                               {image.name}
                             </p>
                           </div>
