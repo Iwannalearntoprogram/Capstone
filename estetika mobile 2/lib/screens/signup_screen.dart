@@ -4,6 +4,7 @@ import 'package:estetika_ui/widgets/custom_scaffold.dart';
 import 'package:estetika_ui/widgets/google_sign_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart';
 import 'dart:convert';
 
 class SignUpScreen extends StatefulWidget {
@@ -72,13 +73,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _registerUser() async {
     final url =
         Uri.parse('https://capstone-moss.onrender.com/api/auth/register');
+    // Normalize phone to E.164 using +63 prefix (Philippines)
+    final String localDigits =
+        _phoneController.text.replaceAll(RegExp(r'\D'), ''); // keep digits
+    final String e164Phone = '+63$localDigits';
+
     final body = {
       "username": _usernameController.text.trim(),
       "firstName": _firstNameController.text.trim(),
       "lastName": _lastNameController.text.trim(),
       "email": _emailController.text.trim(),
       "password": _passwordController.text,
-      "phoneNumber": _phoneController.text.trim(),
+      "phoneNumber": e164Phone,
     };
 
     try {
@@ -232,20 +238,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 const SizedBox(height: 25.0),
                                 TextFormField(
                                   controller: _phoneController,
+                                  keyboardType: TextInputType.phone,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(10),
+                                  ],
                                   validator: (value) {
-                                    if (value == null || value.isEmpty) {
+                                    final digits = (value ?? '')
+                                        .replaceAll(RegExp(r'\D'), '');
+                                    if (digits.isEmpty) {
                                       return 'Please enter your phone number';
                                     }
-                                    if (!RegExp(r'^\+?\d{10,}$').hasMatch(
-                                        value.replaceAll(RegExp(r'\D'), ''))) {
-                                      return 'Please enter a valid phone number';
+                                    if (digits.length != 10) {
+                                      return 'Enter 10 digits (e.g., 9XXXXXXXXX)';
+                                    }
+                                    if (!digits.startsWith('9')) {
+                                      return 'PH mobile numbers start with 9';
                                     }
                                     return null;
                                   },
-                                  keyboardType: TextInputType.phone,
                                   decoration: InputDecoration(
                                     label: const Text('Phone Number'),
-                                    hintText: 'Enter Phone Number',
+                                    hintText: '9XXXXXXXXX',
+                                    prefixText: '🇵🇭  +63 ',
+                                    prefixStyle: const TextStyle(
+                                      color: Color(0xFF203B32),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    helperText:
+                                        'Philippines (+63) — enter 10 digits only',
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),

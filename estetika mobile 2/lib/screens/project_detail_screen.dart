@@ -600,22 +600,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   ],
                 ),
               ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  // Action to message the designer
-                },
-                icon: const Icon(Icons.message_outlined, size: 18),
-                label: const Text('Message'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF203B32),
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
+              // Messaging feature removed: previously a button to message the designer
+              const SizedBox.shrink(),
             ],
           ),
         ],
@@ -965,24 +951,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                // Implement messaging functionality
-              },
-              icon: const Icon(Icons.message_outlined),
-              label: const Text('Message'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF203B32),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(color: Color(0xFF203B32)),
-                ),
-              ),
-            ),
-          ),
+          // Messaging feature removed: button deleted
+          const SizedBox.shrink(),
           const SizedBox(width: 16),
           Expanded(
             child: ElevatedButton.icon(

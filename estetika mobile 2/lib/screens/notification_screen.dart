@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:estetika_ui/widgets/custom_app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:estetika_ui/screens/projects_screen.dart';
-import 'package:estetika_ui/screens/inbox_screen.dart';
+// Messaging/inbox removed: no InboxScreen import
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -206,10 +206,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
           );
         } else if (desc.contains('message') || desc.contains('messaged')) {
+          // Messaging feature removed: open notification detail instead
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => InboxScreen(),
+              builder: (context) =>
+                  NotificationDetailScreen(notification: notification),
             ),
           );
         } else {
@@ -332,7 +334,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   IconData _getNotificationIcon(String title) {
-    if (title.contains("Message")) return Icons.mail;
+    if (title.contains("Message")) return Icons.notifications;
     if (title.contains("Project")) return Icons.assignment;
     if (title.contains("Collaboration")) return Icons.people;
     if (title.contains("Payment")) return Icons.payment;
@@ -413,11 +415,10 @@ class NotificationDetailScreen extends StatelessWidget {
               ),
             );
           } else if (desc.contains('message') || desc.contains('messaged')) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => InboxScreen(),
-              ),
+            // Messaging removed - inform the user
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('Messaging feature has been removed.')),
             );
           }
         },

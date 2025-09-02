@@ -4,7 +4,7 @@ import 'package:estetika_ui/theme/theme.dart';
 import 'package:estetika_ui/screens/home_screen.dart';
 import 'package:estetika_ui/screens/signin_screen.dart';
 import 'package:estetika_ui/screens/profile_screen.dart';
-import 'package:estetika_ui/screens/inbox_screen.dart';
+// import 'package:estetika_ui/screens/inbox_screen.dart';
 import 'package:estetika_ui/screens/projects_screen.dart';
 import 'package:estetika_ui/screens/notification_screen.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         '/signin': (context) => const SigninScreen(),
         '/home': (context) => const HomeScreen(),
         '/profile': (context) => const ProfileScreen(),
-        '/inbox': (context) => const InboxScreen(),
+        // '/inbox': (context) => const InboxScreen(),
         '/notification': (context) => const NotificationScreen(),
         '/projects': (context) => const ProjectsScreen(),
       },
