@@ -6,7 +6,7 @@ class ImageCarousel extends StatelessWidget {
   final double height;
   final bool enableAutoSlide;
   final Duration autoSlideDelay;
-  
+
   const ImageCarousel({
     super.key,
     required this.imageList,
@@ -14,7 +14,7 @@ class ImageCarousel extends StatelessWidget {
     this.enableAutoSlide = true,
     this.autoSlideDelay = const Duration(seconds: 10),
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(

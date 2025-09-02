@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:estetika_ui/services/google_sign_in_service.dart';
 import 'package:estetika_ui/screens/home_screen.dart';
+import 'package:estetika_ui/utils/toast.dart';
 
 class GoogleSignInButton extends StatefulWidget {
   final String buttonText;
@@ -40,27 +41,11 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
         }
       } else {
         print('❌ Sign in failed: ${result?['message']}');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result?['message'] ?? 'Google sign in failed'),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
-            ),
-          );
-        }
+        await showToast(result?['message'] ?? 'Google sign in failed');
       }
     } catch (e) {
       print('💥 Button handler error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
-      }
+      await showToast('Error: ${e.toString()}');
     } finally {
       if (mounted) {
         setState(() {

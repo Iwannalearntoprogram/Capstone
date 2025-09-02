@@ -5,7 +5,9 @@ import 'package:estetika_ui/widgets/google_sign_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
+import 'package:estetika_ui/utils/toast.dart';
 import 'dart:convert';
+import 'dart:async';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -19,6 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool agreePersonalData = true;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isSubmitting = false;
 
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -71,11 +74,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _registerUser() async {
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
+
     final url =
         Uri.parse('https://capstone-moss.onrender.com/api/auth/register');
     // Normalize phone to E.164 using +63 prefix (Philippines)
     final String localDigits =
-        _phoneController.text.replaceAll(RegExp(r'\D'), ''); // keep digits
+        _phoneController.text.replaceAll(RegExp(r'\D'), '');
     final String e164Phone = '+63$localDigits';
 
     final body = {
@@ -88,34 +94,43 @@ class _SignUpScreenState extends State<SignUpScreen> {
     };
 
     try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(body),
-      );
+      final response = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 15));
 
-      final data = jsonDecode(response.body);
+      Map<String, dynamic>? data;
+      try {
+        data = response.body.isNotEmpty
+            ? jsonDecode(response.body) as Map<String, dynamic>
+            : null;
+      } catch (_) {
+        data = null;
+      }
 
       if (response.statusCode == 201) {
-        print('Registration successful: $data');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Registration successful! Please sign in.')),
-        );
+        await showToast('Registration successful! Please sign in.',
+            success: true);
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const SigninScreen()),
         );
       } else {
-        // Show error from API
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Registration failed')),
-        );
+        final msg = data != null && data['message'] is String
+            ? data['message'] as String
+            : 'Registration failed (${response.statusCode})';
+        await showToast(msg);
       }
+    } on TimeoutException {
+      await showToast('Network timeout. Please try again.');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('An error occurred. Please try again.')),
-      );
+      await showToast('An error occurred. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -168,7 +183,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 40.0),
-                                // First Name & Last Name side by side
                                 Row(
                                   children: [
                                     Expanded(
@@ -245,7 +259,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ],
                                   validator: (value) {
                                     final digits = (value ?? '')
-                                        .replaceAll(RegExp(r'\D'), '');
+                                        .replaceAll(RegExp('\\D'), '');
                                     if (digits.isEmpty) {
                                       return 'Please enter your phone number';
                                     }
@@ -361,33 +375,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton(
-                                    onPressed: () {
-                                      if (_formSignupKey.currentState!
-                                              .validate() &&
-                                          agreePersonalData) {
-                                        _registerUser();
-                                      } else if (!agreePersonalData) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                                'Please agree to the processing of personal data'),
-                                          ),
-                                        );
-                                      }
-                                    },
+                                    onPressed: _isSubmitting
+                                        ? null
+                                        : () {
+                                            if (_formSignupKey.currentState!
+                                                    .validate() &&
+                                                agreePersonalData) {
+                                              _registerUser();
+                                            } else if (!agreePersonalData) {
+                                              showToast(
+                                                  'Please agree to the processing of personal data');
+                                            }
+                                          },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF203B32),
                                       foregroundColor: Colors.white,
                                     ),
-                                    child: const Text(
-                                      'Sign Up',
-                                      style: TextStyle(
-                                        fontFamily: 'Figtree',
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 18,
-                                      ),
-                                    ),
+                                    child: _isSubmitting
+                                        ? const SizedBox(
+                                            height: 22,
+                                            width: 22,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : const Text(
+                                            'Sign Up',
+                                            style: TextStyle(
+                                              fontFamily: 'Figtree',
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 18,
+                                            ),
+                                          ),
                                   ),
                                 ),
                                 const SizedBox(height: 25.0),

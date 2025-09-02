@@ -4,11 +4,11 @@ import 'package:estetika_ui/screens/home_screen.dart';
 import 'package:estetika_ui/widgets/custom_scaffold.dart';
 import 'package:estetika_ui/widgets/google_sign_in_button.dart';
 import 'package:flutter/material.dart';
-import 'package:estetika_ui/screens/forgot_password_screen.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:estetika_ui/utils/toast.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -106,10 +106,7 @@ class _SignInScreenState extends State<SigninScreen> {
                 MaterialPageRoute(builder: (context) => const HomeScreen()),
               );
             } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('OTP verification cancelled or failed')),
-              );
+              await showToast('OTP verification cancelled or failed');
             }
           }
         }
@@ -117,9 +114,7 @@ class _SignInScreenState extends State<SigninScreen> {
         throw Exception('Failed to sign in: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sign In Failed: $e')),
-      );
+      await showToast('Sign In Failed: $e');
     }
   }
 
