@@ -25,6 +25,7 @@ dependencies:
   http: ^1.2.1
   shared_preferences: ^2.2.2
   socket_io_client: ^2.0.3
+  google_sign_in: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -39,7 +40,6 @@ flutter:
     - assets/images/
     - assets/images/leaves.jpg
     - assets/images/mosslogo.png
-    - .env
 
   # Fonts
   fonts:

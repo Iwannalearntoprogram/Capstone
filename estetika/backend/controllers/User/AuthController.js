@@ -5,6 +5,9 @@ const sendEmail = require("../../utils/sendEmail");
 const catchAsync = require("../../utils/catchAsync");
 const AppError = require("../../utils/appError");
 const InvalidToken = require("../../models/utils/InvalidToken");
+const { OAuth2Client } = require("google-auth-library");
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ✅ Register route
 const register = catchAsync(async (req, res, next) => {
@@ -139,10 +142,111 @@ const logout = catchAsync(async (req, res, next) => {
     .json({ message: "Logged Out Successfully", invalidToken });
 });
 
+// ✅ Google OAuth Route
+const googleAuth = catchAsync(async (req, res, next) => {
+  console.log("🚀 Google auth request received");
+  console.log("📡 Request body:", req.body);
+
+  const { access_token } = req.body;
+
+  if (!access_token) {
+    console.log("❌ No access token provided");
+    return next(new AppError("Access token is required", 400));
+  }
+
+  try {
+    console.log("🔍 Verifying access token with Google...");
+    // Verify the access token with Google
+    const response = await fetch(
+      `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${access_token}`
+    );
+    const googleUser = await response.json();
+
+    console.log("📱 Google user data:", googleUser);
+
+    if (!googleUser.email) {
+      console.log("❌ Failed to get email from Google response");
+      return next(
+        new AppError("Failed to get user information from Google", 400)
+      );
+    }
+
+    console.log("🔍 Looking for existing user with Google ID:", googleUser.id);
+    let user = await User.findOne({ googleId: googleUser.id });
+
+    if (!user) {
+      console.log(
+        "🔍 No user found with Google ID, checking email:",
+        googleUser.email
+      );
+      // Check if user exists with this email
+      user = await User.findOne({ email: googleUser.email });
+
+      if (user) {
+        console.log(
+          "✅ Found existing user with email, linking Google account"
+        );
+        // Link existing account with Google
+        user.googleId = googleUser.id;
+        user.avatar = googleUser.picture;
+        await user.save();
+      } else {
+        console.log("🆕 Creating new user from Google data");
+        // Create new user
+        user = new User({
+          googleId: googleUser.id,
+          firstName: googleUser.given_name || googleUser.name.split(" ")[0],
+          lastName:
+            googleUser.family_name ||
+            googleUser.name.split(" ").slice(1).join(" "),
+          username: googleUser.email.split("@")[0],
+          email: googleUser.email,
+          avatar: googleUser.picture,
+          emailVerified: true,
+          role: "client",
+        });
+
+        await user.save();
+        console.log("✅ New user created successfully");
+      }
+    } else {
+      console.log("✅ Found existing user with Google ID");
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    console.log("✅ JWT token generated, sending response");
+
+    return res.status(200).json({
+      message: "Google authentication successful",
+      token,
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        emailVerified: user.emailVerified,
+      },
+    });
+  } catch (error) {
+    console.log("💥 Google authentication error:", error);
+    return next(new AppError("Google authentication failed", 400));
+  }
+});
+
 module.exports = {
   register,
   login,
   verifyEmail,
   verifyOTP,
   logout,
+  googleAuth,
 };

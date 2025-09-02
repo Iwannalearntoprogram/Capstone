@@ -4,6 +4,8 @@ const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const hpp = require("hpp");
 const cron = require("node-cron");
+const passport = require("./config/passport");
+const session = require("express-session");
 
 // routes import
 // user
@@ -50,6 +52,15 @@ app.use(
   })
 ); // Body Parser
 app.use(hpp()); // prevent paramater pollution
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your-session-secret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(
   cors({
     origin: [process.env.CLIENT_URL, "http://localhost:5173"],
