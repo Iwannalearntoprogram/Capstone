@@ -80,17 +80,15 @@ class _SignInScreenState extends State<SigninScreen> {
         await prefs.setString('token', data['token'] ?? '');
         await prefs.setString('user', jsonEncode(data['user'] ?? {}));
 
-        // Store remember me preference
+        // Store remember me preferences (global for UI prefill)
         await prefs.setBool('rememberMe', _rememberMe);
         if (_rememberMe) {
           await prefs.setString('rememberedEmail', email);
-          await prefs.setInt(
-              'lastLoginTime', DateTime.now().millisecondsSinceEpoch);
         }
 
         if (mounted) {
-          // Check if we should skip OTP based on remember me
-          if (_rememberMe && await _shouldSkipOtp(email)) {
+          // Check if we should skip OTP for this account based on per-account 24h validity
+          if (await _shouldSkipOtp(email)) {
             // Skip OTP and go directly to home
             Navigator.pushReplacement(
               context,
@@ -101,6 +99,8 @@ class _SignInScreenState extends State<SigninScreen> {
             await _sendOtp(email);
             final verified = await _showOtpDialog(email);
             if (verified == true) {
+              // Mark OTP verified time for this account if remember me was chosen
+              await _markOtpVerified(email);
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -212,22 +212,39 @@ class _SignInScreenState extends State<SigninScreen> {
   Future<bool> _shouldSkipOtp(String email) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final rememberMe = prefs.getBool('rememberMe') ?? false;
-      final rememberedEmail = prefs.getString('rememberedEmail') ?? '';
-      final lastLoginTime = prefs.getInt('lastLoginTime') ?? 0;
+      // Per-account remember flag set when OTP was verified with remember me
+      final accountRemember =
+          prefs.getBool('rememberMe_' + email.toLowerCase()) ?? false;
+      final otpVerifiedAt =
+          prefs.getInt('otpVerifiedAt_' + email.toLowerCase()) ?? 0;
 
-      if (!rememberMe || rememberedEmail != email) {
-        return false;
-      }
+      if (!accountRemember || otpVerifiedAt == 0) return false;
 
-      // Check if the remember me session is still valid (e.g., within 30 days)
       final now = DateTime.now().millisecondsSinceEpoch;
-      final daysSinceLastLogin = (now - lastLoginTime) / (1000 * 60 * 60 * 24);
-
-      return daysSinceLastLogin <= 30; // Remember for 30 days
+      final elapsedMs = now - otpVerifiedAt;
+      const twentyFourHoursMs = 24 * 60 * 60 * 1000;
+      return elapsedMs < twentyFourHoursMs;
     } catch (e) {
       print('Error checking remember me status: $e');
       return false;
+    }
+  }
+
+  Future<void> _markOtpVerified(String email) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      // Mark per-account OTP verification time
+      await prefs.setInt('otpVerifiedAt_' + email.toLowerCase(),
+          DateTime.now().millisecondsSinceEpoch);
+      // If user opted for remember me, persist per-account remember flag
+      if (_rememberMe) {
+        await prefs.setBool('rememberMe_' + email.toLowerCase(), true);
+        // Also store for UI prefill convenience
+        await prefs.setString('rememberedEmail', email);
+        await prefs.setBool('rememberMe', true);
+      }
+    } catch (e) {
+      print('Error marking OTP verified: $e');
     }
   }
 
@@ -265,18 +282,32 @@ class _SignInScreenState extends State<SigninScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
-      final rememberMe = prefs.getBool('rememberMe') ?? false;
-      final lastLoginTime = prefs.getInt('lastLoginTime') ?? 0;
-
-      if (token == null || !rememberMe) {
+      if (token == null) {
         return false;
       }
 
-      // Check if remember me session is still valid
-      final now = DateTime.now().millisecondsSinceEpoch;
-      final daysSinceLastLogin = (now - lastLoginTime) / (1000 * 60 * 60 * 24);
+      // Determine current user's email from stored profile if possible
+      String? email;
+      try {
+        final userJson = prefs.getString('user');
+        if (userJson != null && userJson.isNotEmpty) {
+          final user = jsonDecode(userJson);
+          email = (user['email'] ?? '').toString();
+        }
+      } catch (_) {}
 
-      return daysSinceLastLogin <= 30;
+      if (email == null || email.isEmpty) return false;
+
+      // Auto-login only if per-account OTP is still valid within 24 hours
+      final accountRemember =
+          prefs.getBool('rememberMe_' + email.toLowerCase()) ?? false;
+      final otpVerifiedAt =
+          prefs.getInt('otpVerifiedAt_' + email.toLowerCase()) ?? 0;
+      if (!accountRemember || otpVerifiedAt == 0) return false;
+
+      final now = DateTime.now().millisecondsSinceEpoch;
+      const twentyFourHoursMs = 24 * 60 * 60 * 1000;
+      return (now - otpVerifiedAt) < twentyFourHoursMs;
     } catch (e) {
       return false;
     }
