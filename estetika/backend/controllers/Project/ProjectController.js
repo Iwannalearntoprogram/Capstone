@@ -301,7 +301,10 @@ const project_delete = catchAsync(async (req, res, next) => {
   const project = await Project.findById(id);
   if (!project) return next(new AppError("Project not found", 404));
 
-  if (project.projectCreator.toString() !== req.id && req.role !== "admin") {
+  if (
+    project.projectCreator.toString() !== req.id &&
+    !["admin", "storage_admin"].includes(req.role)
+  ) {
     return next(
       new AppError("You are not authorized to delete this project", 403)
     );

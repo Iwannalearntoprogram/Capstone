@@ -96,7 +96,9 @@ const HomePage = () => {
         const token = Cookies.get("token");
         const res = await axios.get(
           `${serverUrl}/api/project?${
-            role === "admin" ? "index=true" : `member=${id}`
+            role === "admin" || role === "storage_admin"
+              ? "index=true"
+              : `member=${id}`
           }`,
           {
             headers: {
@@ -1096,7 +1098,7 @@ const HomePage = () => {
 
   // Fetch mobile home content for admin
   useEffect(() => {
-    if (role === "admin") {
+    if (role === "admin" || role === "storage_admin") {
       const fetchMobileContent = async () => {
         try {
           const response = await axios.get(
@@ -1410,61 +1412,15 @@ const HomePage = () => {
             </table>
           </div>
         )}
-        {role === "admin" && (
-          <div className="mt-4">
-            <button
-              onClick={generateMaterialsPDF}
-              disabled={generatingMaterialsPDF}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-            >
-              {generatingMaterialsPDF ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  Export Materials Report
-                </>
-              )}
-            </button>
-          </div>
-        )}
-      </div>{" "}
-      {/* Designers Section */}
-      {role === "admin" && (
-        <div className="col-span-8 bg-white rounded-xl p-4 shadow-md">
-          {" "}
-          <div className="mb-4 flex justify-between items-center">
-            <div>
-              <h2 className="font-bold text-lg">Team Designers</h2>
-              <p className="text-sm text-gray-600">
-                Active designers in the system
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-sm text-gray-500">
-                Total: {designers.length} designers
-              </div>
+        {role === "admin" ||
+          (role === "storage_admin" && (
+            <div className="mt-4">
               <button
-                onClick={generateDesignersPDF}
-                disabled={generatingDesignersPDF}
-                className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+                onClick={generateMaterialsPDF}
+                disabled={generatingMaterialsPDF}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
               >
-                {generatingDesignersPDF ? (
+                {generatingMaterialsPDF ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                     Generating...
@@ -1484,214 +1440,69 @@ const HomePage = () => {
                         d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                       />
                     </svg>
-                    Export Designers Report
+                    Export Materials Report
                   </>
                 )}
               </button>
             </div>
-          </div>
-          {designersLoading ? (
-            <div className="flex justify-center items-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
-              <span className="ml-2 text-gray-600">Loading designers...</span>
+          ))}
+      </div>{" "}
+      {/* Designers Section */}
+      {role === "admin" ||
+        (role === "storage_admin" && (
+          <div className="col-span-8 bg-white rounded-xl p-4 shadow-md">
+            {" "}
+            <div className="mb-4 flex justify-between items-center">
+              <div>
+                <h2 className="font-bold text-lg">Team Designers</h2>
+                <p className="text-sm text-gray-600">
+                  Active designers in the system
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-gray-500">
+                  Total: {designers.length} designers
+                </div>
+                <button
+                  onClick={generateDesignersPDF}
+                  disabled={generatingDesignersPDF}
+                  className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+                >
+                  {generatingDesignersPDF ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      Export Designers Report
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-          ) : designers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <svg
-                className="w-12 h-12 mx-auto mb-3 text-gray-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                />
-              </svg>
-              <p>No designers found</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
-              {" "}
-              {designers.map((designer) => {
-                // Find projects for this designer
-                const designerProjects = projectsData.filter(
-                  (project) =>
-                    project.members &&
-                    project.members.some((member) =>
-                      typeof member === "object"
-                        ? member._id === designer._id
-                        : member === designer._id
-                    )
-                );
-
-                // Helper function for status colors
-                const getStatusColor = (status) => {
-                  switch (status) {
-                    case "ongoing":
-                      return "bg-blue-100 text-blue-800";
-                    case "completed":
-                      return "bg-green-100 text-green-800";
-                    case "delayed":
-                      return "bg-red-100 text-red-800";
-                    case "pending":
-                      return "bg-yellow-100 text-yellow-800";
-                    default:
-                      return "bg-gray-100 text-gray-800";
-                  }
-                };
-                return (
-                  <div
-                    key={designer._id}
-                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300 group flex flex-col h-fit"
-                  >
-                    {/* Header with Avatar and Basic Info */}
-                    <div className="flex items-center space-x-4 mb-4">
-                      {/* Avatar */}
-                      <img
-                        src={designer.profileImage || defaultProfile}
-                        alt="Profile"
-                        className="w-12 h-12 rounded-lg object-cover"
-                      />
-
-                      {/* Name and Email */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-lg text-gray-900 truncate group-hover:text-blue-600 transition-colors">
-                          {designer?.fullName ||
-                            `${designer?.firstName || ""} ${
-                              designer?.lastName || ""
-                            }`.trim() ||
-                            designer?.username ||
-                            "Unnamed Designer"}
-                        </h3>
-                        <p className="text-sm text-gray-600 truncate">
-                          {designer?.email}
-                        </p>
-                      </div>
-                    </div>
-                    {/* Status Badges */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                        Designer
-                      </span>
-                      {designer?.emailVerified && (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                          <FaCheckCircle className="w-3 h-3 mr-1" />
-                          Verified
-                        </span>
-                      )}
-                    </div>
-                    {/* Contact Info */}
-                    <div className="space-y-2 mb-4 text-sm text-gray-600">
-                      <div className="flex items-center justify-between">
-                        <span>Joined:</span>
-                        <span className="font-medium">
-                          {designer?.createdAt
-                            ? new Date(designer.createdAt).toLocaleDateString(
-                                "en-US",
-                                {
-                                  month: "short",
-                                  year: "numeric",
-                                }
-                              )
-                            : "N/A"}
-                        </span>
-                      </div>
-                      {designer?.phoneNumber && (
-                        <div className="flex items-center">
-                          <FaPhone className="w-4 h-4 mr-2 text-gray-400" />
-                          <span className="text-xs">
-                            {designer.phoneNumber}
-                          </span>
-                        </div>
-                      )}
-                    </div>{" "}
-                    {/* Projects Section */}
-                    <div className="border-t border-gray-100 pt-4 flex-1">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center">
-                          <FaBriefcase className="w-4 h-4 mr-2 text-gray-500" />
-                          <span className="text-sm font-semibold text-gray-700">
-                            Projects ({designerProjects.length})
-                          </span>
-                        </div>
-                      </div>{" "}
-                      {designerProjects.length > 0 ? (
-                        <div className="space-y-2">
-                          {(expandedDesigners[designer._id]
-                            ? designerProjects
-                            : designerProjects.slice(0, 2)
-                          ).map((project) => (
-                            <div
-                              key={project._id}
-                              className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors cursor-pointer"
-                              onClick={() => handleProjectClick(project._id)}
-                            >
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium text-sm text-gray-800 truncate pr-2">
-                                  {project.title}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span
-                                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                                    project.status
-                                  )}`}
-                                >
-                                  {project.status}
-                                </span>
-                                {project.budget && (
-                                  <span className="text-xs text-gray-600 font-semibold">
-                                    ₱{project.budget.toLocaleString()}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-
-                          {designerProjects.length > 2 && (
-                            <div className="text-center pt-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleDesignerProjects(designer._id);
-                                }}
-                                className="text-xs text-blue-600 font-medium hover:text-blue-800 transition-colors cursor-pointer"
-                              >
-                                {expandedDesigners[designer._id]
-                                  ? "Show less"
-                                  : `+${
-                                      designerProjects.length - 2
-                                    } more projects`}
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="bg-gray-50 rounded-lg px-3 py-4 text-center border-2 border-dashed border-gray-200">
-                          <p className="text-xs text-gray-500">
-                            No projects yet
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-      {/* Mobile App Home Content Management Section */}
-      {role === "admin" && (
-        <div className="col-span-8 bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl p-8 shadow-lg border border-slate-200">
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-blue-600 rounded-lg">
+            {designersLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+                <span className="ml-2 text-gray-600">Loading designers...</span>
+              </div>
+            ) : designers.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
                 <svg
-                  className="w-6 h-6 text-white"
+                  className="w-12 h-12 mx-auto mb-3 text-gray-300"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1700,68 +1511,471 @@ const HomePage = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
                   />
                 </svg>
+                <p>No designers found</p>
               </div>
-              <h2 className="font-bold text-2xl text-slate-800">
-                Mobile App Content Manager
-              </h2>
-            </div>
-            <p className="text-slate-600 text-lg">
-              Real-time preview and management of your mobile application's home
-              screen content
-            </p>
-          </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
+                {" "}
+                {designers.map((designer) => {
+                  // Find projects for this designer
+                  const designerProjects = projectsData.filter(
+                    (project) =>
+                      project.members &&
+                      project.members.some((member) =>
+                        typeof member === "object"
+                          ? member._id === designer._id
+                          : member === designer._id
+                      )
+                  );
 
-          {mobileContentLoading ? (
-            <div className="flex justify-center items-center h-64 bg-white rounded-xl shadow-sm">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
-                <span className="text-slate-600 text-lg">
-                  Loading mobile content...
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="grid lg:grid-cols-2 gap-8">
-              {/* Control Panel */}
-              <div className="space-y-6">
-                {/* Carousel Management */}
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                  <div className="flex justify-between items-center mb-6">
-                    <div>
-                      <h3 className="font-bold text-xl text-slate-800 mb-2">
-                        Carousel Images
-                      </h3>
-                      <p className="text-slate-600">
-                        Manage the main showcase images for your mobile app
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleCarouselImageUpload}
-                        className="hidden"
-                        id="carousel-upload"
-                        disabled={uploadingCarouselImage}
-                      />
-                      <label
-                        htmlFor="carousel-upload"
-                        className={`${
-                          uploadingCarouselImage
-                            ? "bg-slate-400 cursor-not-allowed"
-                            : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 cursor-pointer shadow-lg hover:shadow-xl"
-                        } text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 transform hover:scale-105`}
-                      >
-                        {uploadingCarouselImage ? (
-                          <>
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                            Uploading...
-                          </>
+                  // Helper function for status colors
+                  const getStatusColor = (status) => {
+                    switch (status) {
+                      case "ongoing":
+                        return "bg-blue-100 text-blue-800";
+                      case "completed":
+                        return "bg-green-100 text-green-800";
+                      case "delayed":
+                        return "bg-red-100 text-red-800";
+                      case "pending":
+                        return "bg-yellow-100 text-yellow-800";
+                      default:
+                        return "bg-gray-100 text-gray-800";
+                    }
+                  };
+                  return (
+                    <div
+                      key={designer._id}
+                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300 group flex flex-col h-fit"
+                    >
+                      {/* Header with Avatar and Basic Info */}
+                      <div className="flex items-center space-x-4 mb-4">
+                        {/* Avatar */}
+                        <img
+                          src={designer.profileImage || defaultProfile}
+                          alt="Profile"
+                          className="w-12 h-12 rounded-lg object-cover"
+                        />
+
+                        {/* Name and Email */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-lg text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                            {designer?.fullName ||
+                              `${designer?.firstName || ""} ${
+                                designer?.lastName || ""
+                              }`.trim() ||
+                              designer?.username ||
+                              "Unnamed Designer"}
+                          </h3>
+                          <p className="text-sm text-gray-600 truncate">
+                            {designer?.email}
+                          </p>
+                        </div>
+                      </div>
+                      {/* Status Badges */}
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                          Designer
+                        </span>
+                        {designer?.emailVerified && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                            <FaCheckCircle className="w-3 h-3 mr-1" />
+                            Verified
+                          </span>
+                        )}
+                      </div>
+                      {/* Contact Info */}
+                      <div className="space-y-2 mb-4 text-sm text-gray-600">
+                        <div className="flex items-center justify-between">
+                          <span>Joined:</span>
+                          <span className="font-medium">
+                            {designer?.createdAt
+                              ? new Date(designer.createdAt).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    year: "numeric",
+                                  }
+                                )
+                              : "N/A"}
+                          </span>
+                        </div>
+                        {designer?.phoneNumber && (
+                          <div className="flex items-center">
+                            <FaPhone className="w-4 h-4 mr-2 text-gray-400" />
+                            <span className="text-xs">
+                              {designer.phoneNumber}
+                            </span>
+                          </div>
+                        )}
+                      </div>{" "}
+                      {/* Projects Section */}
+                      <div className="border-t border-gray-100 pt-4 flex-1">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center">
+                            <FaBriefcase className="w-4 h-4 mr-2 text-gray-500" />
+                            <span className="text-sm font-semibold text-gray-700">
+                              Projects ({designerProjects.length})
+                            </span>
+                          </div>
+                        </div>{" "}
+                        {designerProjects.length > 0 ? (
+                          <div className="space-y-2">
+                            {(expandedDesigners[designer._id]
+                              ? designerProjects
+                              : designerProjects.slice(0, 2)
+                            ).map((project) => (
+                              <div
+                                key={project._id}
+                                className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 hover:bg-blue-50 hover:border-blue-200 transition-colors cursor-pointer"
+                                onClick={() => handleProjectClick(project._id)}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-medium text-sm text-gray-800 truncate pr-2">
+                                    {project.title}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span
+                                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                                      project.status
+                                    )}`}
+                                  >
+                                    {project.status}
+                                  </span>
+                                  {project.budget && (
+                                    <span className="text-xs text-gray-600 font-semibold">
+                                      ₱{project.budget.toLocaleString()}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+
+                            {designerProjects.length > 2 && (
+                              <div className="text-center pt-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleDesignerProjects(designer._id);
+                                  }}
+                                  className="text-xs text-blue-600 font-medium hover:text-blue-800 transition-colors cursor-pointer"
+                                >
+                                  {expandedDesigners[designer._id]
+                                    ? "Show less"
+                                    : `+${
+                                        designerProjects.length - 2
+                                      } more projects`}
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         ) : (
-                          <>
+                          <div className="bg-gray-50 rounded-lg px-3 py-4 text-center border-2 border-dashed border-gray-200">
+                            <p className="text-xs text-gray-500">
+                              No projects yet
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+      {/* Mobile App Home Content Management Section */}
+      {role === "admin" ||
+        (role === "storage_admin" && (
+          <div className="col-span-8 bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl p-8 shadow-lg border border-slate-200">
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-blue-600 rounded-lg">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="font-bold text-2xl text-slate-800">
+                  Mobile App Content Manager
+                </h2>
+              </div>
+              <p className="text-slate-600 text-lg">
+                Real-time preview and management of your mobile application's
+                home screen content
+              </p>
+            </div>
+
+            {mobileContentLoading ? (
+              <div className="flex justify-center items-center h-64 bg-white rounded-xl shadow-sm">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+                  <span className="text-slate-600 text-lg">
+                    Loading mobile content...
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="grid lg:grid-cols-2 gap-8">
+                {/* Control Panel */}
+                <div className="space-y-6">
+                  {/* Carousel Management */}
+                  <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                    <div className="flex justify-between items-center mb-6">
+                      <div>
+                        <h3 className="font-bold text-xl text-slate-800 mb-2">
+                          Carousel Images
+                        </h3>
+                        <p className="text-slate-600">
+                          Manage the main showcase images for your mobile app
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleCarouselImageUpload}
+                          className="hidden"
+                          id="carousel-upload"
+                          disabled={uploadingCarouselImage}
+                        />
+                        <label
+                          htmlFor="carousel-upload"
+                          className={`${
+                            uploadingCarouselImage
+                              ? "bg-slate-400 cursor-not-allowed"
+                              : "bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 cursor-pointer shadow-lg hover:shadow-xl"
+                          } text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 transform hover:scale-105`}
+                        >
+                          {uploadingCarouselImage ? (
+                            <>
+                              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 4v16m8-8H4"
+                                />
+                              </svg>
+                              Add New Image
+                            </>
+                          )}
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Image Count and Stats */}
+                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg mb-4">
+                      <div className="flex items-center gap-2">
+                        <svg
+                          className="w-5 h-5 text-slate-500"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span className="font-semibold text-slate-700">
+                          {mobileContent?.carouselImages?.length || 0} Images
+                        </span>
+                      </div>
+                      <span className="text-sm text-slate-500">
+                        {mobileContent?.carouselImages?.length > 0
+                          ? `Current: ${currentImageIndex + 1} of ${
+                              mobileContent.carouselImages.length
+                            }`
+                          : "No images uploaded"}
+                      </span>
+                    </div>
+
+                    {/* Image Management Grid */}
+                    {mobileContent?.carouselImages?.length > 0 && (
+                      <div className="space-y-3 max-h-60 overflow-y-auto">
+                        {mobileContent.carouselImages.map((image, index) => (
+                          <div
+                            key={image._id || index}
+                            className={`flex items-center gap-4 p-3 rounded-lg border-2 transition-all duration-300 ${
+                              index === currentImageIndex
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-slate-200 bg-white hover:border-slate-300"
+                            }`}
+                          >
+                            <div className="flex-shrink-0">
+                              <img
+                                src={image.url}
+                                alt={image.alt || `Image ${index + 1}`}
+                                className="w-16 h-16 object-cover rounded-lg border border-slate-200"
+                                onError={(e) => {
+                                  e.target.style.backgroundColor = "#f3f4f6";
+                                  e.target.style.display = "flex";
+                                  e.target.style.alignItems = "center";
+                                  e.target.style.justifyContent = "center";
+                                  e.target.innerHTML =
+                                    '<span style="color: #6b7280; font-size: 10px;">Error</span>';
+                                }}
+                              />
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-medium text-slate-700">
+                                  Image {index + 1}
+                                </span>
+                                {index === currentImageIndex && (
+                                  <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                    Current
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-slate-500 truncate">
+                                {image.alt || "No description"}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => goToImage(index)}
+                                className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                                title="Preview this image"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                  />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const confirmed = window.confirm(
+                                    `Are you sure you want to delete Image ${
+                                      index + 1
+                                    }? This action cannot be undone.`
+                                  );
+                                  if (confirmed) {
+                                    handleRemoveCarouselImage(image._id);
+                                  }
+                                }}
+                                className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors group"
+                                title="Delete this image"
+                              >
+                                <svg
+                                  className="w-4 h-4 group-hover:scale-110 transition-transform"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* About Text Management */}
+                  <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                    <div className="flex justify-between items-center mb-6">
+                      <div>
+                        <h3 className="font-bold text-xl text-slate-800 mb-2">
+                          About Us Content
+                        </h3>
+                        <p className="text-slate-600">
+                          Edit the introductory text for your mobile app
+                        </p>
+                      </div>
+                      {!editingAboutText && (
+                        <button
+                          onClick={() => {
+                            setEditingAboutText(true);
+                            setAboutTextValue(mobileContent?.aboutText || "");
+                          }}
+                          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                          Edit Content
+                        </button>
+                      )}
+                    </div>
+
+                    {editingAboutText ? (
+                      <div className="space-y-4">
+                        <div className="relative">
+                          <textarea
+                            value={aboutTextValue}
+                            onChange={(e) => setAboutTextValue(e.target.value)}
+                            className="w-full h-40 p-4 border border-slate-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-slate-700"
+                            placeholder="Enter compelling about us text that will engage your mobile app users..."
+                          />
+                          <div className="absolute bottom-3 right-3 text-xs text-slate-400">
+                            {aboutTextValue.length} characters
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={handleSaveAboutText}
+                            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl"
+                          >
                             <svg
                               className="w-5 h-5"
                               fill="none"
@@ -1772,471 +1986,264 @@ const HomePage = () => {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
-                                d="M12 4v16m8-8H4"
+                                d="M5 13l4 4L19 7"
                               />
                             </svg>
-                            Add New Image
-                          </>
-                        )}
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Image Count and Stats */}
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg mb-4">
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="w-5 h-5 text-slate-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <span className="font-semibold text-slate-700">
-                        {mobileContent?.carouselImages?.length || 0} Images
-                      </span>
-                    </div>
-                    <span className="text-sm text-slate-500">
-                      {mobileContent?.carouselImages?.length > 0
-                        ? `Current: ${currentImageIndex + 1} of ${
-                            mobileContent.carouselImages.length
-                          }`
-                        : "No images uploaded"}
-                    </span>
-                  </div>
-
-                  {/* Image Management Grid */}
-                  {mobileContent?.carouselImages?.length > 0 && (
-                    <div className="space-y-3 max-h-60 overflow-y-auto">
-                      {mobileContent.carouselImages.map((image, index) => (
-                        <div
-                          key={image._id || index}
-                          className={`flex items-center gap-4 p-3 rounded-lg border-2 transition-all duration-300 ${
-                            index === currentImageIndex
-                              ? "border-blue-500 bg-blue-50"
-                              : "border-slate-200 bg-white hover:border-slate-300"
-                          }`}
-                        >
-                          <div className="flex-shrink-0">
-                            <img
-                              src={image.url}
-                              alt={image.alt || `Image ${index + 1}`}
-                              className="w-16 h-16 object-cover rounded-lg border border-slate-200"
-                              onError={(e) => {
-                                e.target.style.backgroundColor = "#f3f4f6";
-                                e.target.style.display = "flex";
-                                e.target.style.alignItems = "center";
-                                e.target.style.justifyContent = "center";
-                                e.target.innerHTML =
-                                  '<span style="color: #6b7280; font-size: 10px;">Error</span>';
-                              }}
-                            />
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium text-slate-700">
-                                Image {index + 1}
-                              </span>
-                              {index === currentImageIndex && (
-                                <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                                  Current
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm text-slate-500 truncate">
-                              {image.alt || "No description"}
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => goToImage(index)}
-                              className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
-                              title="Preview this image"
+                            Save Changes
+                          </button>
+                          <button
+                            onClick={handleCancelEditAboutText}
+                            className="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
                             >
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => {
-                                const confirmed = window.confirm(
-                                  `Are you sure you want to delete Image ${
-                                    index + 1
-                                  }? This action cannot be undone.`
-                                );
-                                if (confirmed) {
-                                  handleRemoveCarouselImage(image._id);
-                                }
-                              }}
-                              className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors group"
-                              title="Delete this image"
-                            >
-                              <svg
-                                className="w-4 h-4 group-hover:scale-110 transition-transform"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                />
-                              </svg>
-                            </button>
-                          </div>
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                            Cancel
+                          </button>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* About Text Management */}
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                  <div className="flex justify-between items-center mb-6">
-                    <div>
-                      <h3 className="font-bold text-xl text-slate-800 mb-2">
-                        About Us Content
-                      </h3>
-                      <p className="text-slate-600">
-                        Edit the introductory text for your mobile app
-                      </p>
-                    </div>
-                    {!editingAboutText && (
-                      <button
-                        onClick={() => {
-                          setEditingAboutText(true);
-                          setAboutTextValue(mobileContent?.aboutText || "");
-                        }}
-                        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                        Edit Content
-                      </button>
+                      </div>
+                    ) : (
+                      <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-lg border border-slate-200">
+                        <div className="flex items-start gap-3">
+                          <svg
+                            className="w-6 h-6 text-slate-400 mt-1 flex-shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                            />
+                          </svg>
+                          <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">
+                            {mobileContent?.aboutText || (
+                              <span className="text-slate-400 italic">
+                                No about text has been set yet. Click 'Edit
+                                Content' to add your company's introduction.
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
                     )}
                   </div>
-
-                  {editingAboutText ? (
-                    <div className="space-y-4">
-                      <div className="relative">
-                        <textarea
-                          value={aboutTextValue}
-                          onChange={(e) => setAboutTextValue(e.target.value)}
-                          className="w-full h-40 p-4 border border-slate-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-slate-700"
-                          placeholder="Enter compelling about us text that will engage your mobile app users..."
-                        />
-                        <div className="absolute bottom-3 right-3 text-xs text-slate-400">
-                          {aboutTextValue.length} characters
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={handleSaveAboutText}
-                          className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                          Save Changes
-                        </button>
-                        <button
-                          onClick={handleCancelEditAboutText}
-                          className="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-lg border border-slate-200">
-                      <div className="flex items-start gap-3">
-                        <svg
-                          className="w-6 h-6 text-slate-400 mt-1 flex-shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                          />
-                        </svg>
-                        <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">
-                          {mobileContent?.aboutText || (
-                            <span className="text-slate-400 italic">
-                              No about text has been set yet. Click 'Edit
-                              Content' to add your company's introduction.
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  )}
                 </div>
-              </div>
 
-              {/* Live Mobile Preview */}
-              <div className="flex justify-center">
-                <div className="relative">
-                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-[4rem] blur opacity-20"></div>
-                  <div className="relative max-w-sm mx-auto bg-slate-900 rounded-[3.5rem] p-3 shadow-2xl">
-                    <div className="bg-white rounded-[3rem] overflow-hidden relative">
-                      {/* Status Bar - Hidden to match Flutter app */}
+                {/* Live Mobile Preview */}
+                <div className="flex justify-center">
+                  <div className="relative">
+                    <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-[4rem] blur opacity-20"></div>
+                    <div className="relative max-w-sm mx-auto bg-slate-900 rounded-[3.5rem] p-3 shadow-2xl">
+                      <div className="bg-white rounded-[3rem] overflow-hidden relative">
+                        {/* Status Bar - Hidden to match Flutter app */}
 
-                      {/* Navigation buttons - Match Flutter exactly */}
-                      <div className="p-6 pb-4 bg-white">
-                        <div className="flex justify-center gap-4">
-                          <div className="w-36 py-3 bg-[#203B32] rounded-full">
-                            <p className="text-white text-center text-sm font-medium">
-                              Home
-                            </p>
-                          </div>
-                          <div className="w-36 py-3 bg-white border border-gray-300 rounded-full">
-                            <p className="text-black text-center text-sm font-medium">
-                              Projects
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Moss In Numbers section - Match Flutter exactly */}
-                      <div className="px-6 pb-4">
-                        <div className="border border-gray-300 rounded-xl p-4">
-                          <h4 className="text-[#203B32] font-bold text-xl text-center mb-3">
-                            Moss In Numbers
-                          </h4>
-                          <div className="flex justify-around">
-                            <div className="text-center">
-                              <p className="text-[#0a4b39] font-bold text-2xl">
-                                {designers.length}
-                              </p>
-                              <p className="text-gray-600 text-sm mt-1">
-                                Current Designers
+                        {/* Navigation buttons - Match Flutter exactly */}
+                        <div className="p-6 pb-4 bg-white">
+                          <div className="flex justify-center gap-4">
+                            <div className="w-36 py-3 bg-[#203B32] rounded-full">
+                              <p className="text-white text-center text-sm font-medium">
+                                Home
                               </p>
                             </div>
-                            <div className="text-center">
-                              <p className="text-[#0a4b39] font-bold text-2xl">
-                                {projectStates.completed || 0}
-                              </p>
-                              <p className="text-gray-600 text-sm mt-1">
-                                Projects Completed
+                            <div className="w-36 py-3 bg-white border border-gray-300 rounded-full">
+                              <p className="text-black text-center text-sm font-medium">
+                                Projects
                               </p>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Carousel Section - Match Flutter height and styling */}
-                      <div className="px-6 pb-4">
-                        <div className="h-48 relative overflow-hidden rounded-xl">
-                          {mobileContent?.carouselImages?.length > 0 ? (
-                            <>
-                              {mobileContent.carouselImages.map(
-                                (image, index) => (
-                                  <div
-                                    key={image._id || index}
-                                    className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-                                      index === currentImageIndex
-                                        ? "opacity-100 scale-100"
-                                        : "opacity-0 scale-105"
-                                    }`}
-                                  >
-                                    <img
-                                      src={image.url}
-                                      alt={image.alt || `Showcase ${index + 1}`}
-                                      className="w-full h-full object-cover rounded-xl"
-                                      onError={(e) => {
-                                        console.error(
-                                          "Failed to load carousel image:",
-                                          image.url
-                                        );
-                                        e.target.style.backgroundColor =
-                                          "#f3f4f6";
-                                        e.target.style.display = "flex";
-                                        e.target.style.alignItems = "center";
-                                        e.target.style.justifyContent =
-                                          "center";
-                                        e.target.innerHTML =
-                                          '<span style="color: #6b7280;">Image loading error</span>';
-                                      }}
-                                    />
-                                  </div>
-                                )
-                              )}
-
-                              {/* Navigation arrows - Flutter style */}
-                              {mobileContent.carouselImages.length > 1 && (
-                                <>
-                                  <button
-                                    onClick={prevImage}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-all z-10"
-                                  >
-                                    <svg
-                                      className="w-4 h-4"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M15 19l-7-7 7-7"
-                                      />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={nextImage}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-all z-10"
-                                  >
-                                    <svg
-                                      className="w-4 h-4"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 5l7 7-7 7"
-                                      />
-                                    </svg>
-                                  </button>
-                                </>
-                              )}
-
-                              {/* Dot indicators - Match Flutter design */}
-                              {mobileContent.carouselImages.length > 1 && (
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
-                                  {mobileContent.carouselImages.map(
-                                    (_, index) => (
-                                      <button
-                                        key={index}
-                                        onClick={() => goToImage(index)}
-                                        className={`w-2 h-2 rounded-full transition-all ${
-                                          index === currentImageIndex
-                                            ? "bg-[#0a4b39]"
-                                            : "bg-white/60"
-                                        }`}
-                                      />
-                                    )
-                                  )}
-                                </div>
-                              )}
-                            </>
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-xl border-2 border-dashed border-gray-300">
-                              <div className="text-center text-gray-500">
-                                <svg
-                                  className="w-12 h-12 mx-auto mb-3 text-gray-300"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={1.5}
-                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                  />
-                                </svg>
-                                <p className="text-sm font-medium mb-1">
-                                  No showcase images
+                        {/* Moss In Numbers section - Match Flutter exactly */}
+                        <div className="px-6 pb-4">
+                          <div className="border border-gray-300 rounded-xl p-4">
+                            <h4 className="text-[#203B32] font-bold text-xl text-center mb-3">
+                              Moss In Numbers
+                            </h4>
+                            <div className="flex justify-around">
+                              <div className="text-center">
+                                <p className="text-[#0a4b39] font-bold text-2xl">
+                                  {designers.length}
                                 </p>
-                                <p className="text-xs text-gray-400">
-                                  Upload images to preview here
+                                <p className="text-gray-600 text-sm mt-1">
+                                  Current Designers
+                                </p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-[#0a4b39] font-bold text-2xl">
+                                  {projectStates.completed || 0}
+                                </p>
+                                <p className="text-gray-600 text-sm mt-1">
+                                  Projects Completed
                                 </p>
                               </div>
                             </div>
-                          )}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* About section - Match Flutter styling exactly */}
-                      <div className="p-6 bg-white">
-                        <h5 className="font-medium text-base mb-3">
-                          about us :
-                        </h5>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                          {mobileContent?.aboutText || (
-                            <span className="text-gray-400 italic">
-                              Your company introduction will appear here. Add
-                              content using the editor on the left.
-                            </span>
-                          )}
-                        </p>
+                        {/* Carousel Section - Match Flutter height and styling */}
+                        <div className="px-6 pb-4">
+                          <div className="h-48 relative overflow-hidden rounded-xl">
+                            {mobileContent?.carouselImages?.length > 0 ? (
+                              <>
+                                {mobileContent.carouselImages.map(
+                                  (image, index) => (
+                                    <div
+                                      key={image._id || index}
+                                      className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                                        index === currentImageIndex
+                                          ? "opacity-100 scale-100"
+                                          : "opacity-0 scale-105"
+                                      }`}
+                                    >
+                                      <img
+                                        src={image.url}
+                                        alt={
+                                          image.alt || `Showcase ${index + 1}`
+                                        }
+                                        className="w-full h-full object-cover rounded-xl"
+                                        onError={(e) => {
+                                          console.error(
+                                            "Failed to load carousel image:",
+                                            image.url
+                                          );
+                                          e.target.style.backgroundColor =
+                                            "#f3f4f6";
+                                          e.target.style.display = "flex";
+                                          e.target.style.alignItems = "center";
+                                          e.target.style.justifyContent =
+                                            "center";
+                                          e.target.innerHTML =
+                                            '<span style="color: #6b7280;">Image loading error</span>';
+                                        }}
+                                      />
+                                    </div>
+                                  )
+                                )}
+
+                                {/* Navigation arrows - Flutter style */}
+                                {mobileContent.carouselImages.length > 1 && (
+                                  <>
+                                    <button
+                                      onClick={prevImage}
+                                      className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-all z-10"
+                                    >
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M15 19l-7-7 7-7"
+                                        />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      onClick={nextImage}
+                                      className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-all z-10"
+                                    >
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M9 5l7 7-7 7"
+                                        />
+                                      </svg>
+                                    </button>
+                                  </>
+                                )}
+
+                                {/* Dot indicators - Match Flutter design */}
+                                {mobileContent.carouselImages.length > 1 && (
+                                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+                                    {mobileContent.carouselImages.map(
+                                      (_, index) => (
+                                        <button
+                                          key={index}
+                                          onClick={() => goToImage(index)}
+                                          className={`w-2 h-2 rounded-full transition-all ${
+                                            index === currentImageIndex
+                                              ? "bg-[#0a4b39]"
+                                              : "bg-white/60"
+                                          }`}
+                                        />
+                                      )
+                                    )}
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-xl border-2 border-dashed border-gray-300">
+                                <div className="text-center text-gray-500">
+                                  <svg
+                                    className="w-12 h-12 mx-auto mb-3 text-gray-300"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={1.5}
+                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
+                                  </svg>
+                                  <p className="text-sm font-medium mb-1">
+                                    No showcase images
+                                  </p>
+                                  <p className="text-xs text-gray-400">
+                                    Upload images to preview here
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* About section - Match Flutter styling exactly */}
+                        <div className="p-6 bg-white">
+                          <h5 className="font-medium text-base mb-3">
+                            about us :
+                          </h5>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {mobileContent?.aboutText || (
+                              <span className="text-gray-400 italic">
+                                Your company introduction will appear here. Add
+                                content using the editor on the left.
+                              </span>
+                            )}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        ))}
     </div>
   );
 };

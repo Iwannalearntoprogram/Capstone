@@ -443,6 +443,19 @@ const file_delete = catchAsync(async (req, res, next) => {
     return next(new AppError("Project not found", 404));
   }
 
+  // Authorization: allow if project owner, admin, or storage_admin
+  if (
+    project.projectCreator?.toString() !== req.id &&
+    !["admin", "storage_admin"].includes(req.role)
+  ) {
+    return next(
+      new AppError(
+        "You are not authorized to delete files for this project",
+        403
+      )
+    );
+  }
+
   // Check if file exists in project files array
   if (!project.files || !project.files.includes(fileUrl)) {
     return next(new AppError("File not found in project", 404));

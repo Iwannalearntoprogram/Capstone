@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema(
     avatar: String,
     role: {
       type: String,
-      enum: ["admin", "designer", "client"],
+      enum: ["admin", "designer", "client", "storage_admin"],
       default: "client",
     },
     isArchived: { type: Boolean, default: false },

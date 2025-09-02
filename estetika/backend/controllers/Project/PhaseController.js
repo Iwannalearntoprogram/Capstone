@@ -65,8 +65,7 @@ const phase_get = catchAsync(async (req, res, next) => {
 // Create Phase
 const phase_post = catchAsync(async (req, res, next) => {
   const userId = req.id;
-  const { title, startDate, endDate, projectId, progress } =
-    req.body;
+  const { title, startDate, endDate, projectId, progress } = req.body;
 
   const isUserValid = await User.findById(userId);
 
@@ -108,18 +107,11 @@ const phase_post = catchAsync(async (req, res, next) => {
 // Update Phase
 const phase_put = catchAsync(async (req, res, next) => {
   const { id } = req.query;
-  const { title, startDate, endDate, projectId, progress } =
-    req.body;
+  const { title, startDate, endDate, projectId, progress } = req.body;
 
   if (!id) return next(new AppError("Phase identifier not found", 400));
 
-  if (
-    !title &&
-    !startDate &&
-    !endDate &&
-    !projectId &&
-    !progress
-  ) {
+  if (!title && !startDate && !endDate && !projectId && !progress) {
     return next(new AppError("No data to update", 400));
   }
 
@@ -159,7 +151,10 @@ const phase_delete = catchAsync(async (req, res, next) => {
   const phase = await Phase.findById(id);
   if (!phase) return next(new AppError("Phase not found", 404));
 
-  if (phase.userId.toString() !== req.id && req.role !== "admin") {
+  if (
+    phase.userId.toString() !== req.id &&
+    !["admin", "storage_admin"].includes(req.role)
+  ) {
     return next(
       new AppError("You are not authorized to delete this phase", 403)
     );
