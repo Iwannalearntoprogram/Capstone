@@ -38,7 +38,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     final response = await http.get(
       Uri.parse(
-          'https://capstone-thl5.onrender.com/api/user/notification?recipient=$userId'),
+          'https://capstone-moss.onrender.com/api/user/notification?recipient=$userId'),
       headers: {'Authorization': 'Bearer $token'},
     );
     if (response.statusCode == 200) {

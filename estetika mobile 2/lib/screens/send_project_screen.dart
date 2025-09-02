@@ -184,7 +184,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       };
       print("Recommendation request body: $requestBody");
       final uri = Uri.parse(
-              'https://capstone-thl5.onrender.com/api/project/recommendation/match')
+              'https://capstone-moss.onrender.com/api/project/recommendation/match')
           .replace(queryParameters: {
         'roomType': _roomType ?? '',
         'designPreferences': _descriptionController.text,
@@ -1013,7 +1013,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://capstone-thl5.onrender.com/api/project'),
+        Uri.parse('https://capstone-moss.onrender.com/api/project'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

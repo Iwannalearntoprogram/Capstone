@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       final response = await http.get(
-        Uri.parse('https://capstone-thl5.onrender.com/api/project?index=true'),
+        Uri.parse('https://capstone-moss.onrender.com/api/project?index=true'),
         headers: {
           if (token != null) 'Authorization': 'Bearer $token',
         },
@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       final response = await http.get(
-        Uri.parse('https://capstone-thl5.onrender.com/api/user'),
+        Uri.parse('https://capstone-moss.onrender.com/api/user'),
         headers: {
           if (token != null) 'Authorization': 'Bearer $token',
         },
