@@ -14,7 +14,9 @@ const userSchema = new mongoose.Schema(
     },
     fullName: {
       type: String,
-      required: [true, "Full name is required"],
+      required: function () {
+        return !this.googleId;
+      },
       trim: true,
     },
     email: {
@@ -29,9 +31,16 @@ const userSchema = new mongoose.Schema(
       unique: true,
     },
     aboutMe: String,
-    password: { type: String, required: [true, "Password is required"] },
+    password: {
+      type: String,
+      required: function () {
+        return !this.googleId;
+      },
+    },
     phoneNumber: String,
     profileImage: String,
+    googleId: { type: String, unique: true, sparse: true },
+    avatar: String,
     role: {
       type: String,
       enum: ["admin", "designer", "client"],

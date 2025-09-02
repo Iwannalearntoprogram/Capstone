@@ -1,6 +1,7 @@
 import 'package:estetika_ui/screens/signin_screen.dart';
 import 'package:estetika_ui/screens/welcome_screen.dart';
 import 'package:estetika_ui/widgets/custom_scaffold.dart';
+import 'package:estetika_ui/widgets/google_sign_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -24,7 +25,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -68,7 +70,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _registerUser() async {
-    final url = Uri.parse('https://capstone-thl5.onrender.com/api/auth/register');
+    final url =
+        Uri.parse('https://capstone-thl5.onrender.com/api/auth/register');
     final body = {
       "username": _usernameController.text.trim(),
       "firstName": _firstNameController.text.trim(),
@@ -90,7 +93,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (response.statusCode == 201) {
         print('Registration successful: $data');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration successful! Please sign in.')),
+          const SnackBar(
+              content: Text('Registration successful! Please sign in.')),
         );
         Navigator.pushReplacement(
           context,
@@ -172,7 +176,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           label: const Text('First Name'),
                                           hintText: 'First Name',
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                           ),
                                         ),
                                       ),
@@ -189,7 +194,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           label: const Text('Last Name'),
                                           hintText: 'Last Name',
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                           ),
                                         ),
                                       ),
@@ -335,12 +341,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   width: double.infinity,
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      if (_formSignupKey.currentState!.validate() && agreePersonalData) {
+                                      if (_formSignupKey.currentState!
+                                              .validate() &&
+                                          agreePersonalData) {
                                         _registerUser();
                                       } else if (!agreePersonalData) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           const SnackBar(
-                                            content: Text('Please agree to the processing of personal data'),
+                                            content: Text(
+                                                'Please agree to the processing of personal data'),
                                           ),
                                         );
                                       }
@@ -358,6 +368,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       ),
                                     ),
                                   ),
+                                ),
+                                const SizedBox(height: 25.0),
+                                const Row(
+                                  children: [
+                                    Expanded(child: Divider()),
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 16),
+                                      child: Text(
+                                        'OR',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontFamily: 'Figtree',
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(child: Divider()),
+                                  ],
+                                ),
+                                const SizedBox(height: 25.0),
+                                const GoogleSignInButton(
+                                  buttonText: 'Sign up with Google',
+                                  isSignUp: true,
                                 ),
                                 const SizedBox(height: 25.0),
                                 Row(

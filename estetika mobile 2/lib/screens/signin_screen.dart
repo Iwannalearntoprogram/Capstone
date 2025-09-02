@@ -2,6 +2,7 @@ import 'package:estetika_ui/screens/signup_screen.dart';
 import 'package:estetika_ui/screens/welcome_screen.dart';
 import 'package:estetika_ui/screens/home_screen.dart';
 import 'package:estetika_ui/widgets/custom_scaffold.dart';
+import 'package:estetika_ui/widgets/google_sign_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:estetika_ui/screens/forgot_password_screen.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -454,6 +455,29 @@ class _SignInScreenState extends State<SigninScreen> {
                               ),
                             ),
                           ),
+                        ),
+                        const SizedBox(height: 25.0),
+                        const Row(
+                          children: [
+                            Expanded(child: Divider()),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                'OR',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontFamily: 'Figtree',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ),
+                            Expanded(child: Divider()),
+                          ],
+                        ),
+                        const SizedBox(height: 25.0),
+                        const GoogleSignInButton(
+                          buttonText: 'Sign in with Google',
+                          isSignUp: false,
                         ),
                         const SizedBox(height: 25.0),
                         Row(
