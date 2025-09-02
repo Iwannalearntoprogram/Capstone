@@ -190,7 +190,7 @@ const event_delete = catchAsync(async (req, res, next) => {
   if (
     event.userId &&
     event.userId.toString() !== req.id &&
-    req.role !== "admin"
+    !["admin", "storage_admin"].includes(req.role)
   ) {
     return next(
       new AppError("You are not authorized to delete this event", 403)

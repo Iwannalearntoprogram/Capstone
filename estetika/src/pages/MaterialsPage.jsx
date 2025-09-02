@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import MaterialList from "../components/materials/MaterialList";
-import { FiSearch, FiPlus, FiTrash2 } from "react-icons/fi";
+import MaterialModal from "../components/materials/MaterialModal";
+import DeleteConfirmationModal from "../components/materials/DeleteConfirmationModal";
+import Toast from "../components/common/Toast";
+import { FiSearch, FiPlus } from "react-icons/fi";
 import Cookies from "js-cookie";
 import axios from "axios";
 
@@ -10,6 +13,8 @@ const MaterialsPage = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingMaterialId, setEditingMaterialId] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [newMaterial, setNewMaterial] = useState({
     name: "",
@@ -21,6 +26,29 @@ const MaterialsPage = () => {
     image: [],
   });
   const [selectedImages, setSelectedImages] = useState([]);
+  const [selectedImagePreviews, setSelectedImagePreviews] = useState([]);
+  const [existingImageUrls, setExistingImageUrls] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Delete modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [materialToDelete, setMaterialToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Toast notification state
+  const [toast, setToast] = useState({
+    isVisible: false,
+    message: "",
+    type: "success",
+  });
+
+  const showToast = (message, type = "success") => {
+    setToast({ isVisible: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ ...toast, isVisible: false });
+  };
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -74,7 +102,7 @@ const MaterialsPage = () => {
         imageUrls = res.data.imageLink || [];
       } catch (error) {
         console.error("Error uploading images:", error);
-        alert("Error uploading images. Please try again.");
+        showToast("Error uploading images. Please try again.", "error");
         return;
       }
     }
@@ -96,7 +124,10 @@ const MaterialsPage = () => {
         !materialData.company ||
         !materialData.category
       ) {
-        alert("Please fill in all required fields (Name, Company, Category).");
+        showToast(
+          "Please fill in all required fields (Name, Company, Category).",
+          "warning"
+        );
         return;
       }
 
@@ -107,16 +138,171 @@ const MaterialsPage = () => {
         },
       });
 
-      setMaterialsData([...materialsData, res.data.material]);
+      const created = res.data.newMaterial || res.data.material;
+      if (created) {
+        setMaterialsData([...materialsData, created]);
+        showToast(
+          `Material "${created.name}" created successfully!`,
+          "success"
+        );
+      }
       setShowModal(false);
       resetForm();
     } catch (err) {
       console.error("Error adding material:", err);
-      alert("Error adding material. Please try again.");
+      showToast("Error adding material. Please try again.", "error");
     }
   };
 
+  const openEditModal = (material) => {
+    setIsEditMode(true);
+    setEditingMaterialId(material._id);
+    setNewMaterial({
+      name: material.name || "",
+      company: material.company || "",
+      price: material.price ?? 0,
+      description: material.description || "",
+      options: Array.isArray(material.options) ? material.options : [],
+      category: material.category || "",
+      image: Array.isArray(material.image) ? material.image : [],
+    });
+    setExistingImageUrls(Array.isArray(material.image) ? material.image : []);
+    setSelectedImages([]);
+    setSelectedImagePreviews([]);
+    setShowModal(true);
+  };
+
+  const handleUpdateMaterial = async () => {
+    if (!editingMaterialId) return;
+    setIsSaving(true);
+    const token = Cookies.get("token");
+
+    // Optional image upload for any newly selected files
+    let uploadedUrls = [];
+    if (selectedImages.length > 0) {
+      try {
+        const formData = new FormData();
+        selectedImages.forEach((image) => formData.append("image", image));
+        const uploadRes = await axios.post(
+          `${serverUrl}/api/upload/material`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        uploadedUrls = uploadRes.data.imageLink || [];
+      } catch (err) {
+        console.error("Error uploading images:", err);
+        showToast("Error uploading images. Please try again.", "error");
+        setIsSaving(false);
+        return;
+      }
+    }
+
+    const payload = {
+      name: newMaterial.name,
+      company: newMaterial.company,
+      price: Number(newMaterial.price),
+      description: newMaterial.description,
+      options: newMaterial.options,
+      category: newMaterial.category,
+      image: [...existingImageUrls, ...uploadedUrls],
+    };
+
+    try {
+      const res = await axios.put(
+        `${serverUrl}/api/material?id=${editingMaterialId}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const updated = res.data.updatedMaterial || res.data.material;
+      if (updated) {
+        setMaterialsData((prev) =>
+          prev.map((m) => (m._id === updated._id ? updated : m))
+        );
+        showToast(
+          `Material "${updated.name}" updated successfully!`,
+          "success"
+        );
+      }
+      setShowModal(false);
+      setIsEditMode(false);
+      setEditingMaterialId(null);
+      resetForm();
+    } catch (err) {
+      console.error("Error updating material:", err);
+      showToast(
+        err.response?.data?.message ||
+          "Error updating material. Please try again.",
+        "error"
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteMaterial = async (id, materialData) => {
+    const material = materialData || materialsData.find((m) => m._id === id);
+    if (!material) return;
+
+    setMaterialToDelete(material);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!materialToDelete) return;
+
+    setIsDeleting(true);
+    const token = Cookies.get("token");
+
+    try {
+      await axios.delete(`${serverUrl}/api/material`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { id: materialToDelete._id },
+      });
+
+      setMaterialsData((prev) =>
+        prev.filter((m) => m._id !== materialToDelete._id)
+      );
+      showToast(
+        `Material "${materialToDelete.name}" deleted successfully!`,
+        "success"
+      );
+      setShowDeleteModal(false);
+      setMaterialToDelete(null);
+    } catch (err) {
+      console.error("Error deleting material:", err);
+      showToast(
+        err.response?.data?.message || "Failed to delete material.",
+        "error"
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setMaterialToDelete(null);
+  };
+
+  const handleMaterialChange = (field, value) => {
+    setNewMaterial({ ...newMaterial, [field]: value });
+  };
+
   const resetForm = () => {
+    // Clean up any existing preview URLs to prevent memory leaks
+    selectedImagePreviews.forEach(url => URL.revokeObjectURL(url));
+    
     setNewMaterial({
       name: "",
       company: "",
@@ -127,6 +313,8 @@ const MaterialsPage = () => {
       category: "",
     });
     setSelectedImages([]);
+    setSelectedImagePreviews([]);
+    setExistingImageUrls([]);
   };
 
   const addOptionField = () => {
@@ -160,10 +348,25 @@ const MaterialsPage = () => {
   const handleImageSelection = (e) => {
     const files = Array.from(e.target.files);
     setSelectedImages((prev) => [...prev, ...files]);
+    
+    // Create preview URLs for the new files
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setSelectedImagePreviews((prev) => [...prev, ...newPreviews]);
   };
 
   const removeImage = (index) => {
+    // Clean up the preview URL to prevent memory leaks
+    const previewUrl = selectedImagePreviews[index];
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    
     setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+    setSelectedImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImageUrl = (index) => {
+    setExistingImageUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const filteredMaterials = materialsData.filter((mat) =>
@@ -171,250 +374,166 @@ const MaterialsPage = () => {
   );
 
   const canAddMaterial = userRole === "admin";
+  const canManageMaterials = userRole === "storage_admin";
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="mb-8 w-full flex items-center">
-        <div className="relative w-full max-w-md">
-          <input
-            type="text"
-            placeholder="Search materials..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full p-2 pl-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
-          />
-          <FiSearch
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={20}
-          />
-        </div>
-
-        {/* Only show Add Material button for admin */}
-        {canAddMaterial && (
-          <button
-            onClick={() => setShowModal(true)}
-            className="ml-4 bg-[#1D3C34] text-white px-4 py-2 rounded-full hover:bg-[#145c4b] transition flex items-center gap-2"
-          >
-            <FiPlus size={20} />
-            Add Material
-          </button>
-        )}
-      </div>
-
-      {loading ? (
-        <div className="text-gray-400 py-8">Loading materials...</div>
-      ) : (
-        <Outlet context={{ materialsData: filteredMaterials }} />
-      )}
-
-      {/* Only show modal if user can add materials */}
-      {showModal && canAddMaterial && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-[90%] max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Add New Material</h2>
-
-            <div className="space-y-6">
-              {/* Basic Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Material Name *"
-                  value={newMaterial.name}
-                  onChange={(e) =>
-                    setNewMaterial({ ...newMaterial, name: e.target.value })
-                  }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent"
-                />
-
-                <input
-                  type="text"
-                  placeholder="Company *"
-                  value={newMaterial.company}
-                  onChange={(e) =>
-                    setNewMaterial({ ...newMaterial, company: e.target.value })
-                  }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Category *"
-                  value={newMaterial.category}
-                  onChange={(e) =>
-                    setNewMaterial({ ...newMaterial, category: e.target.value })
-                  }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent"
-                />
-
-                <input
-                  type="number"
-                  placeholder="Base Price *"
-                  value={newMaterial.price}
-                  onChange={(e) =>
-                    setNewMaterial({ ...newMaterial, price: e.target.value })
-                  }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent"
-                />
-              </div>
-
-              <textarea
-                placeholder="Description"
-                value={newMaterial.description}
-                onChange={(e) =>
-                  setNewMaterial({
-                    ...newMaterial,
-                    description: e.target.value,
-                  })
-                }
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent resize-none"
-                rows={3}
-              />
-
-              {/* Options Section */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Material Options
-                  </label>
-                  <button
-                    type="button"
-                    onClick={addOptionField}
-                    className="bg-[#1D3C34] text-white px-3 py-1 rounded-lg text-sm hover:bg-[#145c4b] transition flex items-center gap-1"
-                  >
-                    <FiPlus size={14} />
-                    Add Option
-                  </button>
-                </div>
-
-                {newMaterial.options.length === 0 ? (
-                  <div className="text-gray-500 text-center py-4 border-2 border-dashed border-gray-300 rounded-lg">
-                    No options added yet. Click "Add Option" to start.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {newMaterial.options.map((option, index) => (
-                      <div
-                        key={index}
-                        className="p-4 bg-gray-50 rounded-lg border"
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-medium text-gray-700">
-                            Option {index + 1}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeOption(index)}
-                            className="text-red-500 hover:text-red-700 transition"
-                          >
-                            <FiTrash2 size={16} />
-                          </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          <select
-                            value={option.type}
-                            onChange={(e) =>
-                              updateOption(index, "type", e.target.value)
-                            }
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent"
-                          >
-                            <option value="">Select Type</option>
-                            <option value="size">Size</option>
-                            <option value="color">Color</option>
-                            <option value="type">Type</option>
-                          </select>
-
-                          <input
-                            type="text"
-                            placeholder="Option name"
-                            value={option.option}
-                            onChange={(e) =>
-                              updateOption(index, "option", e.target.value)
-                            }
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent"
-                          />
-
-                          <input
-                            type="number"
-                            placeholder="Price addition"
-                            value={option.addToPrice}
-                            onChange={(e) =>
-                              updateOption(index, "addToPrice", e.target.value)
-                            }
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Images Section */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Images
-                </label>
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageSelection}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent"
-                />
-
-                {selectedImages.length > 0 && (
-                  <div className="mt-3">
-                    <p className="text-sm text-gray-600 mb-2">
-                      Selected Images ({selectedImages.length}):
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedImages.map((image, index) => (
-                        <div
-                          key={index}
-                          className="relative bg-gray-100 p-2 rounded-lg"
-                        >
-                          <span className="text-xs text-gray-600">
-                            {image.name}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="ml-2 text-red-500 hover:text-red-700"
-                          >
-                            <FiTrash2 size={12} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+    <div className="flex flex-col items-center min-h-screen bg-gray-50">
+      <div className="w-full max-w-7xl mx-auto p-6">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Materials Management
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Manage your material inventory and catalog
+              </p>
             </div>
 
-            <div className="flex justify-end gap-3 mt-8">
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  resetForm();
-                }}
-                className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddMaterial}
-                className="px-6 py-2 bg-[#1D3C34] text-white rounded-lg hover:bg-[#145c4b] transition"
-              >
-                Add Material
-              </button>
+            {/* Search and Add Button */}
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search materials..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-64 p-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent shadow-sm transition-all"
+                />
+                <FiSearch
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
+              </div>
+
+              {/* Show Add Material button for admin or storage_admin */}
+              {(canAddMaterial || canManageMaterials) && (
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="bg-gradient-to-r from-[#1D3C34] to-[#2a5a47] text-white px-6 py-3 rounded-xl hover:from-[#145c4b] hover:to-[#1e4638] transition-all flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <FiPlus size={20} />
+                  Add Material
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Stats Bar */}
+          <div className="mt-6 bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-[#1D3C34]">
+                    {materialsData.length}
+                  </div>
+                  <div className="text-sm text-gray-600">Total Materials</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-[#1D3C34]">
+                    {filteredMaterials.length}
+                  </div>
+                  <div className="text-sm text-gray-600">Filtered Results</div>
+                </div>
+              </div>
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="text-sm text-gray-500 hover:text-gray-700 underline"
+                >
+                  Clear search
+                </button>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Content */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-8 h-8 border-4 border-[#1D3C34] border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-gray-500">Loading materials...</p>
+          </div>
+        ) : filteredMaterials.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="text-gray-400 mb-4">
+              <FiSearch size={48} className="mx-auto" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {search ? "No materials found" : "No materials yet"}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {search
+                ? `No materials match "${search}". Try adjusting your search.`
+                : "Get started by adding your first material to the catalog."}
+            </p>
+            {!search && (canAddMaterial || canManageMaterials) && (
+              <button
+                onClick={() => setShowModal(true)}
+                className="bg-gradient-to-r from-[#1D3C34] to-[#2a5a47] text-white px-6 py-3 rounded-xl hover:from-[#145c4b] hover:to-[#1e4638] transition-all flex items-center gap-2 shadow-lg mx-auto"
+              >
+                <FiPlus size={20} />
+                Add Your First Material
+              </button>
+            )}
+          </div>
+        ) : (
+          <Outlet
+            context={{
+              materialsData: filteredMaterials,
+              canManageMaterials,
+              onEditMaterial: openEditModal,
+              onDeleteMaterial: handleDeleteMaterial,
+            }}
+          />
+        )}
+      </div>
+
+      {/* Material Modal */}
+      {showModal && (canAddMaterial || canManageMaterials) && (
+        <MaterialModal
+          isOpen={showModal}
+          isEditMode={isEditMode}
+          isSaving={isSaving}
+          material={newMaterial}
+          selectedImages={selectedImages}
+          selectedImagePreviews={selectedImagePreviews}
+          existingImageUrls={existingImageUrls}
+          onClose={() => {
+            setShowModal(false);
+            setIsEditMode(false);
+            setEditingMaterialId(null);
+            resetForm();
+          }}
+          onSave={isEditMode ? handleUpdateMaterial : handleAddMaterial}
+          onImageSelection={handleImageSelection}
+          onRemoveImage={removeImage}
+          onRemoveExistingImage={removeExistingImageUrl}
+          onMaterialChange={handleMaterialChange}
+          onAddOption={addOptionField}
+          onUpdateOption={updateOption}
+          onRemoveOption={removeOption}
+        />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        isDeleting={isDeleting}
+        materialName={materialToDelete?.name}
+        materialCompany={materialToDelete?.company}
+      />
+
+      {/* Toast Notifications */}
+      <Toast
+        isVisible={toast.isVisible}
+        message={toast.message}
+        type={toast.type}
+        onClose={hideToast}
+      />
     </div>
   );
 };
