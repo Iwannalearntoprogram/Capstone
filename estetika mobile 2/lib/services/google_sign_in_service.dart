@@ -2,6 +2,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:estetika_ui/utils/logger.dart';
 
 class GoogleSignInService {
   static const String _baseUrl =
@@ -16,26 +17,26 @@ class GoogleSignInService {
 
   static Future<Map<String, dynamic>?> signInWithGoogle() async {
     try {
-      print('🚀 Starting Google Sign In process...');
+      AppLogger.info('Starting Google Sign In process...');
 
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
-        print('❌ User cancelled Google Sign In');
+        AppLogger.warn('User cancelled Google Sign In');
         return {'success': false, 'message': 'Sign in cancelled by user'};
       }
 
-      print('✅ Google user obtained: ${googleUser.email}');
+      AppLogger.info('Google user obtained: ${googleUser.email}');
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
       if (googleAuth.accessToken == null) {
-        print('❌ Failed to get access token');
+        AppLogger.error('Failed to get access token');
         throw Exception('Failed to get access token');
       }
 
-      print('✅ Got access token, sending to backend...');
+      AppLogger.info('Got access token, sending to backend...');
 
       final response = await http.post(
         Uri.parse('$_baseUrl/google'),
@@ -45,8 +46,8 @@ class GoogleSignInService {
         }),
       );
 
-      print('📡 Backend response status: ${response.statusCode}');
-      print('📡 Backend response body: ${response.body}');
+      AppLogger.info('Google backend response status: ${response.statusCode}');
+      AppLogger.info('Google backend response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
@@ -55,7 +56,7 @@ class GoogleSignInService {
         await prefs.setString('token', data['token'] ?? '');
         await prefs.setString('user', jsonEncode(data['user'] ?? {}));
 
-        print('✅ Successfully authenticated with backend');
+        AppLogger.info('Successfully authenticated with backend');
 
         return {
           'success': true,
@@ -65,14 +66,15 @@ class GoogleSignInService {
         };
       } else {
         final errorData = jsonDecode(response.body);
-        print('❌ Backend authentication failed: ${errorData['message']}');
+        AppLogger.error(
+            'Backend authentication failed: ${errorData['message']}');
         return {
           'success': false,
           'message': errorData['message'] ?? 'Google sign in failed'
         };
       }
-    } catch (e) {
-      print('💥 Google Sign In error: $e');
+    } catch (e, st) {
+      AppLogger.error('Google Sign In error', error: e, stackTrace: st);
       return {
         'success': false,
         'message': 'Google sign in error: ${e.toString()}'

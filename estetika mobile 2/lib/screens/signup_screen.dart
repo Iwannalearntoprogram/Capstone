@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'package:estetika_ui/utils/toast.dart';
+import 'package:estetika_ui/utils/logger.dart';
 import 'dart:convert';
 import 'dart:async';
 
@@ -120,14 +121,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
           MaterialPageRoute(builder: (context) => const SigninScreen()),
         );
       } else {
+        AppLogger.error('Registration failed', error: response.statusCode);
+        AppLogger.error('Registration response: ${response.body}');
         final msg = data != null && data['message'] is String
             ? data['message'] as String
             : 'Registration failed (${response.statusCode})';
         await showToast(msg);
       }
-    } on TimeoutException {
+    } on TimeoutException catch (e, st) {
+      AppLogger.error('Registration timeout', error: e, stackTrace: st);
       await showToast('Network timeout. Please try again.');
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('Registration exception', error: e, stackTrace: st);
       await showToast('An error occurred. Please try again.');
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

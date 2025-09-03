@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:estetika_ui/utils/toast.dart';
+import 'package:estetika_ui/utils/logger.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -54,23 +55,27 @@ class _SignInScreenState extends State<SigninScreen> {
   }
 
   Future<void> _handleSignIn() async {
-    print('Email: ${_emailController.text}');
-    print('Password: ${_passwordController.text}');
+    AppLogger.info('SignIn attempt for: ' + _emailController.text);
 
     try {
       final body = {
         'email': _emailController.text,
         'password': _passwordController.text,
       };
-      print('Request body: $body');
+      AppLogger.info('SignIn request body prepared');
 
       final response = await http.post(
         Uri.parse('https://capstone-moss.onrender.com/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
       );
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      AppLogger.info('SignIn response status: ${response.statusCode}');
+      if (response.statusCode != 200) {
+        AppLogger.error('SignIn failed', error: response.statusCode);
+        AppLogger.error('SignIn response body: ${response.body}');
+      } else {
+        AppLogger.info('SignIn successful');
+      }
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -106,6 +111,8 @@ class _SignInScreenState extends State<SigninScreen> {
                 MaterialPageRoute(builder: (context) => const HomeScreen()),
               );
             } else {
+              AppLogger.warn(
+                  'OTP verification cancelled or failed for ' + email);
               await showToast('OTP verification cancelled or failed');
             }
           }
@@ -113,7 +120,8 @@ class _SignInScreenState extends State<SigninScreen> {
       } else {
         throw Exception('Failed to sign in: ${response.body}');
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('SignIn exception', error: e, stackTrace: st);
       await showToast('Sign In Failed: $e');
     }
   }
@@ -124,8 +132,11 @@ class _SignInScreenState extends State<SigninScreen> {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email}),
     );
-    print('Send OTP response status: ${response.statusCode}');
-    print('Send OTP response body: ${response.body}');
+    AppLogger.info('Send OTP status: ${response.statusCode}');
+    if (response.statusCode != 200) {
+      AppLogger.error('Send OTP failed', error: response.statusCode);
+      AppLogger.error('Send OTP body: ${response.body}');
+    }
     if (response.statusCode != 200) {
       throw Exception('Failed to send OTP');
     }
@@ -196,15 +207,18 @@ class _SignInScreenState extends State<SigninScreen> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'otp': otp}),
       );
-      print('Verify OTP response status: ${response.statusCode}');
-      print('Verify OTP response body: ${response.body}');
+      AppLogger.info('Verify OTP status: ${response.statusCode}');
+      if (response.statusCode != 200) {
+        AppLogger.error('Verify OTP failed', error: response.statusCode);
+        AppLogger.error('Verify OTP body: ${response.body}');
+      }
       if (response.statusCode == 200) {
         return true;
       } else {
         return false;
       }
-    } catch (e) {
-      print('Verify OTP error: $e');
+    } catch (e, st) {
+      AppLogger.error('Verify OTP exception', error: e, stackTrace: st);
       return false;
     }
   }
@@ -225,7 +239,7 @@ class _SignInScreenState extends State<SigninScreen> {
       const twentyFourHoursMs = 24 * 60 * 60 * 1000;
       return elapsedMs < twentyFourHoursMs;
     } catch (e) {
-      print('Error checking remember me status: $e');
+      AppLogger.error('Error checking remember me status', error: e);
       return false;
     }
   }

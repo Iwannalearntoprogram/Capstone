@@ -4,7 +4,9 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:http/http.dart' as http;
+import 'package:estetika_ui/utils/toast.dart';
 
 class SendProjectScreen extends StatefulWidget {
   const SendProjectScreen({super.key});
@@ -53,8 +55,12 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
 
-  // Add recommendation variables
-  Map<String, dynamic>? _recommendation;
+  // Add recommendation variables (updated for top 3)
+  List<dynamic> _recommendations = [];
+  String? _statusMessage;
+  bool? _hasMatchFlag;
+  bool? _isCheaperAlternativeFlag;
+  int? _selectedRecommendationIndex; // user choice among top 3
   bool _isRecommendationLoading = false;
   bool _hasViewedRecommendation = false;
 
@@ -134,12 +140,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error picking images. Please try again.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      await showToast('Error picking images. Please try again.');
     }
   }
 
@@ -182,6 +183,8 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         "designPreferences": _descriptionController.text,
         "budget": double.tryParse(_budgetController.text) ?? 0,
       };
+      // https://capstone-moss.onrender.com/api/project/recommendation/match
+      // http://localhost:3000
       print("Recommendation request body: $requestBody");
       final uri = Uri.parse(
               'https://capstone-moss.onrender.com/api/project/recommendation/match')
@@ -202,24 +205,67 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       print("Status Code: ${response.statusCode}");
       print("recom:" + response.body);
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final decoded = jsonDecode(response.body);
+        final Map<String, dynamic> data =
+            decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
+
+        // Accept either a list under `recommendations` or a single object under `recommendation`
+        List<dynamic> recs = [];
+        if (data['recommendations'] is List) {
+          recs = data['recommendations'] as List<dynamic>;
+        } else if (data['recommendation'] is Map) {
+          recs = [data['recommendation'] as Map<String, dynamic>];
+        } else if (data['data'] is Map) {
+          final inner = data['data'] as Map;
+          if (inner['recommendations'] is List) {
+            recs = inner['recommendations'] as List<dynamic>;
+          } else if (inner['recommendation'] is Map) {
+            recs = [inner['recommendation'] as Map<String, dynamic>];
+          }
+        }
+
+        // Debug: log how many recommendations we parsed
+        try {
+          final previewTitles = recs
+              .take(3)
+              .map((e) => (e is Map && e['title'] != null)
+                  ? e['title'].toString()
+                  : e.toString())
+              .toList();
+          print('Recommendations count: ${recs.length}');
+          print('Recommendation titles (up to 3): $previewTitles');
+        } catch (_) {}
+
         setState(() {
-          _recommendation = data['recommendation'];
+          _statusMessage = data['message'] as String?;
+          _recommendations = recs;
+          _hasMatchFlag = data['hasMatch'] as bool?;
+          _isCheaperAlternativeFlag = data['isCheaperAlternative'] as bool?;
           _isRecommendationLoading = false;
           _hasViewedRecommendation = true;
+          // reset selection if list changed
+          _selectedRecommendationIndex = null;
         });
       } else {
         setState(() {
-          _recommendation = null;
+          _recommendations = [];
+          _statusMessage = 'No design recommendation available.';
+          _hasMatchFlag = null;
+          _isCheaperAlternativeFlag = null;
           _isRecommendationLoading = false;
           _hasViewedRecommendation = true;
+          _selectedRecommendationIndex = null;
         });
       }
     } catch (e) {
       setState(() {
-        _recommendation = null;
+        _recommendations = [];
+        _statusMessage = 'Failed to load recommendations.';
+        _hasMatchFlag = null;
+        _isCheaperAlternativeFlag = null;
         _isRecommendationLoading = false;
         _hasViewedRecommendation = true;
+        _selectedRecommendationIndex = null;
       });
     }
   }
@@ -242,102 +288,329 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
           child: _isRecommendationLoading
               ? const Center(
                   child: CircularProgressIndicator(color: Color(0xFF203B32)))
-              : _hasViewedRecommendation && _recommendation != null
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (_recommendation!['imageLink'] != null)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              getDirectImageLink(_recommendation!['imageLink']),
-                              height: 180,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.broken_image,
-                                      size: 48, color: Colors.grey),
-                            ),
-                          ),
-                        const SizedBox(height: 12),
-                        Text(
-                          _recommendation!['title'] ?? 'No Title',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF203B32),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _recommendation!['specification'] ?? '',
-                          style: const TextStyle(fontSize: 15),
-                        ),
-                        const SizedBox(height: 8),
-                        if (_recommendation!['budgetRange'] != null)
-                          Text(
-                            'Budget Range: ₱${_recommendation!['budgetRange']['min']} - ₱${_recommendation!['budgetRange']['max']}',
-                            style: const TextStyle(
-                                fontSize: 14, color: Colors.grey),
-                          ),
-                        if (_recommendation!['type'] != null)
-                          Text(
-                            'Type: ${_recommendation!['type']}',
-                            style: const TextStyle(
-                                fontSize: 14, color: Colors.grey),
-                          ),
-                        if (_recommendation!['tags'] != null)
-                          Wrap(
-                            spacing: 6,
-                            children: (_recommendation!['tags'] as List)
-                                .map((tag) => Chip(
-                                      label: Text(tag),
-                                      backgroundColor: const Color(0xFFE8F5E9),
-                                      labelStyle: const TextStyle(
-                                          color: Color(0xFF203B32),
-                                          fontSize: 12),
-                                    ))
-                                .toList(),
-                          ),
-                      ],
-                    )
-                  : _hasViewedRecommendation && _recommendation == null
-                      ? const Text('No design recommendation available.',
-                          style: TextStyle(color: Colors.grey))
-                      : Column(
+              : _hasViewedRecommendation
+                  ? (_recommendations.isNotEmpty
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Header row with message and refresh
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    _statusMessage ?? 'Top recommendations',
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF203B32)),
+                                  ),
+                                ),
+                                IconButton(
+                                  tooltip: 'Refresh',
+                                  icon: const Icon(Icons.refresh,
+                                      color: Color(0xFF203B32)),
+                                  onPressed: _fetchRecommendation,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            // Flags row
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              children: [
+                                if (_hasMatchFlag != null)
+                                  Chip(
+                                    label: Text(_hasMatchFlag!
+                                        ? 'Has Match'
+                                        : 'No Exact Match'),
+                                    backgroundColor: _hasMatchFlag!
+                                        ? const Color(0xFFE8F5E9)
+                                        : Colors.grey.shade200,
+                                    labelStyle: TextStyle(
+                                      color: _hasMatchFlag!
+                                          ? const Color(0xFF203B32)
+                                          : Colors.grey.shade700,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                if (_isCheaperAlternativeFlag != null)
+                                  Chip(
+                                    label: Text(_isCheaperAlternativeFlag!
+                                        ? 'Cheaper Alternative'
+                                        : 'Within Budget'),
+                                    backgroundColor: const Color(0xFFE3F2FD),
+                                    labelStyle: const TextStyle(
+                                        color: Color(0xFF0D47A1), fontSize: 12),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: math.min(3, _recommendations.length),
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 12),
+                              itemBuilder: (context, index) {
+                                final rec = _recommendations[index] as Map;
+                                final imageLink = rec['imageLink'] as String?;
+                                final title =
+                                    (rec['title'] ?? 'Untitled').toString();
+                                final spec =
+                                    (rec['specification'] ?? '').toString();
+                                final type = (rec['type'] ?? '').toString();
+                                final tags =
+                                    (rec['tags'] as List?)?.cast<dynamic>() ??
+                                        [];
+                                final budgetRange = rec['budgetRange'] as Map?;
+                                final matchScore = rec['matchScore'];
+
+                                return InkWell(
+                                  onTap: () => setState(() {
+                                    _selectedRecommendationIndex = index;
+                                  }),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: _selectedRecommendationIndex ==
+                                                index
+                                            ? const Color(0xFF203B32)
+                                            : Colors.grey.shade300,
+                                      ),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // Image
+                                        ClipRRect(
+                                          borderRadius: const BorderRadius.only(
+                                              topLeft: Radius.circular(10),
+                                              bottomLeft: Radius.circular(10)),
+                                          child: imageLink != null
+                                              ? Image.network(
+                                                  getDirectImageLink(imageLink),
+                                                  width: 110,
+                                                  height: 110,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error,
+                                                          stackTrace) =>
+                                                      Container(
+                                                    width: 110,
+                                                    height: 110,
+                                                    color: Colors.grey.shade200,
+                                                    child: const Icon(
+                                                        Icons.broken_image,
+                                                        color: Colors.grey),
+                                                  ),
+                                                )
+                                              : Container(
+                                                  width: 110,
+                                                  height: 110,
+                                                  color: Colors.grey.shade200,
+                                                  child: const Icon(Icons.image,
+                                                      color: Colors.grey),
+                                                ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        // Details
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10, horizontal: 4),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Expanded(
+                                                      child: Text(
+                                                        title,
+                                                        style: const TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color:
+                                                              Color(0xFF203B32),
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ),
+                                                    Radio<int>(
+                                                      value: index,
+                                                      groupValue:
+                                                          _selectedRecommendationIndex,
+                                                      onChanged: (val) =>
+                                                          setState(() {
+                                                        _selectedRecommendationIndex =
+                                                            val;
+                                                      }),
+                                                      activeColor: const Color(
+                                                          0xFF203B32),
+                                                    ),
+                                                  ],
+                                                ),
+                                                if (spec.isNotEmpty) ...[
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    spec,
+                                                    style: const TextStyle(
+                                                        fontSize: 13),
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ],
+                                                const SizedBox(height: 6),
+                                                Wrap(
+                                                  spacing: 8,
+                                                  runSpacing: 4,
+                                                  children: [
+                                                    if (budgetRange != null)
+                                                      Chip(
+                                                        label: Text(
+                                                            '₱${budgetRange['min']} - ₱${budgetRange['max']}'),
+                                                        backgroundColor: Colors
+                                                            .grey.shade100,
+                                                        labelStyle:
+                                                            const TextStyle(
+                                                                fontSize: 12),
+                                                      ),
+                                                    if (type.isNotEmpty)
+                                                      Chip(
+                                                        label: Text(type),
+                                                        backgroundColor: Colors
+                                                            .grey.shade100,
+                                                        labelStyle:
+                                                            const TextStyle(
+                                                                fontSize: 12),
+                                                      ),
+                                                    if (matchScore != null)
+                                                      Chip(
+                                                        label: Text(
+                                                            'Match ${(matchScore * 100).toStringAsFixed(0)}%'),
+                                                        backgroundColor:
+                                                            const Color(
+                                                                0xFFE8F5E9),
+                                                        labelStyle:
+                                                            const TextStyle(
+                                                                fontSize: 12,
+                                                                color: Color(
+                                                                    0xFF1B5E20)),
+                                                      ),
+                                                  ],
+                                                ),
+                                                if (tags.isNotEmpty)
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 4.0),
+                                                    child: Wrap(
+                                                      spacing: 6,
+                                                      runSpacing: -6,
+                                                      children: tags
+                                                          .take(6)
+                                                          .map((t) => Chip(
+                                                                label: Text(t
+                                                                    .toString()),
+                                                                backgroundColor:
+                                                                    Colors.grey
+                                                                        .shade100,
+                                                                labelStyle:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            11),
+                                                              ))
+                                                          .toList(),
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            if (_selectedRecommendationIndex != null)
+                              Text(
+                                'Selected: ${(_recommendations[_selectedRecommendationIndex!] as Map)['title'] ?? 'Untitled'}',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF203B32),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                          ],
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              _statusMessage ??
+                                  'No design recommendation available.',
+                              style: const TextStyle(color: Colors.grey),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
                             ElevatedButton.icon(
                               onPressed: canViewRecommendation
                                   ? _fetchRecommendation
                                   : null,
-                              icon: const Icon(Icons.lightbulb_outline),
-                              label: const Text('View Recommendation'),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Try Again'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: canViewRecommendation
-                                    ? const Color(0xFF203B32)
-                                    : Colors.grey[400],
+                                backgroundColor: const Color(0xFF203B32),
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
                               ),
                             ),
-                            if (!canViewRecommendation) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                'Please fill all required fields to view recommendation',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                  fontStyle: FontStyle.italic,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
                           ],
+                        ))
+                  : Column(
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: canViewRecommendation
+                              ? _fetchRecommendation
+                              : null,
+                          icon: const Icon(Icons.lightbulb_outline),
+                          label: const Text('View Recommendation'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: canViewRecommendation
+                                ? const Color(0xFF203B32)
+                                : Colors.grey[400],
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
                         ),
+                        if (!canViewRecommendation) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'Please fill all required fields to view recommendation',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                              fontStyle: FontStyle.italic,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ],
+                    ),
         ),
         const SizedBox(height: 24),
       ],
@@ -982,10 +1255,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     final token = prefs.getString('token');
     final userString = prefs.getString('user');
     if (token == null || userString == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('User not logged in'), backgroundColor: Colors.red),
-      );
+      await showToast('User not logged in');
       setState(() {
         _isSubmitting = false;
       });
@@ -1005,8 +1275,10 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       "projectLocation": _locationController.text,
       "designInspiration":
           _inspirationLinks.isNotEmpty ? _inspirationLinks.first : null,
-      "designRecommendation":
-          _recommendation != null ? _recommendation!['_id'] : null,
+      "designRecommendation": (_selectedRecommendationIndex != null &&
+              _selectedRecommendationIndex! < _recommendations.length)
+          ? ((_recommendations[_selectedRecommendationIndex!] as Map)['_id'])
+          : null,
     };
 
     body.removeWhere((key, value) => value == null);
@@ -1064,23 +1336,22 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
           },
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Submission failed: ${response.body}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        String msg;
+        try {
+          final decoded = jsonDecode(response.body);
+          msg = decoded is Map && decoded['message'] is String
+              ? decoded['message'] as String
+              : 'Submission failed: ${response.statusCode}';
+        } catch (_) {
+          msg = 'Submission failed: ${response.statusCode}';
+        }
+        await showToast(msg);
       }
     } catch (e) {
       setState(() {
         _isSubmitting = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      await showToast('Error: $e');
     }
   }
 
