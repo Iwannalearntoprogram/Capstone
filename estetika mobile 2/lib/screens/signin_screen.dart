@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:estetika_ui/utils/toast.dart';
 import 'package:estetika_ui/utils/logger.dart';
+import 'dart:io';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -70,16 +71,19 @@ class _SignInScreenState extends State<SigninScreen> {
         body: jsonEncode(body),
       );
       AppLogger.info('SignIn response status: ${response.statusCode}');
-      if (response.statusCode != 200) {
-        AppLogger.error('SignIn failed', error: response.statusCode);
-        AppLogger.error('SignIn response body: ${response.body}');
-      } else {
-        AppLogger.info('SignIn successful');
-      }
-
       if (response.statusCode == 200) {
+        AppLogger.info('SignIn successful');
         final data = jsonDecode(response.body);
         final email = _emailController.text.trim();
+
+        // Block archived users
+        final isArchived =
+            (data['user'] != null && (data['user']['isArchived'] == true));
+        if (isArchived) {
+          await showToast(
+              'You are currently archived. Please contact the admins.');
+          return;
+        }
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', data['token'] ?? '');
@@ -118,11 +122,42 @@ class _SignInScreenState extends State<SigninScreen> {
           }
         }
       } else {
-        throw Exception('Failed to sign in: ${response.body}');
+        // Map backend errors to user-friendly messages similar to web
+        String? backendMsg;
+        try {
+          if (response.body.isNotEmpty) {
+            final parsed = jsonDecode(response.body);
+            backendMsg = parsed is Map<String, dynamic>
+                ? (parsed['message']?.toString())
+                : null;
+          }
+        } catch (_) {
+          backendMsg = null;
+        }
+
+        final status = response.statusCode;
+        AppLogger.error('SignIn failed', error: status);
+        AppLogger.error('SignIn response body: ${response.body}');
+
+        if (status == 400 ||
+            status == 404 ||
+            backendMsg == 'Invalid credentials' ||
+            backendMsg == 'User not found') {
+          await showToast('Incorrect email or password.');
+        } else if (backendMsg != null && backendMsg.isNotEmpty) {
+          await showToast(backendMsg);
+        } else {
+          await showToast(
+              'Login failed (${response.statusCode}). Please try again.');
+        }
+        return;
       }
+    } on SocketException catch (e, st) {
+      AppLogger.error('SignIn network exception', error: e, stackTrace: st);
+      await showToast('Unable to connect to the server. Please try again.');
     } catch (e, st) {
       AppLogger.error('SignIn exception', error: e, stackTrace: st);
-      await showToast('Sign In Failed: $e');
+      await showToast('Sign In Failed. Please try again.');
     }
   }
 
@@ -136,8 +171,14 @@ class _SignInScreenState extends State<SigninScreen> {
     if (response.statusCode != 200) {
       AppLogger.error('Send OTP failed', error: response.statusCode);
       AppLogger.error('Send OTP body: ${response.body}');
-    }
-    if (response.statusCode != 200) {
+      String? msg;
+      try {
+        final parsed = jsonDecode(response.body);
+        msg = parsed is Map<String, dynamic>
+            ? parsed['message']?.toString()
+            : null;
+      } catch (_) {}
+      await showToast(msg ?? 'Failed to send OTP. Please try again.');
       throw Exception('Failed to send OTP');
     }
   }
@@ -215,6 +256,16 @@ class _SignInScreenState extends State<SigninScreen> {
       if (response.statusCode == 200) {
         return true;
       } else {
+        // Optionally parse message for more specific feedback
+        try {
+          final parsed = jsonDecode(response.body);
+          final msg = parsed is Map<String, dynamic>
+              ? parsed['message']?.toString()
+              : null;
+          if (msg != null && msg.isNotEmpty) {
+            await showToast(msg);
+          }
+        } catch (_) {}
         return false;
       }
     } catch (e, st) {

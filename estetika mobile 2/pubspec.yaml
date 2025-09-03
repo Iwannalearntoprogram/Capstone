@@ -32,6 +32,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -41,6 +42,14 @@ flutter:
     - assets/images/
     - assets/images/leaves.jpg
     - assets/images/mosslogo.png
+
+# App icon configuration
+flutter_icons:
+  android: true
+  ios: true
+  image_path: assets/images/mosslogo.png
+  adaptive_icon_background: "#18332C"
+  adaptive_icon_foreground: assets/images/mosslogo.png
 
   # Fonts
   fonts:
