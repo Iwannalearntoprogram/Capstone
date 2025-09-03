@@ -37,7 +37,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       final userString = prefs.getString('user');
       if (userString == null) return;
       final user = jsonDecode(userString);
-      final userId = user['id'];
+      final userId = user['id'] ?? user['_id'];
       print('User ID: $userId');
       final response = await http.get(
         Uri.parse(
