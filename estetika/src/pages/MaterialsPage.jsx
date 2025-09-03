@@ -373,7 +373,7 @@ const MaterialsPage = () => {
     mat.name?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const canAddMaterial = userRole === "admin";
+  const canAddMaterial = userRole === "storage_admin";
   const canManageMaterials = userRole === "storage_admin";
 
   return (
