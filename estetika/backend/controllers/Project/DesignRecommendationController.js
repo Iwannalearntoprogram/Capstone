@@ -61,13 +61,14 @@ const design_recommendation_get = catchAsync(async (req, res, next) => {
   const { id, roomType, designPreferences, budget, minBudget, maxBudget } =
     req.query;
 
-  let recommendations;
+  let recommendations = [];
 
   if (id) {
-    recommendations = await DesignRecommendation.findById(id);
-    if (!recommendations) {
+    const recommendation = await DesignRecommendation.findById(id);
+    if (!recommendation) {
       return next(new AppError("Design Recommendation not found", 404));
     }
+    recommendations = [recommendation];
   } else {
     let filter = {};
 
@@ -111,48 +112,79 @@ const design_recommendation_get = catchAsync(async (req, res, next) => {
         ];
       }
     }
-    const allRecommendations = await DesignRecommendation.find(filter).sort({
-      popularity: -1,
-      createdAt: -1,
-    });
+    const allRecommendations = await DesignRecommendation.find(filter)
+      .sort({ popularity: -1, createdAt: -1 })
+      .limit(3);
 
-    recommendations =
-      allRecommendations.length > 0 ? allRecommendations[0] : null;
+    recommendations = [...allRecommendations];
 
-    // If no recommendations found within budget, try to find a cheaper alternative
-    if (!recommendations && budget) {
+    // If fewer than 3 found within budget, try cheaper alternatives to fill
+    if (recommendations.length < 3 && budget) {
       const budgetNum = Number(budget);
       const cheaperFilter = { ...filter };
-
-      // Remove budget constraints and look for cheaper options
+      // Remove in-budget constraint and search cheaper
       delete cheaperFilter.$and;
       cheaperFilter["budgetRange.max"] = { $lt: budgetNum };
+      cheaperFilter._id = { $nin: recommendations.map((r) => r._id) };
 
+      const remaining = 3 - recommendations.length;
       const cheaperRecommendations = await DesignRecommendation.find(
         cheaperFilter
-      ).sort({
-        "budgetRange.max": -1, // Sort by highest budget in cheaper range
-        popularity: -1,
-        createdAt: -1,
-      });
+      )
+        .sort({ "budgetRange.max": -1, popularity: -1, createdAt: -1 })
+        .limit(remaining);
 
-      if (cheaperRecommendations.length > 0) {
-        recommendations = cheaperRecommendations[0];
+      recommendations.push(...cheaperRecommendations);
+    }
+
+    // If still fewer than 3, relax budget but keep type and preference signals
+    if (recommendations.length < 3) {
+      const relaxedFilter = {};
+      if (roomType) relaxedFilter.type = roomType;
+      if (designPreferences) {
+        const normalizedPreferences =
+          normalizeAndExpandKeywords(designPreferences);
+        relaxedFilter.$or = [
+          { designPreferences: { $in: normalizedPreferences } },
+          { tags: { $in: normalizedPreferences } },
+        ];
       }
+      relaxedFilter._id = { $nin: recommendations.map((r) => r._id) };
+
+      const remaining = 3 - recommendations.length;
+      const fillers = await DesignRecommendation.find(relaxedFilter)
+        .sort({ popularity: -1, createdAt: -1 })
+        .limit(remaining);
+
+      recommendations.push(...fillers);
+    }
+
+    // Final fallback: fill with most popular regardless of filters
+    if (recommendations.length < 3) {
+      const remaining = 3 - recommendations.length;
+      const fallback = await DesignRecommendation.find({
+        _id: { $nin: recommendations.map((r) => r._id) },
+      })
+        .sort({ popularity: -1, createdAt: -1 })
+        .limit(remaining);
+      recommendations.push(...fallback);
     }
   }
 
   return res.status(200).json({
-    message: recommendations
-      ? budget && recommendations.budgetRange.max < Number(budget)
-        ? "Best cheaper design recommendation found"
-        : "Best design recommendation found"
-      : "No design recommendations found",
-    recommendation: recommendations,
-    hasMatch: !!recommendations,
+    message:
+      recommendations.length > 0
+        ? budget &&
+          recommendations[0].budgetRange &&
+          recommendations[0].budgetRange.max < Number(budget)
+          ? "Best cheaper design recommendations found"
+          : "Best design recommendations found"
+        : "No design recommendations found",
+    recommendations: recommendations.slice(0, 3),
+    hasMatch: recommendations.length > 0,
     isCheaperAlternative:
-      recommendations && budget
-        ? recommendations.budgetRange.max < Number(budget)
+      recommendations.length > 0 && budget && recommendations[0].budgetRange
+        ? recommendations[0].budgetRange.max < Number(budget)
         : false,
   });
 });
@@ -167,6 +199,9 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
   }
   const budgetNum = Number(budget);
   const normalizedPreferences = normalizeAndExpandKeywords(designPreferences);
+
+  // Log incoming request parameters for match endpoint
+  // no-op logging removed
 
   const pipeline = [
     {
@@ -340,21 +375,30 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
       },
     },
   ];
-  const matchedRecommendations = await DesignRecommendation.aggregate(pipeline);
-  let bestMatch =
-    matchedRecommendations.length > 0 ? matchedRecommendations[0] : null;
+  // Adjust pipeline to return top 3 matches
+  const pipelineTop3 = pipeline.map((stage) => {
+    if (stage.$limit !== undefined) {
+      return { $limit: 3 };
+    }
+    return stage;
+  });
+  const matchedRecommendations = await DesignRecommendation.aggregate(
+    pipelineTop3
+  );
+  let topMatches = matchedRecommendations;
 
-  // If no recommendations found within budget, try to find a cheaper alternative
-  if (!bestMatch) {
+  // Fill to 3: cheaper options first
+  let remaining = 3 - topMatches.length;
+  if (remaining > 0) {
+    const excludeIds = topMatches.map((d) => d._id);
     const cheaperPipeline = [
-      // Stage 1: Filter by room type and cheaper budget
       {
         $match: {
           type: roomType,
           "budgetRange.max": { $lt: budgetNum },
+          _id: { $nin: excludeIds },
         },
       },
-      // Stage 2: Add match score (same logic but for cheaper options)
       {
         $addFields: {
           preferenceMatchCount: {
@@ -363,13 +407,10 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
             },
           },
           tagMatchCount: {
-            $size: {
-              $setIntersection: ["$tags", normalizedPreferences],
-            },
+            $size: { $setIntersection: ["$tags", normalizedPreferences] },
           },
           partialMatchScore: {
             $add: [
-              // Count partial matches in designPreferences
               {
                 $size: {
                   $filter: {
@@ -403,7 +444,6 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
                   },
                 },
               },
-              // Count partial matches in tags (with lower weight)
               {
                 $multiply: [
                   0.5,
@@ -444,14 +484,13 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
               },
             ],
           },
-          // Budget closeness score (closer to user's budget = higher score)
           budgetClosenessScore: {
             $subtract: [
               1,
               {
                 $divide: [
                   { $subtract: [budgetNum, "$budgetRange.max"] },
-                  budgetNum,
+                  { $max: [budgetNum, 1] },
                 ],
               },
             ],
@@ -467,22 +506,17 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
           },
         },
       },
-      // Stage 3: Sort by match score and budget closeness
       {
         $sort: {
           totalScore: -1,
-          "budgetRange.max": -1, // Prefer higher budget in cheaper range
+          "budgetRange.max": -1,
           preferenceMatchCount: -1,
           tagMatchCount: -1,
           popularity: -1,
           createdAt: -1,
         },
       },
-      // Stage 4: Limit to only the best match
-      {
-        $limit: 1,
-      },
-      // Stage 5: Project final fields
+      { $limit: remaining },
       {
         $project: {
           title: 1,
@@ -503,26 +537,181 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
         },
       },
     ];
-
     const cheaperRecommendations = await DesignRecommendation.aggregate(
       cheaperPipeline
     );
-    if (cheaperRecommendations.length > 0) {
-      bestMatch = cheaperRecommendations[0];
-    }
+    topMatches = topMatches.concat(cheaperRecommendations);
+  }
+
+  // If still short, relax budget entirely (keep type), score by preferences/popularity
+  remaining = 3 - topMatches.length;
+  if (remaining > 0) {
+    const excludeIds = topMatches.map((d) => d._id);
+    const relaxedPipeline = [
+      {
+        $match: {
+          type: roomType,
+          _id: { $nin: excludeIds },
+        },
+      },
+      {
+        $addFields: {
+          preferenceMatchCount: {
+            $size: {
+              $setIntersection: ["$designPreferences", normalizedPreferences],
+            },
+          },
+          tagMatchCount: {
+            $size: { $setIntersection: ["$tags", normalizedPreferences] },
+          },
+          partialMatchScore: {
+            $add: [
+              {
+                $size: {
+                  $filter: {
+                    input: "$designPreferences",
+                    cond: {
+                      $anyElementTrue: {
+                        $map: {
+                          input: normalizedPreferences,
+                          as: "pref",
+                          in: {
+                            $or: [
+                              {
+                                $regexMatch: {
+                                  input: "$$this",
+                                  regex: "$$pref",
+                                  options: "i",
+                                },
+                              },
+                              {
+                                $regexMatch: {
+                                  input: "$$pref",
+                                  regex: "$$this",
+                                  options: "i",
+                                },
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              {
+                $multiply: [
+                  0.5,
+                  {
+                    $size: {
+                      $filter: {
+                        input: "$tags",
+                        cond: {
+                          $anyElementTrue: {
+                            $map: {
+                              input: normalizedPreferences,
+                              as: "pref",
+                              in: {
+                                $or: [
+                                  {
+                                    $regexMatch: {
+                                      input: "$$this",
+                                      regex: "$$pref",
+                                      options: "i",
+                                    },
+                                  },
+                                  {
+                                    $regexMatch: {
+                                      input: "$$pref",
+                                      regex: "$$this",
+                                      options: "i",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          budgetClosenessScore: {
+            $subtract: [
+              1,
+              {
+                $abs: {
+                  $divide: [
+                    {
+                      $subtract: [
+                        budgetNum,
+                        { $avg: ["$budgetRange.min", "$budgetRange.max"] },
+                      ],
+                    },
+                    { $max: [budgetNum, 1] },
+                  ],
+                },
+              },
+            ],
+          },
+          totalScore: {
+            $add: [
+              { $multiply: ["$preferenceMatchCount", 5] },
+              { $multiply: ["$tagMatchCount", 3] },
+              { $multiply: ["$partialMatchScore", 1] },
+              { $multiply: ["$budgetClosenessScore", 2] },
+              { $divide: ["$popularity", 100] },
+            ],
+          },
+        },
+      },
+      { $sort: { totalScore: -1, popularity: -1, createdAt: -1 } },
+      { $limit: remaining },
+      {
+        $project: {
+          title: 1,
+          imageLink: 1,
+          specification: 1,
+          budgetRange: 1,
+          designPreferences: 1,
+          type: 1,
+          popularity: 1,
+          tags: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          matchScore: "$totalScore",
+          preferenceMatches: "$preferenceMatchCount",
+          tagMatches: "$tagMatchCount",
+          partialMatches: "$partialMatchScore",
+          budgetCompatibility: "$budgetClosenessScore",
+        },
+      },
+    ];
+    const relaxed = await DesignRecommendation.aggregate(relaxedPipeline);
+    topMatches = topMatches.concat(relaxed);
   }
 
   return res.status(200).json({
-    message: bestMatch
-      ? bestMatch.budgetRange.max < budgetNum
-        ? "Best cheaper design recommendation matched successfully"
-        : "Best design recommendation matched successfully"
-      : "No matching design recommendations found",
-    recommendation: bestMatch,
-    hasMatch: !!bestMatch,
-    isCheaperAlternative: bestMatch
-      ? bestMatch.budgetRange.max < budgetNum
-      : false,
+    message:
+      topMatches.length > 0
+        ? topMatches[0].budgetRange && topMatches[0].budgetRange.max < budgetNum
+          ? "Best cheaper design recommendations matched successfully"
+          : "Best design recommendations matched successfully"
+        : "No matching design recommendations found",
+    recommendations: (() => {
+      const out = topMatches.slice(0, 3);
+      // Log the outgoing response (exactly what we send back)
+      // no-op logging removed
+      return out;
+    })(),
+    hasMatch: topMatches.length > 0,
+    isCheaperAlternative:
+      topMatches.length > 0 && topMatches[0].budgetRange
+        ? topMatches[0].budgetRange.max < budgetNum
+        : false,
     criteria: {
       roomType,
       designPreferences: designPreferences,
