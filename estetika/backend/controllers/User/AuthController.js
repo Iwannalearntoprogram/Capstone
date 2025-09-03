@@ -189,6 +189,10 @@ const googleAuth = catchAsync(async (req, res, next) => {
         // Link existing account with Google
         user.googleId = googleUser.id;
         user.avatar = googleUser.picture;
+        // Keep profileImage in sync for client/mobile compatibility
+        if (!user.profileImage) {
+          user.profileImage = googleUser.picture;
+        }
         await user.save();
       } else {
         console.log("🆕 Creating new user from Google data");
@@ -202,6 +206,7 @@ const googleAuth = catchAsync(async (req, res, next) => {
           username: googleUser.email.split("@")[0],
           email: googleUser.email,
           avatar: googleUser.picture,
+          profileImage: googleUser.picture,
           emailVerified: true,
           role: "client",
         });
@@ -213,9 +218,9 @@ const googleAuth = catchAsync(async (req, res, next) => {
       console.log("✅ Found existing user with Google ID");
     }
 
-    // Generate JWT token
+    // Generate JWT token (align payload with normal login)
     const token = jwt.sign(
-      { userId: user._id, email: user.email },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -226,13 +231,16 @@ const googleAuth = catchAsync(async (req, res, next) => {
       message: "Google authentication successful",
       token,
       user: {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        id: user._id,
+        fullName:
+          user.fullName ||
+          `${user.firstName || ""} ${user.lastName || ""}`.trim(),
         username: user.username,
         email: user.email,
+        phoneNumber: user.phoneNumber,
         role: user.role,
-        avatar: user.avatar,
+        profileImage: user.profileImage || user.avatar,
+        isArchived: user.isArchived,
         emailVerified: user.emailVerified,
       },
     });
