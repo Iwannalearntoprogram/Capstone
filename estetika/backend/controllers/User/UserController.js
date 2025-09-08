@@ -56,9 +56,15 @@ const user_update = catchAsync(async (req, res, next) => {
     "firstName",
     "lastName",
     "fullName",
+    "birthday",
     "email",
     "username",
     "aboutMe",
+    "department",
+    "address",
+    "linkedIn",
+    "employeeId",
+    "emergencyContactInfo",
     "phoneNumber",
     "profileImage",
     "role",
@@ -89,13 +95,24 @@ const user_update = catchAsync(async (req, res, next) => {
     message: "Account Successfully Updated",
     user: {
       id: updatedUser._id,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
       fullName: updatedUser.fullName,
+      birthday: updatedUser.birthday,
       username: updatedUser.username,
       email: updatedUser.email,
+      aboutMe: updatedUser.aboutMe,
+      department: updatedUser.department,
+      address: updatedUser.address,
+      linkedIn: updatedUser.linkedIn,
+      employeeId: updatedUser.employeeId,
+      emergencyContactInfo: updatedUser.emergencyContactInfo,
       isArchived: updatedUser.isArchived,
       phoneNumber: updatedUser.phoneNumber,
       role: updatedUser.role,
       profileImage: updatedUser.profileImage,
+      createdAt: updatedUser.createdAt,
+      projectsId: updatedUser.projectsId,
     },
     token,
   });
@@ -121,7 +138,10 @@ const user_get = catchAsync(async (req, res, next) => {
     other = user;
   } else {
     const { password, __v, ...rest } = user._doc;
-    other = rest;
+    other = {
+      ...rest,
+      createdAt: user.createdAt,
+    };
   }
 
   return res.status(200).json({ message: "User Fetched", user: other });
