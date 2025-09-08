@@ -3,6 +3,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { useOutletContext } from "react-router-dom";
 import PhaseCard from "./phases/PhaseCard";
+import EditPhasesModal from "../../components/project/EditPhasesModal";
 
 // Progress ring component
 function RingProgressBar({
@@ -54,6 +55,68 @@ function RingProgressBar({
 }
 
 function ProgressTab() {
+  // Edit phases modal state (only admin can edit, only date range editable)
+  const [isPhasesEditOpen, setIsPhasesEditOpen] = useState(false);
+  const [phasesEditData, setPhasesEditData] = useState([]);
+  const [isPhasesSaving, setIsPhasesSaving] = useState(false);
+
+  // Prepare modal data when opening (admin only)
+  const openPhasesEditModal = () => {
+    if (phases && Array.isArray(phases)) {
+      setPhasesEditData(phases.map(phase => ({
+        _id: phase._id,
+        title: phase.title || "",
+        startDate: phase.startDate ? phase.startDate.slice(0, 10) : "",
+        endDate: phase.endDate ? phase.endDate.slice(0, 10) : "",
+      })));
+      setIsPhasesEditOpen(true);
+    }
+  };
+
+  const closePhasesEditModal = () => setIsPhasesEditOpen(false);
+
+  // Only allow editing date range for admin
+  const handleChangePhase = (idx, newPhase) => {
+    setPhasesEditData(prev => prev.map((p, i) => i === idx ? {
+      ...p,
+      startDate: newPhase.startDate,
+      endDate: newPhase.endDate
+    } : p));
+  };
+
+  // Remove phase (admin only)
+  const handleRemovePhaseEdit = (idx) => {
+    setPhasesEditData(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  // Submit phase edits (admin only, only date range)
+  const handlePhasesEditSubmit = async (e) => {
+    e.preventDefault();
+    setIsPhasesSaving(true);
+    try {
+      const token = Cookies.get("token");
+      await axios.put(
+        `${serverUrl}/api/project?id=${project._id}`,
+        {
+          timeline: phasesEditData.map(phase => ({
+            _id: phase._id,
+            title: phase.title, // title is not editable, but sent for completeness
+            startDate: phase.startDate,
+            endDate: phase.endDate,
+          }))
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      closePhasesEditModal();
+      window.location.reload();
+    } catch (err) {
+      alert("Failed to update phases.");
+    } finally {
+      setIsPhasesSaving(false);
+    }
+  };
   const { project } = useOutletContext();
   const [showModal, setShowModal] = useState(false);
   const [userRole, setUserRole] = useState(null);
@@ -107,6 +170,7 @@ function ProgressTab() {
     fetchOverallProgress();
   }, [project?._id]);
 
+  // For designer: handle phase form change, with validation
   const handlePhaseChange = (e) => {
     const { name, value } = e.target;
     setPhaseForm((prev) => ({
@@ -115,12 +179,25 @@ function ProgressTab() {
     }));
   };
 
+  // For designer: add phase, with validation (disable past dates, end >= start)
   const handleAddPhase = async (e) => {
     e.preventDefault();
 
     // Prevent admin from creating phases
     if (userRole === "admin") {
       alert("Admins cannot create phases. Only designers can manage phases.");
+      return;
+    }
+
+    // Validation: end date cannot be before start date
+    if (phaseForm.endDate < phaseForm.startDate) {
+      alert("End date cannot be before start date.");
+      return;
+    }
+    // Validation: start date cannot be in the past
+    const today = new Date().toISOString().slice(0, 10);
+    if (phaseForm.startDate < today) {
+      alert("Start date cannot be in the past.");
       return;
     }
 
@@ -149,6 +226,7 @@ function ProgressTab() {
     setIsSubmitting(false);
   };
 
+  // Only designers can add phase
   const handleAddPhaseClick = () => {
     if (userRole === "admin") {
       alert("Admins cannot create phases. Only designers can manage phases.");
@@ -158,11 +236,12 @@ function ProgressTab() {
   };
 
   const isAdmin = userRole === "admin";
+  const isDesigner = userRole === "designer";
 
   return (
     <div className="space-y-8 bg-white rounded-xl shadow p-6">
-      {/* Modal - Only show if not admin */}
-      {showModal && !isAdmin && (
+      {/* Modal - Only show for designer */}
+      {showModal && isDesigner && (
         <div className="fixed inset-0 bg-black/30 h-full flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-md relative">
             <button
@@ -194,6 +273,7 @@ function ProgressTab() {
                   value={phaseForm.startDate}
                   onChange={handlePhaseChange}
                   required
+                  min={new Date().toISOString().slice(0, 10)}
                 />
               </label>
               <label className="">
@@ -205,6 +285,7 @@ function ProgressTab() {
                   value={phaseForm.endDate}
                   onChange={handlePhaseChange}
                   required
+                  min={phaseForm.startDate || new Date().toISOString().slice(0, 10)}
                 />
               </label>
               <button
@@ -219,14 +300,26 @@ function ProgressTab() {
         </div>
       )}
 
-      {/* Add Phase button - Only show if not admin */}
-      {!isAdmin && (
-        <div className="flex justify-end mb-4">
+      {/* Add Phase button - Only show for designer */}
+      {isDesigner && (
+        <div className="flex justify-end mb-4 gap-2">
           <button
             className="bg-[#1D3C34] text-white px-4 py-2 rounded font-semibold hover:bg-[#16442A] transition cursor-pointer"
             onClick={handleAddPhaseClick}
           >
             Add Phase
+          </button>
+        </div>
+      )}
+
+      {/* Edit Phases button - Only show for admin */}
+      {!isAdmin && (
+        <div className="flex justify-end mb-4 gap-2">
+          <button
+            className="bg-green-700 text-white px-4 py-2 rounded font-semibold hover:bg-green-800 transition cursor-pointer"
+            onClick={openPhasesEditModal}
+          >
+            Edit Phases
           </button>
         </div>
       )}
@@ -262,6 +355,19 @@ function ProgressTab() {
           userRole={userRole}
         />
       ))}
+
+      {/* Edit Phases Modal - Only for admin */}
+      {isAdmin && (
+        <EditPhasesModal
+          isOpen={isPhasesEditOpen}
+          onClose={closePhasesEditModal}
+          onSubmit={handlePhasesEditSubmit}
+          isSaving={isPhasesSaving}
+          phases={phasesEditData}
+          onChangePhase={handleChangePhase}
+          onRemovePhase={handleRemovePhaseEdit}
+        />
+      )}
     </div>
   );
 }
