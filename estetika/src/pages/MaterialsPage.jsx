@@ -369,9 +369,53 @@ const MaterialsPage = () => {
     setExistingImageUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const filteredMaterials = materialsData.filter((mat) =>
-    mat.name?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filter states
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterCompany, setFilterCompany] = useState("");
+  const [sortType, setSortType] = useState(null); // 'sales-desc', 'sales-asc', 'price-desc', 'price-asc', null
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+
+  // Get unique values for dropdowns
+  const categories = Array.from(new Set(materialsData.map(m => m.category).filter(Boolean)));
+  const companies = Array.from(new Set(materialsData.map(m => m.company).filter(Boolean)));
+
+  // Filtered materials with all filters
+  let filteredMaterials = materialsData.filter((mat) => {
+    const matchesName = mat.name?.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = filterCategory ? mat.category === filterCategory : true;
+    const matchesCompany = filterCompany ? mat.company === filterCompany : true;
+    const matchesPriceMin = priceMin !== "" ? Number(mat.price) >= Number(priceMin) : true;
+    const matchesPriceMax = priceMax !== "" ? Number(mat.price) <= Number(priceMax) : true;
+    return matchesName && matchesCategory && matchesCompany && matchesPriceMin && matchesPriceMax;
+  });
+
+  // Cheaper and More Expensive Alternatives (outside price range, with any filters, but only if price range is set)
+  let cheaperAlternatives = [];
+  let expensiveAlternatives = [];
+  if (priceMin !== "" || priceMax !== "") {
+    cheaperAlternatives = materialsData.filter(mat =>
+      (filterCategory ? mat.category === filterCategory : true) &&
+      (filterCompany ? mat.company === filterCompany : true) &&
+      priceMin !== "" && Number(mat.price) < Number(priceMin)
+    );
+    expensiveAlternatives = materialsData.filter(mat =>
+      (filterCategory ? mat.category === filterCategory : true) &&
+      (filterCompany ? mat.company === filterCompany : true) &&
+      priceMax !== "" && Number(mat.price) > Number(priceMax)
+    );
+  }
+
+  // Sorting logic
+  if (sortType === 'sales-desc') {
+    filteredMaterials = [...filteredMaterials].sort((a, b) => (b.sales || 0) - (a.sales || 0));
+  } else if (sortType === 'sales-asc') {
+    filteredMaterials = [...filteredMaterials].sort((a, b) => (a.sales || 0) - (b.sales || 0));
+  } else if (sortType === 'price-desc') {
+    filteredMaterials = [...filteredMaterials].sort((a, b) => (b.price || 0) - (a.price || 0));
+  } else if (sortType === 'price-asc') {
+    filteredMaterials = [...filteredMaterials].sort((a, b) => (a.price || 0) - (b.price || 0));
+  }
 
   const canAddMaterial = userRole === "storage_admin";
   const canManageMaterials = userRole === "storage_admin";
@@ -449,6 +493,91 @@ const MaterialsPage = () => {
           </div>
         </div>
 
+        {/* Filters - always visible */}
+        <div className="flex flex-wrap gap-4 mb-4 items-center justify-center bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          {/* Category Filter (dropdown) */}
+          <div className="flex flex-col items-start">
+            <span className="font-semibold text-gray-700 mb-1">Category</span>
+            <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]">
+              <option value="">All Categories</option>
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+          {/* Company Filter (dropdown) */}
+          <div className="flex flex-col items-start">
+            <span className="font-semibold text-gray-700 mb-1">Company</span>
+            <select value={filterCompany} onChange={e => setFilterCompany(e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]">
+              <option value="">All Companies</option>
+              {companies.map(comp => (
+                <option key={comp} value={comp}>{comp}</option>
+              ))}
+            </select>
+          </div>
+          {/* Price Range Filter */}
+          <div className="flex flex-col items-start">
+            <span className="font-semibold text-gray-700 mb-1">Price Range</span>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                value={priceMin}
+                onChange={e => setPriceMin(e.target.value)}
+                placeholder="Min"
+                className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 w-36 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+                min="0"
+                max="100000000"
+              />
+              <span className="mx-1 text-gray-500">-</span>
+              <input
+                type="number"
+                value={priceMax}
+                onChange={e => setPriceMax(e.target.value)}
+                placeholder="Max"
+                className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 w-36 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+                min="0"
+                max="100000000"
+              />
+            </div>
+          </div>
+          {/* Sales/Price Sort Toggle */}
+          <div className="flex flex-col items-start">
+            <span className="font-semibold text-gray-700 mb-1">Sort By</span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSortType(sortType === 'sales-desc' ? 'sales-asc' : 'sales-desc')}
+                className={`px-4 py-2 rounded-xl border transition-all font-semibold flex items-center gap-1 ${sortType && sortType.startsWith('sales') ? 'bg-[#1D3C34] text-white border-[#1D3C34]' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-[#e6f2ef]'}`}
+                aria-label="Sort by Sales"
+              >
+                Sales {sortType === 'sales-desc' ? '↓' : '↑'}
+              </button>
+              <button
+                onClick={() => setSortType(sortType === 'price-desc' ? 'price-asc' : 'price-desc')}
+                className={`px-4 py-2 rounded-xl border transition-all font-semibold flex items-center gap-1 ${sortType && sortType.startsWith('price') ? 'bg-[#1D3C34] text-white border-[#1D3C34]' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-[#e6f2ef]'}`}
+                aria-label="Sort by Price"
+              >
+                Price {sortType === 'price-desc' ? '↓' : '↑'}
+              </button>
+            </div>
+          </div>
+          {/* Clear Filters Button - aligned */}
+          <div className="flex flex-col items-start justify-end">
+            <span className="invisible mb-1">Clear</span>
+            <button
+              onClick={() => {
+                setFilterCategory("");
+                setFilterCompany("");
+                setSortType(null);
+                setPriceMin("");
+                setPriceMax("");
+              }}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#1D3C34] to-[#2a5a47] text-white font-semibold shadow hover:from-[#145c4b] hover:to-[#1e4638] transition-all border border-[#1D3C34]"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+
         {/* Content */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
@@ -456,37 +585,96 @@ const MaterialsPage = () => {
             <p className="text-gray-500">Loading materials...</p>
           </div>
         ) : filteredMaterials.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-gray-400 mb-4">
-              <FiSearch size={48} className="mx-auto" />
+          <>
+            {/* Filters are always visible above */}
+            <div className="text-center py-20">
+              <div className="text-gray-400 mb-4">
+                <FiSearch size={48} className="mx-auto" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {search ? "No materials found" : "No materials yet"}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {search
+                  ? `No materials match "${search}". Try adjusting your search.`
+                  : "Get started by adding your first material to the catalog."}
+              </p>
+              {!search && (canAddMaterial || canManageMaterials) && (
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="bg-gradient-to-r from-[#1D3C34] to-[#2a5a47] text-white px-6 py-3 rounded-xl hover:from-[#145c4b] hover:to-[#1e4638] transition-all flex items-center gap-2 shadow-lg mx-auto"
+                >
+                  <FiPlus size={20} />
+                  Add Your First Material
+                </button>
+              )}
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {search ? "No materials found" : "No materials yet"}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {search
-                ? `No materials match "${search}". Try adjusting your search.`
-                : "Get started by adding your first material to the catalog."}
-            </p>
-            {!search && (canAddMaterial || canManageMaterials) && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="bg-gradient-to-r from-[#1D3C34] to-[#2a5a47] text-white px-6 py-3 rounded-xl hover:from-[#145c4b] hover:to-[#1e4638] transition-all flex items-center gap-2 shadow-lg mx-auto"
-              >
-                <FiPlus size={20} />
-                Add Your First Material
-              </button>
+            {/* Alternatives sections if price range is set and category is selected */}
+            {(priceMin !== "" || priceMax !== "") && (
+              <div className="mt-10">
+                {cheaperAlternatives.length > 0 && (
+                  <div className="mb-8">
+                    <h4 className="text-lg font-bold text-[#1D3C34] mb-2">Cheaper Alternatives</h4>
+                    <MaterialList
+                      materialsData={cheaperAlternatives}
+                      canManageMaterials={canManageMaterials}
+                      onEditMaterial={openEditModal}
+                      onDeleteMaterial={handleDeleteMaterial}
+                    />
+                  </div>
+                )}
+                {expensiveAlternatives.length > 0 && (
+                  <div>
+                    <h4 className="text-lg font-bold text-[#1D3C34] mb-2">More Expensive Alternatives</h4>
+                    <MaterialList
+                      materialsData={expensiveAlternatives}
+                      canManageMaterials={canManageMaterials}
+                      onEditMaterial={openEditModal}
+                      onDeleteMaterial={handleDeleteMaterial}
+                    />
+                  </div>
+                )}
+              </div>
             )}
-          </div>
+          </>
         ) : (
-          <Outlet
-            context={{
-              materialsData: filteredMaterials,
-              canManageMaterials,
-              onEditMaterial: openEditModal,
-              onDeleteMaterial: handleDeleteMaterial,
-            }}
-          />
+          <>
+            <Outlet
+              context={{
+                materialsData: filteredMaterials,
+                canManageMaterials,
+                onEditMaterial: openEditModal,
+                onDeleteMaterial: handleDeleteMaterial,
+              }}
+            />
+            {/* Alternatives sections if price range is set and category is selected */}
+            {(priceMin !== "" || priceMax !== "") && (
+              <div className="mt-10">
+                {cheaperAlternatives.length > 0 && (
+                  <div className="mb-8">
+                    <h4 className="text-lg font-bold text-[#1D3C34] mb-2">Cheaper Alternatives</h4>
+                    <MaterialList
+                      materialsData={cheaperAlternatives}
+                      canManageMaterials={canManageMaterials}
+                      onEditMaterial={openEditModal}
+                      onDeleteMaterial={handleDeleteMaterial}
+                    />
+                  </div>
+                )}
+                {expensiveAlternatives.length > 0 && (
+                  <div>
+                    <h4 className="text-lg font-bold text-[#1D3C34] mb-2">More Expensive Alternatives</h4>
+                    <MaterialList
+                      materialsData={expensiveAlternatives}
+                      canManageMaterials={canManageMaterials}
+                      onEditMaterial={openEditModal}
+                      onDeleteMaterial={handleDeleteMaterial}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
 

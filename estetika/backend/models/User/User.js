@@ -19,6 +19,9 @@ const userSchema = new mongoose.Schema(
       },
       trim: true,
     },
+    birthday: {
+      type: Date,
+    },
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -31,6 +34,21 @@ const userSchema = new mongoose.Schema(
       unique: true,
     },
     aboutMe: String,
+    department: {
+      type: String,
+    },
+    address: {
+      type: String,
+    },
+    linkedIn: {
+      type: String,
+    },
+    employeeId: {
+      type: String,
+    },
+    emergencyContactInfo: {
+      type: String,
+    },
     password: {
       type: String,
       required: function () {

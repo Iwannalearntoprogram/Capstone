@@ -1,13 +1,15 @@
 import { useOutletContext } from "react-router-dom";
 import Material from "./Material";
 
-export default function MaterialList() {
+export default function MaterialList(props) {
+  // Prefer props, fallback to context if not provided
+  const context = useOutletContext?.() || {};
   const {
-    materialsData,
-    canManageMaterials,
-    onEditMaterial,
-    onDeleteMaterial,
-  } = useOutletContext();
+    materialsData = props.materialsData || context.materialsData || [],
+    canManageMaterials = props.canManageMaterials ?? context.canManageMaterials,
+    onEditMaterial = props.onEditMaterial ?? context.onEditMaterial,
+    onDeleteMaterial = props.onDeleteMaterial ?? context.onDeleteMaterial,
+  } = props.materialsData ? props : context;
 
   return (
     <div className="w-full">
