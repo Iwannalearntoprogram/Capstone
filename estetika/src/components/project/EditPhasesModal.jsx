@@ -1,5 +1,5 @@
 import { FiEdit, FiX } from "react-icons/fi";
-import React from "react";
+import React, { useState } from "react";
 
 const EditPhasesModal = ({
   isOpen,
@@ -11,7 +11,26 @@ const EditPhasesModal = ({
   onAddPhase,
   onRemovePhase,
 }) => {
+  const [validationErrors, setValidationErrors] = useState([]);
+
   if (!isOpen) return null;
+
+  // Validate all phases before submit
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const errors = phases.map((phase) => {
+      if (phase.startDate && phase.endDate && phase.endDate < phase.startDate) {
+        return "End date cannot be before start date.";
+      }
+      if (phase.startDate && phase.endDate && phase.startDate > phase.endDate) {
+        return "Start date cannot be after end date.";
+      }
+      return null;
+    });
+    setValidationErrors(errors);
+    if (errors.some((err) => err)) return;
+    onSubmit(e);
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -34,7 +53,7 @@ const EditPhasesModal = ({
         </div>
 
         {/* Content */}
-        <form onSubmit={onSubmit} className="p-6 flex flex-col gap-6">
+        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
           {phases.map((phase, idx) => (
             <div key={phase._id || idx} className="mb-4 p-4 rounded-xl border bg-gray-50 flex flex-col gap-3">
               <div className="mb-2">
@@ -65,6 +84,9 @@ const EditPhasesModal = ({
                   />
                 </div>
               </div>
+              {validationErrors[idx] && (
+                <div className="text-red-600 text-sm mt-2">{validationErrors[idx]}</div>
+              )}
               <div className="flex justify-end mt-4">
                 <button
                   type="button"

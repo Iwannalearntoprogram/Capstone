@@ -5,72 +5,8 @@ import Cookies from "js-cookie";
 
 import ReactModal from "react-modal";
 import EditProjectModal from "../components/project/EditProjectModal";
-import EditPhasesModal from "../components/project/EditPhasesModal";
 
 function ProjectDetailsPage() {
-  // Edit phases modal state
-  const [isPhasesEditOpen, setIsPhasesEditOpen] = useState(false);
-  const [phasesEditData, setPhasesEditData] = useState([]);
-  const [isPhasesSaving, setIsPhasesSaving] = useState(false);
-
-  // Prepare modal data when opening
-  const openPhasesEditModal = () => {
-    if (project && Array.isArray(project.timeline)) {
-      setPhasesEditData(
-        project.timeline.map((phase) => ({
-          _id: phase._id,
-          title: phase.title || "",
-          startDate: phase.startDate ? phase.startDate.slice(0, 10) : "",
-          endDate: phase.endDate ? phase.endDate.slice(0, 10) : "",
-        }))
-      );
-      setIsPhasesEditOpen(true);
-    }
-  };
-
-  const closePhasesEditModal = () => setIsPhasesEditOpen(false);
-
-  const handleChangePhase = (idx, newPhase) => {
-    setPhasesEditData((prev) => prev.map((p, i) => (i === idx ? newPhase : p)));
-  };
-
-  const handleAddPhase = () => {
-    setPhasesEditData((prev) => [...prev, { title: "", startDate: "", endDate: "" }]);
-  };
-
-  const handleRemovePhase = (idx) => {
-    setPhasesEditData((prev) => prev.filter((_, i) => i !== idx));
-  };
-
-  const handlePhasesEditSubmit = async (e) => {
-    e.preventDefault();
-    setIsPhasesSaving(true);
-    try {
-      const token = Cookies.get("token");
-      // Send phases data to backend (assume timeline update via PUT)
-      await axios.put(
-        `${serverUrl}/api/project?id=${id}`,
-        {
-          timeline: phasesEditData.map((phase) => ({
-            _id: phase._id,
-            title: phase.title,
-            startDate: phase.startDate,
-            endDate: phase.endDate,
-          })),
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      closePhasesEditModal();
-      fetchProject();
-    } catch (err) {
-      alert("Failed to update phases.");
-    } finally {
-      setIsPhasesSaving(false);
-    }
-  };
-
   const { id } = useParams();
   const location = useLocation();
   const [project, setProject] = useState(location.state?.project || null);
@@ -83,6 +19,7 @@ function ProjectDetailsPage() {
     endDate: "",
   });
   const [isSaving, setIsSaving] = useState(false);
+
   // Prepare modal data when opening
   const openEditModal = () => {
     if (project) {
@@ -135,7 +72,6 @@ function ProjectDetailsPage() {
 
   const fetchProject = async () => {
     try {
-      const projectCreator = localStorage.getItem("id");
       const token = Cookies.get("token");
       const response = await axios.get(`${serverUrl}/api/project?id=${id}`, {
         headers: {
@@ -148,7 +84,7 @@ function ProjectDetailsPage() {
           : response.data.project
       );
     } catch {
-      setProject(null);
+      // handle error
     }
   };
 
@@ -184,12 +120,6 @@ function ProjectDetailsPage() {
             >
               Edit Project
             </button>
-            <button
-              className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 transition-colors duration-200"
-              onClick={openPhasesEditModal}
-            >
-              Edit Phases
-            </button>
           </div>
         )}
         {/* Edit Modal */}
@@ -200,17 +130,6 @@ function ProjectDetailsPage() {
           isSaving={isSaving}
           editData={editData}
           onChange={handleEditChange}
-        />
-        {/* Edit Phases Modal */}
-        <EditPhasesModal
-          isOpen={isPhasesEditOpen}
-          onClose={closePhasesEditModal}
-          onSubmit={handlePhasesEditSubmit}
-          isSaving={isPhasesSaving}
-          phases={phasesEditData}
-          onChangePhase={handleChangePhase}
-          onAddPhase={handleAddPhase}
-          onRemovePhase={handleRemovePhase}
         />
       </div>
 

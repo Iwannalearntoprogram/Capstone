@@ -89,28 +89,62 @@ function ProgressTab() {
     setPhasesEditData(prev => prev.filter((_, i) => i !== idx));
   };
 
-  // Submit phase edits (admin only, only date range)
+  // Submit phase edits (designer only, only date range)
   const handlePhasesEditSubmit = async (e) => {
     e.preventDefault();
+    // Client-side validation: end date cannot be before start date
+    for (const phase of phasesEditData) {
+      if (phase.endDate < phase.startDate) {
+        alert(`End date cannot be before start date for phase: ${phase.title}`);
+        setIsPhasesSaving(false);
+        return;
+      }
+    }
     setIsPhasesSaving(true);
     try {
       const token = Cookies.get("token");
-      await axios.put(
-        `${serverUrl}/api/project?id=${project._id}`,
-        {
-          timeline: phasesEditData.map(phase => ({
-            _id: phase._id,
-            title: phase.title, // title is not editable, but sent for completeness
-            startDate: phase.startDate,
-            endDate: phase.endDate,
-          }))
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      closePhasesEditModal();
-      window.location.reload();
+      // Only send requests for changed phases
+      const updateRequests = phasesEditData
+        .map((edited, idx) => {
+          const original = phases[idx];
+          let payload = {};
+          if (edited.startDate !== (original.startDate ? original.startDate.slice(0, 10) : "")) {
+            payload.startDate = edited.startDate;
+          }
+          if (edited.endDate !== (original.endDate ? original.endDate.slice(0, 10) : "")) {
+            payload.endDate = edited.endDate;
+          }
+          if (Object.keys(payload).length > 0) {
+            return axios.put(
+              `${serverUrl}/api/phase?id=${edited._id}`,
+              payload,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+          }
+          return null;
+        })
+        .filter(Boolean);
+      if (updateRequests.length === 0) {
+        alert("No changes detected.");
+        setIsPhasesSaving(false);
+        return;
+      }
+      await Promise.all(updateRequests);
+      // Update phases in UI locally
+      setPhasesEditData(prev => prev.map((p, idx) => {
+        const original = phases[idx];
+        const edited = phasesEditData[idx];
+        return {
+          ...p,
+          startDate: edited.startDate,
+          endDate: edited.endDate,
+        };
+      }));
+      // Also update main phases array if needed
+      if (project && project.timeline) {
+        project.timeline = phasesEditData;
+      }
+      setIsPhasesEditOpen(false);
     } catch (err) {
       alert("Failed to update phases.");
     } finally {
@@ -312,8 +346,8 @@ function ProgressTab() {
         </div>
       )}
 
-      {/* Edit Phases button - Only show for admin */}
-      {!isAdmin && (
+      {/* Edit Phases button - Only show for designer */}
+      {isDesigner && (
         <div className="flex justify-end mb-4 gap-2">
           <button
             className="bg-green-700 text-white px-4 py-2 rounded font-semibold hover:bg-green-800 transition cursor-pointer"
@@ -356,8 +390,8 @@ function ProgressTab() {
         />
       ))}
 
-      {/* Edit Phases Modal - Only for admin */}
-      {isAdmin && (
+      {/* Edit Phases Modal - Only for designer */}
+      {isDesigner && (
         <EditPhasesModal
           isOpen={isPhasesEditOpen}
           onClose={closePhasesEditModal}
