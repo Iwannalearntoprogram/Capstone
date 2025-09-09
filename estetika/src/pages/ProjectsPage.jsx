@@ -182,7 +182,7 @@ const ProjectsPage = () => {
   const StatusSection = ({ title, projects, sectionKey }) => (
     <div className="mb-4">
       <div
-        className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition border"
+        className="flex items-center justify-between p-3 rounded-lg cursor-pointer bg-gray-50 transition border"
         onClick={() => toggleSection(sectionKey)}
       >
         <div className="flex items-center gap-2">

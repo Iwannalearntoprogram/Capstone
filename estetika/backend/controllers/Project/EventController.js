@@ -4,25 +4,28 @@ const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
 const Notification = require("../../models/utils/Notification");
 
-// Get Event by Id or UserId
+// Get Event by Id, UserId, or All
 const event_get = catchAsync(async (req, res, next) => {
-  const { id, userId } = req.query;
+  const { id, userId, all } = req.query;
 
   let event;
-
-  if (!id && !userId)
-    return next(new AppError("Event identifier not found", 400));
 
   if (id) {
     event = await Event.findById(id)
       .populate("userId", "-password")
       .populate("recipient", "-password");
-  } else {
+  } else if (all === "true") {
+    event = await Event.find({})
+      .populate("userId", "-password")
+      .populate("recipient", "-password");
+  } else if (userId) {
     event = await Event.find({
       $or: [{ userId }, { recipient: userId }],
     })
       .populate("userId", "-password")
       .populate("recipient", "-password");
+  } else {
+    return next(new AppError("Event identifier not found", 400));
   }
 
   if (!event)

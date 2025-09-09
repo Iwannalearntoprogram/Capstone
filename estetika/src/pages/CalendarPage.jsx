@@ -8,6 +8,7 @@ import { FiPlus, FiEdit2 } from "react-icons/fi";
 import { FaTrash } from "react-icons/fa";
 import axios from "axios";
 import Cookies from "js-cookie";
+import Select from "react-select";
 
 const locales = { "en-US": enUS };
 
@@ -30,6 +31,7 @@ const CalendarPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [showAllEvents, setShowAllEvents] = useState(false);
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -45,6 +47,9 @@ const CalendarPage = () => {
   });
   const [recipients, setRecipients] = useState([]);
   const [recipientInput, setRecipientInput] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
+  const [recipientOptions, setRecipientOptions] = useState([]);
+  const [selectedRecipients, setSelectedRecipients] = useState([]);
 
   const formatToDateTimeLocal = (date) => {
     if (!date) return "";
@@ -225,6 +230,7 @@ const CalendarPage = () => {
     });
     setRecipients([]);
     setRecipientInput("");
+    setSelectedRecipients([]);
   };
 
   const closeEditModal = () => {
@@ -242,6 +248,7 @@ const CalendarPage = () => {
     });
     setRecipients([]);
     setRecipientInput("");
+    setSelectedRecipients([]);
   };
 
   useEffect(() => {
@@ -249,14 +256,17 @@ const CalendarPage = () => {
       try {
         const token = Cookies.get("token");
         const userId = localStorage.getItem("id");
-        const response = await axios.get(
-          `${serverUrl}/api/event?userId=${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        let url;
+        if (showAllEvents) {
+          url = `${serverUrl}/api/event?all=true`;
+        } else {
+          url = `${serverUrl}/api/event?userId=${userId}`;
+        }
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const mappedEvents = (response.data.event || []).map((ev) => ({
           ...ev,
           start: new Date(ev.startDate),
@@ -269,21 +279,59 @@ const CalendarPage = () => {
       }
     };
     fetchEvents();
-  }, []);
+  }, [serverUrl, showAllEvents]);
+
+  useEffect(() => {
+    // Fetch all users except client role for recipient dropdown
+    const fetchUsers = async () => {
+      try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${serverUrl}/api/user?excludeRole=client`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        // Support both array and object response
+        const users = Array.isArray(response.data) ? response.data : response.data.users || [];
+        setAllUsers(users);
+        setRecipientOptions(
+          users.map((user) => ({
+            value: user._id,
+            label: user.fullName ? `${user.fullName} (${user.email})` : user.email,
+            email: user.email,
+            fullName: user.fullName,
+          }))
+        );
+      } catch (err) {
+        setAllUsers([]);
+        setRecipientOptions([]);
+      }
+    };
+    fetchUsers();
+  }, [serverUrl]);
 
   return (
     <div className="rounded-[15px] mt-[50px] p-[30px] bg-white min-h-screen shadow-[0_2px_8px_0_rgba(99,99,99,0.2)]">
       <div className="flex justify-between items-center mb-5">
         <h2 className="text-2xl font-semibold text-[#1D3C34] font-avenir">
-          📅 Project Calendar
+           Project Calendar
         </h2>
-        <button
-          onClick={handleAddEventButton}
-          className="bg-[#1D3C34] text-white px-4 py-2 rounded-lg hover:bg-[#145c4b] transition flex items-center gap-2"
-        >
-          <FiPlus size={20} />
-          Add Event
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleAddEventButton}
+            className="bg-[#1D3C34] text-white px-4 py-2 rounded-lg hover:bg-[#145c4b] transition flex items-center gap-2"
+          >
+            <FiPlus size={20} />
+            Add Event
+          </button>
+          <button
+            onClick={() => setShowAllEvents((prev) => !prev)}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 transition font-semibold border ${showAllEvents ? 'bg-[#1D3C34] text-white border-[#1D3C34]' : 'bg-white text-[#1D3C34] border-[#1D3C34] hover:bg-gray-100'}`}
+            aria-pressed={showAllEvents}
+          >
+            {showAllEvents ? 'Showing All Events' : 'Show All Events'}
+          </button>
+        </div>
       </div>
 
       <Calendar
@@ -395,45 +443,22 @@ const CalendarPage = () => {
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
         <label className="block mb-2">Recipients:</label>
-        <div className="flex mb-2 gap-2">
-          <input
-            type="text"
-            placeholder="Add recipient email or username"
-            value={recipientInput}
-            onChange={(e) => setRecipientInput(e.target.value)}
-            className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleAddRecipient();
-              }
-            }}
-          />
-          <button
-            type="button"
-            onClick={handleAddRecipient}
-            className="px-3 py-1 bg-[#1D3C34] text-white rounded-md hover:bg-[#145c4b] transition"
-          >
-            Add
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {recipients.map((r) => (
-            <span
-              key={r}
-              className="bg-gray-200 px-2 py-1 rounded-full flex items-center gap-1"
-            >
-              {r}
-              <button
-                type="button"
-                onClick={() => handleRemoveRecipient(r)}
-                className="ml-1 text-red-500"
-              >
-                &times;
-              </button>
-            </span>
-          ))}
-        </div>
+        <Select
+          isMulti
+          options={recipientOptions}
+          value={selectedRecipients}
+          onChange={(selected) => {
+            setSelectedRecipients(selected);
+            setRecipients(selected.map((r) => r.value));
+          }}
+          placeholder="Search and select recipients..."
+          className="mb-4"
+          classNamePrefix="react-select"
+          filterOption={(option, inputValue) => {
+            const label = option.label.toLowerCase();
+            return label.includes(inputValue.toLowerCase());
+          }}
+        />
 
         <label className="block mb-2">From:</label>
         <input

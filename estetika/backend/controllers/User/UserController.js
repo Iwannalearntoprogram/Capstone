@@ -4,10 +4,19 @@ const User = require("../../models/User/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-const users_index = catchAsync(async (req, res) => {
-  const { exclude } = req.query;
+const users_index = catchAsync(async (req, res, next) => {
+  const { exclude, excludeRole } = req.query;
 
-  const users = await User.find({ _id: { $ne: exclude } });
+  // Build query object
+  const query = {};
+  if (exclude) {
+    query._id = { $ne: exclude };
+  }
+  if (excludeRole) {
+    query.role = { $ne: excludeRole };
+  }
+
+  const users = await User.find(query);
 
   if (!users || users.length === 0) {
     return next(new AppError("No users found", 404));
