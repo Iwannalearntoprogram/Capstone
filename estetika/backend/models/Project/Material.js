@@ -43,6 +43,9 @@ const materialSchema = new mongoose.Schema(
       type: String,
       required: [true, "Material category is required"],
     },
+    subCategory: {
+      type: String,
+    },
     sales: {
       type: Number,
       default: 0,

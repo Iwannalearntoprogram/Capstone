@@ -58,7 +58,7 @@ const Sidebar = ({ isOpen }) => {
             Calendar
           </Link>
         </li>
-        {role !== "designer" && (
+        {/* {role !== "designer" && ( */}
           <li
             className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
               location.pathname.includes("/materials")
@@ -73,7 +73,7 @@ const Sidebar = ({ isOpen }) => {
               Materials
             </Link>
           </li>
-        )}
+        {/* )} */}
         {role === "admin" && (
           <li
             className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${

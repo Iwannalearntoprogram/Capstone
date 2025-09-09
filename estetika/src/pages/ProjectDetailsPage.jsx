@@ -6,6 +6,8 @@ import Cookies from "js-cookie";
 import ReactModal from "react-modal";
 import EditProjectModal from "../components/project/EditProjectModal";
 import EditPhasesModal from "../components/project/EditPhasesModal";
+
+function ProjectDetailsPage() {
   // Edit phases modal state
   const [isPhasesEditOpen, setIsPhasesEditOpen] = useState(false);
   const [phasesEditData, setPhasesEditData] = useState([]);
@@ -14,12 +16,14 @@ import EditPhasesModal from "../components/project/EditPhasesModal";
   // Prepare modal data when opening
   const openPhasesEditModal = () => {
     if (project && Array.isArray(project.timeline)) {
-      setPhasesEditData(project.timeline.map(phase => ({
-        _id: phase._id,
-        title: phase.title || "",
-        startDate: phase.startDate ? phase.startDate.slice(0, 10) : "",
-        endDate: phase.endDate ? phase.endDate.slice(0, 10) : "",
-      })));
+      setPhasesEditData(
+        project.timeline.map((phase) => ({
+          _id: phase._id,
+          title: phase.title || "",
+          startDate: phase.startDate ? phase.startDate.slice(0, 10) : "",
+          endDate: phase.endDate ? phase.endDate.slice(0, 10) : "",
+        }))
+      );
       setIsPhasesEditOpen(true);
     }
   };
@@ -27,15 +31,15 @@ import EditPhasesModal from "../components/project/EditPhasesModal";
   const closePhasesEditModal = () => setIsPhasesEditOpen(false);
 
   const handleChangePhase = (idx, newPhase) => {
-    setPhasesEditData(prev => prev.map((p, i) => i === idx ? newPhase : p));
+    setPhasesEditData((prev) => prev.map((p, i) => (i === idx ? newPhase : p)));
   };
 
   const handleAddPhase = () => {
-    setPhasesEditData(prev => [...prev, { title: "", startDate: "", endDate: "" }]);
+    setPhasesEditData((prev) => [...prev, { title: "", startDate: "", endDate: "" }]);
   };
 
   const handleRemovePhase = (idx) => {
-    setPhasesEditData(prev => prev.filter((_, i) => i !== idx));
+    setPhasesEditData((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handlePhasesEditSubmit = async (e) => {
@@ -47,12 +51,12 @@ import EditPhasesModal from "../components/project/EditPhasesModal";
       await axios.put(
         `${serverUrl}/api/project?id=${id}`,
         {
-          timeline: phasesEditData.map(phase => ({
+          timeline: phasesEditData.map((phase) => ({
             _id: phase._id,
             title: phase.title,
             startDate: phase.startDate,
             endDate: phase.endDate,
-          }))
+          })),
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -67,7 +71,6 @@ import EditPhasesModal from "../components/project/EditPhasesModal";
     }
   };
 
-function ProjectDetailsPage() {
   const { id } = useParams();
   const location = useLocation();
   const [project, setProject] = useState(location.state?.project || null);
@@ -163,7 +166,7 @@ function ProjectDetailsPage() {
     { label: "Timeline", path: "timeline" },
     { label: "Files", path: "files" },
     { label: "Updates", path: "update" },
-    ];
+  ];
 
   return (
     <div className=" mx-auto px-4 py-8">

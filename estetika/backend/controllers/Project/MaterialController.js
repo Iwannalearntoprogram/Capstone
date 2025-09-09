@@ -41,7 +41,7 @@ const material_get = catchAsync(async (req, res, next) => {
 // Create Material
 const material_post = catchAsync(async (req, res, next) => {
   const designerId = req.id;
-  const { name, company, price, description, image, options, category } =
+  const { name, company, price, description, image, options, subCategory } =
     req.body;
 
   const isDesignerValid = await User.findById(designerId);
@@ -100,6 +100,7 @@ const material_post = catchAsync(async (req, res, next) => {
     image,
     options,
     category,
+    subCategory,
     embedding,
   });
 
@@ -113,7 +114,7 @@ const material_post = catchAsync(async (req, res, next) => {
 // Update Material
 const material_put = catchAsync(async (req, res, next) => {
   const { id } = req.query;
-  const { name, company, price, description, image, options, category } =
+  const { name, company, price, description, image, options, category, subCategory } =
     req.body;
 
   if (!id) return next(new AppError("Material identifier not found", 400));
@@ -132,7 +133,8 @@ const material_put = catchAsync(async (req, res, next) => {
     !description &&
     !image &&
     !options &&
-    !category
+    !category &&
+    !subCategory
   ) {
     return next(new AppError("No data to update", 400));
   }
@@ -149,6 +151,7 @@ const material_put = catchAsync(async (req, res, next) => {
   if (description) updates.description = description;
   if (image) updates.image = image;
   if (category) updates.category = category;
+  if (subCategory) updates.subCategory = subCategory;
 
   if (price !== undefined) {
     if (typeof price !== "number" || price <= 0) {
