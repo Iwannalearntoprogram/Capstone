@@ -98,6 +98,12 @@ export default function UsersPage() {
       count: getUserCount("client"),
     },
     {
+      id: "storage_admin",
+      label: "Storage Admin",
+      icon: FaUserTag,
+      count: getUserCount("storage_admin"),
+    },
+    {
       id: "archived",
       label: "Archived",
       icon: FaUserSlash,
@@ -225,6 +231,8 @@ export default function UsersPage() {
         return "bg-blue-100 text-blue-800";
       case "client":
         return "bg-green-100 text-green-800";
+      case "storage_admin":
+        return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -589,6 +597,8 @@ export default function UsersPage() {
                   >
                     <option value="admin">Admin</option>
                     <option value="designer">Designer</option>
+                    <option value="client">Client</option>
+                    <option value="storage_admin">Storage Admin</option>
                   </select>
                 </div>
               </div>
