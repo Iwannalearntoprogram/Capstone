@@ -9,17 +9,22 @@ const conversation_summary = catchAsync(async (req, res, next) => {
   if (!userId) return next(new AppError("Missing userId", 400));
 
   // Find all users except current
+  const currentUser = await User.findById(userId);
   const users = await User.find({ _id: { $ne: userId } });
 
   // For each user, get unread count and last exchanged message timestamp
   const summaries = await Promise.all(
     users.map(async (otherUser) => {
-      // Unread messages from otherUser to userId
-      const unreadCount = await Message.countDocuments({
-        sender: otherUser._id,
-        recipient: userId,
-        status: { $in: ["sent", "delivered"] },
-      });
+      // If muted, unreadCount is always 0
+      let unreadCount = 0;
+      const isMuted = currentUser.mutedUsers && currentUser.mutedUsers.map(id => id.toString()).includes(otherUser._id.toString());
+      if (!isMuted) {
+        unreadCount = await Message.countDocuments({
+          sender: otherUser._id,
+          recipient: userId,
+          status: { $in: ["sent", "delivered"] },
+        });
+      }
       // Last exchanged message (sent or received)
       const lastMsg = await Message.findOne({
         $or: [
@@ -38,6 +43,7 @@ const conversation_summary = catchAsync(async (req, res, next) => {
         socketId: otherUser.socketId,
         unreadCount,
         lastMessageTimestamp: lastMsg ? lastMsg.timestamp : null,
+        isMuted,
       };
     })
   );

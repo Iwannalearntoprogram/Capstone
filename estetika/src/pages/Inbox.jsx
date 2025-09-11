@@ -46,7 +46,9 @@ function Inbox() {
           },
         }
       );
-      setUsers(res.data);
+  // Fetch current user's mutedUsers from backend (assume returned in res.data or fetch separately if needed)
+  // For now, assume res.data is array of users, and each user has isMuted property
+  setUsers(res.data);
     } catch (error) {
       console.error("Error fetching conversation summary:", error);
     }
@@ -257,6 +259,8 @@ function Inbox() {
             users={filteredUsers}
             selectedUser={selectedUser}
             onSelect={handleUserSelect}
+            userId={userId}
+            token={token}
           />
         </div>
       </div>
