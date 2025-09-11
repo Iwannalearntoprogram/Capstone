@@ -17,7 +17,11 @@ const conversation_summary = catchAsync(async (req, res, next) => {
     users.map(async (otherUser) => {
       // If muted, unreadCount is always 0
       let unreadCount = 0;
-      const isMuted = currentUser.mutedUsers && currentUser.mutedUsers.map(id => id.toString()).includes(otherUser._id.toString());
+      const isMuted =
+        currentUser.mutedUsers &&
+        currentUser.mutedUsers
+          .map((id) => id.toString())
+          .includes(otherUser._id.toString());
       if (!isMuted) {
         unreadCount = await Message.countDocuments({
           sender: otherUser._id,
