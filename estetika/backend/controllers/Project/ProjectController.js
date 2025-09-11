@@ -3,6 +3,8 @@ const User = require("../../models/User/User");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
 const Material = require("../../models/Project/Material");
+const DeletedProject = require("../../models/Project/DeletedProject");
+require("../../utils/recycleBinCron");
 
 // Get Project by Id or projectCreator
 const project_get = catchAsync(async (req, res, next) => {
@@ -310,12 +312,13 @@ const project_delete = catchAsync(async (req, res, next) => {
     );
   }
 
+  // Store project in recycle bin (DeletedProject)
+  await DeletedProject.create({
+    project: project.toObject(),
+    deletedAt: new Date(),
+  });
+
   // Remove related tasks and timeline phases
-
-  const deletedProject = await Project.findByIdAndDelete(id);
-
-  if (!deletedProject) return next(new AppError("Project not found", 404));
-
   await Promise.all([
     Project.db.model("Task").deleteMany({ _id: { $in: project.tasks } }),
     Project.db.model("Phase").deleteMany({ _id: { $in: project.timeline } }),
@@ -325,14 +328,20 @@ const project_delete = catchAsync(async (req, res, next) => {
   ]);
 
   await User.findByIdAndUpdate(
-    deletedProject.projectCreator,
-    { $pull: { projectsId: deletedProject._id } },
+    project.projectCreator,
+    { $pull: { projectsId: project._id } },
     { new: true }
   );
 
+  // Delete project from main collection
+  const deletedProject = await Project.findByIdAndDelete(id);
+
   return res
     .status(200)
-    .json({ message: "Project Successfully Deleted", deletedProject });
+    .json({
+      message: "Project moved to recycle bin for 30 days",
+      deletedProject,
+    });
 });
 
 // Add Material to Project

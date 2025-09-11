@@ -13,7 +13,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import ProjectDetailsModal from "./ProjectDetailsModal";
 
-const ProjectCard = ({ project, onView, onDelete }) => {
+const ProjectCard = ({ project, onView, onDelete, restoreMode }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [userRole, setUserRole] = useState(null);
@@ -230,14 +230,27 @@ const ProjectCard = ({ project, onView, onDelete }) => {
             </div>
           </div>
           <div className="flex gap-2 ml-2">
-            <button
-              className="bg-[#1D3C34] text-white text-sm px-3 py-1 rounded hover:bg-[#145c4b] transition"
-              onClick={() => onView(project._id)}
-            >
-              View
-            </button>
-            {/* Add Designer button - Only show if admin and can add designer */}
-            {canAddDesigner && (
+            {/* Only show view button if not restoreMode */}
+            {!restoreMode && (
+              <button
+                className="bg-[#1D3C34] text-white text-sm px-3 py-1 rounded hover:bg-[#145c4b] transition"
+                onClick={() => onView && onView(project._id)}
+              >
+                View
+              </button>
+            )}
+            {/* Restore button for recycle bin */}
+            {restoreMode && (
+              <button
+                className="bg-green-600 text-white text-sm px-2 py-1 rounded hover:bg-green-700 transition flex items-center"
+                onClick={() => onDelete && onDelete(project._id)}
+                title="Restore Project"
+              >
+                Restore
+              </button>
+            )}
+            {/* Add Designer button - Only show if admin and can add designer and not restoreMode */}
+            {!restoreMode && canAddDesigner && (
               <button
                 className="bg-blue-600 text-white text-sm px-2 py-1 rounded hover:bg-blue-700 transition flex items-center"
                 onClick={handleAddDesigner}
@@ -246,8 +259,8 @@ const ProjectCard = ({ project, onView, onDelete }) => {
                 <FaUserPlus size={12} />
               </button>
             )}
-            {/* Only show delete button if admin */}
-            {isAdmin && (
+            {/* Only show delete button if admin and not restoreMode */}
+            {!restoreMode && isAdmin && (
               <button
                 className="bg-gray-100 text-gray-600 text-sm px-2 py-1 rounded hover:bg-red-500 hover:text-white flex items-center"
                 onClick={() => onDelete && onDelete(project._id)}

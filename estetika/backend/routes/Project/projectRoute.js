@@ -46,4 +46,6 @@ router.post("/recommendation", design_recommendation_post);
 router.put("/recommendation", design_recommendation_put);
 router.delete("/recommendation", design_recommendation_delete);
 
+router.use("/deleted-projects", require("./deletedProjectRoute"));
+
 module.exports = router;
