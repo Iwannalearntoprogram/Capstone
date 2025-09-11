@@ -6,6 +6,7 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import ProjectCard from "../components/project/ProjectCard";
 import ProjectDetailsModal from "../components/project/ProjectDetailsModal";
+import ConfirmationModal from "../components/project/ConfirmationModal";
 
 const ProjectsPage = () => {
   const token = Cookies.get("token");
@@ -30,6 +31,13 @@ const ProjectsPage = () => {
   });
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [deletedProjects, setDeletedProjects] = useState([]);
+  const [showRecycleBin, setShowRecycleBin] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState({
+    open: false,
+    projectId: null,
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const navigate = useNavigate();
   const serverUrl = import.meta.env.VITE_SERVER_URL;
@@ -54,9 +62,23 @@ const ProjectsPage = () => {
     }
   };
 
+  // Fetch deleted projects for recycle bin
+  const fetchDeletedProjects = async () => {
+    try {
+      const response = await axios.get(
+        `${serverUrl}/api/project/deleted-projects`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setDeletedProjects(response.data.deletedProjects || []);
+    } catch {
+      setDeletedProjects([]);
+    }
+  };
+
   const handleDeleteProject = async (projectId) => {
-    if (!window.confirm("Are you sure you want to delete this project?"))
-      return;
+    setIsDeleting(true);
     try {
       await axios.delete(`${serverUrl}/api/project?id=${projectId}`, {
         headers: {
@@ -69,9 +91,12 @@ const ProjectsPage = () => {
       setFilteredProjects((prev) =>
         Array.isArray(prev) ? prev.filter((p) => p._id !== projectId) : []
       );
-    } catch (err) {
-      alert("Failed to delete project.");
+      await fetchDeletedProjects(); // Re-fetch recycle bin after deletion
+    } catch {
+      // Optionally show error modal
     }
+    setIsDeleting(false);
+    setConfirmDelete({ open: false, projectId: null });
   };
 
   const toggleSection = (sectionKey) => {
@@ -100,7 +125,23 @@ const ProjectsPage = () => {
       setFilteredProjects(response.data.project);
     };
     fetchProjects();
-  }, []);
+
+    // Fetch deleted projects for recycle bin
+    const fetchDeletedProjects = async () => {
+      try {
+        const response = await axios.get(
+          `${serverUrl}/api/project/deleted-projects`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setDeletedProjects(response.data.deletedProjects || []);
+      } catch {
+        setDeletedProjects([]);
+      }
+    };
+    fetchDeletedProjects();
+  }, [id, serverUrl, token]);
 
   useEffect(() => {
     if (!searchTerm) {
@@ -151,6 +192,30 @@ const ProjectsPage = () => {
       setFilteredProjects(response.data.project);
     } catch (err) {
       alert("Failed to add project.");
+    }
+  };
+
+  const handleRestoreProject = async (deletedId) => {
+    try {
+      await axios.post(
+        `${serverUrl}/api/project/deleted-projects/restore`,
+        { id: deletedId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setDeletedProjects((prev) => prev.filter((p) => p._id !== deletedId));
+      // Optionally refresh active projects
+      const response = await axios.get(
+        `${serverUrl}/api/project?${
+          userRole === "admin" ? "index=true" : `member=${id}`
+        }`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setProjects(response.data.project);
+      setFilteredProjects(response.data.project);
+    } catch (err) {
+      alert("Failed to restore project.");
     }
   };
 
@@ -205,7 +270,9 @@ const ProjectsPage = () => {
                 key={project._id}
                 project={project}
                 onView={handleProjectClick}
-                onDelete={handleDeleteProject}
+                onDelete={() =>
+                  setConfirmDelete({ open: true, projectId: project._id })
+                }
                 hideEdit={isAdmin}
               />
             ))}
@@ -322,7 +389,6 @@ const ProjectsPage = () => {
       {/* Search Bar and Add Project Button */}
       <div className="flex justify-between items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">Projects</h1>
-
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 w-full max-w-sm border rounded-full px-3 py-2 shadow-sm">
             <FaSearch className="text-gray-400" />
@@ -347,8 +413,39 @@ const ProjectsPage = () => {
             </button>
           )}
           */}
+          {isAdmin && (
+            <button
+              onClick={() => setShowRecycleBin((prev) => !prev)}
+              className="bg-gray-200 text-gray-800 px-4 py-2 rounded-full hover:bg-gray-300 transition flex items-center gap-2 whitespace-nowrap"
+            >
+              Recycle Bin
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Recycle Bin Section - Only for Admin */}
+      {isAdmin && showRecycleBin && (
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold mb-2">
+            Recycle Bin ({deletedProjects.length})
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {deletedProjects.map((item) => (
+              <ProjectCard
+                key={item._id}
+                project={item.project}
+                onView={null}
+                onDelete={() => handleRestoreProject(item._id)}
+                restoreMode={true}
+              />
+            ))}
+            {deletedProjects.length === 0 && (
+              <div className="text-gray-500">No deleted projects.</div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Projects grouped by status */}
       <div className="projects-overview">
@@ -383,6 +480,18 @@ const ProjectsPage = () => {
           onClose={() => setShowDetailsModal(false)}
         />
       )}
+
+      {/* Confirmation Modal for Delete */}
+      <ConfirmationModal
+        isOpen={confirmDelete.open}
+        title="Delete Project"
+        message="Are you sure you want to delete this project? This will move it to the recycle bin for 30 days."
+        confirmText={isDeleting ? "Deleting..." : "Delete"}
+        cancelText="Cancel"
+        onConfirm={() => handleDeleteProject(confirmDelete.projectId)}
+        onCancel={() => setConfirmDelete({ open: false, projectId: null })}
+        isProcessing={isDeleting}
+      />
     </div>
   );
 };

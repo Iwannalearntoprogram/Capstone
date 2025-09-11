@@ -175,10 +175,39 @@ const rating_stats = catchAsync(async (req, res, next) => {
   });
 });
 
+const rating_stats_all = catchAsync(async (req, res, next) => {
+  // Aggregate ratings by year
+  const stats = await Rating.aggregate([
+    {
+      $group: {
+        _id: { $year: "$createdAt" },
+        averageRating: { $avg: "$rating" },
+        totalRatings: { $sum: 1 },
+      },
+    },
+    {
+      $sort: { _id: 1 },
+    },
+  ]);
+
+  // Format for chart
+  const statistics = stats.map((item) => ({
+    year: item._id,
+    averageRating: Math.round(item.averageRating * 10) / 10,
+    totalRatings: item.totalRatings,
+  }));
+
+  return res.status(200).json({
+    message: "All rating statistics retrieved successfully",
+    statistics,
+  });
+});
+
 module.exports = {
   rating_get,
   rating_post,
   rating_put,
   rating_delete,
   rating_stats,
+  rating_stats_all,
 };

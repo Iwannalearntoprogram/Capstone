@@ -70,6 +70,7 @@ const userSchema = new mongoose.Schema(
     otp: { type: String },
     otpExpiresAt: { type: Date },
     socketId: { type: String },
+    mutedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   {
     timestamps: true,

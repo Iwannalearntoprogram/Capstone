@@ -61,6 +61,15 @@ const initSocket = (server) => {
             content,
             timestamp: message.timestamp,
           });
+          // Notify recipient to update unread counts
+          io.to(recipientUser.socketId).emit("update_unread_counts", {
+            userId: recipientUser._id,
+          });
+        }
+        if (sender.socketId) {
+          io.to(sender.socketId).emit("update_unread_counts", {
+            userId: sender._id,
+          });
         }
 
         if (sender.role === "designer" && recipientUser.role === "client") {
@@ -122,7 +131,26 @@ const initSocket = (server) => {
 
     socket.on("mark_as_read", async ({ messageId }) => {
       try {
-        await Message.findByIdAndUpdate(messageId, { status: "read" });
+        const message = await Message.findByIdAndUpdate(
+          messageId,
+          { status: "read" },
+          { new: true }
+        );
+        if (message) {
+          // Notify both sender and recipient to update unread counts
+          const senderUser = await User.findById(message.sender);
+          const recipientUser = await User.findById(message.recipient);
+          if (senderUser && senderUser.socketId) {
+            io.to(senderUser.socketId).emit("update_unread_counts", {
+              userId: senderUser._id,
+            });
+          }
+          if (recipientUser && recipientUser.socketId) {
+            io.to(recipientUser.socketId).emit("update_unread_counts", {
+              userId: recipientUser._id,
+            });
+          }
+        }
       } catch (err) {
         console.error("Error marking message as read:", err.message);
       }
