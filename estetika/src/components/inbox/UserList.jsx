@@ -2,9 +2,15 @@ import React from "react";
 import defaultProfile from "../../assets/images/user.png";
 
 const UserList = ({ users, selectedUser, onSelect }) => {
+  // Sort by lastMessageTimestamp desc, fallback to name
   const sorted = [...users].sort((a, b) => {
-    if (a.socketId && !b.socketId) return -1;
-    if (!a.socketId && b.socketId) return 1;
+    if (a.lastMessageTimestamp && b.lastMessageTimestamp) {
+      return (
+        new Date(b.lastMessageTimestamp) - new Date(a.lastMessageTimestamp)
+      );
+    }
+    if (a.lastMessageTimestamp) return -1;
+    if (b.lastMessageTimestamp) return 1;
     const aName = a.firstName || a.fullName || a.username || "";
     const bName = b.firstName || b.fullName || b.username || "";
     return aName.localeCompare(bName);
@@ -37,10 +43,22 @@ const UserList = ({ users, selectedUser, onSelect }) => {
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-gray-900 text-sm mb-0.5">
                 {userName}
+                {user.unreadCount > 0 && (
+                  <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                    {user.unreadCount}
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex flex-col items-end gap-1 ml-2">
-              <div className="text-xs text-gray-400">{formatTime()}</div>
+              <div className="text-xs text-gray-400">
+                {user.lastMessageTimestamp
+                  ? new Date(user.lastMessageTimestamp).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : formatTime()}
+              </div>
               <div
                 className={`w-2 h-2 rounded-full ${
                   user.socketId ? "bg-green-400" : "bg-gray-300"

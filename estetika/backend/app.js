@@ -12,6 +12,8 @@ const session = require("express-session");
 const authRoute = require("./routes/User/authRoute");
 const userRoute = require("./routes/User/userRoute");
 const messageRoute = require("./routes/User/messageRoute");
+const markReadRoute = require("./routes/User/markReadRoute");
+const conversationRoute = require("./routes/User/conversationRoute");
 
 // project
 const eventRoute = require("./routes/Project/eventRoute");
@@ -80,6 +82,8 @@ app.use("/api", limiter); //Protection Against DDOS Attack
 app.use("/api/auth", authRoute);
 app.use("/api/user", checkAuth, userRoute);
 app.use("/api/message", checkAuth, messageRoute);
+app.use("/api/message", checkAuth, markReadRoute);
+app.use("/api/conversation", checkAuth, conversationRoute);
 
 // project
 app.use("/api/event", checkAuth, eventRoute);

@@ -35,6 +35,23 @@ function Inbox() {
     userIdRef.current = userId;
   }, [selectedUser, userId]);
 
+  const fetchUsers = React.useCallback(async () => {
+    if (!userId) return;
+    try {
+      const res = await axios.get(
+        `${serverUrl}/api/conversation/summary?userId=${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setUsers(res.data);
+    } catch (error) {
+      console.error("Error fetching conversation summary:", error);
+    }
+  }, [userId, token, serverUrl]);
+
   useEffect(() => {
     socket.on("connect", () => {
       if (userId) {
@@ -48,24 +65,18 @@ function Inbox() {
       setUsers(filteredUsers);
     });
 
+    // Listen for real-time unread count updates
+    socket.on("update_unread_counts", (data) => {
+      if (data.userId === userId) {
+        fetchUsers();
+      }
+    });
+
     return () => {
       socket.off("update_user_list");
+      socket.off("update_unread_counts");
     };
-  }, [userId]);
-
-  const fetchUsers = async () => {
-    if (!userId) return;
-    try {
-      const res = await axios.get(`${serverUrl}/api/user?exclude=${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setUsers(res.data);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    }
-  };
+  }, [userId, fetchUsers]);
 
   useEffect(() => {
     if (!search) {
@@ -112,6 +123,21 @@ function Inbox() {
   const handleUserSelect = (user) => {
     setSelectedUser(user);
     fetchMessages(user);
+    // Mark all messages from this user as read
+    if (user && user._id) {
+      axios.post(
+        `${serverUrl}/api/message/mark-read`,
+        {
+          userId,
+          senderId: user._id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    }
   };
 
   const sendMessage = () => {
@@ -126,6 +152,19 @@ function Inbox() {
       { sender: userId, content, timestamp: new Date() },
     ]);
     setContent("");
+    // Mark all messages from this user as read (replying counts as read)
+    axios.post(
+      `${serverUrl}/api/message/mark-read`,
+      {
+        userId,
+        senderId: selectedUser._id,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
   };
 
   const handleFileUpload = async (event) => {
