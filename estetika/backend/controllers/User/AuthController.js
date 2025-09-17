@@ -65,6 +65,8 @@ const verifyEmail = catchAsync(async (req, res, next) => {
   user.otpExpiresAt = otpExpiry;
   await user.save();
 
+  console.log("Generated OTP:", otp);
+
   await sendEmail(email, otp);
   return res.status(200).send("OTP sent");
 });

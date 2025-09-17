@@ -286,18 +286,25 @@ const CalendarPage = () => {
     const fetchUsers = async () => {
       try {
         const token = Cookies.get("token");
-        const response = await axios.get(`${serverUrl}/api/user?excludeRole=client`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(
+          `${serverUrl}/api/user?excludeRole=client`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         // Support both array and object response
-        const users = Array.isArray(response.data) ? response.data : response.data.users || [];
+        const users = Array.isArray(response.data)
+          ? response.data
+          : response.data.users || [];
         setAllUsers(users);
         setRecipientOptions(
           users.map((user) => ({
             value: user._id,
-            label: user.fullName ? `${user.fullName} (${user.email})` : user.email,
+            label: user.fullName
+              ? `${user.fullName} (${user.email})`
+              : user.email,
             email: user.email,
             fullName: user.fullName,
           }))
@@ -314,7 +321,7 @@ const CalendarPage = () => {
     <div className="rounded-[15px] mt-[50px] p-[30px] bg-white min-h-screen shadow-[0_2px_8px_0_rgba(99,99,99,0.2)]">
       <div className="flex justify-between items-center mb-5">
         <h2 className="text-2xl font-semibold text-[#1D3C34] font-avenir">
-           Project Calendar
+          Project Calendar
         </h2>
         <div className="flex items-center gap-4">
           <button
@@ -326,10 +333,14 @@ const CalendarPage = () => {
           </button>
           <button
             onClick={() => setShowAllEvents((prev) => !prev)}
-            className={`px-4 py-2 rounded-lg flex items-center gap-2 transition font-semibold border ${showAllEvents ? 'bg-[#1D3C34] text-white border-[#1D3C34]' : 'bg-white text-[#1D3C34] border-[#1D3C34] hover:bg-gray-100'}`}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 transition font-semibold border ${
+              showAllEvents
+                ? "bg-[#1D3C34] text-white border-[#1D3C34]"
+                : "bg-white text-[#1D3C34] border-[#1D3C34] hover:bg-gray-100"
+            }`}
             aria-pressed={showAllEvents}
           >
-            {showAllEvents ? 'Showing All Events' : 'Show All Events'}
+            {showAllEvents ? "Showing All Events" : "Show All Events"}
           </button>
         </div>
       </div>
@@ -360,7 +371,7 @@ const CalendarPage = () => {
       <Modal
         isOpen={showViewModal}
         onRequestClose={closeViewModal}
-        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 w-[90%] max-w-[400px] rounded-lg shadow-lg z-50"
+        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 sm:p-6 w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl rounded-lg shadow-lg z-50 max-h-[85vh] overflow-y-auto"
         overlayClassName="fixed top-0 left-0 w-full h-full bg-black/20 z-50 backdrop-blur-xs"
       >
         {selectedEvent && (
@@ -430,7 +441,7 @@ const CalendarPage = () => {
       <Modal
         isOpen={showAddModal}
         onRequestClose={closeAddModal}
-        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 w-[90%] max-w-[400px] rounded-lg shadow-lg z-50"
+        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 sm:p-6 w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl rounded-lg shadow-lg z-50 max-h-[85vh] overflow-y-auto"
         overlayClassName="fixed top-0 left-0 w-full h-full bg-black/20 z-50 backdrop-blur-xs"
       >
         <h2 className="text-lg font-semibold mb-4">Add Event</h2>
@@ -530,7 +541,7 @@ const CalendarPage = () => {
       <Modal
         isOpen={showEditModal}
         onRequestClose={closeEditModal}
-        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 w-[90%] max-w-[400px] rounded-lg shadow-lg z-50"
+        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 sm:p-6 w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl rounded-lg shadow-lg z-50 max-h-[85vh] overflow-y-auto"
         overlayClassName="fixed top-0 left-0 w-full h-full bg-black/20 z-50 backdrop-blur-xs"
       >
         <h2 className="text-lg font-semibold mb-4">Edit Event</h2>

@@ -22,9 +22,12 @@ function ProfilePage() {
     const fetchUser = async () => {
       try {
         const token = Cookies.get("token");
-        const response = await api.get(`${serverUrl}/api/user/data?id=${user?._id || user?.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await api.get(
+          `${serverUrl}/api/user/data?id=${user?._id || user?.id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setCurrentUser(response.data.user);
       } catch (err) {
         setCurrentUser(user); // fallback to cookie
@@ -33,27 +36,6 @@ function ProfilePage() {
     fetchUser();
   }, []);
   // Helper: get editable fields by role
-  const getEditableFields = () => {
-    if (!currentUser) return [];
-    // Always allow firstName and lastName to be edited for all roles
-    let fields = ["firstName", "lastName"];
-    if (["admin", "storage_admin"].includes(currentUser.role)) {
-      fields = fields.concat([
-        "birthday",
-        "email",
-        "department",
-        "aboutMe",
-        "phoneNumber",
-        "address",
-        "linkedIn",
-        "employeeId",
-        "emergencyContactInfo",
-      ]);
-    } else if (currentUser.role === "designer") {
-      fields = fields.concat(["aboutMe", "profileImage"]);
-    }
-    return fields;
-  };
 
   // Helper: get display fields by role
   const getDisplayFields = () => {
@@ -82,13 +64,47 @@ function ProfilePage() {
         { label: "Emergency Contact Information", key: "emergencyContactInfo" },
       ]);
     } else if (currentUser.role === "designer") {
+      // Designers: display all details (same list as admin), but only some are editable
       fields = fields.concat([
+        { label: "Birthday", key: "birthday" },
+        { label: "Email", key: "email" },
+        { label: "Department", key: "department" },
         { label: "Bio", key: "aboutMe" },
+        { label: "Phone Number", key: "phoneNumber" },
+        { label: "Address", key: "address" },
+        { label: "LinkedIn", key: "linkedIn" },
         { label: "Date Joined", key: "createdAt" },
+        { label: "Employee ID", key: "employeeId" },
+        { label: "Emergency Contact Information", key: "emergencyContactInfo" },
       ]);
     }
     return fields;
   };
+
+  // For designers, allow editing full name, bio, and date joined
+  const getEditableFields = () => {
+      if (!currentUser) return [];
+      // Designer: only Full Name (first/last), Bio, and Date Joined
+      if (currentUser.role === "designer") {
+        return ["firstName", "lastName", "aboutMe", "createdAt"];
+      }
+      // Other roles
+      let fields = ["firstName", "lastName"];
+      if (["admin", "storage_admin"].includes(currentUser.role)) {
+        fields = fields.concat([
+          "birthday",
+          "email",
+          "department",
+          "aboutMe",
+          "phoneNumber",
+          "address",
+          "linkedIn",
+          "employeeId",
+          "emergencyContactInfo",
+        ]);
+      }
+      return fields;
+    };
 
   // Handle edit button
   const handleEdit = () => {
@@ -110,16 +126,25 @@ function ProfilePage() {
     let firstNameChanged = false;
     let lastNameChanged = false;
     getEditableFields().forEach((field) => {
-      if (editFields[field] !== undefined && editFields[field] !== currentUser[field]) {
+      if (
+        editFields[field] !== undefined &&
+        editFields[field] !== currentUser[field]
+      ) {
         payload[field] = editFields[field];
         if (field === "firstName") firstNameChanged = true;
         if (field === "lastName") lastNameChanged = true;
       }
     });
     // If firstName or lastName changed, update fullName as well
-    if ((firstNameChanged || lastNameChanged)) {
-      const newFirst = editFields.firstName !== undefined ? editFields.firstName : currentUser.firstName || "";
-      const newLast = editFields.lastName !== undefined ? editFields.lastName : currentUser.lastName || "";
+    if (firstNameChanged || lastNameChanged) {
+      const newFirst =
+        editFields.firstName !== undefined
+          ? editFields.firstName
+          : currentUser.firstName || "";
+      const newLast =
+        editFields.lastName !== undefined
+          ? editFields.lastName
+          : currentUser.lastName || "";
       payload.fullName = `${newFirst} ${newLast}`.trim();
     }
     if (Object.keys(payload).length === 0) {
@@ -127,9 +152,13 @@ function ProfilePage() {
       return;
     }
     try {
-      const response = await api.put(`${serverUrl}/api/user?id=${currentUser._id || currentUser.id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.put(
+        `${serverUrl}/api/user?id=${currentUser._id || currentUser.id}`,
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setCurrentUser(response.data.user);
       Cookies.set("user", JSON.stringify(response.data.user));
       setEditMode(false);
@@ -227,13 +256,38 @@ function ProfilePage() {
                 title="Change profile picture"
               >
                 {isUploading ? (
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  <svg
+                    className="w-4 h-4 animate-spin"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
                   </svg>
                 ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    />
                   </svg>
                 )}
               </button>
@@ -299,20 +353,47 @@ function ProfilePage() {
             {getDisplayFields().map(({ label, key }) => (
               <div key={key} className="flex flex-col mb-2">
                 <span className="font-semibold text-gray-600">{label}:</span>
-                {editMode && getEditableFields().includes(key) && key !== "createdAt" ? (
-                  <input
-                    type={key === "birthday" ? "date" : "text"}
-                    value={editFields[key] || ""}
-                    onChange={e => handleFieldChange(key, e.target.value)}
-                    className="border rounded px-2 py-1"
-                  />
+                {editMode && getEditableFields().includes(key) ? (
+                  key === "aboutMe" ? (
+                    <textarea
+                      value={editFields[key] || ""}
+                      onChange={(e) => handleFieldChange(key, e.target.value)}
+                      className="border rounded px-2 py-1 min-h-[80px]"
+                    />
+                  ) : (
+                    <input
+                      type={
+                        key === "birthday" || key === "createdAt"
+                          ? "date"
+                          : "text"
+                      }
+                      value={
+                        key === "createdAt"
+                          ? editFields[key]
+                            ? new Date(editFields[key]).toISOString().slice(0, 10)
+                            : ""
+                          : editFields[key] || ""
+                      }
+                      onChange={(e) =>
+                        handleFieldChange(
+                          key,
+                          key === "createdAt" ? e.target.value : e.target.value
+                        )
+                      }
+                      className="border rounded px-2 py-1"
+                    />
+                  )
                 ) : key === "fullName" ? (
-                  <p className="text-gray-800">{currentUser?.fullName || "Not provided"}</p>
+                  <p className="text-gray-800">
+                    {currentUser?.fullName || "Not provided"}
+                  </p>
                 ) : (
                   <p className="text-gray-800">
-                    {key === "birthday" && currentUser?.birthday ? new Date(currentUser.birthday).toLocaleDateString() :
-                      key === "createdAt" && currentUser?.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() :
-                      currentUser?.[key] || "Not provided"}
+                    {key === "birthday" && currentUser?.birthday
+                      ? new Date(currentUser.birthday).toLocaleDateString()
+                      : key === "createdAt" && currentUser?.createdAt
+                      ? new Date(currentUser.createdAt).toLocaleDateString()
+                      : currentUser?.[key] || "Not provided"}
                   </p>
                 )}
               </div>

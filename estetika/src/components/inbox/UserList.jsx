@@ -1,6 +1,7 @@
 import React from "react";
 import defaultProfile from "../../assets/images/user.png";
 import axios from "axios";
+import { FiBell, FiBellOff } from "react-icons/fi";
 
 const Toast = ({ message, type, onClose }) => (
   <div
@@ -110,23 +111,24 @@ const UserList = ({ users, selectedUser, onSelect, userId, token }) => {
               </div>
             </div>
             <button
-              className={`ml-2 px-2 py-1 text-xs rounded flex items-center gap-1 ${
+              className={`ml-2 w-8 h-8 flex items-center justify-center rounded-full transition-colors border ${
                 isMuted
-                  ? "bg-gray-300 text-gray-700"
-                  : "bg-yellow-400 text-black"
+                  ? "bg-gray-200 text-gray-400 border-gray-300 hover:bg-gray-300"
+                  : "bg-yellow-400 text-yellow-900 border-yellow-400 hover:bg-yellow-500"
               }`}
               onClick={(e) => {
                 e.stopPropagation();
                 handleMuteToggle(user, isMuted);
               }}
               disabled={loadingId === user._id}
+              title={isMuted ? "Unmute" : "Mute"}
             >
               {loadingId === user._id ? (
                 <span className="loader w-3 h-3 border-2 border-t-2 border-gray-500 rounded-full animate-spin"></span>
               ) : isMuted ? (
-                "Unmute"
+                <FiBellOff size={18} />
               ) : (
-                "Mute"
+                <FiBell size={18} />
               )}
             </button>
             <div className="flex flex-col items-end gap-1 ml-2">
