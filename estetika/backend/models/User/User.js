@@ -69,6 +69,10 @@ const userSchema = new mongoose.Schema(
     emailVerified: { type: Boolean, default: false },
     otp: { type: String },
     otpExpiresAt: { type: Date },
+  // Forgot password flow
+  resetOtp: { type: String },
+  resetOtpExpiresAt: { type: Date },
+  pendingPasswordHash: { type: String },
     socketId: { type: String },
     mutedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },

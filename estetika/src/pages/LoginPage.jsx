@@ -19,6 +19,14 @@ function LoginPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [isSkippingOtp, setIsSkippingOtp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // Forgot password state
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotPassword, setForgotPassword] = useState("");
+  const [forgotConfirm, setForgotConfirm] = useState("");
+  const [forgotOtp, setForgotOtp] = useState("");
+  const [forgotStep, setForgotStep] = useState(1); // 1: form, 2: otp
+  const [forgotMsg, setForgotMsg] = useState("");
 
   const navigate = useNavigate();
   const { login, token, setUserAndToken, checkRecentVerification } =
@@ -157,7 +165,7 @@ function LoginPage() {
       className="flex flex-col items-center justify-center h-screen bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${marbleBg})` }}
     >
-      {/* OTP Modal */}
+  {/* OTP Modal */}
       {showOtpModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 bg-opacity-40 z-50">
           <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
@@ -185,6 +193,114 @@ function LoginPage() {
                 </p>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Forgot Password Modal */}
+      {showForgotModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm">
+            <h2 className="text-lg font-semibold mb-4">Reset Password</h2>
+            {forgotStep === 1 ? (
+              <>
+                <input
+                  type="email"
+                  className="w-full p-2 mb-3 border rounded"
+                  placeholder="Email"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                />
+                <input
+                  type="password"
+                  className="w-full p-2 mb-3 border rounded"
+                  placeholder="New Password"
+                  value={forgotPassword}
+                  onChange={(e) => setForgotPassword(e.target.value)}
+                />
+                <input
+                  type="password"
+                  className="w-full p-2 mb-4 border rounded"
+                  placeholder="Confirm Password"
+                  value={forgotConfirm}
+                  onChange={(e) => setForgotConfirm(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <button
+                    className="flex-1 bg-[#1D3C34] text-white py-2 rounded hover:bg-[#16442A]"
+                    onClick={async () => {
+                      setForgotMsg("");
+                      if (!forgotEmail || !forgotPassword || !forgotConfirm) {
+                        setForgotMsg("All fields are required.");
+                        return;
+                      }
+                      if (forgotPassword !== forgotConfirm) {
+                        setForgotMsg("Passwords do not match.");
+                        return;
+                      }
+                      try {
+                        await axios.post(`${URL}/api/auth/forgot/initiate`, {
+                          email: forgotEmail,
+                          password: forgotPassword,
+                        });
+                        setForgotStep(2);
+                      } catch (e) {
+                        setForgotMsg(e.response?.data?.message || "Failed to start reset");
+                      }
+                    }}
+                  >
+                    Continue
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-gray-300 rounded"
+                    onClick={() => setShowForgotModal(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+                {forgotMsg && (
+                  <p className="mt-2 text-sm text-red-500">{forgotMsg}</p>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-gray-600 mb-2">Enter the OTP sent to {forgotEmail}.</p>
+                <input
+                  type="text"
+                  className="w-full p-2 mb-4 border rounded"
+                  placeholder="OTP"
+                  value={forgotOtp}
+                  onChange={(e) => setForgotOtp(e.target.value)}
+                />
+                <button
+                  className="w-full bg-[#1D3C34] text-white py-2 rounded hover:bg-[#16442A]"
+                  onClick={async () => {
+                    setForgotMsg("");
+                    try {
+                      await axios.post(`${URL}/api/auth/forgot/confirm`, {
+                        email: forgotEmail,
+                        otp: forgotOtp,
+                      });
+                      setShowForgotModal(false);
+                      setForgotStep(1);
+                      setForgotEmail("");
+                      setForgotPassword("");
+                      setForgotConfirm("");
+                      setForgotOtp("");
+                      // toast replacement
+                      alert("Password has been reset. Please login with your new password.");
+                    } catch (e) {
+                      setForgotMsg(e.response?.data?.message || "Invalid OTP");
+                    }
+                  }}
+                >
+                  Verify & Reset
+                </button>
+                {forgotMsg && (
+                  <p className="mt-2 text-sm text-red-500">{forgotMsg}</p>
+                )}
+              </>
+            )}
           </div>
         </div>
       )}
@@ -249,7 +365,10 @@ function LoginPage() {
               </p>
             )}
           </div>
-          <p className="mt-4 text-sm text-gray-600 hover:underline cursor-pointer">
+          <p
+            className="mt-4 text-sm text-gray-600 hover:underline cursor-pointer"
+            onClick={() => setShowForgotModal(true)}
+          >
             Forgot Password?
           </p>
         </div>

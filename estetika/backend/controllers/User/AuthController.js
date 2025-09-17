@@ -65,7 +65,7 @@ const verifyEmail = catchAsync(async (req, res, next) => {
   user.otpExpiresAt = otpExpiry;
   await user.save();
 
-  console.log("Generated OTP:", otp);
+  // console.log("Generated OTP:", otp);
 
   await sendEmail(email, otp);
   return res.status(200).send("OTP sent");
@@ -89,6 +89,60 @@ const verifyOTP = catchAsync(async (req, res, next) => {
   await user.save();
 
   return res.status(200).send("Email verified successfully");
+});
+
+// Forgot Password: Step 1 - Initiate
+const forgotPasswordInitiate = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password)
+    return next(new AppError("Email and password required", 400));
+
+  const user = await User.findOne({ email });
+  if (!user) return next(new AppError("User not found", 404));
+
+  // Create pending password hash but do not apply yet
+  const pendingHash = await bcrypt.hash(password, 10);
+  user.pendingPasswordHash = pendingHash;
+
+  // Generate OTP specific to reset
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+  user.resetOtp = otp;
+  user.resetOtpExpiresAt = otpExpiry;
+  await user.save();
+
+  // Send email with OTP
+  // console.log("Password reset OTP:", otp);
+  await sendEmail(email, otp);
+
+  return res
+    .status(200)
+    .json({ message: "OTP sent to email for password reset" });
+});
+
+// Forgot Password: Step 2 - Confirm
+const forgotPasswordConfirm = catchAsync(async (req, res, next) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) return next(new AppError("Email and OTP required", 400));
+
+  const user = await User.findOne({ email });
+  if (!user) return next(new AppError("User not found", 404));
+
+  const now = new Date();
+  if (!user.resetOtp || user.resetOtp !== otp || user.resetOtpExpiresAt < now) {
+    return next(new AppError("Invalid or expired OTP", 400));
+  }
+  if (!user.pendingPasswordHash)
+    return next(new AppError("No password change requested", 400));
+
+  // Apply new password
+  user.password = user.pendingPasswordHash;
+  user.pendingPasswordHash = undefined;
+  user.resetOtp = undefined;
+  user.resetOtpExpiresAt = undefined;
+  await user.save();
+
+  return res.status(200).json({ message: "Password reset successful" });
 });
 
 // Login route
@@ -257,6 +311,8 @@ module.exports = {
   login,
   verifyEmail,
   verifyOTP,
+  forgotPasswordInitiate,
+  forgotPasswordConfirm,
   logout,
   googleAuth,
 };
