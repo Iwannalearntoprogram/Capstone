@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar";
 import marbleBg from "../assets/images/white-marble-bg.png"; // Import the image
 
 const Layout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
   const location = useLocation();
 
