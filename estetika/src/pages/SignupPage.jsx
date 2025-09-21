@@ -116,7 +116,7 @@ function SignupPage() {
 
       if (response.ok) {
         alert(data.message);
-        navigate("/");
+        navigate("/login");
       } else {
         alert(data.message || "Something went wrong.");
       }

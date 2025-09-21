@@ -25,7 +25,7 @@ export default function Material({
       {/* image here */}
       <div
         className="w-full h-48 bg-gray-100 flex items-center justify-center overflow-hidden cursor-pointer relative group"
-        onClick={() => navigate(`/materials/${_id}`)}
+        onClick={() => navigate(`/dashboard/materials/${_id}`)}
       >
         {image?.[0] ? (
           <img

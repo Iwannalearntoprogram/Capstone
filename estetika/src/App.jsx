@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/AuthStore";
 
 import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
+import LandingPage from "./pages/LandingPage";
 
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -46,15 +47,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Landing Page - Public Route */}
+        <Route path="/" element={<LandingPage />} />
+
         {/*  Login and Signup */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <LoginPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/login" element={<LoginPage />} />
         <Route
           path="/signup"
           element={
@@ -66,13 +63,15 @@ function App() {
 
         {/* layout */}
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <Layout />
             </ProtectedRoute>
           }
         >
+          {/* Default dashboard redirect */}
+          <Route index element={<Navigate to="/dashboard/home" replace />} />
           <Route
             path="home"
             element={
@@ -89,7 +88,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="inbox" element={<Inbox />} />
+          <Route
+            path="inbox"
+            element={
+              <ProtectedRoute>
+                <Inbox />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="notification"
             element={
@@ -209,7 +215,7 @@ function App() {
             />
           </Route>
           <Route
-            path="/add-user"
+            path="add-user"
             element={
               <ProtectedRoute>
                 <UsersPage />
@@ -217,6 +223,17 @@ function App() {
             }
           />
         </Route>
+
+        {/* Legacy route redirects for backward compatibility */}
+        <Route path="/home" element={<Navigate to="/dashboard/home" replace />} />
+        <Route path="/profile" element={<Navigate to="/dashboard/profile" replace />} />
+        <Route path="/projects" element={<Navigate to="/dashboard/projects" replace />} />
+        <Route path="/projects/:id/*" element={<Navigate to="/dashboard/projects/:id" replace />} />
+        <Route path="/inbox" element={<Navigate to="/dashboard/inbox" replace />} />
+        <Route path="/calendar" element={<Navigate to="/dashboard/calendar" replace />} />
+        <Route path="/materials/*" element={<Navigate to="/dashboard/materials/items" replace />} />
+        <Route path="/add-user" element={<Navigate to="/dashboard/add-user" replace />} />
+        <Route path="/notification" element={<Navigate to="/dashboard/notification" replace />} />
       </Routes>
     </BrowserRouter>
   );

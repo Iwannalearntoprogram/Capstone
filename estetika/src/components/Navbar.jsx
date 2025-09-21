@@ -96,7 +96,7 @@ const Navbar = ({ toggleSidebar }) => {
           </button>
           <div
             className="flex gap-4 cursor-pointer"
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/dashboard/profile")}
           >
             <div className="text-right">
               <div className="text-sm font-semibold">{username}</div>

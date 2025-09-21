@@ -154,7 +154,7 @@ export default function MaterialDetailsPage() {
   };
 
   const handleProductClick = (productId) => {
-    navigate(`/materials/${productId}`);
+    navigate(`/dashboard/materials/${productId}`);
   };
 
   // Calculate final price based on base price + selected options

@@ -83,28 +83,28 @@ function ProfilePage() {
 
   // For designers, allow editing full name, bio, and date joined
   const getEditableFields = () => {
-      if (!currentUser) return [];
-      // Designer: only Full Name (first/last), Bio, and Date Joined
-      if (currentUser.role === "designer") {
-        return ["firstName", "lastName", "aboutMe", "createdAt"];
-      }
-      // Other roles
-      let fields = ["firstName", "lastName"];
-      if (["admin", "storage_admin"].includes(currentUser.role)) {
-        fields = fields.concat([
-          "birthday",
-          "email",
-          "department",
-          "aboutMe",
-          "phoneNumber",
-          "address",
-          "linkedIn",
-          "employeeId",
-          "emergencyContactInfo",
-        ]);
-      }
-      return fields;
-    };
+    if (!currentUser) return [];
+    // Designer: only Full Name (first/last), Bio, and Date Joined
+    if (currentUser.role === "designer") {
+      return ["firstName", "lastName", "aboutMe", "createdAt"];
+    }
+    // Other roles
+    let fields = ["firstName", "lastName"];
+    if (["admin", "storage_admin"].includes(currentUser.role)) {
+      fields = fields.concat([
+        "birthday",
+        "email",
+        "department",
+        "aboutMe",
+        "phoneNumber",
+        "address",
+        "linkedIn",
+        "employeeId",
+        "emergencyContactInfo",
+      ]);
+    }
+    return fields;
+  };
 
   // Handle edit button
   const handleEdit = () => {
@@ -370,7 +370,9 @@ function ProfilePage() {
                       value={
                         key === "createdAt"
                           ? editFields[key]
-                            ? new Date(editFields[key]).toISOString().slice(0, 10)
+                            ? new Date(editFields[key])
+                                .toISOString()
+                                .slice(0, 10)
                             : ""
                           : editFields[key] || ""
                       }

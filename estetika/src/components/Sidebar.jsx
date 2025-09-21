@@ -14,87 +14,105 @@ const Sidebar = ({ isOpen }) => {
       <ul className="list-none p-0 pt-5">
         <li
           className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
-            location.pathname === "/home"
+            location.pathname === "/dashboard/home"
               ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
               : "hover:translate-x-2"
           }`}
         >
-          <Link to="/home" className="block text-inherit no-underline">
+          <Link
+            to="/dashboard/home"
+            className="block text-inherit no-underline"
+          >
             Home
           </Link>
         </li>
         {role !== "storage_admin" && (
           <li
             className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
-              location.pathname === "/projects"
+              location.pathname === "/dashboard/projects"
                 ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
                 : "hover:translate-x-2"
             }`}
           >
-            <Link to="/projects" className="block text-inherit no-underline">
+            <Link
+              to="/dashboard/projects"
+              className="block text-inherit no-underline"
+            >
               Projects
             </Link>
           </li>
         )}
         <li
           className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
-            location.pathname === "/inbox"
+            location.pathname === "/dashboard/inbox"
               ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
               : "hover:translate-x-2"
           }`}
         >
-          <Link to="/inbox" className="block text-inherit no-underline">
+          <Link
+            to="/dashboard/inbox"
+            className="block text-inherit no-underline"
+          >
             Messages
           </Link>
         </li>
         <li
           className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
-            location.pathname === "/calendar"
+            location.pathname === "/dashboard/calendar"
               ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
               : "hover:translate-x-2"
           }`}
         >
-          <Link to="/calendar" className="block text-inherit no-underline ">
+          <Link
+            to="/dashboard/calendar"
+            className="block text-inherit no-underline "
+          >
             Calendar
           </Link>
         </li>
         {/* {role !== "designer" && ( */}
+        <li
+          className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
+            location.pathname.includes("/dashboard/materials")
+              ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
+              : "hover:translate-x-2"
+          }`}
+        >
+          <Link
+            to="/dashboard/materials/items"
+            className="block text-inherit no-underline"
+          >
+            Materials
+          </Link>
+        </li>
+        {/* )} */}
+        {role === "admin" && (
           <li
             className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
-              location.pathname.includes("/materials")
+              location.pathname === "/dashboard/add-user"
                 ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
                 : "hover:translate-x-2"
             }`}
           >
             <Link
-              to="/materials/items"
+              to="/dashboard/add-user"
               className="block text-inherit no-underline"
             >
-              Materials
-            </Link>
-          </li>
-        {/* )} */}
-        {role === "admin" && (
-          <li
-            className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
-              location.pathname === "/add-user"
-                ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
-                : "hover:translate-x-2"
-            }`}
-          >
-            <Link to="/add-user" className="block text-inherit no-underline">
               Account Management
             </Link>
           </li>
         )}
         <li
           className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
-            location.pathname === "/profile"
+            location.pathname === "/dashboard/profile"
               ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
               : "hover:translate-x-2"
           }`}
         >
-          <Link to="/profile" className="block text-inherit no-underline">
+          <Link
+            to="/dashboard/profile"
+            className="block text-inherit no-underline"
+          >
             Profile
           </Link>
         </li>

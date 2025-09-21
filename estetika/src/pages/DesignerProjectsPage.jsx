@@ -27,7 +27,7 @@ function DesignerProjectsPage() {
           <p>No projects assigned.</p>
         ) : (
           projects.map(project => (
-            <div key={project.id} onClick={() => navigate(`/projects/${project.id}`)} style={{ cursor: 'pointer' }}>
+            <div key={project.id} onClick={() => navigate(`/dashboard/projects/${project.id}`)} style={{ cursor: 'pointer' }}>
               <h3>{project.name}</h3>
               <p>{project.description}</p>
             </div>
