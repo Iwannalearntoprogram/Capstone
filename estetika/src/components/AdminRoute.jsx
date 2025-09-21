@@ -1,6 +1,6 @@
-import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
+import React from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 const AdminRoute = () => {
   const { userRole } = useAuth();
@@ -10,7 +10,11 @@ const AdminRoute = () => {
     return null;
   }
 
-  return userRole === 'admin' ? <Outlet /> : <Navigate to="/dashboard/home" replace />;
+  return userRole === "admin" ? (
+    <Outlet />
+  ) : (
+    <Navigate to="/dashboard/home" replace />
+  );
 };
 
 export default AdminRoute;

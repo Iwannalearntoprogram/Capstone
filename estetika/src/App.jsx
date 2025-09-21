@@ -225,15 +225,42 @@ function App() {
         </Route>
 
         {/* Legacy route redirects for backward compatibility */}
-        <Route path="/home" element={<Navigate to="/dashboard/home" replace />} />
-        <Route path="/profile" element={<Navigate to="/dashboard/profile" replace />} />
-        <Route path="/projects" element={<Navigate to="/dashboard/projects" replace />} />
-        <Route path="/projects/:id/*" element={<Navigate to="/dashboard/projects/:id" replace />} />
-        <Route path="/inbox" element={<Navigate to="/dashboard/inbox" replace />} />
-        <Route path="/calendar" element={<Navigate to="/dashboard/calendar" replace />} />
-        <Route path="/materials/*" element={<Navigate to="/dashboard/materials/items" replace />} />
-        <Route path="/add-user" element={<Navigate to="/dashboard/add-user" replace />} />
-        <Route path="/notification" element={<Navigate to="/dashboard/notification" replace />} />
+        <Route
+          path="/home"
+          element={<Navigate to="/dashboard/home" replace />}
+        />
+        <Route
+          path="/profile"
+          element={<Navigate to="/dashboard/profile" replace />}
+        />
+        <Route
+          path="/projects"
+          element={<Navigate to="/dashboard/projects" replace />}
+        />
+        <Route
+          path="/projects/:id/*"
+          element={<Navigate to="/dashboard/projects/:id" replace />}
+        />
+        <Route
+          path="/inbox"
+          element={<Navigate to="/dashboard/inbox" replace />}
+        />
+        <Route
+          path="/calendar"
+          element={<Navigate to="/dashboard/calendar" replace />}
+        />
+        <Route
+          path="/materials/*"
+          element={<Navigate to="/dashboard/materials/items" replace />}
+        />
+        <Route
+          path="/add-user"
+          element={<Navigate to="/dashboard/add-user" replace />}
+        />
+        <Route
+          path="/notification"
+          element={<Navigate to="/dashboard/notification" replace />}
+        />
       </Routes>
     </BrowserRouter>
   );

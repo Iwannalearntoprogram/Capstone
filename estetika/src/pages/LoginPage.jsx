@@ -402,6 +402,14 @@ function LoginPage() {
         </div>
       )}
 
+      {/* Back to Home Button */}
+      <Link
+        to="/"
+        className="mb-6 text-sm text-gray-600 hover:text-[#1D3C34] hover:underline transition z-20"
+      >
+        ← Back to Home
+      </Link>
+
       {/* Login UI */}
       <div className="flex flex-col md:flex-row shadow-lg rounded-lg overflow-hidden max-w-4xl z-10">
         <div className="flex flex-col items-center justify-center p-12 md:w-1/2 bg-white shadow-md rounded-l-lg">

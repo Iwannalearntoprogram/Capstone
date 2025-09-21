@@ -46,11 +46,15 @@ const ProjectsPage = () => {
     const project = projects.find((p) => p._id === projectId);
 
     if (userRole === "designer") {
-      navigate(`/dashboard/projects/${projectId}/overview`, { state: { project } });
+      navigate(`/dashboard/projects/${projectId}/overview`, {
+        state: { project },
+      });
     } else if (userRole === "admin") {
       // If admin and project is not pending, redirect to project detail page
       if (project.status !== "pending") {
-        navigate(`/dashboard/projects/${projectId}/overview`, { state: { project } });
+        navigate(`/dashboard/projects/${projectId}/overview`, {
+          state: { project },
+        });
       } else {
         // If pending, show the modal for adding designers
         setSelectedProject(project);

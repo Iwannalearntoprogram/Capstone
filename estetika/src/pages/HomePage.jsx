@@ -174,7 +174,9 @@ const HomePage = () => {
   const handleProjectClick = (projectId) => {
     const project = projectsData.find((p) => p._id === projectId);
     if (project) {
-      navigate(`/dashboard/projects/${projectId}/overview`, { state: { project } });
+      navigate(`/dashboard/projects/${projectId}/overview`, {
+        state: { project },
+      });
     }
   };
 
