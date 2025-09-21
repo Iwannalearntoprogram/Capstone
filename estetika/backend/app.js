@@ -78,6 +78,9 @@ app.use((req, res, next) => {
 });
 app.use("/api", limiter); //Protection Against DDOS Attack
 
+// Static file serving for downloads
+app.use("/downloads", express.static("public/downloads"));
+
 // routes
 // user
 app.use("/api/auth", authRoute);

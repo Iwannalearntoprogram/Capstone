@@ -10,15 +10,18 @@ import projectModernOffice from "../assets/images/project-modern-office.png";
 import projectElegantLiving from "../assets/images/transform-space-image.png";
 import projectDiningRoom from "../assets/images/about-us-image.png";
 
+const URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
+
 function LandingPage() {
   const handleDownloadApp = () => {
-    // Direct download link for APK file
-    const downloadUrl = "https://your-domain.com/path/to/estetika-app.apk";
-    
+    // Download APK from backend server
+    const downloadUrl = `${URL}/downloads/estetika.apk`;
+
     // Create a temporary link element and trigger download
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = 'Estetika-App.apk';
+    link.download = "Estetika-App.apk";
+    link.target = "_blank"; // Open in new tab as fallback
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -111,7 +114,7 @@ function LandingPage() {
                   onClick={handleDownloadApp}
                   className="bg-[#1D3C34] text-white px-6 py-3 rounded-md font-medium hover:bg-[#16442A] transition"
                 >
-                  Download App 📱
+                  Download App
                 </button>
                 <a
                   href="#work-with-us"
