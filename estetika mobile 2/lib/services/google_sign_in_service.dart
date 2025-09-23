@@ -6,7 +6,7 @@ import 'package:estetika_ui/utils/logger.dart';
 
 class GoogleSignInService {
   static const String _baseUrl =
-      'https://capstone-moss.onrender.com/api/auth'; // Android emulator localhost
+      'https://moss-manila.onrender.com/api/auth'; // Android emulator localhost
 
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: [

@@ -41,7 +41,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       print('User ID: $userId');
       final response = await http.get(
         Uri.parse(
-            'https://capstone-moss.onrender.com/api/project?projectCreator=$userId'),
+            'https://moss-manila.onrender.com/api/project?projectCreator=$userId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${prefs.getString('token') ?? ''}',

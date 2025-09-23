@@ -98,7 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     final response = await http.put(
-      Uri.parse('https://capstone-moss.onrender.com/api/user'),
+      Uri.parse('https://moss-manila.onrender.com/api/user'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -186,7 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   //   });
 
   //   final response = await http.put(
-  //     Uri.parse('https://capstone-moss.onrender.com/api/user'),
+  //     Uri.parse('https://moss-manila.onrender.com/api/user'),
   //     headers: {
   //       'Content-Type': 'application/json',
   //       'Authorization': 'Bearer $token',
@@ -262,7 +262,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     final response = await http.put(
-      Uri.parse('https://capstone-moss.onrender.com/api/user'),
+      Uri.parse('https://moss-manila.onrender.com/api/user'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -618,8 +618,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       print('Uploading file: ${imageFile.path}');
       print('File exists: ${imageFile.existsSync()}');
-      var uri =
-          Uri.parse('https://capstone-moss.onrender.com/api/upload/image');
+      var uri = Uri.parse('https://moss-manila.onrender.com/api/upload/image');
       var request = http.MultipartRequest('POST', uri)
         ..headers['Authorization'] = 'Bearer $token'
         ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
@@ -648,7 +647,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   //     print('Uploading file: ${imageFile.path}');
   //     print('File exists: ${imageFile.existsSync()}');
   //     var uri =
-  //         Uri.parse('https://capstone-moss.onrender.com/api/upload/image');
+  //         Uri.parse('https://moss-manila.onrender.com/api/upload/image');
   //     var request = http.MultipartRequest('POST', uri)
   //       ..headers['Authorization'] = 'Bearer $token'
   //       ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));

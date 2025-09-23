@@ -183,11 +183,11 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         "designPreferences": _descriptionController.text,
         "budget": double.tryParse(_budgetController.text) ?? 0,
       };
-      // https://capstone-moss.onrender.com/api/project/recommendation/match
+      // https://moss-manila.onrender.com/api/project/recommendation/match
       // http://localhost:3000
       print("Recommendation request body: $requestBody");
       final uri = Uri.parse(
-              'https://capstone-moss.onrender.com/api/project/recommendation/match')
+              'https://moss-manila.onrender.com/api/project/recommendation/match')
           .replace(queryParameters: {
         'roomType': _roomType ?? '',
         'designPreferences': _descriptionController.text,
@@ -1285,7 +1285,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://capstone-moss.onrender.com/api/project'),
+        Uri.parse('https://moss-manila.onrender.com/api/project'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
