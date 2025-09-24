@@ -75,7 +75,19 @@ const CalendarPage = () => {
       alarm: selectedEvent.alarm || null,
       attachment: null,
     });
-    setRecipients(selectedEvent.recipients || []);
+    // Pre-fill recipients and selectedRecipients for react-select
+    let eventRecipients =
+      selectedEvent.recipient || selectedEvent.recipients || [];
+    // If eventRecipients are objects (populated), map to IDs
+    const recipientIds = eventRecipients.map((r) =>
+      typeof r === "object" && r._id ? r._id : r
+    );
+    setRecipients(recipientIds);
+    // Pre-select options for react-select
+    const preSelected = recipientOptions.filter((opt) =>
+      recipientIds.includes(opt.value)
+    );
+    setSelectedRecipients(preSelected);
     setShowViewModal(false);
     setShowEditModal(true);
   };
@@ -111,8 +123,6 @@ const CalendarPage = () => {
 
   const handleAddEvent = async () => {
     if (!newEvent.title) return alert("Please enter a title!");
-    if (recipients.length === 0)
-      return alert("Please add at least one recipient!");
 
     const body = {
       title: newEvent.title,
@@ -147,8 +157,6 @@ const CalendarPage = () => {
 
   const handleUpdateEvent = async () => {
     if (!newEvent.title) return alert("Please enter a title!");
-    if (recipients.length === 0)
-      return alert("Please add at least one recipient!");
 
     const body = {
       title: newEvent.title,
@@ -158,7 +166,7 @@ const CalendarPage = () => {
       location: newEvent.location || "",
       color: newEvent.color || "#4287f5",
       notes: newEvent.notes || "",
-      recipients,
+      recipient: recipients,
     };
 
     try {
@@ -554,45 +562,22 @@ const CalendarPage = () => {
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
         <label className="block mb-2">Recipients:</label>
-        <div className="flex mb-2 gap-2">
-          <input
-            type="text"
-            placeholder="Add recipient name"
-            value={recipientInput}
-            onChange={(e) => setRecipientInput(e.target.value)}
-            className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleAddRecipient();
-              }
-            }}
-          />
-          <button
-            type="button"
-            onClick={handleAddRecipient}
-            className="px-3 py-1 bg-[#1D3C34] text-white rounded-md hover:bg-[#145c4b] transition"
-          >
-            Add
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {recipients.map((r) => (
-            <span
-              key={r}
-              className="bg-gray-200 px-2 py-1 rounded-full flex items-center gap-1"
-            >
-              {r}
-              <button
-                type="button"
-                onClick={() => handleRemoveRecipient(r)}
-                className="ml-1 text-red-500"
-              >
-                &times;
-              </button>
-            </span>
-          ))}
-        </div>
+        <Select
+          isMulti
+          options={recipientOptions}
+          value={selectedRecipients}
+          onChange={(selected) => {
+            setSelectedRecipients(selected);
+            setRecipients(selected.map((r) => r.value));
+          }}
+          placeholder="Search and select recipients..."
+          className="mb-4"
+          classNamePrefix="react-select"
+          filterOption={(option, inputValue) => {
+            const label = option.label.toLowerCase();
+            return label.includes(inputValue.toLowerCase());
+          }}
+        />
 
         <label className="block mb-2">From:</label>
         <input

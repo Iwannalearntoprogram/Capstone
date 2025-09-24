@@ -59,12 +59,39 @@ const project_update_post = catchAsync(async (req, res, next) => {
     new: true,
   });
 
-  await Notification.create({
-    recipient: clientId,
-    message: `An update has been made to your project: ${project.title}`,
-    type: "update",
-    project: projectId,
-  });
+  // Fan-out notifications: client, members, creator, admins
+  try {
+    const fullProject = await Project.findById(projectId).populate(
+      "members projectCreator"
+    );
+    const User = require("../../models/User/User");
+    const admins = await User.find({
+      role: { $in: ["admin", "storage_admin"] },
+    }).select("_id");
+    const recipients = [
+      clientId,
+      ...(Array.isArray(fullProject?.members)
+        ? fullProject.members.map((m) => m._id || m)
+        : []),
+      fullProject?.projectCreator?._id || fullProject?.projectCreator,
+      ...admins.map((a) => a._id),
+    ].filter(Boolean);
+    const unique = [...new Set(recipients.map(String))];
+    if (unique.length) {
+      await Notification.insertMany(
+        unique.map((rid) => ({
+          recipient: rid,
+          message: `An update has been made to project: ${
+            fullProject?.title || project.title
+          }`,
+          type: "update",
+          project: projectId,
+        }))
+      );
+    }
+  } catch (e) {
+    console.error("Notification fan-out failed (project update):", e?.message);
+  }
 
   return res
     .status(200)

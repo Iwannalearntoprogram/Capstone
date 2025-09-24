@@ -34,8 +34,8 @@ const checkEventAlarms = async () => {
       }
     }
     // Notify recipients
-    if (event.recepient && event.recepient.length > 0) {
-      for (const userId of event.recepient) {
+    if (event.recipient && event.recipient.length > 0) {
+      for (const userId of event.recipient) {
         const existing = await Notification.findOne({
           recipient: userId,
           event: event._id,

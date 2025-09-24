@@ -154,6 +154,39 @@ const document_post = catchAsync(async (req, res, next) => {
 
     if (!addProjectFile)
       return next(new AppError("Failed to add project file.", 500));
+
+    // Notify members, creator, admins about new file upload
+    try {
+      const project = await Project.findById(projectId).populate(
+        "members projectCreator"
+      );
+      const User = require("../../models/User/User");
+      const Notification = require("../../models/utils/Notification");
+      const admins = await User.find({
+        role: { $in: ["admin", "storage_admin"] },
+      }).select("_id");
+      const recipients = [
+        ...(Array.isArray(project?.members)
+          ? project.members.map((m) => m._id || m)
+          : []),
+        project?.projectCreator?._id || project?.projectCreator,
+        ...admins.map((a) => a._id),
+      ].filter(Boolean);
+      const unique = [...new Set(recipients.map(String))];
+      if (unique.length) {
+        await Notification.insertMany(
+          unique.map((rid) => ({
+            recipient: rid,
+            message: `A new file was uploaded to project "${project?.title}"`,
+            type: "update",
+            project: project?._id,
+          }))
+        );
+      }
+    } catch (e) {
+      // non-blocking
+      console.error("Notification fan-out failed (file upload):", e?.message);
+    }
   } else {
     const addEventFile = await Event.findByIdAndUpdate(
       eventId,

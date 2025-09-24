@@ -7,6 +7,7 @@ const {
   verifyOTP,
   forgotPasswordInitiate,
   forgotPasswordConfirm,
+  forgotPasswordResend,
   logout,
   googleAuth,
 } = require("../../controllers/User/AuthController");
@@ -18,6 +19,7 @@ router.post("/send-otp", verifyEmail);
 router.post("/verify-otp", verifyOTP);
 router.post("/forgot/initiate", forgotPasswordInitiate);
 router.post("/forgot/confirm", forgotPasswordConfirm);
+router.post("/forgot/resend", forgotPasswordResend);
 router.post("/google", googleAuth);
 router.get("/logout", checkAuth, logout);
 

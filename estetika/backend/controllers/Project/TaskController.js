@@ -97,7 +97,20 @@ const task_post = catchAsync(async (req, res, next) => {
       task: newTask._id,
     }));
 
-    await Notification.insertMany(notifications);
+    try {
+      const admins = await User.find({
+        role: { $in: ["admin", "storage_admin"] },
+      }).select("_id");
+      const adminNotifs = admins.map((a) => ({
+        recipient: a._id,
+        message: `New task created: ${title}`,
+        type: "update",
+        task: newTask._id,
+      }));
+      await Notification.insertMany([...notifications, ...adminNotifs]);
+    } catch (e) {
+      await Notification.insertMany(notifications);
+    }
   }
 
   return res

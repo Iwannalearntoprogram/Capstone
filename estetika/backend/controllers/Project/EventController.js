@@ -61,11 +61,18 @@ const event_post = catchAsync(async (req, res, next) => {
   }
 
   let recipients = [];
-
   if (recipient) {
     if (Array.isArray(recipient)) {
       const resolvedRecipients = await Promise.all(
         recipient.map(async (receiver) => {
+          // If a valid ObjectId string is provided, use it directly
+          if (
+            typeof receiver === "string" &&
+            receiver.match(/^[0-9a-fA-F]{24}$/)
+          ) {
+            return receiver;
+          }
+          // Otherwise try to resolve by email/username
           const user = await User.findOne({
             $or: [{ email: receiver }, { username: receiver }],
           });
@@ -158,9 +165,16 @@ const event_put = catchAsync(async (req, res, next) => {
     if (Array.isArray(recipient)) {
       const resolvedRecipients = await Promise.all(
         recipient.map(async (receiver) => {
+          if (
+            typeof receiver === "string" &&
+            receiver.match(/^[0-9a-fA-F]{24}$/)
+          ) {
+            return receiver;
+          }
           const user = await User.findOne({
             $or: [{ email: receiver }, { username: receiver }],
           });
+
           return user ? user._id : null;
         })
       );

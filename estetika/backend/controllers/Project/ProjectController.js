@@ -4,6 +4,7 @@ const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
 const Material = require("../../models/Project/Material");
 const DeletedProject = require("../../models/Project/DeletedProject");
+const Notification = require("../../models/utils/Notification");
 require("../../utils/recycleBinCron");
 
 // Get Project by Id or projectCreator
@@ -183,6 +184,36 @@ const project_post = catchAsync(async (req, res, next) => {
     { new: true }
   );
 
+  // Notifications: new pending project + file upload nag
+  try {
+    const admins = await User.find({
+      role: { $in: ["admin", "storage_admin"] },
+    }).select("_id");
+    const recipients = [...admins.map((a) => a._id), projectCreator].filter(
+      Boolean
+    );
+    if (newProject.status === "pending" && recipients.length > 0) {
+      await Notification.insertMany(
+        recipients.map((rid) => ({
+          recipient: rid,
+          message: `New pending project created: ${newProject.title}`,
+          type: "update",
+          project: newProject._id,
+        }))
+      );
+    }
+    if (!newProject.files || newProject.files.length === 0) {
+      await Notification.create({
+        recipient: projectCreator,
+        message: `Don't forget to upload files for project: ${newProject.title}`,
+        type: "update",
+        project: newProject._id,
+      });
+    }
+  } catch (e) {
+    console.error("Notification fan-out failed (new project):", e?.message);
+  }
+
   return res
     .status(200)
     .json({ message: "Project Successfully Created", newProject });
@@ -336,12 +367,10 @@ const project_delete = catchAsync(async (req, res, next) => {
   // Delete project from main collection
   const deletedProject = await Project.findByIdAndDelete(id);
 
-  return res
-    .status(200)
-    .json({
-      message: "Project moved to recycle bin for 30 days",
-      deletedProject,
-    });
+  return res.status(200).json({
+    message: "Project moved to recycle bin for 30 days",
+    deletedProject,
+  });
 });
 
 // Add Material to Project

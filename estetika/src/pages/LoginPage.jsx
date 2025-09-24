@@ -28,6 +28,7 @@ function LoginPage() {
   const [forgotError, setForgotError] = useState("");
   const [forgotSuccess, setForgotSuccess] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const navigate = useNavigate();
   const { login, token, setUserAndToken, checkRecentVerification } =
@@ -233,6 +234,42 @@ function LoginPage() {
     }
   };
 
+  // Resend OTP for Forgot Password
+  const handleForgotResend = async (e) => {
+    e.preventDefault();
+    if (resendCooldown > 0) return;
+    setForgotError("");
+    setForgotSuccess("");
+    if (!formData.email) {
+      setForgotError("Email is required to resend OTP.");
+      return;
+    }
+    try {
+      setForgotLoading(true);
+      await axios.post(`${URL}/api/auth/forgot/resend`, {
+        email: formData.email,
+      });
+      setForgotSuccess("OTP re-sent to your email.");
+      // start 30s cooldown
+      setResendCooldown(30);
+    } catch (err) {
+      setForgotError(
+        err?.response?.data?.message || "Failed to resend OTP. Try again."
+      );
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  // cooldown timer effect
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setInterval(() => {
+      setResendCooldown((s) => (s > 0 ? s - 1 : 0));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [resendCooldown]);
+
   return (
     <div
       className="flex flex-col items-center justify-center h-screen bg-cover bg-center bg-no-repeat"
@@ -382,11 +419,13 @@ function LoginPage() {
                 <div className="flex items-center justify-between gap-2">
                   <button
                     type="button"
-                    onClick={handleForgotInitiate}
-                    disabled={forgotLoading}
-                    className="text-xs text-gray-600 hover:underline"
+                    onClick={handleForgotResend}
+                    disabled={forgotLoading || resendCooldown > 0}
+                    className="text-xs text-gray-600 hover:underline disabled:opacity-60"
                   >
-                    Resend OTP
+                    {resendCooldown > 0
+                      ? `Resend OTP (${resendCooldown}s)`
+                      : "Resend OTP"}
                   </button>
                 </div>
                 <button

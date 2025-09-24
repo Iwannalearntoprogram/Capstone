@@ -145,6 +145,34 @@ const forgotPasswordConfirm = catchAsync(async (req, res, next) => {
   return res.status(200).json({ message: "Password reset successful" });
 });
 
+// Forgot Password: Resend OTP (no need to pass new password again)
+const forgotPasswordResend = catchAsync(async (req, res, next) => {
+  const { email } = req.body;
+  if (!email) return next(new AppError("Email is required", 400));
+
+  const user = await User.findOne({ email });
+  if (!user) return next(new AppError("User not found", 404));
+
+  // Ensure there is a pending password change
+  if (!user.pendingPasswordHash) {
+    return next(
+      new AppError(
+        "No password change initiated. Please start the reset process first.",
+        400
+      )
+    );
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+  user.resetOtp = otp;
+  user.resetOtpExpiresAt = otpExpiry;
+  await user.save();
+
+  await sendEmail(email, otp);
+
+  return res.status(200).json({ message: "OTP re-sent for password reset" });
+});
 // Login route
 const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
@@ -313,6 +341,7 @@ module.exports = {
   verifyOTP,
   forgotPasswordInitiate,
   forgotPasswordConfirm,
+  forgotPasswordResend,
   logout,
   googleAuth,
 };

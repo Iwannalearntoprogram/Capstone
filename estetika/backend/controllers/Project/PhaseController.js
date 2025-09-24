@@ -3,6 +3,7 @@ const User = require("../../models/User/User");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
 const Project = require("../../models/Project/Project");
+const Notification = require("../../models/utils/Notification");
 
 // Get Phase by Id or ProjectId
 const phase_get = catchAsync(async (req, res, next) => {
@@ -98,6 +99,38 @@ const phase_post = catchAsync(async (req, res, next) => {
     { $push: { timeline: newPhase._id } },
     { new: true }
   );
+
+  // Notify members, creator, and admins about the new phase
+  try {
+    const project = await Project.findById(projectId).populate(
+      "members projectCreator"
+    );
+    const User = require("../../models/User/User");
+    const admins = await User.find({
+      role: { $in: ["admin", "storage_admin"] },
+    }).select("_id");
+    const recipients = [
+      ...(Array.isArray(project?.members)
+        ? project.members.map((m) => m._id || m)
+        : []),
+      project?.projectCreator?._id || project?.projectCreator,
+      ...admins.map((a) => a._id),
+    ].filter(Boolean);
+    const unique = [...new Set(recipients.map(String))];
+    if (unique.length) {
+      await Notification.insertMany(
+        unique.map((rid) => ({
+          recipient: rid,
+          message: `New phase "${title}" added to project "${project?.title}"`,
+          type: "update",
+          phase: newPhase._id,
+          project: project?._id,
+        }))
+      );
+    }
+  } catch (e) {
+    console.error("Notification fan-out failed (new phase):", e?.message);
+  }
 
   return res
     .status(200)
