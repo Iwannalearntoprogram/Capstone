@@ -139,7 +139,7 @@ function ProjectDetailsPage() {
           {tabs.map((tab) => (
             <NavLink
               key={tab.path}
-              to={`/projects/${id}/${tab.path}`}
+              to={`/dashboard/projects/${id}/${tab.path}`}
               className={({ isActive }) =>
                 `py-2 px-1 border-b-2 transition-colors duration-200 ${
                   isActive

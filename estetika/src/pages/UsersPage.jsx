@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { useAuthStore } from "../store/AuthStore";
 import axios from "axios";
 import Cookies from "js-cookie";
+import {} from "react-icons/fa";
 import {
   FaUser,
   FaPhone,
@@ -15,10 +17,79 @@ import {
   FaEye,
   FaEyeSlash,
   FaUserSlash,
+  FaEdit,
 } from "react-icons/fa";
 import defaultProfile from "../assets/images/user.png";
 
 export default function UsersPage() {
+  const { user: currentUser } = useAuthStore();
+  // Edit designer state
+  const [editUser, setEditUser] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
+  const [editLoading, setEditLoading] = useState(false);
+  const [editMessage, setEditMessage] = useState("");
+
+  // Open edit modal
+  const openEditModal = (user) => {
+    setEditUser(user);
+    setEditFormData({
+      username: user.username || "",
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      email: user.email || "",
+      phoneNumber: user.phoneNumber || "",
+      role: user.role || "designer",
+    });
+    setEditMessage("");
+  };
+
+  // Close edit modal
+  const closeEditModal = () => {
+    setEditUser(null);
+    setEditFormData({});
+    setEditMessage("");
+  };
+
+  // Handle edit input change
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Submit edit
+  const handleEditSubmit = async () => {
+    setEditLoading(true);
+    setEditMessage("");
+    try {
+      const token = Cookies.get("token");
+      await axios.put(
+        `${serverUrl}/api/user?id=${editUser._id}`,
+        editFormData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setEditMessage("User updated successfully!");
+      setUsers((prev) =>
+        prev.map((u) =>
+          u._id === editUser._id ? { ...u, ...editFormData } : u
+        )
+      );
+      setTimeout(() => {
+        closeEditModal();
+      }, 1200);
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        "An error occurred while updating the user";
+      setEditMessage(errorMessage);
+    } finally {
+      setEditLoading(false);
+    }
+  };
   const [formData, setFormData] = useState({
     username: "",
     firstName: "",
@@ -379,6 +450,19 @@ export default function UsersPage() {
                         </td>
                         <td className="py-4 px-4">
                           <div className={`flex items-center gap-2`}>
+                            {/* Edit button only for designers, only for admin */}
+                            {currentUser?.role === "admin" &&
+                              user.role === "designer" && (
+                                <button
+                                  className="p-2 text-[#1D3C34] hover:bg-emerald-50 rounded-lg transition-colors border border-[#1D3C34] hover:border-emerald-400"
+                                  onClick={() => openEditModal(user)}
+                                  title="Edit Designer"
+                                  disabled={loadingUsers}
+                                  style={{ boxShadow: "0 1px 4px 0 #1D3C3422" }}
+                                >
+                                  <FaEdit className="w-4 h-4" />
+                                </button>
+                              )}
                             <button
                               className={`p-2 ${
                                 user.isArchived
@@ -399,6 +483,182 @@ export default function UsersPage() {
                             </button>
                           </div>
                         </td>
+                        {/* Edit Designer Modal */}
+                        {editUser && (
+                          <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-[100] p-4">
+                            <div className="bg-white rounded-lg shadow-xl overflow-hidden max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-[#1D3C34]">
+                              {/* Modal Header */}
+                              <div className="bg-[#1D3C34] px-6 py-4">
+                                <div className="flex items-center justify-between">
+                                  <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                                    <FaUserTie className="w-6 h-6 text-emerald-300" />
+                                    Edit Designer
+                                  </h1>
+                                  <button
+                                    onClick={closeEditModal}
+                                    className="text-white hover:text-emerald-200 text-2xl"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="p-6 sm:p-8 bg-[#f8faf9]">
+                                {/* Success/Error Message */}
+                                {editMessage && (
+                                  <div
+                                    className={`mb-6 p-4 rounded-lg ${
+                                      editMessage.includes("successfully")
+                                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                        : "bg-red-50 text-red-800 border border-red-200"
+                                    }`}
+                                  >
+                                    {editMessage}
+                                  </div>
+                                )}
+                                {/* Form Fields */}
+                                <div className="space-y-6">
+                                  {/* Username */}
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                      <FaUserTag
+                                        className="w-4 h-4"
+                                        style={{ color: "#1D3C34" }}
+                                      />
+                                      Username
+                                    </label>
+                                    <input
+                                      type="text"
+                                      name="username"
+                                      value={editFormData.username || ""}
+                                      onChange={handleEditInputChange}
+                                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                                      placeholder="Enter username"
+                                      required
+                                      disabled={editLoading}
+                                    />
+                                  </div>
+                                  {/* Name Fields */}
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                        <FaUser
+                                          className="w-4 h-4"
+                                          style={{ color: "#1D3C34" }}
+                                        />
+                                        First Name
+                                      </label>
+                                      <input
+                                        type="text"
+                                        name="firstName"
+                                        value={editFormData.firstName || ""}
+                                        onChange={handleEditInputChange}
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                                        placeholder="Enter first name"
+                                        required
+                                        disabled={editLoading}
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                        <FaUser
+                                          className="w-4 h-4"
+                                          style={{ color: "#1D3C34" }}
+                                        />
+                                        Last Name
+                                      </label>
+                                      <input
+                                        type="text"
+                                        name="lastName"
+                                        value={editFormData.lastName || ""}
+                                        onChange={handleEditInputChange}
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                                        placeholder="Enter last name"
+                                        required
+                                        disabled={editLoading}
+                                      />
+                                    </div>
+                                  </div>
+                                  {/* Email */}
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                      <FaEnvelope
+                                        className="w-4 h-4"
+                                        style={{ color: "#1D3C34" }}
+                                      />
+                                      Email
+                                    </label>
+                                    <input
+                                      type="email"
+                                      name="email"
+                                      value={editFormData.email || ""}
+                                      onChange={handleEditInputChange}
+                                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                                      placeholder="Enter email address"
+                                      required
+                                      disabled={editLoading}
+                                    />
+                                  </div>
+                                  {/* Phone Number */}
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                      <FaPhone
+                                        className="w-4 h-4"
+                                        style={{ color: "#1D3C34" }}
+                                      />
+                                      Phone Number
+                                    </label>
+                                    <input
+                                      type="tel"
+                                      name="phoneNumber"
+                                      value={editFormData.phoneNumber || ""}
+                                      onChange={handleEditInputChange}
+                                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                                      placeholder="Enter phone number"
+                                      required
+                                      disabled={editLoading}
+                                    />
+                                  </div>
+                                  {/* Role (readonly) */}
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                      <FaBriefcase
+                                        className="w-4 h-4"
+                                        style={{ color: "#1D3C34" }}
+                                      />
+                                      Role
+                                    </label>
+                                    <input
+                                      type="text"
+                                      name="role"
+                                      value={editFormData.role || "designer"}
+                                      readOnly
+                                      className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+                                    />
+                                  </div>
+                                </div>
+                                {/* Action Buttons */}
+                                <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-6 border-t border-gray-100">
+                                  <button
+                                    type="button"
+                                    onClick={handleEditSubmit}
+                                    disabled={editLoading}
+                                    className="flex-1 bg-[#21413A] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#16302B] focus:ring-2 focus:ring-[#16302B] focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {editLoading ? "Saving..." : "Save Changes"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={closeEditModal}
+                                    disabled={editLoading}
+                                    className="flex-1 sm:flex-none bg-gray-100 text-[#1D3C34] px-6 py-3 rounded-lg font-semibold hover:bg-emerald-50 focus:ring-2 focus:ring-emerald-200 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-[#1D3C34]"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </tr>
                     ))}
                   </tbody>

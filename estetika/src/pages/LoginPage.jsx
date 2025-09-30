@@ -278,7 +278,20 @@ function LoginPage() {
       {/* OTP Modal */}
       {showOtpModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 bg-opacity-40 z-50">
-          <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+          <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm relative">
+            {/* X button */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowOtpModal(false);
+                setOtpCode("");
+                setOtpError("");
+              }}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-lg"
+              aria-label="Close OTP Modal"
+            >
+              ✕
+            </button>
             <h2 className="text-xl font-semibold mb-2">Enter OTP</h2>
             <p className="text-sm mb-4">
               A code has been sent to your email. Please enter it below.
@@ -296,7 +309,25 @@ function LoginPage() {
             >
               Verify OTP
             </button>
-            <div className="mt-2 min-h-[20px]">
+            {/* Resend OTP button with cooldown */}
+            <div className="flex items-center justify-between mt-2 mb-1">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (resendCooldown > 0) return;
+                  await handleSendOtp();
+                  setOtpError("");
+                  setResendCooldown(30);
+                }}
+                disabled={resendCooldown > 0}
+                className="text-xs text-gray-600 hover:underline disabled:opacity-60"
+              >
+                {resendCooldown > 0
+                  ? `Resend OTP (${resendCooldown}s)`
+                  : "Resend OTP"}
+              </button>
+            </div>
+            <div className="min-h-[20px]">
               {otpError && (
                 <p className="text-red-500 text-sm" aria-live="polite">
                   {otpError}

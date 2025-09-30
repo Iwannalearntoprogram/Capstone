@@ -73,7 +73,9 @@ const Sidebar = ({ isOpen }) => {
         {/* {role !== "designer" && ( */}
         <li
           className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
-            location.pathname.includes("/dashboard/materials")
+            location.pathname === "/dashboard/materials" ||
+            location.pathname.startsWith("/dashboard/materials/items") ||
+            /^\/dashboard\/materials\/[a-zA-Z0-9]+$/.test(location.pathname)
               ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
               : "hover:translate-x-2"
           }`}
@@ -86,6 +88,22 @@ const Sidebar = ({ isOpen }) => {
           </Link>
         </li>
         {/* )} */}
+        {role === "storage_admin" && (
+          <li
+            className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
+              location.pathname === "/dashboard/materials-custom"
+                ? "bg-[#f2ebe7] text-black rounded-xl shadow-md translate-x-5"
+                : "hover:translate-x-2"
+            }`}
+          >
+            <Link
+              to="/dashboard/materials-custom"
+              className="block text-inherit no-underline"
+            >
+              Materials Management
+            </Link>
+          </li>
+        )}
         {role === "admin" && (
           <li
             className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${

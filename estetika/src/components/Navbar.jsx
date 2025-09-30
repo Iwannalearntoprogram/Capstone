@@ -121,25 +121,44 @@ const Navbar = ({ toggleSidebar }) => {
                   No notifications.
                 </div>
               )}
-              {notifications.map((notif, index) => (
-                <div
-                  key={notif._id || index}
-                  className="flex items-start space-x-3"
-                >
-                  <span className="text-xl">{notif.icon || "🔔"}</span>
-                  <div className="flex-1">
-                    <p className="font-semibold">
-                      {notif.title || "Notification"}
-                    </p>
-                    <p className="text-sm text-gray-600">{notif.message}</p>
-                    <p className="text-xs text-gray-400">
-                      {notif.time || notif.createdAt
-                        ? new Date(notif.createdAt).toLocaleString()
-                        : ""}
-                    </p>
+              {notifications.map((notif, index) => {
+                // Determine route based on notification type or attached IDs
+                let route = null;
+                if (notif.event) {
+                  route = `/calendar?eventId=${notif.event}`;
+                } else if (notif.project) {
+                  route = `/projects/${notif.project}`;
+                } else if (notif.task) {
+                  route = `/tasks/${notif.task}`;
+                }
+                return (
+                  <div
+                    key={notif._id || index}
+                    className={`flex items-start space-x-3 cursor-pointer hover:bg-gray-100 rounded-md p-2 transition ${
+                      route ? "hover:shadow" : ""
+                    }`}
+                    onClick={() => {
+                      if (route) {
+                        navigate(route);
+                        setShowNotifications(false);
+                      }
+                    }}
+                  >
+                    <span className="text-xl">{notif.icon || "🔔"}</span>
+                    <div className="flex-1">
+                      <p className="font-semibold">
+                        {notif.title || "Notification"}
+                      </p>
+                      <p className="text-sm text-gray-600">{notif.message}</p>
+                      <p className="text-xs text-gray-400">
+                        {notif.time || notif.createdAt
+                          ? new Date(notif.createdAt).toLocaleString()
+                          : ""}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

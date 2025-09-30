@@ -33,6 +33,8 @@ import MaterialsTab from "./components/projectdetails/MaterialsTab";
 //materials
 import MaterialsPage from "./pages/MaterialsPage";
 import MaterialDetailsPage from "./pages/MaterialDetailsPage";
+import CustomMaterialsPage from "./pages/CustomMaterialsPage";
+
 //material list
 import MaterialList from "./components/materials/MaterialList";
 
@@ -49,7 +51,6 @@ function App() {
       <Routes>
         {/* Landing Page - Public Route */}
         <Route path="/" element={<LandingPage />} />
-
         {/*  Login and Signup */}
         <Route path="/login" element={<LoginPage />} />
         <Route
@@ -60,7 +61,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         {/* layout */}
         <Route
           path="/dashboard"
@@ -222,8 +222,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="materials-custom"
+            element={
+              <ProtectedRoute>
+                <CustomMaterialsPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
-
         {/* Legacy route redirects for backward compatibility */}
         <Route
           path="/home"
