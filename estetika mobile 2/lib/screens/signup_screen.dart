@@ -78,8 +78,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    final url =
-        Uri.parse('https://capstone-moss.onrender.com/api/auth/register');
+    final url = Uri.parse('https://moss-manila.onrender.com/api/auth/register');
     // Normalize phone to E.164 using +63 prefix (Philippines)
     final String localDigits =
         _phoneController.text.replaceAll(RegExp(r'\D'), '');

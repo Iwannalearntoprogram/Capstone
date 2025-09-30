@@ -316,14 +316,14 @@ function ProfilePage() {
           </p>
           <button
             onClick={handleLogout}
-            className="mt-4 px-4 py-2 bg-red-400 text-white rounded-lg w-full font-semibold hover:bg-red-600 transition cursor-pointer"
+            className="mt-4 px-4 py-2 bg-[#1d3c34] text-white rounded-lg w-full font-semibold hover:bg-[#626c38] transition cursor-pointer"
           >
             Logout
           </button>
           {!editMode && getEditableFields().length > 0 && (
             <button
               onClick={handleEdit}
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg w-full font-semibold hover:bg-blue-700 transition cursor-pointer"
+              className="mt-2 px-4 py-2 bg-[#46280e] text-white rounded-lg w-full font-semibold hover:bg-[#88571f] transition cursor-pointer"
             >
               Edit Profile
             </button>

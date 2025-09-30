@@ -519,6 +519,9 @@ function LoginPage() {
                 ) : (
                   <FaEye className="h-5 w-5 text-gray-500" />
                 )}
+                <span className="sr-only">
+    {showPassword ? "Hide password" : "Show password"}
+  </span>
               </button>
             </div>
             <button

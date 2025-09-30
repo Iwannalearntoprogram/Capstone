@@ -1,14 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FaInstagram, FaYoutube } from "react-icons/fa";
-import logo from "../assets/images/logo-moss-2.png";
+import logo from "../assets/images/logo-moss-2.webp";
 // Project images
-import projectModernResidential from "../assets/images/project-modern-residential.png";
-import projectCommercialSpace from "../assets/images/project-commercial-space.png";
-import projectElegantWorkspace from "../assets/images/project-elegant-workspace.png";
-import projectModernOffice from "../assets/images/project-modern-office.png";
-import projectElegantLiving from "../assets/images/transform-space-image.png";
-import projectDiningRoom from "../assets/images/about-us-image.png";
+import projectModernResidential from "../assets/images/project-modern-residential.webp";
+import projectCommercialSpace from "../assets/images/project-commercial-space.webp";
+import projectElegantWorkspace from "../assets/images/project-elegant-workspace.webp";
+import projectModernOffice from "../assets/images/project-modern-office.webp";
+import projectElegantLiving from "../assets/images/transform-space-image.webp";
+import projectDiningRoom from "../assets/images/about-us-image.webp";
 
 const URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 
@@ -48,7 +48,10 @@ function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src={logo} alt="Moss Manila" className="h-8 w-auto" />
+              <img src={logo} alt="Moss Manila" className="h-8 w-auto" 
+              fetchpriority="high"
+                loading="eager"
+              />
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-8">
@@ -130,6 +133,8 @@ function LandingPage() {
                 src={projectElegantLiving}
                 alt="Elegant living room with gold circular lighting and luxury cream sofa"
                 className="w-full h-full object-cover"
+                fetchpriority="high"
+                loading="eager"
               />
               <div className="absolute inset-0 bg-black/40  flex items-center justify-center">
                 <p className="text-white text-xl font-medium tracking-wide">
@@ -153,6 +158,8 @@ function LandingPage() {
                 src={projectDiningRoom}
                 alt="Modern dining room with wood slat feature walls and contemporary chandelier"
                 className="w-full h-full object-cover"
+                fetchpriority="high"
+                loading="eager"
               />
             </div>
             <div>
@@ -188,6 +195,8 @@ function LandingPage() {
                   src={projectModernResidential}
                   alt="Modern Residential Interior with Teal Chairs and Gold Accents"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  fetchpriority="high"
+                loading="eager"
                 />
               </div>
               <div className="p-6">
@@ -207,6 +216,8 @@ function LandingPage() {
                   src={projectCommercialSpace}
                   alt="Commercial Space with Coral Seating and Dark Wood"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  fetchpriority="high"
+                loading="eager"
                 />
               </div>
               <div className="p-6">
@@ -226,6 +237,8 @@ function LandingPage() {
                   src={projectElegantWorkspace}
                   alt="Elegant Workspace with Wood Panels and Modern Design"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  fetchpriority="high"
+                loading="eager"
                 />
               </div>
               <div className="p-6">
@@ -245,6 +258,8 @@ function LandingPage() {
                   src={projectModernOffice}
                   alt="Modern Office Space with Natural Light and Coral Chairs"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  fetchpriority="high"
+                loading="eager"
                 />
               </div>
               <div className="p-6">
@@ -364,6 +379,8 @@ function LandingPage() {
                   className="text-white hover:text-gray-300 transition"
                 >
                   <FaInstagram className="w-6 h-6" />
+                  <span className="sr-only">Instagram</span>
+
                 </a>
                 <a
                   href="https://youtube.com/@MrMrsBofMossDesign"
@@ -372,6 +389,7 @@ function LandingPage() {
                   className="text-white hover:text-gray-300 transition"
                 >
                   <FaYoutube className="w-6 h-6" />
+                  <span className="sr-only">YouTube</span>
                 </a>
               </div>
               <p className="text-sm mt-4">@mossdesignhouse</p>
