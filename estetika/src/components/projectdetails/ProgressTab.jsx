@@ -63,39 +63,51 @@ function ProgressTab() {
   // Prepare modal data when opening (admin only)
   const openPhasesEditModal = () => {
     if (phases && Array.isArray(phases)) {
-      setPhasesEditData(phases.map(phase => ({
-        _id: phase._id,
-        title: phase.title || "",
-        startDate: phase.startDate ? phase.startDate.slice(0, 10) : "",
-        endDate: phase.endDate ? phase.endDate.slice(0, 10) : "",
-      })));
+      setPhasesEditData(
+        phases.map((phase) => ({
+          _id: phase._id,
+          title: phase.title || "",
+          startDate: phase.startDate ? phase.startDate.slice(0, 10) : "",
+          endDate: phase.endDate ? phase.endDate.slice(0, 10) : "",
+        }))
+      );
       setIsPhasesEditOpen(true);
     }
   };
 
   const closePhasesEditModal = () => setIsPhasesEditOpen(false);
 
-  // Only allow editing date range for admin
+  // Allow editing title and date range for designer
   const handleChangePhase = (idx, newPhase) => {
-    setPhasesEditData(prev => prev.map((p, i) => i === idx ? {
-      ...p,
-      startDate: newPhase.startDate,
-      endDate: newPhase.endDate
-    } : p));
+    setPhasesEditData((prev) =>
+      prev.map((p, i) =>
+        i === idx
+          ? {
+              ...p,
+              ...newPhase,
+            }
+          : p
+      )
+    );
   };
 
   // Remove phase (admin only)
   const handleRemovePhaseEdit = (idx) => {
-    setPhasesEditData(prev => prev.filter((_, i) => i !== idx));
+    setPhasesEditData((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // Submit phase edits (designer only, only date range)
+  // Submit phase edits (designer only, now includes title)
   const handlePhasesEditSubmit = async (e) => {
     e.preventDefault();
     // Client-side validation: end date cannot be before start date
     for (const phase of phasesEditData) {
       if (phase.endDate < phase.startDate) {
         alert(`End date cannot be before start date for phase: ${phase.title}`);
+        setIsPhasesSaving(false);
+        return;
+      }
+      if (!phase.title || phase.title.trim() === "") {
+        alert("Phase title cannot be empty.");
         setIsPhasesSaving(false);
         return;
       }
@@ -108,10 +120,19 @@ function ProgressTab() {
         .map((edited, idx) => {
           const original = phases[idx];
           let payload = {};
-          if (edited.startDate !== (original.startDate ? original.startDate.slice(0, 10) : "")) {
+          if (edited.title !== (original.title || "")) {
+            payload.title = edited.title;
+          }
+          if (
+            edited.startDate !==
+            (original.startDate ? original.startDate.slice(0, 10) : "")
+          ) {
             payload.startDate = edited.startDate;
           }
-          if (edited.endDate !== (original.endDate ? original.endDate.slice(0, 10) : "")) {
+          if (
+            edited.endDate !==
+            (original.endDate ? original.endDate.slice(0, 10) : "")
+          ) {
             payload.endDate = edited.endDate;
           }
           if (Object.keys(payload).length > 0) {
@@ -131,15 +152,18 @@ function ProgressTab() {
       }
       await Promise.all(updateRequests);
       // Update phases in UI locally
-      setPhasesEditData(prev => prev.map((p, idx) => {
-        const original = phases[idx];
-        const edited = phasesEditData[idx];
-        return {
-          ...p,
-          startDate: edited.startDate,
-          endDate: edited.endDate,
-        };
-      }));
+      setPhasesEditData((prev) =>
+        prev.map((p, idx) => {
+          const original = phases[idx];
+          const edited = phasesEditData[idx];
+          return {
+            ...p,
+            title: edited.title,
+            startDate: edited.startDate,
+            endDate: edited.endDate,
+          };
+        })
+      );
       // Also update main phases array if needed
       if (project && project.timeline) {
         project.timeline = phasesEditData;
@@ -319,7 +343,9 @@ function ProgressTab() {
                   value={phaseForm.endDate}
                   onChange={handlePhaseChange}
                   required
-                  min={phaseForm.startDate || new Date().toISOString().slice(0, 10)}
+                  min={
+                    phaseForm.startDate || new Date().toISOString().slice(0, 10)
+                  }
                 />
               </label>
               <button

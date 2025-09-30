@@ -36,12 +36,14 @@ const EditPhasesModal = ({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
         {/* Header */}
-        <div className="bg-gradient-to-r from-green-700 to-green-800 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+        <div className="bg-[#1D3C34] px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <div className="flex items-center gap-3">
             <div className="bg-white/20 rounded-full p-2">
               <FiEdit className="text-white" size={20} />
             </div>
-            <h2 className="text-xl font-bold text-white">Edit Project Phases</h2>
+            <h2 className="text-xl font-bold text-white">
+              Edit Project Phases
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -55,37 +57,68 @@ const EditPhasesModal = ({
         {/* Content */}
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
           {phases.map((phase, idx) => (
-            <div key={phase._id || idx} className="mb-4 p-4 rounded-xl border bg-gray-50 flex flex-col gap-3">
+            <div
+              key={phase._id || idx}
+              className="mb-4 p-4 rounded-xl border bg-gray-50 flex flex-col gap-3"
+            >
               <div className="mb-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Phase Title</label>
-                <div className="px-2 py-1 rounded bg-gray-100 text-gray-600 font-medium border w-full">{phase.title || "Untitled Phase"}</div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Phase Title
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={phase.title || ""}
+                  onChange={(e) =>
+                    onChangePhase(idx, {
+                      ...phase,
+                      title: e.target.value,
+                    })
+                  }
+                  className="px-2 py-1 rounded bg-gray-100 text-gray-600 font-medium border w-full"
+                  placeholder="Untitled Phase"
+                  required
+                />
               </div>
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <label className="block text-sm text-gray-700 mb-1">Start Date</label>
+                  <label className="block text-sm text-gray-700 mb-1">
+                    Start Date
+                  </label>
                   <input
                     type="date"
                     name="startDate"
                     value={phase.startDate ? phase.startDate.slice(0, 10) : ""}
-                    onChange={e => onChangePhase(idx, { ...phase, startDate: e.target.value })}
+                    onChange={(e) =>
+                      onChangePhase(idx, {
+                        ...phase,
+                        startDate: e.target.value,
+                      })
+                    }
                     className="border rounded px-2 py-1 w-full"
                     required
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm text-gray-700 mb-1">End Date</label>
+                  <label className="block text-sm text-gray-700 mb-1">
+                    End Date
+                  </label>
                   <input
                     type="date"
                     name="endDate"
                     value={phase.endDate ? phase.endDate.slice(0, 10) : ""}
-                    onChange={e => onChangePhase(idx, { ...phase, endDate: e.target.value })}
+                    onChange={(e) =>
+                      onChangePhase(idx, { ...phase, endDate: e.target.value })
+                    }
                     className="border rounded px-2 py-1 w-full"
                     required
                   />
                 </div>
               </div>
               {validationErrors[idx] && (
-                <div className="text-red-600 text-sm mt-2">{validationErrors[idx]}</div>
+                <div className="text-red-600 text-sm mt-2">
+                  {validationErrors[idx]}
+                </div>
               )}
               <div className="flex justify-end mt-4">
                 <button
@@ -111,7 +144,7 @@ const EditPhasesModal = ({
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-green-700 to-green-800 text-white rounded-lg hover:from-green-800 hover:to-green-900 transition-all font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-[#1D3C34] text-white rounded-lg hover:from-green-800 hover:to-green-900 transition-all font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSaving ? (
                 <>
