@@ -143,6 +143,11 @@ class _InboxScreenState extends State<InboxScreen> {
         _users = users.cast<Map<String, dynamic>>();
         _filteredUsers = List.from(_users);
       });
+
+      // Fetch messages for all users to populate previews
+      for (var user in _users) {
+        await _fetchMessagesForUser(user);
+      }
     }
   }
 
@@ -289,11 +294,26 @@ class _InboxScreenState extends State<InboxScreen> {
   }
 
   Widget _buildConversationsList() {
+    // Sort users by latest message timestamp
+    final sortedUsers = List<Map<String, dynamic>>.from(_filteredUsers);
+    sortedUsers.sort((a, b) {
+      final aUserId = a['id'] ?? a['_id'];
+      final bUserId = b['id'] ?? b['_id'];
+      final aMessages = _getConversationMessages(aUserId);
+      final bMessages = _getConversationMessages(bUserId);
+
+      if (aMessages.isEmpty && bMessages.isEmpty) return 0;
+      if (aMessages.isEmpty) return 1;
+      if (bMessages.isEmpty) return -1;
+
+      return bMessages.first.timestamp.compareTo(aMessages.first.timestamp);
+    });
+
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-      itemCount: _filteredUsers.length,
+      itemCount: sortedUsers.length,
       itemBuilder: (context, index) {
-        final user = _filteredUsers[index];
+        final user = sortedUsers[index];
         final otherUserId = user['id'] ?? user['_id'];
         final displayName = user['firstName'] ??
             user['fullName'] ??
@@ -432,6 +452,25 @@ class _InboxScreenState extends State<InboxScreen> {
                             )
                           : null,
                     ),
+                    // Online/Offline indicator
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: user['socketId'] != null
+                              ? Colors.green
+                              : Colors.grey,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
                     if (latestMessage != null && !latestMessage.isRead)
                       Positioned(
                         right: 0,
@@ -465,7 +504,7 @@ class _InboxScreenState extends State<InboxScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        latestMessage?.content ?? 'Start a conversation...',
+                        _getMessagePreview(latestMessage),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -511,7 +550,42 @@ class _InboxScreenState extends State<InboxScreen> {
   }
 
   String _formatDate(DateTime date) {
-    return "${date.month}/${date.day}/${date.year}";
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(date.year, date.month, date.day);
+
+    if (messageDate == today) {
+      final hour = date.hour % 12 == 0 ? 12 : date.hour % 12;
+      final minute = date.minute.toString().padLeft(2, '0');
+      final period = date.hour >= 12 ? 'PM' : 'AM';
+      return "$hour:$minute $period";
+    } else if (messageDate == today.subtract(const Duration(days: 1))) {
+      return "Yesterday";
+    } else {
+      return "${date.month}/${date.day}/${date.year}";
+    }
+  }
+
+  String _getMessagePreview(MessageItem? message) {
+    if (message == null) return 'Start a conversation...';
+
+    // Handle file messages
+    if (message.fileLink != null && message.fileType != null) {
+      if (message.fileType!.toLowerCase().contains('image')) {
+        return message.isFromUser ? 'You sent a photo' : 'Sent a photo';
+      } else if (message.fileType!.toLowerCase().contains('pdf')) {
+        return message.isFromUser ? 'You sent a PDF' : 'Sent a PDF';
+      } else {
+        return message.isFromUser ? 'You sent a file' : 'Sent a file';
+      }
+    }
+
+    // Handle text messages
+    if (message.content.isNotEmpty) {
+      return message.isFromUser ? 'You: ${message.content}' : message.content;
+    }
+
+    return 'Start a conversation...';
   }
 
   @override

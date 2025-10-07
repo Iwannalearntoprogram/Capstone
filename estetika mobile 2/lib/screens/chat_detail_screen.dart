@@ -232,17 +232,40 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         ),
         title: Row(
           children: [
-            if (widget.profileImage != null && widget.profileImage!.isNotEmpty)
-              CircleAvatar(
-                radius: 18,
-                backgroundImage: NetworkImage(widget.profileImage!),
-              )
-            else
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: const Color(0xff203B32),
-                child: const Icon(Icons.person, color: Colors.white, size: 16),
-              ),
+            Stack(
+              children: [
+                if (widget.profileImage != null &&
+                    widget.profileImage!.isNotEmpty)
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundImage: NetworkImage(widget.profileImage!),
+                  )
+                else
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: const Color(0xff203B32),
+                    child:
+                        const Icon(Icons.person, color: Colors.white, size: 16),
+                  ),
+                // Online/Offline indicator
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: widget.isOnline ? Colors.green : Colors.grey,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
