@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final BuildContext context;
+  final bool isInboxScreen;
   final bool isNotificationScreen;
   final bool isProfileScreen;
   final bool showBackButton;
@@ -9,6 +10,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({
     super.key,
     required this.context,
+    this.isInboxScreen = false,
     this.isNotificationScreen = false,
     this.isProfileScreen = false,
     this.showBackButton = false,
@@ -41,7 +43,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: null,
       centerTitle: true,
       actions: [
-        // ...removed mail/inbox icon...
+        // Mail icon
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0, top: 8.0, bottom: 8.0),
+          child: IconButton(
+            icon: Icon(
+              isInboxScreen ? Icons.mail : Icons.mail_outline,
+              color: isInboxScreen ? const Color(0xff203B32) : Colors.black,
+              size: 30.0,
+            ),
+            onPressed: isInboxScreen
+                ? null
+                : () => Navigator.pushNamed(context, '/inbox'),
+          ),
+        ),
         // Notification icon
         Padding(
           padding: const EdgeInsets.only(right: 8.0, top: 8.0, bottom: 8.0),

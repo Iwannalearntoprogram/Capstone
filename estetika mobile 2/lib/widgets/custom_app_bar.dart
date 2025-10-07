@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final bool isInboxScreen;
   final bool isNotificationScreen;
   final bool isProfileScreen;
   final bool showBackButton;
-  final String title;
-  final List<Widget> actions;
 
   const CustomAppBar({
     super.key,
+    this.isInboxScreen = false,
     this.isNotificationScreen = false,
     this.isProfileScreen = false,
     this.showBackButton = false,
-    this.title = '',
-    this.actions = const [],
+    required List actions,
+    required String title,
   });
 
   @override
@@ -43,47 +43,54 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             )
           : null,
-      title: title.isNotEmpty
-          ? Text(title, style: const TextStyle(color: Colors.white))
-          : null,
+      title: null,
       centerTitle: true,
-      actions: actions.isNotEmpty
-          ? actions
-          : [
-              // ...removed mail/inbox icon...
-              Padding(
-                padding:
-                    const EdgeInsets.only(right: 6.0, top: 14.0, bottom: 14.0),
-                child: IconButton(
-                  icon: Icon(
-                    isNotificationScreen
-                        ? Icons.notifications
-                        : Icons.notifications_none,
-                    color: iconColor,
-                    size: 30.0,
-                  ),
-                  onPressed: isNotificationScreen
-                      ? null
-                      : () => Navigator.pushNamed(context, '/notification'),
-                  padding: EdgeInsets.zero,
-                ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.only(right: 12.0, top: 14.0, bottom: 14.0),
-                child: IconButton(
-                  icon: Icon(
-                    isProfileScreen ? Icons.person : Icons.person_outline,
-                    color: iconColor,
-                    size: 30.0,
-                  ),
-                  onPressed: isProfileScreen
-                      ? null
-                      : () => Navigator.pushNamed(context, '/profile'),
-                  padding: EdgeInsets.zero,
-                ),
-              ),
-            ],
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 6.0, top: 14.0, bottom: 14.0),
+          child: IconButton(
+            icon: Icon(
+              isInboxScreen ? Icons.mail : Icons.mail_outline,
+              color: iconColor,
+              size: 30.0,
+            ),
+            onPressed: isInboxScreen
+                ? null
+                : () => Navigator.pushNamed(context, '/inbox'),
+            padding: EdgeInsets.zero,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 6.0, top: 14.0, bottom: 14.0),
+          child: IconButton(
+            icon: Icon(
+              isNotificationScreen
+                  ? Icons.notifications
+                  : Icons.notifications_none,
+              color: iconColor,
+              size: 30.0,
+            ),
+            onPressed: isNotificationScreen
+                ? null
+                : () => Navigator.pushNamed(context, '/notification'),
+            padding: EdgeInsets.zero,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 12.0, top: 14.0, bottom: 14.0),
+          child: IconButton(
+            icon: Icon(
+              isProfileScreen ? Icons.person : Icons.person_outline,
+              color: iconColor,
+              size: 30.0,
+            ),
+            onPressed: isProfileScreen
+                ? null
+                : () => Navigator.pushNamed(context, '/profile'),
+            padding: EdgeInsets.zero,
+          ),
+        ),
+      ],
       bottom: const PreferredSize(
         preferredSize: Size.fromHeight(2.0),
         child: Divider(
