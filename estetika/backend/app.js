@@ -35,6 +35,7 @@ const {
   checkEventAlarms,
   checkOverdueTasks,
   checkPhaseStart,
+  checkPhaseCompletion,
 } = require("./utils/cronJobNotification");
 
 // initializations
@@ -115,6 +116,7 @@ cron.schedule("0 * * * *", () => {
   checkEventAlarms();
   checkOverdueTasks();
   checkPhaseStart();
+  checkPhaseCompletion();
 });
 
 module.exports = app;

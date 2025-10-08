@@ -4,6 +4,7 @@ const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
 const Project = require("../../models/Project/Project");
 const Notification = require("../../models/utils/Notification");
+const notifyMany = require("../../utils/notifyMany");
 
 // Get Phase by Id or ProjectId
 const phase_get = catchAsync(async (req, res, next) => {
@@ -100,7 +101,7 @@ const phase_post = catchAsync(async (req, res, next) => {
     { new: true }
   );
 
-  // Notify members, creator, and admins about the new phase
+  // Notify members and admins about the new phase (exclude client)
   try {
     const project = await Project.findById(projectId).populate(
       "members projectCreator"
@@ -109,16 +110,23 @@ const phase_post = catchAsync(async (req, res, next) => {
     const admins = await User.find({
       role: { $in: ["admin", "storage_admin"] },
     }).select("_id");
+
+    // Exclude client (projectCreator) from notifications
+    const clientId = (
+      project?.projectCreator?._id || project?.projectCreator
+    )?.toString();
     const recipients = [
       ...(Array.isArray(project?.members)
         ? project.members.map((m) => m._id || m)
         : []),
-      project?.projectCreator?._id || project?.projectCreator,
       ...admins.map((a) => a._id),
-    ].filter(Boolean);
+    ]
+      .filter(Boolean)
+      .filter((rid) => rid.toString() !== clientId);
+
     const unique = [...new Set(recipients.map(String))];
     if (unique.length) {
-      await Notification.insertMany(
+      await notifyMany(
         unique.map((rid) => ({
           recipient: rid,
           message: `New phase "${title}" added to project "${project?.title}"`,

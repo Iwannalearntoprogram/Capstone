@@ -21,8 +21,9 @@ const notification_get = catchAsync(async (req, res, next) => {
       .populate("project")
       .populate("phase");
   } else {
+    // recipient is now a single ObjectId, not an array
     notifications = await Notification.find({
-      recipient: { $in: Array.isArray(recipient) ? recipient : [recipient] },
+      recipient: recipient,
     })
       .populate("recipient", "-password")
       .populate("task")

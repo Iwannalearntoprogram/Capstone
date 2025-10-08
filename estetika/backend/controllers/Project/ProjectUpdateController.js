@@ -3,6 +3,7 @@ const Project = require("../../models/Project/Project");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
 const Notification = require("../../models/utils/Notification");
+const notifyMany = require("../../utils/notifyMany");
 
 // Get ProjectUpdate by id or projectId
 const project_update_get = catchAsync(async (req, res, next) => {
@@ -78,7 +79,7 @@ const project_update_post = catchAsync(async (req, res, next) => {
     ].filter(Boolean);
     const unique = [...new Set(recipients.map(String))];
     if (unique.length) {
-      await Notification.insertMany(
+      await notifyMany(
         unique.map((rid) => ({
           recipient: rid,
           message: `An update has been made to project: ${

@@ -5,6 +5,7 @@ const catchAsync = require("../../utils/catchAsync");
 const Material = require("../../models/Project/Material");
 const DeletedProject = require("../../models/Project/DeletedProject");
 const Notification = require("../../models/utils/Notification");
+const notifyMany = require("../../utils/notifyMany");
 require("../../utils/recycleBinCron");
 
 // Get Project by Id or projectCreator
@@ -193,7 +194,7 @@ const project_post = catchAsync(async (req, res, next) => {
       Boolean
     );
     if (newProject.status === "pending" && recipients.length > 0) {
-      await Notification.insertMany(
+      await notifyMany(
         recipients.map((rid) => ({
           recipient: rid,
           message: `New pending project created: ${newProject.title}`,
@@ -203,12 +204,14 @@ const project_post = catchAsync(async (req, res, next) => {
       );
     }
     if (!newProject.files || newProject.files.length === 0) {
-      await Notification.create({
-        recipient: projectCreator,
-        message: `Don't forget to upload files for project: ${newProject.title}`,
-        type: "update",
-        project: newProject._id,
-      });
+      await notifyMany([
+        {
+          recipient: projectCreator,
+          message: `Don't forget to upload files for project: ${newProject.title}`,
+          type: "update",
+          project: newProject._id,
+        },
+      ]);
     }
   } catch (e) {
     console.error("Notification fan-out failed (new project):", e?.message);
@@ -287,6 +290,37 @@ const project_put = catchAsync(async (req, res, next) => {
   });
 
   if (!updatedProject) return next(new AppError("Project not found", 404));
+
+  // Send notification when project is approved (status changes from pending to ongoing)
+  if (status === "ongoing" && project.status === "pending") {
+    try {
+      // Notify client and all designers
+      const recipients = [
+        project.projectCreator,
+        ...(Array.isArray(updatedProject.members)
+          ? updatedProject.members
+          : []),
+      ]
+        .filter(Boolean)
+        .map((r) => r.toString());
+      const unique = [...new Set(recipients)];
+
+      if (unique.length > 0) {
+        await notifyMany(
+          unique.map((rid) => ({
+            recipient: rid,
+            message: `Project "${project.title}" has been approved and is now ongoing!`,
+            type: "project-approved",
+            project: project._id,
+          }))
+        );
+      }
+    } catch (notifError) {
+      console.error("Failed to create approval notification:", notifError);
+      // Don't block the project update if notification fails
+    }
+  }
+
   if (status === "completed" && project.status !== "completed") {
     await Promise.all(
       project.materials.map(async (materialEntry) => {

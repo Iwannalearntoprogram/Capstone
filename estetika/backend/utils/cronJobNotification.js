@@ -3,6 +3,7 @@ const Task = require("../models/Project/Task");
 const Phase = require("../models/Project/Phase");
 const Project = require("../models/Project/Project");
 const Event = require("../models/Project/Event");
+const notifyMany = require("./notifyMany");
 
 const checkEventAlarms = async () => {
   const now = new Date();
@@ -17,40 +18,36 @@ const checkEventAlarms = async () => {
       console.error("Invalid event alarm date:", event.alarm, event._id);
       continue;
     }
+
+    // Batch all notifications for this event
+    const notificationList = [];
+
     // Notify the main user
     if (event.userId) {
-      const existing = await Notification.findOne({
+      notificationList.push({
         recipient: event.userId,
-        event: event._id,
+        message: `Event "${event.title}" alarm time reached.`,
         type: "alarm",
+        event: event._id,
       });
-      if (!existing) {
-        await Notification.create({
-          recipient: event.userId,
-          message: `Event "${event.title}" alarm time reached.`,
-          type: "alarm",
-          event: event._id,
-        });
-      }
     }
+
     // Notify recipients
     if (event.recipient && event.recipient.length > 0) {
       for (const userId of event.recipient) {
-        const existing = await Notification.findOne({
+        notificationList.push({
           recipient: userId,
-          event: event._id,
+          message: `Reminder for Event "${event.title}".`,
           type: "alarm",
+          event: event._id,
         });
-        if (!existing) {
-          await Notification.create({
-            recipient: userId,
-            message: `Reminder for Event "${event.title}".`,
-            type: "alarm",
-            event: event._id,
-          });
-        }
       }
     }
+
+    if (notificationList.length > 0) {
+      await notifyMany(notificationList);
+    }
+
     event.notified = true;
     await event.save();
   }
@@ -62,7 +59,7 @@ const checkOverdueTasks = async () => {
   const overdueTasks = await Task.find({
     endDate: { $type: "date", $lt: now, $ne: null },
     status: { $ne: "completed" },
-  });
+  }).populate("projectId");
 
   for (const task of overdueTasks) {
     // Validate endDate
@@ -70,28 +67,32 @@ const checkOverdueTasks = async () => {
       console.error("Invalid task endDate:", task.endDate, task._id);
       continue;
     }
-    for (const userId of task.assigned) {
-      // Check if notification already exists for this user, task, and type
-      const existing = await Notification.findOne({
-        recipient: userId,
-        task: task._id,
-        type: "overdue",
-      });
 
-      if (!existing) {
-        await Notification.create({
-          recipient: userId,
-          message: `Task "${task.title}" is overdue.`,
-          type: "overdue",
-          task: task._id,
-        });
-      }
+    const clientId = task.projectId?.projectCreator?.toString();
+    const notificationList = [];
+
+    for (const userId of task.assigned) {
+      const uid = userId.toString ? userId.toString() : userId;
+      // Skip client from overdue task notifications
+      if (uid === clientId) continue;
+
+      notificationList.push({
+        recipient: uid,
+        message: `Task "${task.title}" is overdue.`,
+        type: "overdue",
+        task: task._id,
+      });
+    }
+
+    if (notificationList.length > 0) {
+      await notifyMany(notificationList);
     }
   }
 };
 
 const checkPhaseStart = async () => {
   const now = new Date();
+  const User = require("../models/User/User");
 
   const phases = await Phase.find({
     startDate: { $type: "date", $lte: now, $ne: null },
@@ -108,23 +109,25 @@ const checkPhaseStart = async () => {
 
     if (!project || !project.members || project.members.length === 0) continue;
 
-    for (const userId of project.members) {
-      // Check if notification already exists for this user, phase, and type
-      const existing = await Notification.findOne({
-        recipient: userId,
-        phase: phase._id,
-        type: "phase-started",
-      });
+    const clientId = project.projectCreator?.toString();
+    const notificationList = [];
 
-      if (!existing) {
-        await Notification.create({
-          recipient: userId,
-          message: `Phase "${phase.title}" has started in project "${project.title}".`,
-          type: "phase-started",
-          phase: phase._id,
-          project: project._id,
-        });
-      }
+    for (const userId of project.members) {
+      const uid = userId.toString ? userId.toString() : userId;
+      // Skip client from phase notifications
+      if (uid === clientId) continue;
+
+      notificationList.push({
+        recipient: uid,
+        message: `Phase "${phase.title}" has started in project "${project.title}".`,
+        type: "phase-started",
+        phase: phase._id,
+        project: project._id,
+      });
+    }
+
+    if (notificationList.length > 0) {
+      await notifyMany(notificationList);
     }
 
     phase.notified = true;
@@ -132,4 +135,55 @@ const checkPhaseStart = async () => {
   }
 };
 
-module.exports = { checkEventAlarms, checkOverdueTasks, checkPhaseStart };
+const checkPhaseCompletion = async () => {
+  const now = new Date();
+  const User = require("../models/User/User");
+
+  const phases = await Phase.find({
+    endDate: { $type: "date", $lte: now, $ne: null },
+    completionNotified: false,
+  }).populate("projectId");
+
+  for (const phase of phases) {
+    // Validate endDate
+    if (!phase.endDate || isNaN(new Date(phase.endDate).getTime())) {
+      console.error("Invalid phase endDate:", phase.endDate, phase._id);
+      continue;
+    }
+
+    const project = await Project.findById(phase.projectId).populate("members");
+
+    if (!project || !project.members || project.members.length === 0) continue;
+
+    const clientId = project.projectCreator?.toString();
+    const notificationList = [];
+
+    for (const userId of project.members) {
+      const uid = userId.toString ? userId.toString() : userId;
+      // Skip client from phase completion notifications
+      if (uid === clientId) continue;
+
+      notificationList.push({
+        recipient: uid,
+        message: `Phase "${phase.title}" has been completed in project "${project.title}".`,
+        type: "phase-completed",
+        phase: phase._id,
+        project: project._id,
+      });
+    }
+
+    if (notificationList.length > 0) {
+      await notifyMany(notificationList);
+    }
+
+    phase.completionNotified = true;
+    await phase.save();
+  }
+};
+
+module.exports = {
+  checkEventAlarms,
+  checkOverdueTasks,
+  checkPhaseStart,
+  checkPhaseCompletion,
+};

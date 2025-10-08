@@ -5,6 +5,7 @@ const catchAsync = require("../../utils/catchAsync");
 const User = require("../../models/User/User");
 const Phase = require("../../models/Project/Phase");
 const Notification = require("../../models/utils/Notification");
+const { notifyMany } = require("../../utils/notifyMany");
 
 // Get Task by Id or ProjectId
 const task_get = catchAsync(async (req, res, next) => {
@@ -87,30 +88,93 @@ const task_post = catchAsync(async (req, res, next) => {
     { new: true }
   );
 
-  if (assigned && assigned.length > 0) {
-    const assignedUsers = Array.isArray(assigned) ? assigned : [assigned];
+  // Notification logic via helper: assigned users, creator (if designer/admin), designers, admins
+  // Exclude client (projectCreator) from task/phase notifications
+  try {
+    const notifications = [];
 
-    const notifications = assignedUsers.map((userId) => ({
-      recipient: userId,
-      message: `You have been assigned a new task: ${title}`,
-      type: "assigned",
-      task: newTask._id,
-    }));
-
-    try {
-      const admins = await User.find({
-        role: { $in: ["admin", "storage_admin"] },
-      }).select("_id");
-      const adminNotifs = admins.map((a) => ({
-        recipient: a._id,
-        message: `New task created: ${title}`,
-        type: "update",
-        task: newTask._id,
-      }));
-      await Notification.insertMany([...notifications, ...adminNotifs]);
-    } catch (e) {
-      await Notification.insertMany(notifications);
+    // Assigned users (explicit assignment)
+    if (assigned && assigned.length) {
+      (Array.isArray(assigned) ? assigned : [assigned]).forEach((uid) => {
+        notifications.push({
+          recipient: uid,
+          type: "assigned",
+          message: `You have been assigned a new task: ${title}`,
+          project: projectId,
+          task: newTask._id,
+          phase: phaseId,
+        });
+      });
     }
+
+    // Fetch project to get client ID
+    const projectWithMembers = await Project.findById(projectId).select(
+      "members title projectCreator"
+    );
+    const clientId = projectWithMembers?.projectCreator?.toString();
+
+    // Designers on project (excluding client)
+    let designerIds = [];
+    if (projectWithMembers?.members?.length) {
+      designerIds = await User.find({
+        _id: { $in: projectWithMembers.members },
+        role: { $in: ["designer"] },
+      }).select("_id");
+    }
+
+    const admins = await User.find({
+      role: { $in: ["admin", "storage_admin"] },
+    }).select("_id");
+
+    const creatorId = userId?.toString();
+    const seen = new Set();
+
+    // Only notify creator if they are NOT the client
+    if (creatorId && creatorId !== clientId) {
+      notifications.push({
+        recipient: creatorId,
+        type: "update",
+        project: projectId,
+        task: newTask._id,
+        phase: phaseId,
+        message: `You created a new task: ${title}`,
+      });
+      seen.add(creatorId);
+    }
+
+    // Designers (skip if already seen or is client)
+    designerIds.forEach((d) => {
+      const id = d._id.toString();
+      if (seen.has(id) || id === clientId) return;
+      seen.add(id);
+      notifications.push({
+        recipient: id,
+        type: "update",
+        project: projectId,
+        task: newTask._id,
+        phase: phaseId,
+        message: `New task created: ${title}`,
+      });
+    });
+
+    // Admins (skip if already seen or is client)
+    admins.forEach((a) => {
+      const id = a._id.toString();
+      if (seen.has(id) || id === clientId) return;
+      seen.add(id);
+      notifications.push({
+        recipient: id,
+        type: "update",
+        project: projectId,
+        task: newTask._id,
+        phase: phaseId,
+        message: `New task created: ${title}`,
+      });
+    });
+
+    await notifyMany(notifications);
+  } catch (e) {
+    console.warn("Notification creation issue:", e?.code || e?.message || e);
   }
 
   return res
@@ -128,6 +192,10 @@ const task_put = catchAsync(async (req, res, next) => {
   const task = await Task.findById(id);
   if (!task) return next(new AppError("Task not found. Invalid Task ID.", 404));
 
+  // Track status change for notification
+  const oldStatus = task.status;
+  const statusChanged = status && status !== oldStatus;
+
   let updates = {};
   if (title) updates.title = title;
   if (description) updates.description = description;
@@ -140,17 +208,90 @@ const task_put = catchAsync(async (req, res, next) => {
 
   if (!updatedTask) return next(new AppError("Task not found", 404));
 
-  if (assigned) {
-    const newAssigned = Array.isArray(assigned) ? assigned : [assigned];
+  // Notify project team about task update (excluding client)
+  try {
+    const notifications = [];
 
-    const notifications = newAssigned.map((userId) => ({
-      recipient: userId,
-      message: `You have been assigned to task: ${updatedTask.title}`,
-      type: "assigned",
-      task: updatedTask._id,
-    }));
+    // Get project to identify client and team
+    const project = await Project.findById(updatedTask.projectId).select(
+      "members title projectCreator"
+    );
+    const clientId = project?.projectCreator?.toString();
 
-    await Notification.insertMany(notifications);
+    // If assigned users changed, notify them specifically
+    if (assigned) {
+      const newAssigned = Array.isArray(assigned) ? assigned : [assigned];
+      newAssigned.forEach((uid) => {
+        notifications.push({
+          recipient: uid,
+          type: "assigned",
+          message: `You have been assigned to task: ${updatedTask.title}`,
+          project: updatedTask.projectId,
+          task: updatedTask._id,
+          phase: updatedTask.phaseId,
+        });
+      });
+    }
+
+    // Notify all designers on project
+    let designerIds = [];
+    if (project?.members?.length) {
+      designerIds = await User.find({
+        _id: { $in: project.members },
+        role: { $in: ["designer"] },
+      }).select("_id");
+    }
+
+    // Notify admins
+    const admins = await User.find({
+      role: { $in: ["admin", "storage_admin"] },
+    }).select("_id");
+
+    const seen = new Set();
+    if (assigned) {
+      (Array.isArray(assigned) ? assigned : [assigned]).forEach((uid) =>
+        seen.add(uid.toString())
+      );
+    }
+
+    // Determine message based on whether status changed
+    const baseMessage = statusChanged
+      ? `Task "${updatedTask.title}" status changed to ${updatedTask.status}`
+      : `Task updated: ${updatedTask.title}`;
+
+    // Add designers (skip if client or already assigned)
+    designerIds.forEach((d) => {
+      const id = d._id.toString();
+      if (seen.has(id) || id === clientId) return;
+      seen.add(id);
+      notifications.push({
+        recipient: id,
+        type: "update",
+        project: updatedTask.projectId,
+        task: updatedTask._id,
+        phase: updatedTask.phaseId,
+        message: baseMessage,
+      });
+    });
+
+    // Add admins (skip if client or already notified)
+    admins.forEach((a) => {
+      const id = a._id.toString();
+      if (seen.has(id) || id === clientId) return;
+      seen.add(id);
+      notifications.push({
+        recipient: id,
+        type: "update",
+        project: updatedTask.projectId,
+        task: updatedTask._id,
+        phase: updatedTask.phaseId,
+        message: baseMessage,
+      });
+    });
+
+    await notifyMany(notifications);
+  } catch (e) {
+    console.warn("Notification update issue:", e?.code || e?.message || e);
   }
 
   return res

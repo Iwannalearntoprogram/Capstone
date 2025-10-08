@@ -3,6 +3,7 @@ const User = require("../../models/User/User");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
 const Notification = require("../../models/utils/Notification");
+const notifyMany = require("../../utils/notifyMany");
 
 // Get Event by Id, UserId, or All
 const event_get = catchAsync(async (req, res, next) => {
@@ -105,7 +106,7 @@ const event_post = catchAsync(async (req, res, next) => {
       type: "assigned",
       event: newEvent._id,
     }));
-    await Notification.insertMany(notifications);
+    await notifyMany(notifications);
   }
 
   return res

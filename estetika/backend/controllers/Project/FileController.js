@@ -11,6 +11,7 @@ const catchAsync = require("../../utils/catchAsync");
 const Project = require("../../models/Project/Project");
 const User = require("../../models/User/User");
 const Event = require("../../models/Project/Event");
+const notifyMany = require("../../utils/notifyMany");
 
 // Use dynamic import for node-fetch ESM compatibility
 let fetch;
@@ -174,7 +175,7 @@ const document_post = catchAsync(async (req, res, next) => {
       ].filter(Boolean);
       const unique = [...new Set(recipients.map(String))];
       if (unique.length) {
-        await Notification.insertMany(
+        await notifyMany(
           unique.map((rid) => ({
             recipient: rid,
             message: `A new file was uploaded to project "${project?.title}"`,
