@@ -1,6 +1,7 @@
 import 'package:estetika_ui/screens/signup_screen.dart';
 import 'package:estetika_ui/screens/welcome_screen.dart';
 import 'package:estetika_ui/screens/home_screen.dart';
+import 'package:estetika_ui/screens/forgot_password_screen.dart';
 import 'package:estetika_ui/widgets/custom_scaffold.dart';
 import 'package:estetika_ui/widgets/google_sign_in_button.dart';
 import 'package:flutter/material.dart';
@@ -521,6 +522,25 @@ class _SignInScreenState extends State<SigninScreen> {
                                   ),
                                 ),
                               ],
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const ForgotPasswordScreen(),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Forgot Password?',
+                                style: TextStyle(
+                                  fontFamily: 'Figtree',
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF203B32),
+                                ),
+                              ),
                             ),
                           ],
                         ),

@@ -49,15 +49,7 @@ const material_post = catchAsync(async (req, res, next) => {
   if (!isDesignerValid)
     return next(new AppError("Designer not found. Invalid Designer ID.", 404));
 
-  if (
-    !name ||
-    !company ||
-    !price ||
-    !description ||
-    !image ||
-    !options ||
-    !category
-  ) {
+  if (!name || !company || !price || !description || !category) {
     return next(new AppError("Cannot create material, missing fields.", 400));
   }
   if (typeof price !== "number" || price <= 0) {
@@ -114,8 +106,16 @@ const material_post = catchAsync(async (req, res, next) => {
 // Update Material
 const material_put = catchAsync(async (req, res, next) => {
   const { id } = req.query;
-  const { name, company, price, description, image, options, category, subCategory } =
-    req.body;
+  const {
+    name,
+    company,
+    price,
+    description,
+    image,
+    options,
+    category,
+    subCategory,
+  } = req.body;
 
   if (!id) return next(new AppError("Material identifier not found", 400));
 

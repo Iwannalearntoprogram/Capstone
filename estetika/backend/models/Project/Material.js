@@ -20,7 +20,7 @@ const materialSchema = new mongoose.Schema(
     },
     image: {
       type: [String],
-      required: [true, "Material image is required"],
+      default: [],
     },
     options: [
       {
@@ -53,7 +53,7 @@ const materialSchema = new mongoose.Schema(
     designerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     embedding: {
       type: [Number],
-      required: true,
+      default: [],
     },
   },
   {

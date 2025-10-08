@@ -19,6 +19,18 @@ const CustomMaterialsPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [materialToDelete, setMaterialToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [currentMaterial, setCurrentMaterial] = useState({
+    name: "",
+    company: "",
+    category: "",
+    price: "",
+    description: "",
+    options: [],
+  });
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [selectedImagePreviews, setSelectedImagePreviews] = useState([]);
+  const [existingImageUrls, setExistingImageUrls] = useState([]);
   const [toast, setToast] = useState({
     isVisible: false,
     message: "",
@@ -69,12 +81,34 @@ const CustomMaterialsPage = () => {
   const openAddModal = () => {
     setIsEditMode(false);
     setEditingMaterial(null);
+    setCurrentMaterial({
+      name: "",
+      company: "",
+      category: "",
+      price: "",
+      description: "",
+      options: [],
+    });
+    setSelectedImages([]);
+    setSelectedImagePreviews([]);
+    setExistingImageUrls([]);
     setShowModal(true);
   };
 
   const openEditModal = (material) => {
     setIsEditMode(true);
     setEditingMaterial(material);
+    setCurrentMaterial({
+      name: material.name || "",
+      company: material.company || "",
+      category: material.category || "",
+      price: material.price || "",
+      description: material.description || "",
+      options: material.options || [],
+    });
+    setSelectedImages([]);
+    setSelectedImagePreviews([]);
+    setExistingImageUrls(material.imageUrls || []);
     setShowModal(true);
   };
 
@@ -88,9 +122,159 @@ const CustomMaterialsPage = () => {
     setShowDeleteModal(false);
   };
 
+  const handleDeleteMaterial = async () => {
+    if (!materialToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const token = Cookies.get("token");
+      await axios.delete(`${serverUrl}/api/material/${materialToDelete._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Refresh materials list
+      const res = await axios.get(`${serverUrl}/api/material`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMaterials(res.data.material || []);
+
+      showToast("Material deleted successfully!", "success");
+      closeDeleteModal();
+    } catch (error) {
+      showToast(
+        error.response?.data?.message || "Failed to delete material",
+        "error"
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const showToast = (message, type = "success") => {
     setToast({ isVisible: true, message, type });
     setTimeout(() => setToast({ ...toast, isVisible: false }), 3000);
+  };
+
+  const handleMaterialChange = (field, value) => {
+    setCurrentMaterial((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddOption = () => {
+    setCurrentMaterial((prev) => ({
+      ...prev,
+      options: [...prev.options, { type: "", option: "", addToPrice: "" }],
+    }));
+  };
+
+  const handleUpdateOption = (index, field, value) => {
+    setCurrentMaterial((prev) => {
+      const newOptions = [...prev.options];
+      newOptions[index] = { ...newOptions[index], [field]: value };
+      return { ...prev, options: newOptions };
+    });
+  };
+
+  const handleRemoveOption = (index) => {
+    setCurrentMaterial((prev) => ({
+      ...prev,
+      options: prev.options.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleImageSelection = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedImages((prev) => [...prev, ...files]);
+
+    // Create previews
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImagePreviews((prev) => [...prev, reader.result]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleRemoveImage = (index) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+    setSelectedImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveExistingImage = (index) => {
+    setExistingImageUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSaveMaterial = async () => {
+    setIsSaving(true);
+    try {
+      const token = Cookies.get("token");
+
+      // Validate required fields
+      if (
+        !currentMaterial.name ||
+        !currentMaterial.company ||
+        !currentMaterial.category ||
+        !currentMaterial.price ||
+        !currentMaterial.description
+      ) {
+        showToast("Please fill in all required fields", "error");
+        setIsSaving(false);
+        return;
+      }
+
+      // Process options to ensure addToPrice is a number
+      const processedOptions = currentMaterial.options.map((opt) => ({
+        type: opt.type,
+        option: opt.option,
+        addToPrice: parseFloat(opt.addToPrice) || 0,
+      }));
+
+      // Create material data object
+      const materialData = {
+        name: currentMaterial.name,
+        company: currentMaterial.company,
+        category: currentMaterial.category,
+        price: parseFloat(currentMaterial.price),
+        description: currentMaterial.description,
+        image: existingImageUrls.length > 0 ? existingImageUrls : [], // Images are now optional
+        options: processedOptions,
+      };
+
+      const url = isEditMode
+        ? `${serverUrl}/api/material?id=${editingMaterial._id}`
+        : `${serverUrl}/api/material`;
+
+      const method = isEditMode ? "put" : "post";
+
+      await axios[method](url, materialData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Refresh materials list
+      const res = await axios.get(`${serverUrl}/api/material`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMaterials(res.data.material || []);
+
+      showToast(
+        isEditMode
+          ? "Material updated successfully!"
+          : "Material created successfully!",
+        "success"
+      );
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error saving material:", error);
+      showToast(
+        error.response?.data?.message || "Failed to save material",
+        "error"
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Collapsible section state for grouped requests
@@ -277,16 +461,25 @@ const CustomMaterialsPage = () => {
           isOpen={showModal}
           onClose={() => setShowModal(false)}
           isEditMode={isEditMode}
-          material={editingMaterial}
-          onSuccess={() =>
-            showToast(isEditMode ? "Material updated!" : "Material added!")
-          }
+          isSaving={isSaving}
+          material={currentMaterial}
+          selectedImages={selectedImages}
+          selectedImagePreviews={selectedImagePreviews}
+          existingImageUrls={existingImageUrls}
+          onSave={handleSaveMaterial}
+          onImageSelection={handleImageSelection}
+          onRemoveImage={handleRemoveImage}
+          onRemoveExistingImage={handleRemoveExistingImage}
+          onMaterialChange={handleMaterialChange}
+          onAddOption={handleAddOption}
+          onUpdateOption={handleUpdateOption}
+          onRemoveOption={handleRemoveOption}
         />
       )}
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
         onClose={closeDeleteModal}
-        onConfirm={() => showToast("Material deleted!")}
+        onConfirm={handleDeleteMaterial}
         isDeleting={isDeleting}
         materialName={materialToDelete?.name}
         materialCompany={materialToDelete?.company}

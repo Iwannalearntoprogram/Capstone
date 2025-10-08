@@ -947,33 +947,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Widget _buildActionButtons() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        children: [
-          // Messaging feature removed: button deleted
-          const SizedBox.shrink(),
-          const SizedBox(width: 16),
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                // Implement call functionality
-              },
-              icon: const Icon(Icons.phone_outlined),
-              label: const Text('Call'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF203B32),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   Widget _buildTimelineItem({
