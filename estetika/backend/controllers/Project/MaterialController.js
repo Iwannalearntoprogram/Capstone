@@ -41,47 +41,78 @@ const material_get = catchAsync(async (req, res, next) => {
 // Create Material
 const material_post = catchAsync(async (req, res, next) => {
   const designerId = req.id;
-  const { name, company, price, description, image, options, subCategory } =
-    req.body;
+  const {
+    name,
+    company,
+    price,
+    description,
+    image,
+    options,
+    category,
+    subCategory,
+  } = req.body; // added category
 
   const isDesignerValid = await User.findById(designerId);
-
   if (!isDesignerValid)
     return next(new AppError("Designer not found. Invalid Designer ID.", 404));
 
-  if (!name || !company || !price || !description || !category) {
-    return next(new AppError("Cannot create material, missing fields.", 400));
+  // Required field validation (allow price 0 check explicitly)
+  if (
+    name == null ||
+    company == null ||
+    price == null ||
+    description == null ||
+    category == null
+  ) {
+    return next(
+      new AppError(
+        "Missing required fields: name, company, price, description, category.",
+        400
+      )
+    );
   }
-  if (typeof price !== "number" || price <= 0) {
+  if (typeof price !== "number" || Number.isNaN(price) || price <= 0) {
     return next(new AppError("Price must be a positive number.", 400));
   }
 
-  if (!Array.isArray(options)) {
-    return next(new AppError("Options must be an array.", 400));
+  // Options: allow empty array; if provided validate structure
+  if (options !== undefined) {
+    if (!Array.isArray(options)) {
+      return next(new AppError("Options must be an array.", 400));
+    }
+    for (const option of options) {
+      if (!option || typeof option !== "object") {
+        return next(new AppError("Each option must be an object.", 400));
+      }
+      const { type, option: optValue, addToPrice } = option;
+      if (!type || !optValue || typeof addToPrice !== "number") {
+        return next(
+          new AppError(
+            "Each option must include 'type', 'option', and numeric 'addToPrice'.",
+            400
+          )
+        );
+      }
+      if (!["color", "type", "size"].includes(type)) {
+        return next(
+          new AppError(
+            "Option type must be one of: 'color', 'type', 'size'.",
+            400
+          )
+        );
+      }
+    }
   }
 
-  // Validate each option object
-  for (const option of options) {
-    if (
-      !option.type ||
-      !option.option ||
-      typeof option.addToPrice !== "number"
-    ) {
-      return next(
-        new AppError(
-          "Each option must have type, option, and addToPrice fields.",
-          400
-        )
-      );
-    }
-    if (!["color", "type", "size"].includes(option.type)) {
-      return next(
-        new AppError("Option type must be 'color', 'type', or 'size'.", 400)
-      );
-    }
+  let embedding = [];
+  try {
+    embedding = await generateEmbedding(`${name} ${description}`);
+  } catch (e) {
+    console.warn(
+      "Embedding generation failed, proceeding without vector:",
+      e?.message
+    );
   }
-
-  const embedding = await generateEmbedding(`${name} ${description}`);
 
   const newMaterial = new Material({
     designerId,
@@ -89,8 +120,8 @@ const material_post = catchAsync(async (req, res, next) => {
     company,
     price,
     description,
-    image,
-    options,
+    image: Array.isArray(image) ? image : image ? [image] : [],
+    options: Array.isArray(options) ? options : [],
     category,
     subCategory,
     embedding,

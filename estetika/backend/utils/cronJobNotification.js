@@ -71,11 +71,16 @@ const checkOverdueTasks = async () => {
     const clientId = task.projectId?.projectCreator?.toString();
     const notificationList = [];
 
+    // Filter assigned to designers only
+    const designerAssigned = await Project.db
+      .model("User")
+      .find({ _id: { $in: task.assigned }, role: "designer" })
+      .select("_id");
+    const designerSet = new Set(designerAssigned.map((d) => d._id.toString()));
     for (const userId of task.assigned) {
       const uid = userId.toString ? userId.toString() : userId;
-      // Skip client from overdue task notifications
+      if (!designerSet.has(uid)) continue; // skip non-designers
       if (uid === clientId) continue;
-
       notificationList.push({
         recipient: uid,
         message: `Task "${task.title}" is overdue.`,
@@ -112,11 +117,14 @@ const checkPhaseStart = async () => {
     const clientId = project.projectCreator?.toString();
     const notificationList = [];
 
-    for (const userId of project.members) {
-      const uid = userId.toString ? userId.toString() : userId;
-      // Skip client from phase notifications
+    // Notify designers only
+    const memberUsersStart = await Project.db
+      .model("User")
+      .find({ _id: { $in: project.members }, role: "designer" })
+      .select("_id");
+    for (const userId of memberUsersStart.map((u) => u._id)) {
+      const uid = userId.toString();
       if (uid === clientId) continue;
-
       notificationList.push({
         recipient: uid,
         message: `Phase "${phase.title}" has started in project "${project.title}".`,
@@ -158,11 +166,14 @@ const checkPhaseCompletion = async () => {
     const clientId = project.projectCreator?.toString();
     const notificationList = [];
 
-    for (const userId of project.members) {
-      const uid = userId.toString ? userId.toString() : userId;
-      // Skip client from phase completion notifications
+    // Notify designers only
+    const memberUsersCompletion = await Project.db
+      .model("User")
+      .find({ _id: { $in: project.members }, role: "designer" })
+      .select("_id");
+    for (const userId of memberUsersCompletion.map((u) => u._id)) {
+      const uid = userId.toString();
       if (uid === clientId) continue;
-
       notificationList.push({
         recipient: uid,
         message: `Phase "${phase.title}" has been completed in project "${project.title}".`,

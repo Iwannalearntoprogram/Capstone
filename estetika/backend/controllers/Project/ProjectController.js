@@ -185,18 +185,13 @@ const project_post = catchAsync(async (req, res, next) => {
     { new: true }
   );
 
-  // Notifications: new pending project + file upload nag
+  // Notifications: new pending project -> ONLY admins (exclude storage_admin). File reminder only to client.
   try {
-    const admins = await User.find({
-      role: { $in: ["admin", "storage_admin"] },
-    }).select("_id");
-    const recipients = [...admins.map((a) => a._id), projectCreator].filter(
-      Boolean
-    );
-    if (newProject.status === "pending" && recipients.length > 0) {
+    const admins = await User.find({ role: "admin" }).select("_id");
+    if (newProject.status === "pending" && admins.length > 0) {
       await notifyMany(
-        recipients.map((rid) => ({
-          recipient: rid,
+        admins.map((a) => ({
+          recipient: a._id,
           message: `New pending project created: ${newProject.title}`,
           type: "update",
           project: newProject._id,
@@ -251,6 +246,10 @@ const project_put = catchAsync(async (req, res, next) => {
   if (!project)
     return next(new AppError("Project not found. Invalid Project ID.", 404));
 
+  const originalMembers = Array.isArray(project.members)
+    ? project.members.map((m) => m.toString())
+    : [];
+
   let updates = {};
   if (title) updates.title = title;
   if (description) updates.description = description;
@@ -294,30 +293,46 @@ const project_put = catchAsync(async (req, res, next) => {
   // Send notification when project is approved (status changes from pending to ongoing)
   if (status === "ongoing" && project.status === "pending") {
     try {
-      // Notify client and all designers
-      const recipients = [
-        project.projectCreator,
-        ...(Array.isArray(updatedProject.members)
-          ? updatedProject.members
-          : []),
-      ]
+      const designers = Array.isArray(updatedProject.members)
+        ? updatedProject.members.map((m) => m.toString())
+        : [];
+      const designerUsers = await User.find({ _id: { $in: designers } }).select(
+        "fullName"
+      );
+      const designerNames =
+        designerUsers.map((d) => d.fullName).join(", ") ||
+        "No designers assigned yet";
+      const recipients = [project.projectCreator, ...designers]
         .filter(Boolean)
         .map((r) => r.toString());
       const unique = [...new Set(recipients)];
-
-      if (unique.length > 0) {
+      if (unique.length) {
         await notifyMany(
           unique.map((rid) => ({
             recipient: rid,
-            message: `Project "${project.title}" has been approved and is now ongoing!`,
+            message: `Project "${project.title}" approved. Assigned designer(s): ${designerNames}`,
             type: "project-approved",
             project: project._id,
           }))
         );
       }
-    } catch (notifError) {
-      console.error("Failed to create approval notification:", notifError);
-      // Don't block the project update if notification fails
+    } catch (e) {
+      console.error("Failed approval notification:", e?.message);
+    }
+  }
+  // Decline path: notify client only
+  if (status === "declined" && project.status === "pending") {
+    try {
+      await notifyMany([
+        {
+          recipient: project.projectCreator,
+          message: `Your project "${project.title}" was declined.`,
+          type: "update",
+          project: project._id,
+        },
+      ]);
+    } catch (e) {
+      console.error("Failed decline notification:", e?.message);
     }
   }
 
@@ -353,6 +368,39 @@ const project_put = catchAsync(async (req, res, next) => {
         }
       })
     );
+  }
+
+  // Notify client about newly added designers (only after project is ongoing)
+  if (project.status === "ongoing" || updatedProject.status === "ongoing") {
+    try {
+      const updatedMemberIds = Array.isArray(updatedProject.members)
+        ? updatedProject.members.map((m) => m.toString())
+        : [];
+      const originalSet = new Set(originalMembers);
+      const newlyAdded = updatedMemberIds.filter((id) => !originalSet.has(id));
+      if (newlyAdded.length) {
+        const newUsers = await User.find({ _id: { $in: newlyAdded } }).select(
+          "fullName"
+        );
+        if (newUsers.length) {
+          await notifyMany(
+            newUsers.map((u) => ({
+              recipient: project.projectCreator,
+              message: `New designer added to project "${project.title}": ${u.fullName}`,
+              type: "update",
+              project: project._id,
+            }))
+          );
+          console.log(
+            `👥 Notified client about ${
+              newUsers.length
+            } new designer(s): ${newUsers.map((u) => u.fullName).join(", ")}`
+          );
+        }
+      }
+    } catch (e) {
+      console.error("Failed new-designer notification:", e?.message);
+    }
   }
 
   return res

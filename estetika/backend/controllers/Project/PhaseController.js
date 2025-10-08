@@ -101,29 +101,21 @@ const phase_post = catchAsync(async (req, res, next) => {
     { new: true }
   );
 
-  // Notify members and admins about the new phase (exclude client)
+  // Notify members about the new phase (exclude client, no admins)
   try {
     const project = await Project.findById(projectId).populate(
       "members projectCreator"
     );
-    const User = require("../../models/User/User");
-    const admins = await User.find({
-      role: { $in: ["admin", "storage_admin"] },
-    }).select("_id");
-
-    // Exclude client (projectCreator) from notifications
     const clientId = (
       project?.projectCreator?._id || project?.projectCreator
     )?.toString();
-    const recipients = [
-      ...(Array.isArray(project?.members)
+    const recipients = (
+      Array.isArray(project?.members)
         ? project.members.map((m) => m._id || m)
-        : []),
-      ...admins.map((a) => a._id),
-    ]
+        : []
+    )
       .filter(Boolean)
       .filter((rid) => rid.toString() !== clientId);
-
     const unique = [...new Set(recipients.map(String))];
     if (unique.length) {
       await notifyMany(

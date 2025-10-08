@@ -122,10 +122,6 @@ const task_post = catchAsync(async (req, res, next) => {
       }).select("_id");
     }
 
-    const admins = await User.find({
-      role: { $in: ["admin", "storage_admin"] },
-    }).select("_id");
-
     const creatorId = userId?.toString();
     const seen = new Set();
 
@@ -145,21 +141,6 @@ const task_post = catchAsync(async (req, res, next) => {
     // Designers (skip if already seen or is client)
     designerIds.forEach((d) => {
       const id = d._id.toString();
-      if (seen.has(id) || id === clientId) return;
-      seen.add(id);
-      notifications.push({
-        recipient: id,
-        type: "update",
-        project: projectId,
-        task: newTask._id,
-        phase: phaseId,
-        message: `New task created: ${title}`,
-      });
-    });
-
-    // Admins (skip if already seen or is client)
-    admins.forEach((a) => {
-      const id = a._id.toString();
       if (seen.has(id) || id === clientId) return;
       seen.add(id);
       notifications.push({
@@ -242,11 +223,6 @@ const task_put = catchAsync(async (req, res, next) => {
       }).select("_id");
     }
 
-    // Notify admins
-    const admins = await User.find({
-      role: { $in: ["admin", "storage_admin"] },
-    }).select("_id");
-
     const seen = new Set();
     if (assigned) {
       (Array.isArray(assigned) ? assigned : [assigned]).forEach((uid) =>
@@ -262,21 +238,6 @@ const task_put = catchAsync(async (req, res, next) => {
     // Add designers (skip if client or already assigned)
     designerIds.forEach((d) => {
       const id = d._id.toString();
-      if (seen.has(id) || id === clientId) return;
-      seen.add(id);
-      notifications.push({
-        recipient: id,
-        type: "update",
-        project: updatedTask.projectId,
-        task: updatedTask._id,
-        phase: updatedTask.phaseId,
-        message: baseMessage,
-      });
-    });
-
-    // Add admins (skip if client or already notified)
-    admins.forEach((a) => {
-      const id = a._id.toString();
       if (seen.has(id) || id === clientId) return;
       seen.add(id);
       notifications.push({

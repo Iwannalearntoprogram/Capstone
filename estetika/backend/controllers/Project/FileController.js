@@ -293,15 +293,7 @@ const update_image_post = catchAsync(async (req, res, next) => {
     return next(new AppError("Failed to upload image", 500));
   }
 
-  const changedProfilePicture = await User.findByIdAndUpdate(
-    userId,
-    { profileImage: downloadURL },
-    { new: true }
-  );
-
-  if (!changedProfilePicture)
-    return next(new AppError("Failed to update profile picture", 500));
-
+  // Just return the image URL - don't update user's profile picture
   return res.status(200).json({
     message: "Project Update Picture Successfully Uploaded!",
     imageLink: downloadURL,

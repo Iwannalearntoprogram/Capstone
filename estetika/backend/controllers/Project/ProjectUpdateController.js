@@ -60,24 +60,23 @@ const project_update_post = catchAsync(async (req, res, next) => {
     new: true,
   });
 
-  // Fan-out notifications: client, members, creator, admins
+  // Fan-out notifications: only client and project members (designers)
   try {
     const fullProject = await Project.findById(projectId).populate(
       "members projectCreator"
     );
-    const User = require("../../models/User/User");
-    const admins = await User.find({
-      role: { $in: ["admin", "storage_admin"] },
-    }).select("_id");
     const recipients = [
-      clientId,
+      clientId ||
+        fullProject?.projectCreator?._id ||
+        fullProject?.projectCreator,
       ...(Array.isArray(fullProject?.members)
         ? fullProject.members.map((m) => m._id || m)
         : []),
-      fullProject?.projectCreator?._id || fullProject?.projectCreator,
-      ...admins.map((a) => a._id),
     ].filter(Boolean);
     const unique = [...new Set(recipients.map(String))];
+    console.log(
+      `📢 Project Update notification for ${unique.length} recipients`
+    );
     if (unique.length) {
       await notifyMany(
         unique.map((rid) => ({
@@ -91,7 +90,10 @@ const project_update_post = catchAsync(async (req, res, next) => {
       );
     }
   } catch (e) {
-    console.error("Notification fan-out failed (project update):", e?.message);
+    console.error(
+      "❌ Notification fan-out failed (project update):",
+      e?.message
+    );
   }
 
   return res
