@@ -9,6 +9,9 @@ import { FaTrash } from "react-icons/fa";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Select from "react-select";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "../styles/datepicker-custom.css";
 
 const locales = { "en-US": enUS };
 
@@ -480,27 +483,49 @@ const CalendarPage = () => {
         />
 
         <label className="block mb-2">From:</label>
-        <input
-          type="datetime-local"
-          value={formatToDateTimeLocal(newEvent.start)}
-          onChange={(e) =>
-            setNewEvent({ ...newEvent, start: new Date(e.target.value) })
-          }
+        <DatePicker
+          selected={newEvent.start}
+          onChange={(date) => {
+            setNewEvent({
+              ...newEvent,
+              start: date,
+              // Adjust end time if it's before the new start time
+              end:
+                newEvent.end && date && newEvent.end < date
+                  ? date
+                  : newEvent.end,
+            });
+          }}
+          showTimeSelect
+          timeFormat="h:mm aa"
+          timeIntervals={15}
+          dateFormat="MMMM d, yyyy h:mm aa"
+          minDate={new Date()}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          placeholderText="Select start date and time"
+          wrapperClassName="w-full"
         />
 
         <label className="block mb-2">To:</label>
-        <input
-          type="datetime-local"
-          value={
-            newEvent.end
-              ? new Date(newEvent.end).toISOString().slice(0, 16)
-              : ""
+        <DatePicker
+          selected={newEvent.end}
+          onChange={(date) => setNewEvent({ ...newEvent, end: date })}
+          showTimeSelect
+          timeFormat="h:mm aa"
+          timeIntervals={15}
+          dateFormat="MMMM d, yyyy h:mm aa"
+          minDate={newEvent.start || new Date()}
+          minTime={
+            newEvent.start &&
+            newEvent.end &&
+            newEvent.start.toDateString() === newEvent.end.toDateString()
+              ? newEvent.start
+              : new Date(new Date().setHours(0, 0, 0, 0))
           }
-          onChange={(e) =>
-            setNewEvent({ ...newEvent, end: new Date(e.target.value) })
-          }
+          maxTime={new Date(new Date().setHours(23, 45, 0, 0))}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          placeholderText="Select end date and time"
+          wrapperClassName="w-full"
         />
 
         <label className="block mb-2">Location:</label>
@@ -515,11 +540,22 @@ const CalendarPage = () => {
         />
 
         <label className="block mb-2">Alarm:</label>
-        <input
-          type="datetime-local"
-          value={newEvent.alarm || ""}
-          onChange={(e) => setNewEvent({ ...newEvent, alarm: e.target.value })}
+        <DatePicker
+          selected={newEvent.alarm ? new Date(newEvent.alarm) : null}
+          onChange={(date) =>
+            setNewEvent({
+              ...newEvent,
+              alarm: date ? date.toISOString() : null,
+            })
+          }
+          showTimeSelect
+          timeFormat="h:mm aa"
+          timeIntervals={15}
+          dateFormat="MMMM d, yyyy h:mm aa"
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          placeholderText="Optional: Set a reminder"
+          isClearable
+          wrapperClassName="w-full"
         />
 
         <textarea
@@ -580,27 +616,49 @@ const CalendarPage = () => {
         />
 
         <label className="block mb-2">From:</label>
-        <input
-          type="datetime-local"
-          value={formatToDateTimeLocal(newEvent.start)}
-          onChange={(e) =>
-            setNewEvent({ ...newEvent, start: new Date(e.target.value) })
-          }
+        <DatePicker
+          selected={newEvent.start}
+          onChange={(date) => {
+            setNewEvent({
+              ...newEvent,
+              start: date,
+              // Adjust end time if it's before the new start time
+              end:
+                newEvent.end && date && newEvent.end < date
+                  ? date
+                  : newEvent.end,
+            });
+          }}
+          showTimeSelect
+          timeFormat="h:mm aa"
+          timeIntervals={15}
+          dateFormat="MMMM d, yyyy h:mm aa"
+          minDate={new Date()}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          placeholderText="Select start date and time"
+          wrapperClassName="w-full"
         />
 
         <label className="block mb-2">To:</label>
-        <input
-          type="datetime-local"
-          value={
-            newEvent.end
-              ? new Date(newEvent.end).toISOString().slice(0, 16)
-              : ""
+        <DatePicker
+          selected={newEvent.end}
+          onChange={(date) => setNewEvent({ ...newEvent, end: date })}
+          showTimeSelect
+          timeFormat="h:mm aa"
+          timeIntervals={15}
+          dateFormat="MMMM d, yyyy h:mm aa"
+          minDate={newEvent.start || new Date()}
+          minTime={
+            newEvent.start &&
+            newEvent.end &&
+            newEvent.start.toDateString() === newEvent.end.toDateString()
+              ? newEvent.start
+              : new Date(new Date().setHours(0, 0, 0, 0))
           }
-          onChange={(e) =>
-            setNewEvent({ ...newEvent, end: new Date(e.target.value) })
-          }
+          maxTime={new Date(new Date().setHours(23, 45, 0, 0))}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          placeholderText="Select end date and time"
+          wrapperClassName="w-full"
         />
 
         <label className="block mb-2">Location:</label>
@@ -615,11 +673,22 @@ const CalendarPage = () => {
         />
 
         <label className="block mb-2">Alarm:</label>
-        <input
-          type="datetime-local"
-          value={newEvent.alarm || ""}
-          onChange={(e) => setNewEvent({ ...newEvent, alarm: e.target.value })}
+        <DatePicker
+          selected={newEvent.alarm ? new Date(newEvent.alarm) : null}
+          onChange={(date) =>
+            setNewEvent({
+              ...newEvent,
+              alarm: date ? date.toISOString() : null,
+            })
+          }
+          showTimeSelect
+          timeFormat="h:mm aa"
+          timeIntervals={15}
+          dateFormat="MMMM d, yyyy h:mm aa"
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          placeholderText="Optional: Set a reminder"
+          isClearable
+          wrapperClassName="w-full"
         />
 
         <textarea
