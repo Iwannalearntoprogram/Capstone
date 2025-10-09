@@ -33,6 +33,12 @@ router.delete("/", project_delete);
 router.post("/material", project_add_material);
 router.delete("/material", project_remove_material);
 router.put("/material", project_update_material);
+// Designer Needs (materialsList)
+router.delete(
+  "/material/list",
+  require("../../controllers/Project/ProjectController")
+    .project_remove_material_list
+);
 
 // Project Update
 router.get("/update", project_update_get);

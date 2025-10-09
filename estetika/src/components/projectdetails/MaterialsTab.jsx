@@ -20,7 +20,7 @@ export default function MaterialsTab() {
   const [showModal, setShowModal] = useState(false);
   const [selectedMaterials, setSelectedMaterials] = useState([""]);
   const [materials, setMaterials] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [bestMatch, setBestMatch] = useState(null);
   const [showAddToSheetModal, setShowAddToSheetModal] = useState(false);
@@ -31,6 +31,11 @@ export default function MaterialsTab() {
   const [editMaterial, setEditMaterial] = useState(null);
   const [editOption, setEditOption] = useState("");
   const [editQuantity, setEditQuantity] = useState(1);
+  // Add Material state (new custom material)
+  const [materialName, setMaterialName] = useState("");
+  const [materialAttributes, setMaterialAttributes] = useState([
+    { key: "", values: [""] },
+  ]);
   // Request Material state
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [reqCategory, setReqCategory] = useState("");
@@ -121,6 +126,28 @@ export default function MaterialsTab() {
     return "Standard";
   };
 
+  // Helper to display attributes for designer needs (supports Map or plain object)
+  const getNeedAttributesDisplay = (attrs) => {
+    if (!attrs) return "—";
+    let entries = [];
+    try {
+      if (typeof attrs?.entries === "function") {
+        // Mongoose Map may come across as a Map in some environments
+        entries = Array.from(attrs.entries());
+      } else {
+        entries = Object.entries(attrs);
+      }
+    } catch {
+      return "—";
+    }
+    if (!entries.length) return "—";
+    return entries
+      .map(
+        ([k, vals]) => `${k}: ${Array.isArray(vals) ? vals.join(", ") : vals}`
+      )
+      .join(" • ");
+  };
+
   // Helper to get option price
   const getOptionPrice = (material, selectedOption = null) => {
     if (!material) return 0;
@@ -179,96 +206,89 @@ export default function MaterialsTab() {
   // Sidebar state for selected material
   const [selectedSidebar, setSelectedSidebar] = useState("");
 
-  // Update sidebar selection if project.materials change
+  // Log project changes
   useEffect(() => {
-    if (project && project.materials && project.materials.length > 0) {
-      setSelectedSidebar(project.materials[0].material.name);
-    } else {
-      setSelectedSidebar("");
-    }
     console.log(project);
   }, [project]);
 
-  // Fetch best match when sidebar selection changes
-  useEffect(() => {
-    const controller = new AbortController();
-    let isMounted = true;
-    const fetchBestMatch = async () => {
-      if (!selectedSidebar) {
-        setBestMatch(null);
-        return;
-      }
-      setLoading(true);
-      try {
-        const token = Cookies.get("token");
-        const res = await axios.get(
-          `${serverUrl}/api/material/match?query=${selectedSidebar}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (isMounted && res.data?.result?.bestMatch) {
-          setBestMatch({
-            ...res.data.result.bestMatch,
-            cheaper: res.data.result.cheaper,
-            moreExpensive: res.data.result.moreExpensive,
-          });
-        } else if (isMounted) {
-          setBestMatch(null);
+  // Fetch best match manually when recommend button is clicked
+  const handleRecommendMaterial = async (materialName) => {
+    if (!materialName) return;
+    setLoading(true);
+    setBestMatch(null);
+    setSelectedSidebar(materialName);
+    try {
+      const token = Cookies.get("token");
+      const res = await axios.get(
+        `${serverUrl}/api/material/match?query=${materialName}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      } catch {
-        if (isMounted) setBestMatch(null);
-      } finally {
-        if (isMounted) setLoading(false);
+      );
+      if (res.data?.result?.bestMatch) {
+        setBestMatch({
+          ...res.data.result.bestMatch,
+          cheaper: res.data.result.cheaper,
+          moreExpensive: res.data.result.moreExpensive,
+        });
+      } else {
+        setBestMatch(null);
       }
-    };
-    fetchBestMatch();
-    return () => {
-      isMounted = false;
-      controller.abort();
-    };
-  }, [selectedSidebar, serverUrl]);
+    } catch {
+      setBestMatch(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addMaterialToProj = async (e) => {
     e.preventDefault();
     if (!project || !project._id) return;
-    const selectedId = selectedMaterials[0];
-    const mat = materials.find((m) => m._id === selectedId);
-    if (!mat) return alert("Please select a material.");
 
-    // Gather all selected options by type, as objects
-    let selectedOptions = [];
-    if (mat.options && mat.options.length > 0) {
-      const grouped = groupOptionsByType(mat.options);
-      selectedOptions = Object.keys(grouped).map((type) => {
-        const selectedLabel = selectedMaterialOptions[`0_${type}`];
-        if (!selectedLabel) return null;
-        // Find the full option object
-        const optObj = grouped[type].find(
-          (o) =>
-            o.option === selectedLabel ||
-            o.size === selectedLabel ||
-            o.name === selectedLabel ||
-            o.type === selectedLabel
-        );
-        return optObj || null;
-      });
-      if (selectedOptions.some((opt) => !opt)) {
-        return alert("Please select all options.");
-      }
+    // Validate material name
+    if (!materialName.trim()) {
+      return alert("Please enter a material name.");
+    }
+
+    // Validate attributes
+    const validAttributes = materialAttributes
+      .map((attr) => ({
+        key: (attr.key || "").trim(),
+        values: (Array.isArray(attr.values) ? attr.values : [""]).map((v) =>
+          (v || "").trim()
+        ),
+      }))
+      .filter((attr) => attr.key && attr.values.some((v) => v));
+
+    if (validAttributes.length === 0) {
+      return alert("Please add at least one attribute with a value.");
     }
 
     if (quantity < 1) return alert("Quantity must be at least 1.");
+
     try {
       const token = Cookies.get("token");
+
+      // Format attributes as key-value pairs with arrays
+      const attributesPayload = validAttributes.reduce((acc, attr) => {
+        const vals = attr.values.filter(Boolean);
+        if (vals.length) acc[attr.key] = vals;
+        return acc;
+      }, {});
+
       const body = {
-        materialId: mat._id,
-        options: selectedOptions,
+        name: materialName.trim(),
+        attributes: attributesPayload,
         quantity,
+        // Mark as custom material for backend
+        isCustom: true,
+        // Save designer need to materialsList instead of materials array
+        saveToList: true,
       };
-      await axios.post(
+
+      const res = await axios.post(
         `${serverUrl}/api/project/material?projectId=${project._id}`,
         body,
         {
@@ -280,8 +300,8 @@ export default function MaterialsTab() {
       );
       alert("Material added to project!");
       setShowModal(false);
-      setSelectedMaterials([""]);
-      setSelectedMaterialOptions({});
+      setMaterialName("");
+      setMaterialAttributes([{ key: "", values: [""] }]);
       setQuantity(1);
       if (refreshProject) refreshProject(); // Refresh project data
     } catch (err) {
@@ -326,6 +346,70 @@ export default function MaterialsTab() {
       return;
     }
     setShowAddToSheetModal(true);
+  };
+
+  // Add Material helpers (custom materials)
+  const addMaterialAttribute = () => {
+    setMaterialAttributes((prev) => [...prev, { key: "", values: [""] }]);
+  };
+
+  const removeMaterialAttribute = (index) => {
+    setMaterialAttributes((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateMaterialAttribute = (index, field, value) => {
+    setMaterialAttributes((prev) => {
+      const next = [...prev];
+      next[index][field] = value;
+      return next;
+    });
+  };
+
+  const addMaterialAttributeValue = (attrIndex) => {
+    setMaterialAttributes((prev) => {
+      const next = prev.map((attr, idx) => {
+        if (idx === attrIndex) {
+          return {
+            ...attr,
+            values: [...attr.values, ""],
+          };
+        }
+        return attr;
+      });
+      return next;
+    });
+  };
+
+  const removeMaterialAttributeValue = (attrIndex, valueIndex) => {
+    setMaterialAttributes((prev) => {
+      const next = prev.map((attr, idx) => {
+        if (idx === attrIndex) {
+          return {
+            ...attr,
+            values: attr.values.filter((_, i) => i !== valueIndex),
+          };
+        }
+        return attr;
+      });
+      return next;
+    });
+  };
+
+  const updateMaterialAttributeValue = (attrIndex, valueIndex, value) => {
+    setMaterialAttributes((prev) => {
+      const next = prev.map((attr, idx) => {
+        if (idx === attrIndex) {
+          const newValues = [...attr.values];
+          newValues[valueIndex] = value;
+          return {
+            ...attr,
+            values: newValues,
+          };
+        }
+        return attr;
+      });
+      return next;
+    });
   };
 
   // Recommend Material helpers
@@ -641,7 +725,7 @@ export default function MaterialsTab() {
         <div className="w-80 bg-white border-r border-gray-200 overflow-y-auto">
           <div className="p-6">
             {/* Sidebar Header */}
-            <div className="mb-8 flex justify-between items-start">
+            <div className="mb-8 flex flex-col-reverse gap-4 items-start">
               <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-2 tracking-tight">
                   {project?.title || "Project Materials"}
@@ -670,30 +754,118 @@ export default function MaterialsTab() {
                   <button
                     className="bg-white border border-[#1D3C34] text-[#1D3C34] px-4 py-3 rounded-xl hover:shadow-md transition-all duration-300 flex items-center gap-2"
                     onClick={handleRequestClick}
-                    title="Recommend Material"
+                    title="Request Material"
                   >
                     <FaIndustry className="text-sm" />
-                    <span className="text-sm font-semibold">Recommend</span>
+                    <span className="text-sm font-semibold">Request</span>
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Materials List */}
-            <div className="space-y-3">
+            {/* Designer Needs (materialsList) */}
+            {Array.isArray(project.materialsList) &&
+              project.materialsList.length > 0 && (
+                <div className="space-y-3 mb-6">
+                  {project.materialsList.map((need, idx) => (
+                    <div
+                      key={`need-${idx}-${need.name}`}
+                      className={`group w-full text-left p-5 rounded-2xl transition-all duration-300 border-2 transform hover:scale-[1.02] relative bg-gradient-to-r from-gray-50 to-gray-100 hover:border-[#1D3C34]/30 hover:shadow-md ${
+                        selectedSidebar === need.name
+                          ? "border-[#1D3C34] shadow-lg shadow-[#1D3C34]/10"
+                          : "border-transparent"
+                      }`}
+                      onClick={() => setSelectedSidebar(need.name)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-3 h-3 rounded-full bg-[#1D3C34]" />
+                          <div>
+                            <span className="font-bold text-sm tracking-wide text-gray-700 group-hover:text-[#1D3C34]">
+                              {need.name}
+                            </span>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className="text-xs text-gray-500 font-medium">
+                                {getNeedAttributesDisplay(need.attributes)}
+                              </span>
+                              <span className="text-xs text-gray-400 font-medium">
+                                × {need.quantity}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="text-gray-500 hover:text-red-600"
+                            title="Remove"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!project?._id) return;
+                              if (
+                                !window.confirm(
+                                  "Remove this item from the list?"
+                                )
+                              )
+                                return;
+                              const token = Cookies.get("token");
+                              axios
+                                .delete(
+                                  `${serverUrl}/api/project/material/list`,
+                                  {
+                                    headers: {
+                                      Authorization: `Bearer ${token}`,
+                                    },
+                                    params: {
+                                      projectId: project._id,
+                                      name: need.name,
+                                    },
+                                  }
+                                )
+                                .then(() => {
+                                  if (refreshProject) refreshProject();
+                                  if (selectedSidebar === need.name)
+                                    setSelectedSidebar("");
+                                })
+                                .catch((err) => {
+                                  alert(
+                                    err?.response?.data?.message ||
+                                      "Failed to remove item"
+                                  );
+                                });
+                            }}
+                          >
+                            <FaTrash />
+                          </button>
+                          <span
+                            className={`text-sm font-bold ${
+                              selectedSidebar === need.name
+                                ? "text-[#1D3C34]"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            —
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            {/* Materials List (catalog entries) */}
+            <div className="space-y-3 h-full">
               {project.materials && project.materials.length > 0 ? (
                 project.materials.map((item, index) => (
                   <div
-                    key={
-                      item.material._id +
-                      (item.option?.map((o) => o.option).join("-") || "")
-                    }
-                    onClick={() => setSelectedSidebar(item.material.name)}
-                    className={`group w-full text-left p-5 rounded-2xl transition-all duration-300 border-2 transform hover:scale-[1.02] relative ${
+                    key={`${item.material._id}${
+                      item.option?.map((o) => o.option).join("-") || ""
+                    }`}
+                    className={`group w-full text-left p-5 pb-14 rounded-2xl transition-all duration-300 border-2 transform hover:scale-[1.02] relative ${
                       selectedSidebar === item.material.name
                         ? " border-[#1D3C34] shadow-lg shadow-[#1D3C34]/10"
                         : "bg-gradient-to-r from-gray-50 to-gray-100 border-transparent hover:border-[#1D3C34]/30 hover:shadow-md"
                     }`}
+                    onClick={() => setSelectedSidebar(item.material.name)}
                   >
                     {/* Card Content */}
                     <div className="flex items-center justify-between">
@@ -730,7 +902,7 @@ export default function MaterialsTab() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center gap-2">
                         <span
                           className={`text-sm font-bold ${
                             selectedSidebar === item.material.name
@@ -758,14 +930,15 @@ export default function MaterialsTab() {
                                 ""
                             : ""
                         );
-                        setEditQuantity(item.quantity);
+                        setEditQuantity(item.quantity || 1);
                       }}
                     >
                       <FaEdit />
                     </button>
+
                     <button
-                      className="absolute top-3 right-3 text-gray-500 cursor-pointer hover:text-red-500"
-                      title="Remove"
+                      className="absolute top-3 right-3 text-gray-500 cursor-pointer hover:text-red-600"
+                      title="Delete"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteMaterial(
@@ -782,6 +955,8 @@ export default function MaterialsTab() {
                     >
                       <FaTrash />
                     </button>
+
+                    {/* per-card Recommend removed; global button below */}
                   </div>
                 ))
               ) : (
@@ -800,6 +975,24 @@ export default function MaterialsTab() {
                 </div>
               )}
             </div>
+          </div>
+          {/* Sticky bottom action: Recommend Materials */}
+          <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0">
+            <button
+              className="w-full bg-white border border-[#1D3C34] text-[#1D3C34] px-4 py-2 rounded-lg hover:bg-[#1D3C34] hover:text-white transition-all duration-200 flex items-center justify-center gap-2 text-sm font-semibold disabled:opacity-50"
+              onClick={() =>
+                selectedSidebar && handleRecommendMaterial(selectedSidebar)
+              }
+              disabled={!selectedSidebar}
+              title={
+                selectedSidebar
+                  ? `Recommend materials for ${selectedSidebar}`
+                  : "Select a material or need first"
+              }
+            >
+              <FaIndustry className="text-sm" />
+              Recommend Materials
+            </button>
           </div>
         </div>
 
@@ -1150,15 +1343,15 @@ export default function MaterialsTab() {
             ) : (
               <div className="text-center py-20">
                 <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center">
-                  <FaShoppingCart className="h-12 w-12 text-gray-400" />
+                  <FaIndustry className="h-12 w-12 text-gray-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-600 mb-3 tracking-tight">
-                  No materials selected
+                  No recommendations yet
                 </h3>
                 <p className="text-gray-500 font-medium max-w-md mx-auto leading-relaxed">
                   {isAdmin
-                    ? "Select a material from the sidebar to view its details."
-                    : "Choose a material from the sidebar to view its details and add it to your project."}
+                    ? "Select a material on the left."
+                    : "Select a material on the left, then click 'Recommend Materials' below to see options."}
                 </p>
               </div>
             )}
@@ -1170,113 +1363,146 @@ export default function MaterialsTab() {
       {showModal && !isAdmin && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div
-            className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full max-h-[80vh] overflow-y-auto overflow-x-hidden relative"
+            className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto overflow-x-hidden relative"
             style={{ scrollbarWidth: "thin" }}
           >
             <button
               className="absolute top-2 right-4 text-gray-500 text-2xl"
-              onClick={() => setShowModal(false)}
+              onClick={() => {
+                setShowModal(false);
+                setMaterialName("");
+                setMaterialAttributes([{ key: "", values: [""] }]);
+                setQuantity(1);
+              }}
             >
               &times;
             </button>
-            <h3 className="text-2xl font-bold mb-4 text-center">
-              Add Material
-            </h3>
+            <h3 className="text-xl font-bold mb-4 text-center">Add Material</h3>
             <form onSubmit={addMaterialToProj}>
-              <label className="block mb-2 font-medium">Select Material:</label>
-              <div className="flex flex-col mb-2 gap-2">
-                <select
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none"
-                  value={selectedMaterials[0] || ""}
-                  onChange={(e) => {
-                    setSelectedMaterials([e.target.value]);
-                    setSelectedMaterialOptions({});
-                  }}
-                  required
-                  disabled={loading}
-                >
-                  <option value="">
-                    {loading ? "Loading materials..." : "-- Select Material --"}
-                  </option>
-                  {materials.map((mat) => (
-                    <option key={mat._id} value={mat._id}>
-                      {mat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {/* Option selectors */}
-              {(() => {
-                const mat = materials.find(
-                  (m) => m._id === selectedMaterials[0]
-                );
-                if (mat && mat.options && mat.options.length > 0) {
-                  return Object.entries(groupOptionsByType(mat.options)).map(
-                    ([type, opts]) => (
-                      <div key={type} className="mb-2">
-                        <label className="block mb-1 font-medium capitalize">
-                          Choose {type}
-                        </label>
-                        <div className="flex gap-2 flex-wrap">
-                          {opts.map((opt, i) => {
-                            const label =
-                              opt.option ||
-                              opt.size ||
-                              opt.name ||
-                              opt.type ||
-                              `Option ${i + 1}`;
-                            const value = label;
-                            const addPrice =
-                              opt.addToPrice && opt.addToPrice > 0
-                                ? ` (+₱${opt.addToPrice.toLocaleString()})`
-                                : "";
-                            const isSelected =
-                              selectedMaterialOptions[`0_${type}`] === value;
-                            return (
-                              <button
-                                type="button"
-                                key={opt._id || i}
-                                className={`px-4 py-1 rounded-full border transition font-semibold ${
-                                  isSelected
-                                    ? "bg-[#1D3C34] text-white"
-                                    : "bg-white text-[#1D3C34] border-[#1D3C34]"
-                                }`}
-                                onClick={() =>
-                                  setSelectedMaterialOptions((prev) => ({
-                                    ...prev,
-                                    [`0_${type}`]: value,
-                                  }))
-                                }
-                              >
-                                {label}
-                                {addPrice}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )
-                  );
-                }
-                return null;
-              })()}
-              {/* Quantity */}
-              <div className="mb-4">
-                <label className="block mb-1 font-medium">Quantity:</label>
+              {/* Material Name */}
+              <label className="block text-sm font-medium text-gray-700 mb-4">
+                Material Name
                 <input
-                  type="number"
-                  min={1}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  type="text"
+                  value={materialName}
+                  onChange={(e) => setMaterialName(e.target.value)}
+                  placeholder="e.g., Eames Style Lounge Chair"
+                  className="mt-1 w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
                   required
                 />
+              </label>
+
+              {/* Attributes */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">
+                    Attributes
+                  </span>
+                  <button
+                    type="button"
+                    onClick={addMaterialAttribute}
+                    className="text-[#1D3C34] text-sm hover:underline border border-[#1D3C34] px-3 py-1 rounded"
+                  >
+                    + Add Attribute
+                  </button>
+                </div>
+                {materialAttributes.map((attr, attrIdx) => (
+                  <div
+                    key={attrIdx}
+                    className="mb-4 border border-gray-200 rounded p-3"
+                  >
+                    {/* Attribute Key */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <input
+                        className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
+                        placeholder="Key (e.g., Color)"
+                        value={attr.key}
+                        onChange={(e) =>
+                          updateMaterialAttribute(
+                            attrIdx,
+                            "key",
+                            e.target.value
+                          )
+                        }
+                      />
+                      {materialAttributes.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeMaterialAttribute(attrIdx)}
+                          className="text-red-600 border border-red-600 rounded px-3 py-2 text-sm hover:bg-red-50"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Attribute Values */}
+                    <div className="ml-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-600">Values</span>
+                        <button
+                          type="button"
+                          onClick={() => addMaterialAttributeValue(attrIdx)}
+                          className="text-[#1D3C34] text-xs hover:underline"
+                        >
+                          + Add Value
+                        </button>
+                      </div>
+                      {attr.values.map((val, valIdx) => (
+                        <div
+                          key={valIdx}
+                          className="flex items-center gap-2 mb-2"
+                        >
+                          <input
+                            className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
+                            placeholder="Value (e.g., Deep Green)"
+                            value={val}
+                            onChange={(e) =>
+                              updateMaterialAttributeValue(
+                                attrIdx,
+                                valIdx,
+                                e.target.value
+                              )
+                            }
+                          />
+                          {attr.values.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                removeMaterialAttributeValue(attrIdx, valIdx)
+                              }
+                              className="text-red-600 border border-red-600 rounded px-3 py-2 text-sm hover:bg-red-50"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-center mt-4">
+
+              {/* Quantity */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Quantity
+                  <input
+                    type="number"
+                    min={1}
+                    className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Number(e.target.value))}
+                    required
+                  />
+                </label>
+              </div>
+
+              <div className="flex justify-center mt-6">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#1D3C34] text-white rounded hover:bg-[#145c4b] transition flex items-center gap-2"
-                  disabled={loading}
+                  className="px-6 py-2 bg-[#1D3C34] text-white rounded hover:bg-[#145c4b] transition flex items-center gap-2 disabled:opacity-50"
+                  disabled={!materialName.trim()}
                 >
                   <FaShoppingCart /> Add
                 </button>
@@ -1410,7 +1636,7 @@ export default function MaterialsTab() {
               &times;
             </button>
             <h3 className="text-xl font-bold mb-4 text-center">
-              Recommend New Material
+              Request New Material
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label className="block text-sm font-medium text-gray-700">
@@ -1491,7 +1717,7 @@ export default function MaterialsTab() {
                 onClick={submitMaterialRequest}
                 disabled={isRequesting || !reqCategory.trim()}
               >
-                {isRequesting ? "Submitting..." : "Submit Recommendation"}
+                {isRequesting ? "Submitting..." : "Submit Request"}
               </button>
             </div>
           </div>

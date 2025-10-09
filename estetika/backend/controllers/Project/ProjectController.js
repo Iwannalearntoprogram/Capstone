@@ -455,19 +455,13 @@ const project_delete = catchAsync(async (req, res, next) => {
   });
 });
 
-// Add Material to Project
+// Add Material to Project (supports catalog materials and designer-need custom entries)
 const project_add_material = catchAsync(async (req, res, next) => {
   const { projectId } = req.query;
-  const { materialId, options, quantity } = req.body;
+  const { isCustom } = req.body;
 
   if (!projectId) {
     return next(new AppError("Project ID is required", 400));
-  }
-
-  if (!materialId || !options || !quantity) {
-    return next(
-      new AppError("Material ID, options, and quantity are required", 400)
-    );
   }
 
   const project = await Project.findById(projectId);
@@ -475,21 +469,74 @@ const project_add_material = catchAsync(async (req, res, next) => {
     return next(new AppError("Project not found", 404));
   }
 
-  // Check if material exists
+  // Branch: custom designer-need entry saved to materialsList (not to materials)
+  if (isCustom) {
+    const { name, attributes, quantity } = req.body;
+
+    if (!name || !quantity) {
+      return next(new AppError("Material name and quantity are required", 400));
+    }
+
+    if (parseInt(quantity) < 1) {
+      return next(new AppError("Quantity must be at least 1", 400));
+    }
+
+    // Ensure attributes is an object of arrays of strings
+    const normalizedAttributes = {};
+    if (attributes && typeof attributes === "object") {
+      for (const [k, v] of Object.entries(attributes)) {
+        if (!k) continue;
+        const values = Array.isArray(v)
+          ? v.filter(Boolean)
+          : [v].filter(Boolean);
+        if (values.length) normalizedAttributes[k] = values;
+      }
+    }
+
+    // Always save to materialsList (designer needs), not to materials
+    project.materialsList.push({
+      name: name.trim(),
+      attributes: Object.keys(normalizedAttributes).length
+        ? normalizedAttributes
+        : undefined,
+      quantity: parseInt(quantity),
+    });
+
+    await project.save();
+
+    const updatedProject = await Project.findById(projectId).populate([
+      { path: "materials.material" },
+    ]);
+
+    return res.status(200).json({
+      message: "Custom material added to project successfully",
+      project: updatedProject,
+    });
+  }
+
+  // Branch: catalog material (existing behavior)
+  const { materialId, options, quantity } = req.body;
+
+  if (!materialId || !quantity) {
+    return next(new AppError("Material ID and quantity are required", 400));
+  }
+
   const material = await Material.findById(materialId);
   if (!material) {
     return next(new AppError("Material not found", 404));
   }
-  // Validate options - ensure all provided options exist for this material
-  if (Array.isArray(options)) {
-    for (const optionValue of options) {
-      // Handle both string options and option objects
+
+  // Validate and normalize options (optional)
+  let optionArray = [];
+  if (options) {
+    const provided = Array.isArray(options) ? options : [options];
+    for (const optionValue of provided) {
       const optionToCheck =
         typeof optionValue === "string" ? optionValue : optionValue.option;
-      const validOption = material.options.find(
+      const fullOption = material.options.find(
         (opt) => opt.option === optionToCheck
       );
-      if (!validOption) {
+      if (!fullOption) {
         return next(
           new AppError(
             `Invalid option '${optionToCheck}' for this material`,
@@ -497,72 +544,40 @@ const project_add_material = catchAsync(async (req, res, next) => {
           )
         );
       }
+      optionArray.push(fullOption);
     }
   }
+
   // Calculate total price including option prices
   let totalPrice = material.price * parseInt(quantity);
-  if (Array.isArray(options)) {
-    for (const optionValue of options) {
-      // Handle both string options and option objects
-      const optionToCheck =
-        typeof optionValue === "string" ? optionValue : optionValue.option;
-      const optionObj = material.options.find(
-        (opt) => opt.option === optionToCheck
-      );
-      if (optionObj) {
-        totalPrice += optionObj.addToPrice * parseInt(quantity);
-      }
-    }
+  for (const optionObj of optionArray) {
+    totalPrice += optionObj.addToPrice * parseInt(quantity);
   }
-  // Create option array with full option objects (not strings)
-  const optionArray = Array.isArray(options)
-    ? options.map((opt) => {
-        if (typeof opt === "string") {
-          // If it's a string, find the full option object from material
-          const fullOption = material.options.find(
-            (materialOpt) => materialOpt.option === opt
-          );
-          return fullOption || { type: "unknown", option: opt, addToPrice: 0 };
-        } else {
-          // If it's already an object, use it as is
-          return opt;
-        }
-      })
-    : [
-        typeof options === "string"
-          ? material.options.find(
-              (materialOpt) => materialOpt.option === options
-            ) || { type: "unknown", option: options, addToPrice: 0 }
-          : options,
-      ];
-  // Check if material with same options already exists in project
-  const existingMaterialIndex = project.materials.findIndex((item) => {
-    if (item.material.toString() !== materialId) return false;
 
-    // Compare option arrays by option values
+  // Try to merge with existing same material+options entry
+  const existingMaterialIndex = project.materials.findIndex((item) => {
+    if (!item.material || item.material.toString() !== materialId) return false;
     const itemOptions = Array.isArray(item.option)
       ? item.option.map((opt) => opt.option)
-      : [item.option.option];
+      : [];
     const newOptions = optionArray.map((opt) => opt.option);
-
-    if (itemOptions.length !== newOptions.length) return false;
-
     return (
+      itemOptions.length === newOptions.length &&
       itemOptions.every((opt) => newOptions.includes(opt)) &&
       newOptions.every((opt) => itemOptions.includes(opt))
     );
   });
+
   if (existingMaterialIndex > -1) {
-    // Update quantity and total price if material with same options already exists
     project.materials[existingMaterialIndex].quantity = parseInt(quantity);
     project.materials[existingMaterialIndex].totalPrice = totalPrice;
   } else {
-    // Add new material entry
     project.materials.push({
+      isCustom: false,
       material: materialId,
       option: optionArray,
       quantity: parseInt(quantity),
-      totalPrice: totalPrice,
+      totalPrice,
     });
   }
 
@@ -709,6 +724,50 @@ const project_update_material = catchAsync(async (req, res, next) => {
   });
 });
 
+// Remove a designer-need from materialsList
+const project_remove_material_list = catchAsync(async (req, res, next) => {
+  const { projectId, name, index } = req.query;
+  if (!projectId) return next(new AppError("Project ID is required", 400));
+  const project = await Project.findById(projectId);
+  if (!project) return next(new AppError("Project not found", 404));
+
+  if (
+    !Array.isArray(project.materialsList) ||
+    project.materialsList.length === 0
+  ) {
+    return next(new AppError("No materials list to modify", 400));
+  }
+
+  let removeIndex = -1;
+  if (typeof index !== "undefined") {
+    const idxNum = parseInt(index, 10);
+    if (
+      !Number.isNaN(idxNum) &&
+      idxNum >= 0 &&
+      idxNum < project.materialsList.length
+    ) {
+      removeIndex = idxNum;
+    }
+  }
+  if (removeIndex === -1 && name) {
+    removeIndex = project.materialsList.findIndex((i) => i?.name === name);
+  }
+  if (removeIndex === -1)
+    return next(new AppError("Item not found in materialsList", 404));
+
+  project.materialsList.splice(removeIndex, 1);
+  await project.save();
+
+  const updatedProject = await Project.findById(projectId).populate([
+    { path: "materials.material" },
+  ]);
+
+  return res.status(200).json({
+    message: "Item removed from materials list",
+    project: updatedProject,
+  });
+});
+
 module.exports = {
   project_get,
   project_post,
@@ -717,4 +776,5 @@ module.exports = {
   project_add_material,
   project_remove_material,
   project_update_material,
+  project_remove_material_list,
 };

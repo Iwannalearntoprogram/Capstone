@@ -81,6 +81,16 @@ const projectSchema = new mongoose.Schema(
         },
       },
     ],
+    // Designer needs list (for recommendations), separate from selected catalog materials
+    materialsList: [
+      {
+        name: { type: String, required: true, trim: true },
+        // Map of attribute key -> array of values
+        attributes: { type: Map, of: [String], default: undefined },
+        quantity: { type: Number, required: true, min: 1, default: 1 },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
     averageRating: {
       type: Number,
       default: 0,
