@@ -131,7 +131,7 @@ const HomePage = () => {
         (fileDMatch && fileDMatch[1]) ||
         (openIdMatch && openIdMatch[1]) ||
         (ucIdMatch && ucIdMatch[1]);
-      if (id) return `https://drive.google.com/uc?export=view&id=${id}`;
+      if (id) return `https://lh3.googleusercontent.com/d/${id}`;
       return url;
     } catch {
       return url;
@@ -1258,6 +1258,8 @@ const HomePage = () => {
 
     fetchDesignRecommendations();
   }, []);
+
+  // removed debug summary effect
 
   const handleDrCreate = async (e) => {
     e?.preventDefault?.();
@@ -2595,12 +2597,12 @@ const HomePage = () => {
                       src={normalizeDriveLink(rec.imageLink)}
                       alt={rec.title}
                       className="w-full h-32 object-cover rounded-lg border mb-2"
-                      onError={() =>
+                      onError={() => {
                         setBrokenRecImages((prev) => ({
                           ...prev,
                           [rec._id]: true,
-                        }))
-                      }
+                        }));
+                      }}
                     />
                   ) : (
                     <div className="w-full h-32 rounded-lg border mb-2 bg-slate-100 flex items-center justify-center text-slate-400 text-sm">
