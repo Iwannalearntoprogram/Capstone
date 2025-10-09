@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const attributeSchema = new mongoose.Schema(
   {
     key: { type: String, required: true },
-    value: { type: String, required: true },
+    values: { type: [String], required: true },
   },
   { _id: false }
 );

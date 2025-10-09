@@ -28,18 +28,24 @@ const request_post = catchAsync(async (req, res, next) => {
   const project = await Project.findById(projectId);
   if (!project) return next(new AppError("Project not found.", 404));
 
+  // Convert attributes object { key: [values] } to array [{ key, values }]
+  let attributesArray = [];
+  if (attributes && typeof attributes === "object") {
+    attributesArray = Object.entries(attributes)
+      .filter(
+        ([key, values]) => key && Array.isArray(values) && values.length > 0
+      )
+      .map(([key, values]) => ({
+        key: toTitleCase(key),
+        values: values.map((v) => toTitleCase(v)),
+      }));
+  }
+
   const doc = await MaterialRequest.create({
     projectId,
     requestedBy,
     category: toTitleCase(category),
-    attributes: Array.isArray(attributes)
-      ? attributes
-          .filter((a) => a && a.key && a.value)
-          .map((a) => ({
-            key: toTitleCase(a.key),
-            value: toTitleCase(a.value),
-          }))
-      : [],
+    attributes: attributesArray,
     budgetMax,
     notes,
   });

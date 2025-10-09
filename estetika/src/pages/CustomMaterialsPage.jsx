@@ -339,12 +339,18 @@ const CustomMaterialsPage = () => {
                                 <span
                                   key={i}
                                   className="inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border"
-                                  title={`${a.key}: ${a.value}`}
+                                  title={`${a.key}: ${
+                                    Array.isArray(a.values)
+                                      ? a.values.join(", ")
+                                      : a.value || ""
+                                  }`}
                                 >
                                   <span className="font-semibold mr-1">
                                     {a.key}:
                                   </span>{" "}
-                                  {a.value}
+                                  {Array.isArray(a.values)
+                                    ? a.values.join(", ")
+                                    : a.value || ""}
                                 </span>
                               ))}
                               {req.attributes.length > 6 && (
@@ -491,7 +497,11 @@ const CustomMaterialsPage = () => {
                           className="flex justify-between items-center border rounded px-2 py-1 text-gray-700"
                         >
                           <span className="font-semibold">{a.key}</span>
-                          <span>{a.value}</span>
+                          <span>
+                            {Array.isArray(a.values)
+                              ? a.values.join(", ")
+                              : a.value || ""}
+                          </span>
                         </div>
                       ))}
                     </div>
