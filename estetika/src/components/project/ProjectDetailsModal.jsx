@@ -196,6 +196,17 @@ const ProjectDetailsModal = ({ project, onClose }) => {
           &times;
         </button>
         <h2 className="text-2xl font-bold mb-4">{project.title}</h2>
+        {/* Client / Project Creator */}
+        <div className="mb-2">
+          <span className="font-semibold">Client: </span>
+          {project?.projectCreator?.fullName ||
+            (project?.projectCreator?.firstName &&
+            project?.projectCreator?.lastName
+              ? `${project.projectCreator.firstName} ${project.projectCreator.lastName}`
+              : project?.projectCreator?.username ||
+                project?.projectCreator?.email ||
+                "N/A")}
+        </div>
         <div className="mb-2">
           <span className="font-semibold">Description: </span>
           {project.description}

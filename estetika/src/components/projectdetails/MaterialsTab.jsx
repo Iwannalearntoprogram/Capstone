@@ -312,7 +312,7 @@ export default function MaterialsTab() {
 
   const handleRequestClick = () => {
     if (userRole === "admin") {
-  alert("Admins cannot recommend materials.");
+      alert("Admins cannot recommend materials.");
       return;
     }
     setShowRequestModal(true);
@@ -362,14 +362,14 @@ export default function MaterialsTab() {
           "Content-Type": "application/json",
         },
       });
-  alert("Recommendation submitted to storage admin.");
+      alert("Recommendation submitted to storage admin.");
       setShowRequestModal(false);
       setReqCategory("");
       setReqAttributes([{ key: "", value: "" }]);
       setReqBudget("");
       setReqNotes("");
     } catch (e) {
-  alert(e?.response?.data?.message || "Failed to submit recommendation");
+      alert(e?.response?.data?.message || "Failed to submit recommendation");
     } finally {
       setIsRequesting(false);
     }
