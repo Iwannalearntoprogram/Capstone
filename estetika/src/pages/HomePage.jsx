@@ -8,6 +8,11 @@ import jsPDF from "jspdf";
 import { FaCheckCircle, FaPhone, FaBriefcase } from "react-icons/fa";
 import defaultProfile from "../assets/images/user.png";
 import html2canvas from "html2canvas";
+import {
+  getRecommendations,
+  createRecommendation,
+  deleteRecommendation,
+} from "../services/designRecommendationService";
 
 const calculateCategorySales = (materials = []) => {
   const categorySales = {};
@@ -74,7 +79,6 @@ const HomePage = () => {
   const [designersLoading, setDesignersLoading] = useState(true);
   const [expandedDesigners, setExpandedDesigners] = useState({});
 
-  // Mobile Home Content states
   const [mobileContent, setMobileContent] = useState(null);
   const [mobileContentLoading, setMobileContentLoading] = useState(true);
   const [editingAboutText, setEditingAboutText] = useState(false);
@@ -87,98 +91,58 @@ const HomePage = () => {
   const [materials, setMaterials] = useState([]);
   const [topMaterialCategories, setTopMaterialCategories] = useState([]);
   const [designers, setDesigners] = useState([]);
+  const [designRecommendations, setDesignRecommendations] = useState([]);
+  const [drLoading, setDrLoading] = useState(false);
+  const [drForm, setDrForm] = useState({
+    title: "",
+    type: "",
+    min: "",
+    max: "",
+    preferences: "",
+    imageLink: "",
+    specification: "",
+    tags: "",
+  });
+  const [drSubmitting, setDrSubmitting] = useState(false);
+  const [brokenRecImages, setBrokenRecImages] = useState({});
+  const [drModalOpen, setDrModalOpen] = useState(false);
+  const [drUploadingImage, setDrUploadingImage] = useState(false);
+  const roomTypes = [
+    "Living Room",
+    "Bedroom",
+    "Kitchen",
+    "Dining Room",
+    "Bathroom",
+    "Office",
+    "Kids Bedroom",
+    "Studio",
+    "Outdoor",
+    "Other",
+  ];
+
+  const normalizeDriveLink = (url) => {
+    if (!url || typeof url !== "string") return url;
+    try {
+      // Patterns: /file/d/FILE_ID/view, open?id=FILE_ID, uc?id=FILE_ID
+      const fileDMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)\//);
+      const openIdMatch = url.match(/[?&]id=([^&]+)/);
+      const ucIdMatch = url.match(/drive\.google\.com\/uc\?id=([^&]+)/);
+      const id =
+        (fileDMatch && fileDMatch[1]) ||
+        (openIdMatch && openIdMatch[1]) ||
+        (ucIdMatch && ucIdMatch[1]);
+      if (id) return `https://drive.google.com/uc?export=view&id=${id}`;
+      return url;
+    } catch {
+      return url;
+    }
+  };
   const navigate = useNavigate();
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const token = Cookies.get("token");
-        const res = await axios.get(
-          `${serverUrl}/api/project?${
-            role === "admin" || role === "storage_admin"
-              ? "index=true"
-              : `member=${id}`
-          }`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setProjectsData(res.data.project);
-      } catch (err) {
-        setProjectsData([]);
-      }
-    };
-    fetchProjects();
-  }, []);
-
-  useEffect(() => {
-    const fetchMaterials = async () => {
-      setMaterialsLoading(true);
-      try {
-        const token = Cookies.get("token");
-        const res = await axios.get(`${serverUrl}/api/material`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setMaterials(res.data.material || []);
-        setTopMaterialCategories(calculateCategorySales(res.data.material));
-      } catch (err) {
-        setMaterials([]);
-      } finally {
-        setMaterialsLoading(false);
-      }
-    };
-    fetchMaterials();
-  }, []);
-
-  useEffect(() => {
-    checkProjectsState(projectsData);
-  }, [projectsData]);
-  const checkProjectsState = (projects) => {
-    const safeProjects = Array.isArray(projects) ? projects : [];
-    const activeProjects = safeProjects.filter(
-      (project) => project.status === "ongoing"
-    ).length;
-    const completedProjects = safeProjects.filter(
-      (project) => project.status === "completed"
-    ).length;
-    const delayedProjects = safeProjects.filter(
-      (project) => project.status === "delayed"
-    ).length;
-    const cancelledProjects = safeProjects.filter(
-      (project) => project.status === "cancelled"
-    ).length;
-
-    setProjectStates({
-      active: activeProjects,
-      completed: completedProjects,
-      delayed: delayedProjects,
-      cancelled: cancelledProjects,
-    });
-    setOverviewLoading(false);
-  };
-
-  // Toggle expansion of designer projects
-  const toggleDesignerProjects = (designerId) => {
-    setExpandedDesigners((prev) => ({
-      ...prev,
-      [designerId]: !prev[designerId],
-    }));
-  };
-
-  // Handle project click navigation
-  const handleProjectClick = (projectId) => {
-    const project = projectsData.find((p) => p._id === projectId);
-    if (project) {
-      navigate(`/dashboard/projects/${projectId}/overview`, {
-        state: { project },
-      });
-    }
-  };
+  // ---
+  // Note: Removed accidental JSX block previously inserted here.
+  // ---
 
   const generateProjectPDF = async () => {
     setGeneratingPDF(true);
@@ -1278,6 +1242,121 @@ const HomePage = () => {
     }
   }, [mobileContent?.carouselImages?.length]);
 
+  // Fetch design recommendations
+  useEffect(() => {
+    const fetchDesignRecommendations = async () => {
+      setDrLoading(true);
+      try {
+        const recommendations = await getRecommendations();
+        setDesignRecommendations(recommendations);
+      } catch (error) {
+        console.error("Error fetching design recommendations:", error);
+      } finally {
+        setDrLoading(false);
+      }
+    };
+
+    fetchDesignRecommendations();
+  }, []);
+
+  const handleDrCreate = async (e) => {
+    e?.preventDefault?.();
+    if (!drForm.title || !drForm.min || !drForm.max) {
+      alert("Title and budget min/max are required");
+      return;
+    }
+    const min = Number(drForm.min);
+    const max = Number(drForm.max);
+    if (Number.isNaN(min) || Number.isNaN(max) || min >= max) {
+      alert("Budget min must be less than max and both must be numbers");
+      return;
+    }
+    setDrSubmitting(true);
+    try {
+      const payload = {
+        title: drForm.title,
+        imageLink: normalizeDriveLink(drForm.imageLink) || undefined,
+        specification: drForm.specification || undefined,
+        budgetRange: { min, max },
+        designPreferences: drForm.preferences
+          ? drForm.preferences
+              .split(/[,;]|and|&|\+/)
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [],
+        type: drForm.type || undefined,
+        tags: drForm.tags
+          ? drForm.tags
+              .split(/[,;]|and|&|\+/)
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [],
+      };
+      const res = await createRecommendation(payload);
+      const created = res?.recommendation || res;
+      setDesignRecommendations((prev) => [created, ...prev]);
+      setDrForm({
+        title: "",
+        type: "",
+        min: "",
+        max: "",
+        preferences: "",
+        imageLink: "",
+        specification: "",
+        tags: "",
+      });
+      alert("Recommendation created");
+    } catch (err) {
+      console.error("Create recommendation failed", err);
+      alert(err?.response?.data?.message || "Failed to create recommendation");
+    } finally {
+      setDrSubmitting(false);
+    }
+  };
+
+  const handleDrDelete = async (id) => {
+    const ok = window.confirm("Delete this recommendation?");
+    if (!ok) return;
+    try {
+      await deleteRecommendation(id);
+      setDesignRecommendations((prev) => prev.filter((r) => r._id !== id));
+    } catch (err) {
+      console.error("Delete recommendation failed", err);
+      alert(err?.response?.data?.message || "Failed to delete");
+    }
+  };
+
+  const handleDrImageFile = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      return;
+    }
+    setDrUploadingImage(true);
+    try {
+      const token = Cookies.get("token");
+      const formData = new FormData();
+      formData.append("image", file);
+      const uploadResponse = await axios.post(
+        `${serverUrl}/api/upload/carousel`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      const link = uploadResponse.data.imageLink;
+      setDrForm((f) => ({ ...f, imageLink: link }));
+    } catch (err) {
+      console.error("Error uploading image:", err);
+      alert("Failed to upload image. Please try again.");
+    } finally {
+      setDrUploadingImage(false);
+    }
+  };
+
   return (
     <div className="w-full min-h-screen grid grid-cols-8 gap-4 auto-rows-max">
       {" "}
@@ -1519,10 +1598,8 @@ const HomePage = () => {
                 <p>No designers found</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-max">
-                {" "}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {designers.map((designer) => {
-                  // Find projects for this designer
                   const designerProjects = projectsData.filter(
                     (project) =>
                       project.members &&
@@ -1533,21 +1610,23 @@ const HomePage = () => {
                       )
                   );
 
-                  // Helper function for status colors
                   const getStatusColor = (status) => {
                     switch (status) {
-                      case "ongoing":
-                        return "bg-blue-100 text-blue-800";
                       case "completed":
                         return "bg-green-100 text-green-800";
+                      case "ongoing":
+                        return "bg-blue-100 text-blue-800";
                       case "delayed":
                         return "bg-red-100 text-red-800";
                       case "pending":
                         return "bg-yellow-100 text-yellow-800";
+                      case "cancelled":
+                        return "bg-purple-100 text-purple-800";
                       default:
                         return "bg-gray-100 text-gray-800";
                     }
                   };
+
                   return (
                     <div
                       key={designer._id}
@@ -1577,6 +1656,7 @@ const HomePage = () => {
                           </p>
                         </div>
                       </div>
+
                       {/* Status Badges */}
                       <div className="flex flex-wrap gap-2 mb-4">
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
@@ -1589,6 +1669,7 @@ const HomePage = () => {
                           </span>
                         )}
                       </div>
+
                       {/* Contact Info */}
                       <div className="space-y-2 mb-4 text-sm text-gray-600">
                         <div className="flex items-center justify-between">
@@ -1597,10 +1678,7 @@ const HomePage = () => {
                             {designer?.createdAt
                               ? new Date(designer.createdAt).toLocaleDateString(
                                   "en-US",
-                                  {
-                                    month: "short",
-                                    year: "numeric",
-                                  }
+                                  { month: "short", year: "numeric" }
                                 )
                               : "N/A"}
                           </span>
@@ -1613,7 +1691,8 @@ const HomePage = () => {
                             </span>
                           </div>
                         )}
-                      </div>{" "}
+                      </div>
+
                       {/* Projects Section */}
                       <div className="border-t border-gray-100 pt-4 flex-1">
                         <div className="flex items-center justify-between mb-3">
@@ -1623,7 +1702,8 @@ const HomePage = () => {
                               Projects ({designerProjects.length})
                             </span>
                           </div>
-                        </div>{" "}
+                        </div>
+
                         {designerProjects.length > 0 ? (
                           <div className="space-y-2">
                             {(expandedDesigners[designer._id]
@@ -2239,6 +2319,320 @@ const HomePage = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+        </div>
+      )}
+      {/* Design Recommendation Manager (Admin) */}
+      {(role === "admin" || role === "storage_admin") && (
+        <div className="col-span-8 bg-white rounded-xl p-6 shadow-md border border-slate-200">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="font-bold text-lg">
+                Design Recommendation Manager
+              </h2>
+              <p className="text-sm text-slate-600">
+                Create and manage design recommendations
+              </p>
+            </div>
+          </div>
+
+          {/* Add button opens modal */}
+          <div className="mb-4">
+            <button
+              onClick={() => setDrModalOpen(true)}
+              className="bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium"
+            >
+              Add Recommendation
+            </button>
+          </div>
+
+          {/* Modal */}
+          {drModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div
+                className="absolute inset-0 bg-black/40"
+                onClick={() => setDrModalOpen(false)}
+              ></div>
+              <div className="relative bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-4xl mx-4">
+                <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                  <h3 className="font-semibold text-slate-800">
+                    Add Design Recommendation
+                  </h3>
+                  <button
+                    onClick={() => setDrModalOpen(false)}
+                    className="text-slate-600 hover:bg-slate-100 rounded-lg px-3 py-1"
+                  >
+                    Close
+                  </button>
+                </div>
+                <form
+                  onSubmit={async (e) => {
+                    await handleDrCreate(e);
+                    if (!drSubmitting) setDrModalOpen(false);
+                  }}
+                  className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4"
+                >
+                  <div className="md:col-span-1">
+                    <label className="block text-sm text-slate-600 mb-1">
+                      Title
+                    </label>
+                    <input
+                      value={drForm.title}
+                      onChange={(e) =>
+                        setDrForm((f) => ({ ...f, title: e.target.value }))
+                      }
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                      placeholder="Warm Contemporary Living"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-600 mb-1">
+                      Type
+                    </label>
+                    <select
+                      value={drForm.type}
+                      onChange={(e) =>
+                        setDrForm((f) => ({ ...f, type: e.target.value }))
+                      }
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                    >
+                      <option value="">Select type</option>
+                      {roomTypes.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm text-slate-600 mb-1">
+                        Budget Min
+                      </label>
+                      <input
+                        value={drForm.min}
+                        onChange={(e) =>
+                          setDrForm((f) => ({ ...f, min: e.target.value }))
+                        }
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                        placeholder="80000"
+                        inputMode="numeric"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-600 mb-1">
+                        Budget Max
+                      </label>
+                      <input
+                        value={drForm.max}
+                        onChange={(e) =>
+                          setDrForm((f) => ({ ...f, max: e.target.value }))
+                        }
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                        placeholder="120000"
+                        inputMode="numeric"
+                      />
+                    </div>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm text-slate-600 mb-1">
+                      Design Preferences (comma or 'and' separated)
+                    </label>
+                    <input
+                      value={drForm.preferences}
+                      onChange={(e) =>
+                        setDrForm((f) => ({
+                          ...f,
+                          preferences: e.target.value,
+                        }))
+                      }
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                      placeholder="modern, neutral, warm-contemporary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-600 mb-1">
+                      Tags (optional)
+                    </label>
+                    <input
+                      value={drForm.tags}
+                      onChange={(e) =>
+                        setDrForm((f) => ({ ...f, tags: e.target.value }))
+                      }
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                      placeholder="loft, urban"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm text-slate-600 mb-2">
+                      Image (optional)
+                    </label>
+                    <div
+                      className="w-full border-2 border-dashed rounded-lg p-4 text-slate-500 bg-slate-50 hover:bg-slate-100 transition-colors"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) handleDrImageFile(file);
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id="dr-image-upload"
+                          className="hidden"
+                          onChange={(e) =>
+                            handleDrImageFile(e.target.files?.[0])
+                          }
+                          disabled={drUploadingImage}
+                        />
+                        <label
+                          htmlFor="dr-image-upload"
+                          className={`px-3 py-2 rounded-md border ${
+                            drUploadingImage
+                              ? "border-slate-300 text-slate-400 cursor-not-allowed"
+                              : "border-slate-400 text-slate-700 cursor-pointer hover:bg-white"
+                          }`}
+                        >
+                          {drUploadingImage ? "Uploading..." : "Choose image"}
+                        </label>
+                        <span className="text-sm">or drag and drop here</span>
+                      </div>
+                      {drForm.imageLink && (
+                        <div className="mt-3">
+                          <img
+                            src={normalizeDriveLink(drForm.imageLink)}
+                            alt="preview"
+                            className="h-24 rounded border"
+                            onError={(e) =>
+                              (e.currentTarget.style.display = "none")
+                            }
+                          />
+                        </div>
+                      )}
+                      <div className="mt-3">
+                        <input
+                          value={drForm.imageLink}
+                          onChange={(e) =>
+                            setDrForm((f) => ({
+                              ...f,
+                              imageLink: e.target.value,
+                            }))
+                          }
+                          className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                          placeholder="https:// (Google Drive, direct URL, etc.)"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="md:col-span-3">
+                    <label className="block text-sm text-slate-600 mb-1">
+                      Specification (optional)
+                    </label>
+                    <textarea
+                      value={drForm.specification}
+                      onChange={(e) =>
+                        setDrForm((f) => ({
+                          ...f,
+                          specification: e.target.value,
+                        }))
+                      }
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 h-24"
+                      placeholder="Short description..."
+                    />
+                  </div>
+                  <div className="md:col-span-3 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDrModalOpen(false)}
+                      className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={drSubmitting}
+                      className="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-800 text-white disabled:bg-slate-400"
+                    >
+                      {drSubmitting ? "Adding..." : "Add"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* List */}
+          {drLoading ? (
+            <div className="flex items-center gap-2 text-slate-600">
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
+              Loading recommendations...
+            </div>
+          ) : designRecommendations.length === 0 ? (
+            <div className="text-slate-500 text-sm">No recommendations yet</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {designRecommendations.map((rec) => (
+                <div
+                  key={rec._id}
+                  className="border border-slate-200 rounded-xl p-4 bg-white"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-slate-800 truncate pr-2">
+                      {rec.title}
+                    </h3>
+                    <button
+                      onClick={() => handleDrDelete(rec._id)}
+                      className="text-red-600 hover:bg-red-50 rounded-lg px-2 py-1 text-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                  {rec.imageLink && !brokenRecImages[rec._id] ? (
+                    <img
+                      src={normalizeDriveLink(rec.imageLink)}
+                      alt={rec.title}
+                      className="w-full h-32 object-cover rounded-lg border mb-2"
+                      onError={() =>
+                        setBrokenRecImages((prev) => ({
+                          ...prev,
+                          [rec._id]: true,
+                        }))
+                      }
+                    />
+                  ) : (
+                    <div className="w-full h-32 rounded-lg border mb-2 bg-slate-100 flex items-center justify-center text-slate-400 text-sm">
+                      No image
+                    </div>
+                  )}
+                  <div className="text-sm text-slate-600 space-y-1">
+                    <div>
+                      <span className="font-medium">Type:</span>{" "}
+                      {rec.type || "—"}
+                    </div>
+                    <div>
+                      <span className="font-medium">Budget:</span> ₱
+                      {rec?.budgetRange?.min?.toLocaleString?.() || "—"} - ₱
+                      {rec?.budgetRange?.max?.toLocaleString?.() || "—"}
+                    </div>
+                    {Array.isArray(rec.designPreferences) &&
+                      rec.designPreferences.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {rec.designPreferences.map((p, i) => (
+                            <span
+                              key={i}
+                              className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full text-xs"
+                            >
+                              {p}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

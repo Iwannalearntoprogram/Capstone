@@ -58,8 +58,17 @@ const normalizeAndExpandKeywords = (keywords) => {
 };
 
 const design_recommendation_get = catchAsync(async (req, res, next) => {
-  const { id, roomType, designPreferences, budget, minBudget, maxBudget } =
-    req.query;
+  const {
+    id,
+    roomType,
+    designPreferences,
+    budget,
+    minBudget,
+    maxBudget,
+    all,
+    page = 1,
+    limit = 50,
+  } = req.query;
 
   let recommendations = [];
 
@@ -69,6 +78,47 @@ const design_recommendation_get = catchAsync(async (req, res, next) => {
       return next(new AppError("Design Recommendation not found", 404));
     }
     recommendations = [recommendation];
+  } else if (String(all).toLowerCase() === "true" || String(all) === "1") {
+    // Admin listing: return a paginated list of recommendations without the 3-item limit
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const limitNum = Math.max(parseInt(limit) || 50, 1);
+    const skip = (pageNum - 1) * limitNum;
+
+    const filter = {};
+    if (roomType) filter.type = roomType;
+    if (designPreferences) {
+      const normalizedPreferences =
+        normalizeAndExpandKeywords(designPreferences);
+      filter.$or = [
+        { designPreferences: { $in: normalizedPreferences } },
+        { tags: { $in: normalizedPreferences } },
+        ...normalizedPreferences.map((pref) => ({
+          $or: [
+            { designPreferences: { $regex: pref, $options: "i" } },
+            { tags: { $regex: pref, $options: "i" } },
+          ],
+        })),
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      DesignRecommendation.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
+      DesignRecommendation.countDocuments(filter),
+    ]);
+
+    return res.status(200).json({
+      message: "Design Recommendations fetched successfully",
+      recommendations: items,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.ceil(total / limitNum) || 1,
+      },
+    });
   } else {
     let filter = {};
 

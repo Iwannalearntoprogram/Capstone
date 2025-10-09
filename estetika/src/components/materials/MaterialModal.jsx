@@ -1,5 +1,5 @@
 import { FiPlus, FiTrash2, FiX, FiImage, FiUpload } from "react-icons/fi";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
@@ -29,11 +29,7 @@ const MaterialModal = ({
   const [templates, setTemplates] = useState([]); // [{category, attributes:[{key}]}]
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [newCategoryKeys, setNewCategoryKeys] = useState([
-    "Material",
-    "Color",
-    "Dimensions",
-  ]);
+  // removed per-line attribute keys when creating new category
   const [attrValuesMap, setAttrValuesMap] = useState({}); // key -> values[]
   const [attrInputMap, setAttrInputMap] = useState({}); // key -> currently selected or typed value
   const [loadingTemplates, setLoadingTemplates] = useState(false);
@@ -123,13 +119,102 @@ const MaterialModal = ({
     fetchForCategory(selectedCategory);
   }, [selectedCategory]);
 
-  // Push attributes up whenever attrInputMap changes
+  // New grouped attributes state: { key, values: [] }
+  const [attrGroups, setAttrGroups] = useState([{ key: "", values: [""] }]);
+
+  // Helper to flatten material.attributes (supports old and new shapes)
+  const flattenMaterialAttributes = useMemo(() => {
+    const attrs = Array.isArray(material.attributes) ? material.attributes : [];
+    const out = [];
+    attrs.forEach((a) => {
+      const k = (a?.key || "").trim();
+      if (!k) return;
+      if (Array.isArray(a.values)) {
+        a.values
+          .filter(Boolean)
+          .forEach((v) => out.push({ key: k, value: String(v).trim() }));
+      } else if (a.value) {
+        out.push({ key: k, value: String(a.value).trim() });
+      }
+    });
+    return out;
+  }, [material.attributes]);
+
+  // Initialize grouped attributes once per open, from current material.attributes
+  const [attrsInitialized, setAttrsInitialized] = useState(false);
   useEffect(() => {
-    const entries = Object.entries(attrInputMap)
-      .filter(([, v]) => v != null && String(v).trim().length)
-      .map(([k, v]) => ({ key: k, value: String(v).trim() }));
-    onMaterialChange && onMaterialChange("attributes", entries);
-  }, [attrInputMap]);
+    if (!isOpen) return;
+    if (attrsInitialized) return;
+    const map = new Map();
+    flattenMaterialAttributes.forEach(({ key, value }) => {
+      if (!key) return;
+      map.set(key, [...(map.get(key) || []), value]);
+    });
+    const groups = Array.from(map.entries()).map(([key, vals]) => ({
+      key,
+      values: Array.from(new Set(vals)).filter(Boolean),
+    }));
+    setAttrGroups(groups.length ? groups : [{ key: "", values: [""] }]);
+    setAttrsInitialized(true);
+  }, [isOpen, attrsInitialized, flattenMaterialAttributes]);
+
+  // Reset initializer when modal closes
+  useEffect(() => {
+    if (!isOpen) setAttrsInitialized(false);
+  }, [isOpen]);
+
+  // Push flattened attributes up whenever grouped attributes change
+  useEffect(() => {
+    const flattened = [];
+    attrGroups.forEach((g) => {
+      const key = (g.key || "").trim();
+      if (!key) return;
+      const vals = (Array.isArray(g.values) ? g.values : [])
+        .map((v) => String(v || "").trim())
+        .filter(Boolean);
+      vals.forEach((v) => flattened.push({ key, value: v }));
+    });
+    // Only push up if different from current material.attributes flattened
+    const a = JSON.stringify(flattened);
+    const b = JSON.stringify(flattenMaterialAttributes);
+    if (a !== b) {
+      onMaterialChange && onMaterialChange("attributes", flattened);
+    }
+  }, [attrGroups, flattenMaterialAttributes, onMaterialChange]);
+
+  // Attribute group helpers
+  const addAttrGroup = () =>
+    setAttrGroups((prev) => [...prev, { key: "", values: [""] }]);
+  const removeAttrGroup = (idx) =>
+    setAttrGroups((prev) => prev.filter((_, i) => i !== idx));
+  const updateAttrKey = (idx, key) =>
+    setAttrGroups((prev) => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], key };
+      return next;
+    });
+  const addAttrValue = (gIdx) =>
+    setAttrGroups((prev) => {
+      const next = [...prev];
+      const vals = Array.isArray(next[gIdx].values) ? next[gIdx].values : [""];
+      next[gIdx] = { ...next[gIdx], values: [...vals, ""] };
+      return next;
+    });
+  const removeAttrValue = (gIdx, vIdx) =>
+    setAttrGroups((prev) => {
+      const next = [...prev];
+      const vals = (next[gIdx].values || []).filter((_, i) => i !== vIdx);
+      next[gIdx] = { ...next[gIdx], values: vals.length ? vals : [""] };
+      return next;
+    });
+  const updateAttrValue = (gIdx, vIdx, value) =>
+    setAttrGroups((prev) => {
+      const next = [...prev];
+      const vals = [...(next[gIdx].values || [""])];
+      vals[vIdx] = value;
+      next[gIdx] = { ...next[gIdx], values: vals };
+      return next;
+    });
 
   const templateCategories = templates.map((t) => t.category);
 
@@ -201,121 +286,17 @@ const MaterialModal = ({
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                       Category <span className="text-red-500">*</span>
-                      {loadingTemplates && (
-                        <span className="text-xs text-gray-500">Loading…</span>
-                      )}
                     </label>
-                    {!isAddingCategory ? (
-                      <div className="flex gap-2">
-                        <select
-                          value={material.category}
-                          onChange={(e) =>
-                            onMaterialChange("category", e.target.value)
-                          }
-                          className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] bg-white"
-                          required
-                        >
-                          <option value="">-- Select Category --</option>
-                          {templateCategories.map((c) => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
-                          ))}
-                        </select>
-                        <button
-                          type="button"
-                          className="px-3 py-2 border rounded-lg text-sm"
-                          onClick={() => setIsAddingCategory(true)}
-                        >
-                          + Add New
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={newCategoryName}
-                            onChange={(e) => setNewCategoryName(e.target.value)}
-                            placeholder="New category name (e.g., Sofa)"
-                            className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] bg-white"
-                          />
-                          <button
-                            type="button"
-                            className="px-3 py-2 border rounded-lg text-sm"
-                            onClick={() => setIsAddingCategory(false)}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                        <div>
-                          <label className="text-xs font-semibold text-gray-600">
-                            Attribute Keys (one per line)
-                          </label>
-                          <textarea
-                            rows={3}
-                            value={newCategoryKeys.join("\n")}
-                            onChange={(e) =>
-                              setNewCategoryKeys(
-                                e.target.value.split(/\r?\n/).filter(Boolean)
-                              )
-                            }
-                            className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] bg-white"
-                          />
-                          <div className="flex justify-end mt-2">
-                            <button
-                              type="button"
-                              className="px-4 py-2 bg-[#1D3C34] text-white rounded-lg"
-                              onClick={async () => {
-                                if (!newCategoryName.trim()) return;
-                                try {
-                                  const token = Cookies.get("token");
-                                  await axios.post(
-                                    `${serverUrl}/api/category-template`,
-                                    {
-                                      category: newCategoryName.trim(),
-                                      attributes: newCategoryKeys.map((k) => ({
-                                        key: k,
-                                      })),
-                                    },
-                                    {
-                                      headers: {
-                                        Authorization: `Bearer ${token}`,
-                                      },
-                                    }
-                                  );
-                                  // Refresh templates and pick new category
-                                  const tplRes = await axios.get(
-                                    `${serverUrl}/api/category-template`,
-                                    {
-                                      headers: {
-                                        Authorization: `Bearer ${token}`,
-                                      },
-                                    }
-                                  );
-                                  setTemplates(tplRes.data.templates || []);
-                                  onMaterialChange(
-                                    "category",
-                                    newCategoryName.trim()
-                                  );
-                                  setIsAddingCategory(false);
-                                } catch (e) {
-                                  setMsgDialog({
-                                    open: true,
-                                    title: "Save Category Failed",
-                                    message:
-                                      e?.response?.data?.message ||
-                                      "Failed to save category template",
-                                  });
-                                }
-                              }}
-                            >
-                              Save Category
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    <input
+                      type="text"
+                      placeholder="e.g., Sofa"
+                      value={material.category}
+                      onChange={(e) =>
+                        onMaterialChange("category", e.target.value)
+                      }
+                      className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] bg-white"
+                      required
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -359,98 +340,82 @@ const MaterialModal = ({
                 </div>
               </div>
 
-              {/* Attributes Section (based on category template) */}
+              {/* Attributes Section (free-form groups: Key + multiple Values) */}
               {selectedCategory && (
                 <div className="bg-gradient-to-br from-[#f8fffe] to-white rounded-xl p-6 border border-gray-200 shadow-sm mt-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <div className="w-2 h-6 bg-gradient-to-b from-[#1D3C34] to-[#2a5a47] rounded-full"></div>
-                    Attributes
-                  </h3>
-                  {/* Resolve attribute keys from template (if any) */}
-                  {(() => {
-                    const t = templates.find(
-                      (t) => t.category === selectedCategory
-                    );
-                    const keys = Array.isArray(t?.attributes)
-                      ? t.attributes.map((a) => a.key)
-                      : [];
-                    if (!keys.length) {
-                      return (
-                        <p className="text-sm text-gray-500">
-                          No predefined attributes for this category. You can
-                          add later in Category Templates.
-                        </p>
-                      );
-                    }
-                    return (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {keys.map((key) => {
-                          const isText = /^dimensions$/i.test(key);
-                          const current = attrInputMap[key] || "";
-                          return (
-                            <div key={key} className="space-y-2">
-                              <label className="text-sm font-semibold text-gray-700">
-                                {key}
-                              </label>
-                              {isText ? (
-                                <input
-                                  type="text"
-                                  value={current}
-                                  onChange={(e) =>
-                                    setAttrInputMap((p) => ({
-                                      ...p,
-                                      [key]: e.target.value,
-                                    }))
-                                  }
-                                  placeholder="e.g., 200x80x90 cm"
-                                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34]"
-                                />
-                              ) : (
-                                <div className="flex gap-2">
-                                  <select
-                                    value={current}
-                                    onChange={(e) =>
-                                      setAttrInputMap((p) => ({
-                                        ...p,
-                                        [key]: e.target.value,
-                                      }))
-                                    }
-                                    className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] bg-white"
-                                  >
-                                    <option value="">-- Select {key} --</option>
-                                    {(attrValuesMap[key] || []).map((v) => (
-                                      <option key={v} value={v}>
-                                        {v}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  <button
-                                    type="button"
-                                    className="px-3 py-2 border rounded-lg text-sm"
-                                    onClick={() => {
-                                      setValDialog({
-                                        open: true,
-                                        key,
-                                        value: "",
-                                        saving: false,
-                                      });
-                                    }}
-                                  >
-                                    + Add New
-                                  </button>
-                                </div>
-                              )}
-                              {loadingValues[key] && (
-                                <div className="text-xs text-gray-500">
-                                  Loading values…
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                      <div className="w-2 h-6 bg-gradient-to-b from-[#1D3C34] to-[#2a5a47] rounded-full"></div>
+                      Attributes
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={addAttrGroup}
+                      className="text-[#1D3C34] text-sm border px-3 py-1.5 rounded-lg"
+                    >
+                      + Add Attribute
+                    </button>
+                  </div>
+                  {attrGroups.map((g, gi) => (
+                    <div
+                      key={`attr-${gi}`}
+                      className="mb-4 border border-gray-200 rounded-xl p-4 bg-white"
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <input
+                          className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+                          placeholder="Key (e.g., Color)"
+                          value={g.key}
+                          onChange={(e) => updateAttrKey(gi, e.target.value)}
+                        />
+                        {attrGroups.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeAttrGroup(gi)}
+                            className="text-red-600 border border-red-600 rounded px-3 py-2 text-sm"
+                          >
+                            Remove
+                          </button>
+                        )}
                       </div>
-                    );
-                  })()}
+                      <div className="ml-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-gray-600">Values</span>
+                          <button
+                            type="button"
+                            onClick={() => addAttrValue(gi)}
+                            className="text-[#1D3C34] text-xs border px-2 py-1 rounded"
+                          >
+                            + Add Value
+                          </button>
+                        </div>
+                        {(g.values || [""]).map((v, vi) => (
+                          <div
+                            key={`val-${gi}-${vi}`}
+                            className="flex items-center gap-2 mb-2"
+                          >
+                            <input
+                              className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+                              placeholder="Value (e.g., Deep Green)"
+                              value={v}
+                              onChange={(e) =>
+                                updateAttrValue(gi, vi, e.target.value)
+                              }
+                            />
+                            {g.values && g.values.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeAttrValue(gi, vi)}
+                                className="text-red-600 border border-red-600 rounded px-3 py-2 text-sm"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
 

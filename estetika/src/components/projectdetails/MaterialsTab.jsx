@@ -1925,14 +1925,14 @@ export default function MaterialsTab() {
                   />
                 </label>
                 <label className="block text-sm font-medium text-gray-700">
-                  Budget Max (PHP)
+                  Budget Max (optional)
                   <input
                     type="number"
                     value={reqBudget}
                     onChange={(e) => setReqBudget(e.target.value)}
                     min="0"
                     step="1"
-                    placeholder="30000"
+                    placeholder="Optional"
                     className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
                   />
                 </label>
