@@ -79,10 +79,7 @@ const ProjectUpdateTab = () => {
       setMessage("Description is required.");
       return;
     }
-    if (!selectedImage) {
-      setMessage("Image is required.");
-      return;
-    }
+
     setLoading(true);
     try {
       const token = Cookies.get("token");
@@ -94,22 +91,26 @@ const ProjectUpdateTab = () => {
         designerId = undefined;
       }
 
-      // 1. Upload image to server
-      const formData = new FormData();
-      formData.append("image", selectedImage);
-      const uploadRes = await axios.post(
-        `${serverUrl}/api/upload/project/update?projectId=${project._id}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      const imageLink = uploadRes.data.imageLink;
+      let imageLink = null;
 
-      // 2. Post update with imageLink
+      // 1. Upload image to server (only if image is selected)
+      if (selectedImage) {
+        const formData = new FormData();
+        formData.append("image", selectedImage);
+        const uploadRes = await axios.post(
+          `${serverUrl}/api/upload/project/update?projectId=${project._id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        imageLink = uploadRes.data.imageLink;
+      }
+
+      // 2. Post update with or without imageLink
       const body = {
         description: newUpdate.description,
         imageLink: imageLink,
@@ -330,7 +331,10 @@ const ProjectUpdateTab = () => {
 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-              Image <span className="text-red-500">*</span>
+              Image{" "}
+              <span className="text-gray-400 text-xs font-normal">
+                (Optional)
+              </span>
             </label>
             <div className="relative">
               <input

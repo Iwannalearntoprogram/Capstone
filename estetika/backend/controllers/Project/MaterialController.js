@@ -50,6 +50,7 @@ const material_post = catchAsync(async (req, res, next) => {
     options,
     category,
     subCategory,
+    attributes,
   } = req.body; // added category
 
   const isDesignerValid = await User.findById(designerId);
@@ -124,6 +125,9 @@ const material_post = catchAsync(async (req, res, next) => {
     options: Array.isArray(options) ? options : [],
     category,
     subCategory,
+    attributes: Array.isArray(attributes)
+      ? attributes.filter((a) => a && a.key && a.value)
+      : [],
     embedding,
   });
 
@@ -146,6 +150,7 @@ const material_put = catchAsync(async (req, res, next) => {
     options,
     category,
     subCategory,
+    attributes,
   } = req.body;
 
   if (!id) return next(new AppError("Material identifier not found", 400));
@@ -165,7 +170,8 @@ const material_put = catchAsync(async (req, res, next) => {
     !image &&
     !options &&
     !category &&
-    !subCategory
+    !subCategory &&
+    !attributes
   ) {
     return next(new AppError("No data to update", 400));
   }
@@ -183,6 +189,7 @@ const material_put = catchAsync(async (req, res, next) => {
   if (image) updates.image = image;
   if (category) updates.category = category;
   if (subCategory) updates.subCategory = subCategory;
+  if (attributes) updates.attributes = attributes;
 
   if (price !== undefined) {
     if (typeof price !== "number" || price <= 0) {

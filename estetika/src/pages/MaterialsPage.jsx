@@ -24,6 +24,7 @@ const MaterialsPage = () => {
     options: [],
     category: "",
     image: [],
+    attributes: [],
   });
   const [selectedImages, setSelectedImages] = useState([]);
   const [selectedImagePreviews, setSelectedImagePreviews] = useState([]);
@@ -117,6 +118,9 @@ const MaterialsPage = () => {
         image: imageUrls,
         options: newMaterial.options.filter((opt) => opt.option.trim() !== ""),
         category: newMaterial.category,
+        attributes: Array.isArray(newMaterial.attributes)
+          ? newMaterial.attributes
+          : [],
       };
 
       if (
@@ -165,6 +169,7 @@ const MaterialsPage = () => {
       options: Array.isArray(material.options) ? material.options : [],
       category: material.category || "",
       image: Array.isArray(material.image) ? material.image : [],
+      attributes: Array.isArray(material.attributes) ? material.attributes : [],
     });
     setExistingImageUrls(Array.isArray(material.image) ? material.image : []);
     setSelectedImages([]);
@@ -210,6 +215,9 @@ const MaterialsPage = () => {
       options: newMaterial.options,
       category: newMaterial.category,
       image: [...existingImageUrls, ...uploadedUrls],
+      attributes: Array.isArray(newMaterial.attributes)
+        ? newMaterial.attributes
+        : [],
     };
 
     try {
@@ -376,45 +384,87 @@ const MaterialsPage = () => {
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
 
-  // Get unique values for dropdowns
-  const categories = Array.from(new Set(materialsData.map(m => m.category).filter(Boolean)));
-  const companies = Array.from(new Set(materialsData.map(m => m.company).filter(Boolean)));
+  // Get unique values for categories (case-insensitive dedupe + Title Case display)
+  const toTitleCase = (str) => {
+    if (!str || typeof str !== "string") return "";
+    return str
+      .trim()
+      .replace(/\s+/g, " ")
+      .toLowerCase()
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  };
+
+  const categories = Array.from(
+    materialsData.reduce((set, m) => {
+      if (m.category) {
+        set.add(toTitleCase(m.category));
+      }
+      return set;
+    }, new Set())
+  ).sort();
+  const companies = Array.from(
+    new Set(materialsData.map((m) => m.company).filter(Boolean))
+  );
 
   // Filtered materials with all filters
   let filteredMaterials = materialsData.filter((mat) => {
     const matchesName = mat.name?.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = filterCategory ? mat.category === filterCategory : true;
+    const matchesCategory = filterCategory
+      ? toTitleCase(mat.category) === filterCategory
+      : true;
     const matchesCompany = filterCompany ? mat.company === filterCompany : true;
-    const matchesPriceMin = priceMin !== "" ? Number(mat.price) >= Number(priceMin) : true;
-    const matchesPriceMax = priceMax !== "" ? Number(mat.price) <= Number(priceMax) : true;
-    return matchesName && matchesCategory && matchesCompany && matchesPriceMin && matchesPriceMax;
+    const matchesPriceMin =
+      priceMin !== "" ? Number(mat.price) >= Number(priceMin) : true;
+    const matchesPriceMax =
+      priceMax !== "" ? Number(mat.price) <= Number(priceMax) : true;
+    return (
+      matchesName &&
+      matchesCategory &&
+      matchesCompany &&
+      matchesPriceMin &&
+      matchesPriceMax
+    );
   });
 
   // Cheaper and More Expensive Alternatives (outside price range, with any filters, but only if price range is set)
   let cheaperAlternatives = [];
   let expensiveAlternatives = [];
   if (priceMin !== "" || priceMax !== "") {
-    cheaperAlternatives = materialsData.filter(mat =>
-      (filterCategory ? mat.category === filterCategory : true) &&
-      (filterCompany ? mat.company === filterCompany : true) &&
-      priceMin !== "" && Number(mat.price) < Number(priceMin)
+    cheaperAlternatives = materialsData.filter(
+      (mat) =>
+        (filterCategory ? mat.category === filterCategory : true) &&
+        (filterCompany ? mat.company === filterCompany : true) &&
+        priceMin !== "" &&
+        Number(mat.price) < Number(priceMin)
     );
-    expensiveAlternatives = materialsData.filter(mat =>
-      (filterCategory ? mat.category === filterCategory : true) &&
-      (filterCompany ? mat.company === filterCompany : true) &&
-      priceMax !== "" && Number(mat.price) > Number(priceMax)
+    expensiveAlternatives = materialsData.filter(
+      (mat) =>
+        (filterCategory ? mat.category === filterCategory : true) &&
+        (filterCompany ? mat.company === filterCompany : true) &&
+        priceMax !== "" &&
+        Number(mat.price) > Number(priceMax)
     );
   }
 
   // Sorting logic
-  if (sortType === 'sales-desc') {
-    filteredMaterials = [...filteredMaterials].sort((a, b) => (b.sales || 0) - (a.sales || 0));
-  } else if (sortType === 'sales-asc') {
-    filteredMaterials = [...filteredMaterials].sort((a, b) => (a.sales || 0) - (b.sales || 0));
-  } else if (sortType === 'price-desc') {
-    filteredMaterials = [...filteredMaterials].sort((a, b) => (b.price || 0) - (a.price || 0));
-  } else if (sortType === 'price-asc') {
-    filteredMaterials = [...filteredMaterials].sort((a, b) => (a.price || 0) - (b.price || 0));
+  if (sortType === "sales-desc") {
+    filteredMaterials = [...filteredMaterials].sort(
+      (a, b) => (b.sales || 0) - (a.sales || 0)
+    );
+  } else if (sortType === "sales-asc") {
+    filteredMaterials = [...filteredMaterials].sort(
+      (a, b) => (a.sales || 0) - (b.sales || 0)
+    );
+  } else if (sortType === "price-desc") {
+    filteredMaterials = [...filteredMaterials].sort(
+      (a, b) => (b.price || 0) - (a.price || 0)
+    );
+  } else if (sortType === "price-asc") {
+    filteredMaterials = [...filteredMaterials].sort(
+      (a, b) => (a.price || 0) - (b.price || 0)
+    );
   }
 
   const canAddMaterial = userRole === "storage_admin";
@@ -498,31 +548,45 @@ const MaterialsPage = () => {
           {/* Category Filter (dropdown) */}
           <div className="flex flex-col items-start">
             <span className="font-semibold text-gray-700 mb-1">Category</span>
-            <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]">
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+            >
               <option value="">All Categories</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
               ))}
             </select>
           </div>
           {/* Company Filter (dropdown) */}
           <div className="flex flex-col items-start">
             <span className="font-semibold text-gray-700 mb-1">Company</span>
-            <select value={filterCompany} onChange={e => setFilterCompany(e.target.value)} className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]">
+            <select
+              value={filterCompany}
+              onChange={(e) => setFilterCompany(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+            >
               <option value="">All Companies</option>
-              {companies.map(comp => (
-                <option key={comp} value={comp}>{comp}</option>
+              {companies.map((comp) => (
+                <option key={comp} value={comp}>
+                  {comp}
+                </option>
               ))}
             </select>
           </div>
           {/* Price Range Filter */}
           <div className="flex flex-col items-start">
-            <span className="font-semibold text-gray-700 mb-1">Price Range</span>
+            <span className="font-semibold text-gray-700 mb-1">
+              Price Range
+            </span>
             <div className="flex gap-2">
               <input
                 type="number"
                 value={priceMin}
-                onChange={e => setPriceMin(e.target.value)}
+                onChange={(e) => setPriceMin(e.target.value)}
                 placeholder="Min"
                 className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 w-36 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
                 min="0"
@@ -532,7 +596,7 @@ const MaterialsPage = () => {
               <input
                 type="number"
                 value={priceMax}
-                onChange={e => setPriceMax(e.target.value)}
+                onChange={(e) => setPriceMax(e.target.value)}
                 placeholder="Max"
                 className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 w-36 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
                 min="0"
@@ -545,18 +609,34 @@ const MaterialsPage = () => {
             <span className="font-semibold text-gray-700 mb-1">Sort By</span>
             <div className="flex gap-2">
               <button
-                onClick={() => setSortType(sortType === 'sales-desc' ? 'sales-asc' : 'sales-desc')}
-                className={`px-4 py-2 rounded-xl border transition-all font-semibold flex items-center gap-1 ${sortType && sortType.startsWith('sales') ? 'bg-[#1D3C34] text-white border-[#1D3C34]' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-[#e6f2ef]'}`}
+                onClick={() =>
+                  setSortType(
+                    sortType === "sales-desc" ? "sales-asc" : "sales-desc"
+                  )
+                }
+                className={`px-4 py-2 rounded-xl border transition-all font-semibold flex items-center gap-1 ${
+                  sortType && sortType.startsWith("sales")
+                    ? "bg-[#1D3C34] text-white border-[#1D3C34]"
+                    : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-[#e6f2ef]"
+                }`}
                 aria-label="Sort by Sales"
               >
-                Sales {sortType === 'sales-desc' ? '↓' : '↑'}
+                Sales {sortType === "sales-desc" ? "↓" : "↑"}
               </button>
               <button
-                onClick={() => setSortType(sortType === 'price-desc' ? 'price-asc' : 'price-desc')}
-                className={`px-4 py-2 rounded-xl border transition-all font-semibold flex items-center gap-1 ${sortType && sortType.startsWith('price') ? 'bg-[#1D3C34] text-white border-[#1D3C34]' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-[#e6f2ef]'}`}
+                onClick={() =>
+                  setSortType(
+                    sortType === "price-desc" ? "price-asc" : "price-desc"
+                  )
+                }
+                className={`px-4 py-2 rounded-xl border transition-all font-semibold flex items-center gap-1 ${
+                  sortType && sortType.startsWith("price")
+                    ? "bg-[#1D3C34] text-white border-[#1D3C34]"
+                    : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-[#e6f2ef]"
+                }`}
                 aria-label="Sort by Price"
               >
-                Price {sortType === 'price-desc' ? '↓' : '↑'}
+                Price {sortType === "price-desc" ? "↓" : "↑"}
               </button>
             </div>
           </div>
@@ -614,7 +694,9 @@ const MaterialsPage = () => {
               <div className="mt-10">
                 {cheaperAlternatives.length > 0 && (
                   <div className="mb-8">
-                    <h4 className="text-lg font-bold text-[#1D3C34] mb-2">Cheaper Alternatives</h4>
+                    <h4 className="text-lg font-bold text-[#1D3C34] mb-2">
+                      Cheaper Alternatives
+                    </h4>
                     <MaterialList
                       materialsData={cheaperAlternatives}
                       canManageMaterials={canManageMaterials}
@@ -625,7 +707,9 @@ const MaterialsPage = () => {
                 )}
                 {expensiveAlternatives.length > 0 && (
                   <div>
-                    <h4 className="text-lg font-bold text-[#1D3C34] mb-2">More Expensive Alternatives</h4>
+                    <h4 className="text-lg font-bold text-[#1D3C34] mb-2">
+                      More Expensive Alternatives
+                    </h4>
                     <MaterialList
                       materialsData={expensiveAlternatives}
                       canManageMaterials={canManageMaterials}
@@ -652,7 +736,9 @@ const MaterialsPage = () => {
               <div className="mt-10">
                 {cheaperAlternatives.length > 0 && (
                   <div className="mb-8">
-                    <h4 className="text-lg font-bold text-[#1D3C34] mb-2">Cheaper Alternatives</h4>
+                    <h4 className="text-lg font-bold text-[#1D3C34] mb-2">
+                      Cheaper Alternatives
+                    </h4>
                     <MaterialList
                       materialsData={cheaperAlternatives}
                       canManageMaterials={canManageMaterials}
@@ -663,7 +749,9 @@ const MaterialsPage = () => {
                 )}
                 {expensiveAlternatives.length > 0 && (
                   <div>
-                    <h4 className="text-lg font-bold text-[#1D3C34] mb-2">More Expensive Alternatives</h4>
+                    <h4 className="text-lg font-bold text-[#1D3C34] mb-2">
+                      More Expensive Alternatives
+                    </h4>
                     <MaterialList
                       materialsData={expensiveAlternatives}
                       canManageMaterials={canManageMaterials}

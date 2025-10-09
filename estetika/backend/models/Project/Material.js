@@ -55,6 +55,12 @@ const materialSchema = new mongoose.Schema(
       type: [Number],
       default: [],
     },
+    attributes: [
+      {
+        key: { type: String, required: true },
+        value: { type: String, required: true },
+      },
+    ],
   },
   {
     timestamps: true,
@@ -81,6 +87,14 @@ materialSchema.pre("save", function (next) {
   if (this.isModified("subCategory") && this.subCategory) {
     this.subCategory = toTitleCase(this.subCategory);
   }
+  if (Array.isArray(this.attributes)) {
+    this.attributes = this.attributes
+      .filter((a) => a && a.key && a.value)
+      .map((a) => ({
+        key: toTitleCase(a.key),
+        value: a.value.toString().trim(),
+      }));
+  }
   next();
 });
 
@@ -91,6 +105,14 @@ function normalizeUpdate(update) {
   const target = update.$set ? update.$set : update;
   if (target.category) target.category = toTitleCase(target.category);
   if (target.subCategory) target.subCategory = toTitleCase(target.subCategory);
+  if (Array.isArray(target.attributes)) {
+    target.attributes = target.attributes
+      .filter((a) => a && a.key && a.value)
+      .map((a) => ({
+        key: toTitleCase(a.key),
+        value: a.value.toString().trim(),
+      }));
+  }
 }
 
 materialSchema.pre(

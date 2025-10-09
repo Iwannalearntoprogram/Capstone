@@ -102,6 +102,7 @@ function ProjectDetailsPage() {
     { label: "Timeline", path: "timeline" },
     { label: "Files", path: "files" },
     { label: "Updates", path: "update" },
+    { label: "Materials", path: "material" },
   ];
 
   return (

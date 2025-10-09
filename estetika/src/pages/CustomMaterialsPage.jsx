@@ -1,36 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaSearch, FaPlus } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import Cookies from "js-cookie";
 import axios from "axios";
-// import MaterialList from "../components/materials/MaterialList";
-import MaterialModal from "../components/materials/MaterialModal";
-import DeleteConfirmationModal from "../components/materials/DeleteConfirmationModal";
 import Toast from "../components/common/Toast";
-import CustomMaterial from "../components/materials/CustomMaterial";
+import MaterialModal from "../components/materials/MaterialModal";
 
 const CustomMaterialsPage = () => {
   const [userRole, setUserRole] = useState(null);
-  const [materials, setMaterials] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editingMaterial, setEditingMaterial] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [materialToDelete, setMaterialToDelete] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [currentMaterial, setCurrentMaterial] = useState({
-    name: "",
-    company: "",
-    category: "",
-    price: "",
-    description: "",
-    options: [],
-  });
-  const [selectedImages, setSelectedImages] = useState([]);
-  const [selectedImagePreviews, setSelectedImagePreviews] = useState([]);
-  const [existingImageUrls, setExistingImageUrls] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState(null);
   const [toast, setToast] = useState({
     isVisible: false,
     message: "",
@@ -49,241 +30,186 @@ const CustomMaterialsPage = () => {
     }
   }, [navigate]);
 
+  // Reusable fetch for requests
+  const fetchRequests = async () => {
+    setLoading(true);
+    try {
+      const token = Cookies.get("token");
+      const res = await axios.get(`${serverUrl}/api/material-request`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRequests(res.data.requests || res.data.data || []);
+    } catch {
+      setRequests([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchMaterials = async () => {
-      try {
-        const token = Cookies.get("token");
-        const res = await axios.get(`${serverUrl}/api/material`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setMaterials(res.data.material || []);
-      } catch {
-        setMaterials([]);
-      }
-    };
-    fetchMaterials();
+    fetchRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverUrl]);
 
   const handleSearch = (e) => setSearchTerm(e.target.value);
 
-  const filteredMaterials = materials.filter(
-    (mat) =>
-      mat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mat.company.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  const groupedMaterials = {
-    pending: filteredMaterials.filter((mat) => mat.status === "pending"),
-    ongoing: filteredMaterials.filter((mat) => mat.status === "ongoing"),
-    completed: filteredMaterials.filter((mat) => mat.status === "completed"),
-    cancelled: filteredMaterials.filter((mat) => mat.status === "cancelled"),
-  };
-
-  const openAddModal = () => {
-    setIsEditMode(false);
-    setEditingMaterial(null);
-    setCurrentMaterial({
-      name: "",
-      company: "",
-      category: "",
-      price: "",
-      description: "",
-      options: [],
-    });
-    setSelectedImages([]);
-    setSelectedImagePreviews([]);
-    setExistingImageUrls([]);
-    setShowModal(true);
-  };
-
-  const openEditModal = (material) => {
-    setIsEditMode(true);
-    setEditingMaterial(material);
-    setCurrentMaterial({
-      name: material.name || "",
-      company: material.company || "",
-      category: material.category || "",
-      price: material.price || "",
-      description: material.description || "",
-      options: material.options || [],
-    });
-    setSelectedImages([]);
-    setSelectedImagePreviews([]);
-    setExistingImageUrls(material.imageUrls || []);
-    setShowModal(true);
-  };
-
-  const openDeleteModal = (material) => {
-    setMaterialToDelete(material);
-    setShowDeleteModal(true);
-  };
-
-  const closeDeleteModal = () => {
-    setMaterialToDelete(null);
-    setShowDeleteModal(false);
-  };
-
-  const handleDeleteMaterial = async () => {
-    if (!materialToDelete) return;
-
-    setIsDeleting(true);
-    try {
-      const token = Cookies.get("token");
-      await axios.delete(`${serverUrl}/api/material/${materialToDelete._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // Refresh materials list
-      const res = await axios.get(`${serverUrl}/api/material`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setMaterials(res.data.material || []);
-
-      showToast("Material deleted successfully!", "success");
-      closeDeleteModal();
-    } catch (error) {
-      showToast(
-        error.response?.data?.message || "Failed to delete material",
-        "error"
-      );
-    } finally {
-      setIsDeleting(false);
-    }
+  const filteredRequests = requests.filter((req) => {
+    const q = searchTerm.toLowerCase();
+    const cat = (req.category || "").toLowerCase();
+    const notes = (req.notes || "").toLowerCase();
+    const proj = (req.projectId?.title || "").toLowerCase();
+    return cat.includes(q) || notes.includes(q) || proj.includes(q);
+  });
+  const groupedRequests = {
+    pending: filteredRequests.filter(
+      (r) => (r.status || "pending") === "pending"
+    ),
+    approved: filteredRequests.filter((r) => r.status === "approved"),
+    declined: filteredRequests.filter((r) => r.status === "declined"),
   };
 
   const showToast = (message, type = "success") => {
     setToast({ isVisible: true, message, type });
-    setTimeout(() => setToast({ ...toast, isVisible: false }), 3000);
+    // Use functional updater to avoid stale state capture
+    setTimeout(() => setToast((prev) => ({ ...prev, isVisible: false })), 3000);
   };
+  // No create/edit/delete on storage admin requests page
+  // Approve & Create Material from Request flow
+  const [createFromReqOpen, setCreateFromReqOpen] = useState(false);
+  const [createFromReqSaving, setCreateFromReqSaving] = useState(false);
+  const [prefillMaterial, setPrefillMaterial] = useState({
+    name: "",
+    company: "",
+    category: "",
+    price: 0,
+    description: "",
+    options: [],
+    attributes: [],
+  });
+  const [prefillContext, setPrefillContext] = useState(null); // { requestId, projectId }
 
-  const handleMaterialChange = (field, value) => {
-    setCurrentMaterial((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleAddOption = () => {
-    setCurrentMaterial((prev) => ({
-      ...prev,
-      options: [...prev.options, { type: "", option: "", addToPrice: "" }],
-    }));
-  };
-
-  const handleUpdateOption = (index, field, value) => {
-    setCurrentMaterial((prev) => {
-      const newOptions = [...prev.options];
-      newOptions[index] = { ...newOptions[index], [field]: value };
-      return { ...prev, options: newOptions };
+  const handleApproveCreate = (reqItem) => {
+    setPrefillMaterial({
+      name: "",
+      company: "",
+      category: reqItem.category || "",
+      price: reqItem.budgetMax || 0,
+      description: reqItem.notes || "",
+      options: [],
+      attributes: Array.isArray(reqItem.attributes) ? reqItem.attributes : [],
     });
-  };
-
-  const handleRemoveOption = (index) => {
-    setCurrentMaterial((prev) => ({
-      ...prev,
-      options: prev.options.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleImageSelection = (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedImages((prev) => [...prev, ...files]);
-
-    // Create previews
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImagePreviews((prev) => [...prev, reader.result]);
-      };
-      reader.readAsDataURL(file);
+    setPrefillContext({
+      requestId: reqItem._id,
+      projectId: reqItem.projectId?._id || reqItem.projectId,
     });
+    setCreateFromReqOpen(true);
   };
 
-  const handleRemoveImage = (index) => {
-    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
-    setSelectedImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  const handlePrefillChange = (field, value) => {
+    setPrefillMaterial((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleRemoveExistingImage = (index) => {
-    setExistingImageUrls((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSaveMaterial = async () => {
-    setIsSaving(true);
+  const handleSaveCreateFromReq = async () => {
     try {
+      setCreateFromReqSaving(true);
       const token = Cookies.get("token");
+      // 1) create material
+      const createRes = await axios.post(
+        `${serverUrl}/api/material`,
+        prefillMaterial,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const newMaterialId =
+        createRes?.data?.material?._id || createRes?.data?._id;
 
-      // Validate required fields
-      if (
-        !currentMaterial.name ||
-        !currentMaterial.company ||
-        !currentMaterial.category ||
-        !currentMaterial.price ||
-        !currentMaterial.description
-      ) {
-        showToast("Please fill in all required fields", "error");
-        setIsSaving(false);
-        return;
+      // 2) add to project (basic add with qty 1, no options)
+      if (prefillContext?.projectId && newMaterialId) {
+        await axios.post(
+          `${serverUrl}/api/project/material`,
+          { materialId: newMaterialId, options: [], quantity: 1 },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            params: { projectId: prefillContext.projectId },
+          }
+        );
       }
 
-      // Process options to ensure addToPrice is a number
-      const processedOptions = currentMaterial.options.map((opt) => ({
-        type: opt.type,
-        option: opt.option,
-        addToPrice: parseFloat(opt.addToPrice) || 0,
-      }));
+      // 3) approve request + link materialId
+      if (prefillContext?.requestId) {
+        await axios.put(
+          `${serverUrl}/api/material-request`,
+          { status: "approved", materialId: newMaterialId },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { id: prefillContext.requestId },
+          }
+        );
+      }
 
-      // Create material data object
-      const materialData = {
-        name: currentMaterial.name,
-        company: currentMaterial.company,
-        category: currentMaterial.category,
-        price: parseFloat(currentMaterial.price),
-        description: currentMaterial.description,
-        image: existingImageUrls.length > 0 ? existingImageUrls : [], // Images are now optional
-        options: processedOptions,
-      };
-
-      const url = isEditMode
-        ? `${serverUrl}/api/material?id=${editingMaterial._id}`
-        : `${serverUrl}/api/material`;
-
-      const method = isEditMode ? "put" : "post";
-
-      await axios[method](url, materialData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+      // 4) refresh & reset
+      await fetchRequests();
+      setCreateFromReqOpen(false);
+      setPrefillContext(null);
+      setPrefillMaterial({
+        name: "",
+        company: "",
+        category: "",
+        price: 0,
+        description: "",
+        options: [],
+        attributes: [],
       });
-
-      // Refresh materials list
-      const res = await axios.get(`${serverUrl}/api/material`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setMaterials(res.data.material || []);
-
+      showToast("Created material, added to project, request approved.");
+    } catch (e) {
       showToast(
-        isEditMode
-          ? "Material updated successfully!"
-          : "Material created successfully!",
-        "success"
-      );
-      setShowModal(false);
-    } catch (error) {
-      console.error("Error saving material:", error);
-      showToast(
-        error.response?.data?.message || "Failed to save material",
+        e?.response?.data?.message || "Failed to create from request",
         "error"
       );
     } finally {
-      setIsSaving(false);
+      setCreateFromReqSaving(false);
+    }
+  };
+
+  const updateRequestStatus = async (id, status) => {
+    try {
+      setUpdatingId(id);
+      const token = Cookies.get("token");
+      await axios.put(
+        `${serverUrl}/api/material-request`,
+        { status },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          params: { id },
+        }
+      );
+      setRequests((prev) =>
+        prev.map((r) => (r._id === id ? { ...r, status } : r))
+      );
+      showToast(`Request ${status}.`, "success");
+    } catch (e) {
+      showToast(
+        e?.response?.data?.message || `Failed to ${status} request`,
+        "error"
+      );
+    } finally {
+      setUpdatingId(null);
     }
   };
 
   // Collapsible section state for grouped requests
   const [expandedSections, setExpandedSections] = useState({
     pending: true,
-    ongoing: true,
-    completed: false,
-    cancelled: false,
+    approved: false,
+    declined: false,
   });
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerReq, setDrawerReq] = useState(null);
 
   const toggleSection = (sectionKey) => {
     setExpandedSections((prev) => ({
@@ -293,204 +219,308 @@ const CustomMaterialsPage = () => {
   };
 
   return (
-    <div className="px-4 py-8 mx-auto">
-      <div className="flex justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-[#21413A]">Material Requests</h1>
-        <button
-          onClick={openAddModal}
-          className="bg-[#21413A] text-white px-4 py-2 rounded-full font-semibold flex items-center gap-2 hover:bg-[#16302B] transition-colors whitespace-nowrap"
-        >
-          <FaPlus /> Create Request
-        </button>
-      </div>
-      <div className="flex items-center gap-3 mb-6">
-        <div className="flex items-center gap-2 w-full max-w-sm border rounded-full px-3 py-2 shadow-sm bg-gray-50">
-          <FaSearch className="text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search material requests..."
-            className="w-full outline-none bg-gray-50"
-            value={searchTerm}
-            onChange={handleSearch}
-          />
+    <>
+      <div className="px-4 py-8 mx-auto">
+        <div className="flex justify-between items-center mb-6 gap-4">
+          <h1 className="text-2xl font-bold text-[#21413A]">
+            Material Requests
+          </h1>
+          {/* Storage admin: no create button here */}
         </div>
-      </div>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-2 w-full max-w-sm border rounded-full px-3 py-2 shadow-sm bg-gray-50">
+            <FaSearch className="text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search material requests..."
+              className="w-full outline-none bg-gray-50"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </div>
+        </div>
 
-      {/* Status Sections */}
-      {[
-        { key: "pending", label: "Pending Material Requests" },
-        { key: "ongoing", label: "Ongoing Material Requests" },
-        { key: "completed", label: "Completed Material Requests" },
-        { key: "cancelled", label: "Cancelled Material Requests" },
-      ].map((section) => (
-        <div className="mb-4" key={section.key}>
-          <div
-            className="flex items-center justify-between p-3 rounded-lg cursor-pointer bg-gray-50 transition border"
-            onClick={() => toggleSection(section.key)}
-          >
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-gray-800">
-                {section.label} ({groupedMaterials[section.key].length})
-              </h2>
+        {/* Status Sections */}
+        {[
+          { key: "pending", label: "Pending Material Requests" },
+          { key: "approved", label: "Approved Material Requests" },
+          { key: "declined", label: "Declined Material Requests" },
+        ].map((section) => (
+          <div className="mb-4" key={section.key}>
+            <div
+              className="flex items-center justify-between p-3 rounded-lg cursor-pointer bg-gray-50 transition border"
+              onClick={() => toggleSection(section.key)}
+            >
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  {section.label} ({groupedRequests[section.key].length})
+                </h2>
+              </div>
+              {expandedSections[section.key] ? (
+                <svg
+                  className="w-5 h-5 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 15l7-7 7 7"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="w-5 h-5 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              )}
             </div>
-            {expandedSections[section.key] ? (
-              <svg
-                className="w-5 h-5 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5 15l7-7 7 7"
-                />
-              </svg>
-            ) : (
-              <svg
-                className="w-5 h-5 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
+            {expandedSections[section.key] && (
+              <div className="mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {groupedRequests[section.key].length > 0 ? (
+                    groupedRequests[section.key].map((req) => (
+                      <div
+                        key={req._id || req.id}
+                        className="bg-white rounded-xl shadow p-5 border flex flex-col gap-2 relative"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div
+                            className="font-bold text-lg text-[#21413A] truncate"
+                            title={req.category || "Material Request"}
+                          >
+                            {req.category || "Material Request"}
+                          </div>
+                          {/* No edit/delete; could add a View link later */}
+                        </div>
+                        <div
+                          className="text-gray-700 text-sm mb-1 truncate"
+                          title={req.notes || ""}
+                        >
+                          <span className="font-semibold">Notes:</span>{" "}
+                          {req.notes || "—"}
+                        </div>
+                        <div className="text-gray-700 text-sm mb-1">
+                          <span className="font-semibold">Requested By:</span>{" "}
+                          {req.requestedBy?.fullName ||
+                            (req.requestedBy?.firstName ||
+                            req.requestedBy?.lastName
+                              ? `${req.requestedBy?.firstName ?? ""} ${
+                                  req.requestedBy?.lastName ?? ""
+                                }`.trim()
+                              : "—")}
+                        </div>
+                        <div className="text-gray-700 text-sm mb-1">
+                          <span className="font-semibold">Project:</span>{" "}
+                          {req.projectId?.title || "—"}
+                        </div>
+                        <div className="text-gray-700 text-sm mb-1">
+                          <span className="font-semibold">Budget:</span> ₱
+                          {req.budgetMax != null
+                            ? Number(req.budgetMax).toLocaleString()
+                            : "—"}
+                        </div>
+                        {/* Attribute chips */}
+                        {Array.isArray(req.attributes) &&
+                          req.attributes.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-2">
+                              {req.attributes.slice(0, 6).map((a, i) => (
+                                <span
+                                  key={i}
+                                  className="inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border"
+                                  title={`${a.key}: ${a.value}`}
+                                >
+                                  <span className="font-semibold mr-1">
+                                    {a.key}:
+                                  </span>{" "}
+                                  {a.value}
+                                </span>
+                              ))}
+                              {req.attributes.length > 6 && (
+                                <span className="text-xs text-gray-500">
+                                  +{req.attributes.length - 6} more
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        {/* Removed 'View details' button per request */}
+                        {req.status === "pending" && (
+                          <div className="mt-3 flex gap-3">
+                            <button
+                              className="px-4 py-2 rounded-lg border border-red-300 text-red-700 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                              disabled={updatingId === req._id}
+                              onClick={() =>
+                                updateRequestStatus(req._id, "declined")
+                              }
+                            >
+                              {updatingId === req._id
+                                ? "Declining..."
+                                : "Decline"}
+                            </button>
+                            <button
+                              className="px-4 py-2 rounded-lg border border-[#21413A] text-[#21413A] bg-white hover:bg-[#21413A]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                              disabled={updatingId === req._id}
+                              onClick={() => handleApproveCreate(req)}
+                            >
+                              Approve & Create
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-gray-500 col-span-full">
+                      No requests found.
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
-          {expandedSections[section.key] && (
-            <div className="mt-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {groupedMaterials[section.key].length > 0 ? (
-                  groupedMaterials[section.key].map((material) => (
-                    <div
-                      key={material._id || material.name}
-                      className="bg-white rounded-xl shadow p-5 border flex flex-col gap-2 relative"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div
-                          className="font-bold text-lg text-[#21413A] truncate"
-                          title={material.name}
-                        >
-                          {material.name}
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            className="text-blue-600 hover:text-blue-800 p-1 rounded"
-                            onClick={() => openEditModal(material)}
-                            title="Edit"
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M15.232 5.232l3.536 3.536M9 13l6-6m2 2l-6 6m-2 2H7v-2a2 2 0 012-2h2v2a2 2 0 01-2 2z"
-                              />
-                            </svg>
-                          </button>
-                          <button
-                            className="text-red-600 hover:text-red-800 p-1 rounded"
-                            onClick={() => openDeleteModal(material)}
-                            title="Delete"
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                      <div
-                        className="text-gray-700 text-sm mb-1 truncate"
-                        title={material.company}
-                      >
-                        <span className="font-semibold">Company:</span>{" "}
-                        {material.company}
-                      </div>
-                      <div className="text-gray-700 text-sm mb-1">
-                        <span className="font-semibold">Type:</span>{" "}
-                        {material.type || "-"}
-                      </div>
-                      <div className="text-gray-700 text-sm mb-1">
-                        <span className="font-semibold">Unit:</span>{" "}
-                        {material.unit || "-"}
-                      </div>
-                      <div className="text-gray-700 text-sm mb-1">
-                        <span className="font-semibold">Price:</span> ₱
-                        {material.price?.toLocaleString() || "-"}
-                      </div>
-                    </div>
-                  ))
-                ) : section.key === "pending" ? (
-                  <div className="col-span-full flex justify-start">
-                    <CustomMaterial status="Pending" />
+        ))}
+        {/* Create Material from Request Modal */}
+        <MaterialModal
+          isOpen={createFromReqOpen}
+          isEditMode={false}
+          isSaving={createFromReqSaving}
+          material={prefillMaterial}
+          selectedImages={[]}
+          selectedImagePreviews={[]}
+          existingImageUrls={[]}
+          onClose={() => setCreateFromReqOpen(false)}
+          onSave={handleSaveCreateFromReq}
+          onImageSelection={() => {}}
+          onRemoveImage={() => {}}
+          onRemoveExistingImage={() => {}}
+          onMaterialChange={handlePrefillChange}
+          onAddOption={() =>
+            setPrefillMaterial((p) => ({
+              ...p,
+              options: [...p.options, { type: "", option: "", addToPrice: 0 }],
+            }))
+          }
+          onUpdateOption={(idx, field, val) =>
+            setPrefillMaterial((p) => {
+              const next = [...p.options];
+              next[idx] = { ...next[idx], [field]: val };
+              return { ...p, options: next };
+            })
+          }
+          onRemoveOption={(idx) =>
+            setPrefillMaterial((p) => {
+              const next = [...p.options];
+              next.splice(idx, 1);
+              return { ...p, options: next };
+            })
+          }
+        />
+        <Toast
+          isVisible={toast.isVisible}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ ...toast, isVisible: false })}
+        />
+      </div>
+      {/* Drawer */}
+      {drawerOpen && drawerReq && (
+        <div className="fixed inset-0 z-50">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <div className="absolute right-0 top-0 h-full w-full sm:w-[420px] bg-white shadow-2xl border-l p-5 overflow-y-auto">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-[#21413A]">
+                Request Details
+              </h3>
+              <button
+                className="px-3 py-1 rounded border"
+                onClick={() => setDrawerOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div>
+                <span className="font-semibold">Category:</span>{" "}
+                {drawerReq.category}
+              </div>
+              <div>
+                <span className="font-semibold">Project:</span>{" "}
+                {drawerReq.projectId?.title || "—"}
+              </div>
+              <div>
+                <span className="font-semibold">Requested By:</span>{" "}
+                {drawerReq.requestedBy?.fullName ||
+                  drawerReq.requestedBy?.firstName ||
+                  "—"}
+              </div>
+              <div>
+                <span className="font-semibold">Budget:</span> ₱
+                {drawerReq.budgetMax != null
+                  ? Number(drawerReq.budgetMax).toLocaleString()
+                  : "—"}
+              </div>
+              {drawerReq.notes && (
+                <div>
+                  <div className="font-semibold">Notes</div>
+                  <div className="whitespace-pre-wrap text-gray-700 border rounded p-2 bg-gray-50">
+                    {drawerReq.notes}
                   </div>
-                ) : (
-                  <div className="text-gray-500 col-span-full">
-                    No materials found.
+                </div>
+              )}
+              {Array.isArray(drawerReq.attributes) &&
+                drawerReq.attributes.length > 0 && (
+                  <div>
+                    <div className="font-semibold">Attributes</div>
+                    <div className="mt-1 grid grid-cols-1 gap-2">
+                      {drawerReq.attributes.map((a, idx) => (
+                        <div
+                          key={idx}
+                          className="flex justify-between items-center border rounded px-2 py-1 text-gray-700"
+                        >
+                          <span className="font-semibold">{a.key}</span>
+                          <span>{a.value}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
-              </div>
             </div>
-          )}
+
+            {drawerReq.status === "pending" && (
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button
+                  className="px-3 py-2 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50"
+                  onClick={() => updateRequestStatus(drawerReq._id, "declined")}
+                >
+                  Decline
+                </button>
+                <button
+                  className="px-3 py-2 rounded border border-[#21413A] text-[#21413A] bg-white hover:bg-[#21413A]/10"
+                  onClick={() => {
+                    handleApproveCreate(drawerReq);
+                  }}
+                >
+                  Approve & Create
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      ))}
-      {/* Modals and Toasts */}
-      {showModal && (
-        <MaterialModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          isEditMode={isEditMode}
-          isSaving={isSaving}
-          material={currentMaterial}
-          selectedImages={selectedImages}
-          selectedImagePreviews={selectedImagePreviews}
-          existingImageUrls={existingImageUrls}
-          onSave={handleSaveMaterial}
-          onImageSelection={handleImageSelection}
-          onRemoveImage={handleRemoveImage}
-          onRemoveExistingImage={handleRemoveExistingImage}
-          onMaterialChange={handleMaterialChange}
-          onAddOption={handleAddOption}
-          onUpdateOption={handleUpdateOption}
-          onRemoveOption={handleRemoveOption}
-        />
       )}
-      <DeleteConfirmationModal
-        isOpen={showDeleteModal}
-        onClose={closeDeleteModal}
-        onConfirm={handleDeleteMaterial}
-        isDeleting={isDeleting}
-        materialName={materialToDelete?.name}
-        materialCompany={materialToDelete?.company}
-      />
-      <Toast
-        isVisible={toast.isVisible}
-        message={toast.message}
-        type={toast.type}
-        onClose={() => setToast({ ...toast, isVisible: false })}
-      />
-    </div>
+    </>
   );
 };
 

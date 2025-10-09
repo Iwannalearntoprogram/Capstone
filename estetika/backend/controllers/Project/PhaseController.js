@@ -32,29 +32,22 @@ const phase_get = catchAsync(async (req, res, next) => {
       new AppError("Phase not found. Invalid Phase Identifier.", 404)
     );
 
-  if (id && phase.tasks.length > 0) {
-    let weight = 100 / phase.tasks.length;
+  const computeProgress = (tasksArray) => {
+    if (!Array.isArray(tasksArray) || tasksArray.length === 0) return 0;
+    const weight = 100 / tasksArray.length;
     let total = 0;
+    for (const t of tasksArray) {
+      if (t && t.status === "completed") total += weight;
+    }
+    // Guard against floating point drift
+    return Number(total.toFixed(2));
+  };
 
-    phase.tasks.forEach((task) => {
-      if (task.status === "completed") {
-        total += weight;
-      }
-    });
-
-    phase.progress = total;
-  } else {
+  if (id) {
+    phase.progress = computeProgress(phase.tasks);
+  } else if (Array.isArray(phase)) {
     phase.forEach((ph) => {
-      let weight = 100 / ph.tasks.length;
-      let total = 0;
-
-      ph.tasks.forEach((task) => {
-        if (task.status === "completed") {
-          total += weight;
-        }
-      });
-
-      ph.progress = total;
+      ph.progress = computeProgress(ph.tasks);
     });
   }
 

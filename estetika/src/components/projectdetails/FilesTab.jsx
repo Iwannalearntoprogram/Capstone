@@ -18,6 +18,11 @@ export default function FilesTab() {
   const [selectedFile, setSelectedFile] = useState([]);
   const [userRole, setUserRole] = useState(null);
   const [deletingFiles, setDeletingFiles] = useState(new Set());
+  // New file modal state
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [newFileName, setNewFileName] = useState("");
+  const [newFileContent, setNewFileContent] = useState("");
+  const [creatingFile, setCreatingFile] = useState(false);
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -83,7 +88,70 @@ export default function FilesTab() {
       alert("Admins cannot create new files. Only designers can manage files.");
       return;
     }
-    // Add your new file creation logic here
+    setShowNewModal(true);
+  };
+
+  // Reusable upload (existing logic adapted)
+  const uploadSingleFile = async (file) => {
+    const token = Cookies.get("token");
+    const formData = new FormData();
+    formData.append("document", file);
+    try {
+      const res = await axios.post(
+        `${serverUrl}/api/upload/document?projectId=${project?._id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return res.data.documentLink;
+    } catch (e) {
+      console.error("Upload failed", e);
+      throw e;
+    }
+  };
+
+  const handleCreateNewFile = async () => {
+    if (!newFileName.trim()) {
+      alert("File name is required");
+      return;
+    }
+    // Basic safe filename enforcement
+    let safeName = newFileName.trim();
+    if (!safeName.includes(".")) {
+      safeName += ".txt";
+    }
+    // Construct a Blob/File for text content
+    const blob = new Blob([newFileContent], { type: "text/plain" });
+    const file = new File([blob], safeName, { type: "text/plain" });
+    setCreatingFile(true);
+    try {
+      const fileLink = await uploadSingleFile(file);
+      const token = Cookies.get("token");
+      await axios.put(
+        `${serverUrl}/api/project?id=${project?._id}`,
+        { files: [...(project?.files || []), fileLink] },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      refreshProject && refreshProject();
+      setShowNewModal(false);
+      setNewFileName("");
+      setNewFileContent("");
+    } catch (e) {
+      const msg =
+        e?.response?.data?.message || e?.message || "Failed to create file";
+      alert(msg);
+    } finally {
+      setCreatingFile(false);
+    }
   };
 
   const handleFileSelect = (e) => {
@@ -339,6 +407,61 @@ export default function FilesTab() {
               </p>
             </>
           )}
+        </div>
+      )}
+
+      {showNewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
+            <h2 className="text-lg font-semibold mb-4 text-gray-800">
+              Create New File
+            </h2>
+            <label className="block mb-3 text-sm font-medium text-gray-700">
+              File Name
+              <input
+                type="text"
+                value={newFileName}
+                onChange={(e) => setNewFileName(e.target.value)}
+                placeholder="specifications.txt"
+                className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+              />
+            </label>
+            <label className="block mb-4 text-sm font-medium text-gray-700">
+              Content (optional)
+              <textarea
+                value={newFileContent}
+                onChange={(e) => setNewFileContent(e.target.value)}
+                rows={8}
+                className="mt-1 w-full border rounded px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+                placeholder="Add initial notes or leave blank..."
+              />
+            </label>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  if (!creatingFile) {
+                    setShowNewModal(false);
+                    setNewFileName("");
+                    setNewFileContent("");
+                  }
+                }}
+                className="px-4 py-2 rounded border text-gray-700 hover:bg-gray-100"
+                disabled={creatingFile}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateNewFile}
+                disabled={creatingFile || !newFileName.trim()}
+                className="px-4 py-2 rounded bg-[#1D3C34] text-white hover:bg-[#16442A] disabled:opacity-50 flex items-center"
+              >
+                {creatingFile && (
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                )}
+                Create
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -31,6 +31,13 @@ export default function MaterialsTab() {
   const [editMaterial, setEditMaterial] = useState(null);
   const [editOption, setEditOption] = useState("");
   const [editQuantity, setEditQuantity] = useState(1);
+  // Request Material state
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [reqCategory, setReqCategory] = useState("");
+  const [reqAttributes, setReqAttributes] = useState([{ key: "", value: "" }]);
+  const [reqBudget, setReqBudget] = useState("");
+  const [reqNotes, setReqNotes] = useState("");
+  const [isRequesting, setIsRequesting] = useState(false);
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   // Get user role from localStorage
@@ -303,6 +310,14 @@ export default function MaterialsTab() {
     setShowModal(true);
   };
 
+  const handleRequestClick = () => {
+    if (userRole === "admin") {
+  alert("Admins cannot recommend materials.");
+      return;
+    }
+    setShowRequestModal(true);
+  };
+
   const handleAddToSheetClick = () => {
     if (userRole === "admin") {
       alert(
@@ -311,6 +326,53 @@ export default function MaterialsTab() {
       return;
     }
     setShowAddToSheetModal(true);
+  };
+
+  // Recommend Material helpers
+  const updateReqAttribute = (index, field, value) => {
+    setReqAttributes((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const addReqAttribute = () =>
+    setReqAttributes((p) => [...p, { key: "", value: "" }]);
+
+  const removeReqAttribute = (idx) =>
+    setReqAttributes((p) => p.filter((_, i) => i !== idx));
+
+  const submitMaterialRequest = async () => {
+    if (!project || !project._id) return alert("No project context");
+    if (!reqCategory.trim()) return alert("Category is required");
+    setIsRequesting(true);
+    try {
+      const token = Cookies.get("token");
+      const payload = {
+        projectId: project._id,
+        category: reqCategory,
+        attributes: reqAttributes.filter((a) => a.key.trim() && a.value.trim()),
+        budgetMax: reqBudget ? Number(reqBudget) : undefined,
+        notes: reqNotes || undefined,
+      };
+      await axios.post(`${serverUrl}/api/material-request`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  alert("Recommendation submitted to storage admin.");
+      setShowRequestModal(false);
+      setReqCategory("");
+      setReqAttributes([{ key: "", value: "" }]);
+      setReqBudget("");
+      setReqNotes("");
+    } catch (e) {
+  alert(e?.response?.data?.message || "Failed to submit recommendation");
+    } finally {
+      setIsRequesting(false);
+    }
   };
 
   const handleAddToSheet = async () => {
@@ -596,14 +658,24 @@ export default function MaterialsTab() {
               </div>
               {/* Only show Add button if not admin */}
               {!isAdmin && (
-                <button
-                  className="group bg-gradient-to-r from-[#1D3C34] to-[#145c4b] text-white px-4 py-3 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
-                  onClick={handleAddClick}
-                  title="Add Material"
-                >
-                  <FaPlus className="text-sm group-hover:rotate-90 transition-transform duration-300" />
-                  <span className="text-sm font-semibold">Add</span>
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    className="group bg-gradient-to-r from-[#1D3C34] to-[#145c4b] text-white px-4 py-3 rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
+                    onClick={handleAddClick}
+                    title="Add Material"
+                  >
+                    <FaPlus className="text-sm group-hover:rotate-90 transition-transform duration-300" />
+                    <span className="text-sm font-semibold">Add</span>
+                  </button>
+                  <button
+                    className="bg-white border border-[#1D3C34] text-[#1D3C34] px-4 py-3 rounded-xl hover:shadow-md transition-all duration-300 flex items-center gap-2"
+                    onClick={handleRequestClick}
+                    title="Recommend Material"
+                  >
+                    <FaIndustry className="text-sm" />
+                    <span className="text-sm font-semibold">Recommend</span>
+                  </button>
+                </div>
               )}
             </div>
 
@@ -1323,6 +1395,105 @@ export default function MaterialsTab() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showRequestModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full relative">
+            <button
+              className="absolute top-2 right-4 text-gray-500 text-2xl"
+              onClick={() => setShowRequestModal(false)}
+              disabled={isRequesting}
+            >
+              &times;
+            </button>
+            <h3 className="text-xl font-bold mb-4 text-center">
+              Recommend New Material
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Category
+                <input
+                  type="text"
+                  value={reqCategory}
+                  onChange={(e) => setReqCategory(e.target.value)}
+                  placeholder="e.g., Sofa, Lighting, Cabinet"
+                  className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+                />
+              </label>
+              <label className="block text-sm font-medium text-gray-700">
+                Budget Max (PHP)
+                <input
+                  type="number"
+                  value={reqBudget}
+                  onChange={(e) => setReqBudget(e.target.value)}
+                  min="0"
+                  step="1"
+                  placeholder="30000"
+                  className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+                />
+              </label>
+            </div>
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">
+                  Attributes
+                </span>
+                <button
+                  onClick={addReqAttribute}
+                  className="text-[#1D3C34] text-sm hover:underline"
+                >
+                  + Add Attribute
+                </button>
+              </div>
+              {reqAttributes.map((row, idx) => (
+                <div key={idx} className="grid grid-cols-12 gap-2 mb-2">
+                  <input
+                    className="col-span-5 border rounded px-3 py-2 text-sm"
+                    placeholder="Key (e.g., Color)"
+                    value={row.key}
+                    onChange={(e) =>
+                      updateReqAttribute(idx, "key", e.target.value)
+                    }
+                  />
+                  <input
+                    className="col-span-5 border rounded px-3 py-2 text-sm"
+                    placeholder="Value (e.g., Deep Green)"
+                    value={row.value}
+                    onChange={(e) =>
+                      updateReqAttribute(idx, "value", e.target.value)
+                    }
+                  />
+                  <button
+                    onClick={() => removeReqAttribute(idx)}
+                    className="col-span-2 text-red-600 border border-red-600 rounded px-3 py-2 text-sm hover:bg-red-50"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+            <label className="block text-sm font-medium text-gray-700 mt-2">
+              Notes (optional)
+              <textarea
+                className="mt-1 w-full border rounded px-3 py-2 text-sm"
+                rows={4}
+                placeholder="Any additional information"
+                value={reqNotes}
+                onChange={(e) => setReqNotes(e.target.value)}
+              />
+            </label>
+            <div className="flex justify-center mt-6">
+              <button
+                className="px-4 py-2 bg-[#1D3C34] text-white rounded hover:bg-[#145c4b] transition flex items-center gap-2 disabled:opacity-50"
+                onClick={submitMaterialRequest}
+                disabled={isRequesting || !reqCategory.trim()}
+              >
+                {isRequesting ? "Submitting..." : "Submit Recommendation"}
+              </button>
+            </div>
           </div>
         </div>
       )}

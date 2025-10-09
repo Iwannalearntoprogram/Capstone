@@ -29,6 +29,7 @@ const allowedDocumentTypes = [
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "text/csv",
   "application/csv",
+  "text/plain",
 ];
 
 const allowedImageTypes = [

@@ -1,6 +1,6 @@
 import TaskCard from "./TaskCard";
 import { useDroppable } from "@dnd-kit/core";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Modal from "react-modal"; // Make sure react-modal is installed
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -15,12 +15,31 @@ export default function Column({ column, tasks, project }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const initialPhaseId = project?.timeline?.[0]?._id || "";
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     assignedTo: users[0],
-    phaseId: project?.timeline?.[0]?._id || "",
+    phaseId: initialPhaseId,
+    startDate: "",
+    endDate: "",
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  // If the component mounted before project.timeline was available, set a default phase when it arrives
+  useEffect(() => {
+    if (!newTask.phaseId && project?.timeline?.length) {
+      setNewTask((prev) => ({ ...prev, phaseId: project.timeline[0]._id }));
+    }
+  }, [project?.timeline, newTask.phaseId]);
+
+  // Auto-clear phase error if a valid phaseId is now set
+  useEffect(() => {
+    if (errorMsg === "Please select a phase first" && newTask.phaseId) {
+      setErrorMsg("");
+    }
+  }, [newTask.phaseId, errorMsg]);
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -30,11 +49,69 @@ export default function Column({ column, tasks, project }) {
     setUserRole(role);
   }, []);
 
+  const resetTaskFields = useCallback(() => {
+    // Preserve the chosen phase so validation ranges stay consistent
+    setNewTask((prev) => ({
+      title: "",
+      description: "",
+      assignedTo: prev.assignedTo,
+      phaseId: prev.phaseId || initialPhaseId,
+      startDate: "",
+      endDate: "",
+    }));
+  }, [initialPhaseId]);
+
   const handleSaveTask = async () => {
     // Prevent admin from creating tasks
     if (userRole === "admin") {
       alert("Admins cannot create tasks. Only designers can manage tasks.");
       return;
+    }
+
+    setErrorMsg("");
+
+    // Basic validation
+    if (!newTask.title.trim()) {
+      setErrorMsg("Title is required");
+      return;
+    }
+
+    if (!newTask.phaseId) {
+      setErrorMsg("Please select a phase first");
+      return;
+    }
+
+    if (
+      newTask.startDate &&
+      newTask.endDate &&
+      newTask.endDate < newTask.startDate
+    ) {
+      setErrorMsg("End date cannot be before start date");
+      return;
+    }
+
+    // Ensure dates fall within phase boundaries
+    if (selectedPhase) {
+      const phaseStartDate = new Date(selectedPhase.startDate)
+        .toISOString()
+        .slice(0, 10);
+      const phaseEndDate = new Date(selectedPhase.endDate)
+        .toISOString()
+        .slice(0, 10);
+      if (
+        newTask.startDate &&
+        (newTask.startDate < phaseStartDate || newTask.startDate > phaseEndDate)
+      ) {
+        setErrorMsg("Start date must be within phase range");
+        return;
+      }
+      if (
+        newTask.endDate &&
+        (newTask.endDate < phaseStartDate || newTask.endDate > phaseEndDate)
+      ) {
+        setErrorMsg("End date must be within phase range");
+        return;
+      }
     }
 
     const body = {
@@ -52,28 +129,23 @@ export default function Column({ column, tasks, project }) {
     };
 
     try {
+      setSubmitting(true);
       await axios.post(`${serverUrl}/api/task`, body, {
         headers: {
           Authorization: `Bearer ${Cookies.get("token")}`,
         },
       });
-
-      setClosing(true);
+      // Close modal and hard reload so task list refreshes globally
+      setModalOpen(false);
+      setSubmitting(false);
+      // Small timeout lets modal closing animation finish before reload
       setTimeout(() => {
-        setModalOpen(false);
-        setClosing(false);
-        setNewTask({
-          title: "",
-          description: "",
-          assignedTo: users[0],
-          phaseId: project?.timeline?.[0]?._id || "",
-          startDate: "",
-          endDate: "",
-        });
-      }, 300);
-      location.reload();
+        window.location.reload();
+      }, 150);
     } catch (err) {
-      alert("Failed to add task.");
+      console.error(err);
+      setErrorMsg("Failed to add task.");
+      setSubmitting(false);
     }
   };
 
@@ -165,11 +237,31 @@ export default function Column({ column, tasks, project }) {
         shouldCloseOnOverlayClick={false}
         ariaHideApp={false}
       >
-        <h2 className="text-lg font-semibold mb-4">Add Task</h2>
+        <h2 className="text-lg font-semibold mb-2">Add Task</h2>
+        {selectedPhase && (
+          <p className="text-xs text-gray-500 mb-4">
+            Phase window: {phaseStart || "—"} to {phaseEnd || "—"}
+          </p>
+        )}
+        {errorMsg && (
+          <div className="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2">
+            {errorMsg}
+          </div>
+        )}
         <label className="block mb-2">Phase:</label>
         <select
           value={newTask.phaseId}
-          onChange={(e) => setNewTask({ ...newTask, phaseId: e.target.value })}
+          onChange={(e) => {
+            const val = e.target.value;
+            setNewTask((prev) => ({
+              ...prev,
+              phaseId: val,
+              // reset dates so user reselects within the new phase boundaries
+              startDate: "",
+              endDate: "",
+            }));
+            if (errorMsg === "Please select a phase first") setErrorMsg("");
+          }}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         >
           {Array.isArray(project?.timeline) && project.timeline.length > 0 ? (
@@ -228,9 +320,10 @@ export default function Column({ column, tasks, project }) {
         <div className="flex justify-end gap-2">
           <button
             onClick={handleSaveTask}
-            className="px-4 py-2 bg-[#1D3C34] text-white rounded-md hover:bg-[#145c4b] transition"
+            disabled={submitting}
+            className={`px-4 py-2 bg-[#1D3C34] text-white rounded-md hover:bg-[#145c4b] transition disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            Add Task
+            {submitting ? "Saving..." : "Add Task"}
           </button>
           <button
             onClick={closeModal}
