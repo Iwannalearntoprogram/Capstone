@@ -2,6 +2,7 @@ import 'package:estetika_ui/screens/signin_screen.dart';
 import 'package:estetika_ui/screens/welcome_screen.dart';
 import 'package:estetika_ui/widgets/custom_scaffold.dart';
 import 'package:estetika_ui/widgets/google_sign_in_button.dart';
+import 'package:estetika_ui/widgets/app_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
@@ -23,6 +24,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isSubmitting = false;
+  String? _emailServerError;
+  String? _usernameServerError;
+  String? _formServerError;
 
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -75,9 +79,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _registerUser() async {
-    if (_isSubmitting) return;
-    setState(() => _isSubmitting = true);
-
     final url = Uri.parse('https://moss-manila.onrender.com/api/auth/register');
     // Normalize phone to E.164 using +63 prefix (Philippines)
     final String localDigits =
@@ -122,9 +123,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
       } else {
         AppLogger.error('Registration failed', error: response.statusCode);
         AppLogger.error('Registration response: ${response.body}');
-        final msg = data != null && data['message'] is String
-            ? data['message'] as String
-            : 'Registration failed (${response.statusCode})';
+        final msg = _extractServerMessage(data, response.statusCode);
+        setState(() {
+          if (msg.toLowerCase().contains('email')) {
+            _emailServerError = msg;
+          } else if (msg.toLowerCase().contains('username')) {
+            _usernameServerError = msg;
+          } else {
+            _formServerError = msg;
+          }
+        });
         await showToast(msg);
       }
     } on TimeoutException catch (e, st) {
@@ -138,8 +146,61 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
+  Future<void> _handleSubmit() async {
+    if (_isSubmitting) {
+      return;
+    }
+
+    final formState = _formSignupKey.currentState;
+    if (formState == null) {
+      return;
+    }
+
+    if (!formState.validate()) {
+      return;
+    }
+
+    if (!agreePersonalData) {
+      await showToast('Please agree to the processing of personal data');
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _emailServerError = null;
+      _usernameServerError = null;
+      _formServerError = null;
+    });
+
+    await _registerUser();
+  }
+
+  String _extractServerMessage(Map<String, dynamic>? payload, int statusCode) {
+    final rawMessage = payload != null && payload['message'] is String
+        ? (payload['message'] as String).trim()
+        : null;
+
+    if (rawMessage != null && rawMessage.isNotEmpty) {
+      return rawMessage;
+    }
+
+    switch (statusCode) {
+      case 400:
+        return 'We could not complete your registration. Please review the details and try again.';
+      case 409:
+        return 'A matching account already exists. Please sign in or use different credentials.';
+      case 500:
+        return 'We encountered an unexpected issue. Please wait a moment and try again.';
+      default:
+        return 'Registration failed ($statusCode). Please try again.';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final Color submitButtonColor = const Color(0xFF203B32);
+    final Color disabledSubmitButtonColor = submitButtonColor.withOpacity(0.7);
+
     return CustomScaffold(
       showBackIcon: true,
       child: WillPopScope(
@@ -177,6 +238,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
+                                const AppLogo(
+                                  width: 150,
+                                  height: 150,
+                                ),
+                                const SizedBox(height: 24.0),
+                                if (_formServerError != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: Text(
+                                      _formServerError!,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                        fontFamily: 'Figtree',
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
                                 Text(
                                   'Create Account',
                                   style: TextStyle(
@@ -239,7 +318,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
+                                    errorText: _usernameServerError,
                                   ),
+                                  onChanged: (_) {
+                                    if (_usernameServerError != null) {
+                                      setState(
+                                          () => _usernameServerError = null);
+                                    }
+                                  },
                                 ),
                                 const SizedBox(height: 25.0),
                                 TextFormField(
@@ -251,7 +337,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
+                                    errorText: _emailServerError,
                                   ),
+                                  onChanged: (_) {
+                                    if (_emailServerError != null) {
+                                      setState(() => _emailServerError = null);
+                                    }
+                                  },
                                 ),
                                 const SizedBox(height: 25.0),
                                 TextFormField(
@@ -379,21 +471,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton(
-                                    onPressed: _isSubmitting
-                                        ? null
-                                        : () {
-                                            if (_formSignupKey.currentState!
-                                                    .validate() &&
-                                                agreePersonalData) {
-                                              _registerUser();
-                                            } else if (!agreePersonalData) {
-                                              showToast(
-                                                  'Please agree to the processing of personal data');
-                                            }
-                                          },
+                                    onPressed:
+                                        _isSubmitting ? null : _handleSubmit,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF203B32),
+                                      backgroundColor: submitButtonColor,
                                       foregroundColor: Colors.white,
+                                      disabledBackgroundColor:
+                                          disabledSubmitButtonColor,
+                                      disabledForegroundColor: Colors.white70,
                                     ),
                                     child: _isSubmitting
                                         ? const SizedBox(
