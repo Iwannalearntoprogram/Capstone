@@ -18,20 +18,26 @@ import {
   FaClock,
 } from "react-icons/fa";
 import Papa from "papaparse"; // Make sure papaparse is installed
+import { useToast } from "../ToastProvider";
 
 export default function MaterialsTab() {
   const { project, refreshProject } = useOutletContext();
+  const { showToast } = useToast();
   const [showModal, setShowModal] = useState(false);
-  const [selectedMaterials, setSelectedMaterials] = useState([""]);
-  const [materials, setMaterials] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // Removed legacy loading; using recsLoading for bulk operations
   const [userRole, setUserRole] = useState(null);
-  const [bestMatch, setBestMatch] = useState(null);
+  // We prefer per-need recommendations map; remove legacy single recommendation state
+  // Map of recommendations keyed by need name: { [needName]: { bestMatch, cheaper, moreExpensive, selected, choice } }
+  const [recommendations, setRecommendations] = useState({});
+  // Loading state for bulk recommend
+  const [recsLoading, setRecsLoading] = useState(false);
+  // Planned total cost across all needs using selected picks
+  const [plannedTotal, setPlannedTotal] = useState(0);
   const [showAddToSheetModal, setShowAddToSheetModal] = useState(false);
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isAddingToSheet, setIsAddingToSheet] = useState(false);
-  const [selectedMaterialOptions, setSelectedMaterialOptions] = useState({});
+  // Removed unused selectedMaterialOptions state
   const [editMaterial, setEditMaterial] = useState(null);
   const [editOption, setEditOption] = useState("");
   const [editQuantity, setEditQuantity] = useState(1);
@@ -189,15 +195,15 @@ export default function MaterialsTab() {
     return basePrice;
   };
 
-  const groupOptionsByType = (options) => {
-    if (!options || !Array.isArray(options)) return {};
-    return options.reduce((acc, opt) => {
-      const type = opt.type || "Option";
-      if (!acc[type]) acc[type] = [];
-      acc[type].push(opt);
-      return acc;
-    }, {});
+  // Helper: minimal unit price for a material record from search API
+  const getMinUnitPrice = (item) => {
+    if (!item || typeof item !== "object") return 0;
+    if (typeof item.minPrice === "number") return item.minPrice;
+    if (typeof item.price === "number") return item.price;
+    return 0;
   };
+
+  // Removed unused groupOptionsByType
 
   // const getMaterialTotalPrice = (mat, idx) => {
   //   if (!mat || !mat.options || !mat.options.length) return mat?.price || 0;
@@ -230,34 +236,117 @@ export default function MaterialsTab() {
   }, [project]);
 
   // Fetch best match manually when recommend button is clicked
-  const handleRecommendMaterial = async (materialName) => {
-    if (!materialName) return;
-    setLoading(true);
-    setBestMatch(null);
-    setSelectedSidebar(materialName);
+  // Removed legacy single-item recommend handler (now using bulk recommender)
+
+  // Recommend for ALL designer needs concurrently and compute a budget-aware selection
+  const handleRecommendAllMaterials = async () => {
+    if (!project || !Array.isArray(project.materialsList)) return;
+    const needs = project.materialsList.filter((n) => n && n.name);
+    if (needs.length === 0) return;
+    setRecsLoading(true);
     try {
       const token = Cookies.get("token");
-      const res = await axios.get(
-        `${serverUrl}/api/material/match?query=${materialName}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // Parallel fetch for each need name (augment query with a hint of attributes if present)
+      const requests = needs.map((need) => {
+        const attrHint = need.attributes
+          ? Object.entries(need.attributes)
+              .map(([k, v]) => `${k}:${Array.isArray(v) ? v.join("/") : v}`)
+              .join(", ")
+          : "";
+        const q = attrHint ? `${need.name} ${attrHint}` : need.name;
+        return axios
+          .get(`${serverUrl}/api/material/match`, {
+            headers,
+            params: { query: q },
+          })
+          .then((res) => ({ need, data: res.data }))
+          .catch(() => ({ need, data: null }));
+      });
+
+      const results = await Promise.all(requests);
+
+      // Build base map choosing bestMatch initially
+      let map = {};
+      for (const { need, data } of results) {
+        const payload = data?.result;
+        if (payload?.bestMatch) {
+          map[need.name] = {
+            bestMatch: payload.bestMatch,
+            cheaper: payload.cheaper || null,
+            moreExpensive: payload.moreExpensive || null,
+            selected: payload.bestMatch,
+            choice: "best",
+          };
+        } else {
+          // No result
+          map[need.name] = null;
         }
-      );
-      if (res.data?.result?.bestMatch) {
-        setBestMatch({
-          ...res.data.result.bestMatch,
-          cheaper: res.data.result.cheaper,
-          moreExpensive: res.data.result.moreExpensive,
-        });
-      } else {
-        setBestMatch(null);
       }
-    } catch {
-      setBestMatch(null);
+
+      // Apply budget-aware selection if budget exists
+      const budget = Number(project?.budget) || 0;
+      const withPlan = { ...map };
+      if (budget > 0) {
+        // Compute initial total using best picks
+        let total = 0;
+        for (const need of needs) {
+          const rec = withPlan[need.name];
+          if (!rec) continue;
+          const qty = Number(need.quantity) || 1;
+          total += getMinUnitPrice(rec.selected) * qty;
+        }
+
+        if (total > budget) {
+          // Identify candidates where cheaper exists and yields savings
+          const candidates = needs
+            .map((need) => {
+              const rec = withPlan[need.name];
+              if (!rec || !rec.cheaper || !rec.bestMatch) return null;
+              const qty = Number(need.quantity) || 1;
+              const bestPrice = getMinUnitPrice(rec.bestMatch);
+              const cheapPrice = getMinUnitPrice(rec.cheaper);
+              const savings = (bestPrice - cheapPrice) * qty;
+              return savings > 0
+                ? { name: need.name, qty, savings, bestPrice, cheapPrice }
+                : null;
+            })
+            .filter(Boolean)
+            .sort((a, b) => b.savings - a.savings);
+
+          for (const c of candidates) {
+            if (total <= budget) break;
+            // Switch this need to cheaper
+            const rec = withPlan[c.name];
+            if (rec && rec.cheaper) {
+              rec.selected = rec.cheaper;
+              rec.choice = "cheaper";
+              total -= c.savings;
+            }
+          }
+        }
+
+        setPlannedTotal(total);
+      } else {
+        // No budget provided; compute total anyway
+        let total = 0;
+        for (const need of needs) {
+          const rec = withPlan[need.name];
+          if (!rec) continue;
+          const qty = Number(need.quantity) || 1;
+          total += getMinUnitPrice(rec.selected) * qty;
+        }
+        setPlannedTotal(total);
+      }
+
+      setRecommendations(withPlan);
+      // If nothing selected on the left, set first need to preview
+      if (!selectedSidebar && needs[0]?.name) {
+        setSelectedSidebar(needs[0].name);
+      }
     } finally {
-      setLoading(false);
+      setRecsLoading(false);
     }
   };
 
@@ -267,7 +356,8 @@ export default function MaterialsTab() {
 
     // Validate material name
     if (!materialName.trim()) {
-      return alert("Please enter a material name.");
+      showToast("Please enter a material name.", { type: "error" });
+      return;
     }
 
     // Validate attributes
@@ -281,10 +371,14 @@ export default function MaterialsTab() {
       .filter((attr) => attr.key && attr.values.some((v) => v));
 
     if (validAttributes.length === 0) {
-      return alert("Please add at least one attribute with a value.");
+      showToast("Please add at least one attribute with a value.", { type: "error" });
+      return;
     }
 
-    if (quantity < 1) return alert("Quantity must be at least 1.");
+    if (quantity < 1) {
+      showToast("Quantity must be at least 1.", { type: "error" });
+      return;
+    }
 
     try {
       const token = Cookies.get("token");
@@ -306,7 +400,7 @@ export default function MaterialsTab() {
         saveToList: true,
       };
 
-      const res = await axios.post(
+      await axios.post(
         `${serverUrl}/api/project/material?projectId=${project._id}`,
         body,
         {
@@ -316,17 +410,15 @@ export default function MaterialsTab() {
           },
         }
       );
-      alert("Material added to project!");
+      showToast("Material added to project!", { type: "success" });
       setShowModal(false);
       setMaterialName("");
       setMaterialAttributes([{ key: "", values: [""] }]);
       setQuantity(1);
       if (refreshProject) refreshProject(); // Refresh project data
-    } catch (err) {
-      console.error(err);
-      alert(
-        err?.response?.data?.message || "Failed to add material to project."
-      );
+    } catch (e) {
+      console.error(e);
+      showToast(e?.response?.data?.message || "Failed to add material to project.", { type: "error" });
     }
   };
 
@@ -340,8 +432,9 @@ export default function MaterialsTab() {
 
   const handleAddClick = () => {
     if (userRole === "admin") {
-      alert(
-        "Admins cannot add materials. Only designers can manage materials."
+      showToast(
+        "Admins cannot add materials. Only designers can manage materials.",
+        { type: "error" }
       );
       return;
     }
@@ -350,7 +443,7 @@ export default function MaterialsTab() {
 
   const handleRequestClick = () => {
     if (userRole === "admin") {
-      alert("Admins cannot recommend materials.");
+      showToast("Admins cannot recommend materials.", { type: "error" });
       return;
     }
     setShowRequestModal(true);
@@ -358,8 +451,9 @@ export default function MaterialsTab() {
 
   const handleAddToSheetClick = () => {
     if (userRole === "admin") {
-      alert(
-        "Admins cannot add materials to project. Only designers can manage materials."
+      showToast(
+        "Admins cannot add materials to project. Only designers can manage materials.",
+        { type: "error" }
       );
       return;
     }
@@ -502,8 +596,14 @@ export default function MaterialsTab() {
   };
 
   const submitMaterialRequest = async () => {
-    if (!project || !project._id) return alert("No project context");
-    if (!reqCategory.trim()) return alert("Category is required");
+    if (!project || !project._id) {
+      showToast("No project context", { type: "error" });
+      return;
+    }
+    if (!reqCategory.trim()) {
+      showToast("Category is required", { type: "error" });
+      return;
+    }
     setIsRequesting(true);
     try {
       const token = Cookies.get("token");
@@ -537,7 +637,7 @@ export default function MaterialsTab() {
           "Content-Type": "application/json",
         },
       });
-      alert("Recommendation submitted to storage admin.");
+      showToast("Recommendation submitted to storage admin.", { type: "success" });
       setShowRequestModal(false);
       setReqCategory("");
       setReqAttributes([{ key: "", values: [""] }]);
@@ -546,7 +646,7 @@ export default function MaterialsTab() {
       // Refresh requests list
       fetchMyRequests();
     } catch (e) {
-      alert(e?.response?.data?.message || "Failed to submit recommendation");
+      showToast(e?.response?.data?.message || "Failed to submit recommendation", { type: "error" });
     } finally {
       setIsRequesting(false);
     }
@@ -555,17 +655,21 @@ export default function MaterialsTab() {
   const handleAddToSheet = async () => {
     // Prevent admin from adding materials to project
     if (userRole === "admin") {
-      alert(
-        "Admins cannot add materials to project. Only designers can manage materials."
+      showToast(
+        "Admins cannot add materials to project. Only designers can manage materials.",
+        { type: "error" }
       );
       return;
     }
 
     if (!project || !project._id) {
-      alert("Please select a project");
+      showToast("Please select a project", { type: "error" });
       return;
     }
-    if (!bestMatch) return;
+    // Determine selected recommendation for current sidebar selection
+    const current = selectedSidebar ? recommendations[selectedSidebar] : null;
+    const selectedRec = current?.selected || current?.bestMatch || null;
+    if (!selectedRec) return;
     setIsAddingToSheet(true);
     try {
       const token = Cookies.get("token");
@@ -585,13 +689,13 @@ export default function MaterialsTab() {
       let csvContent = "";
       let rows = [];
       // Calculate unit price based on new structure
-      let unitPrice = getOptionPrice(bestMatch, selectedSize);
+      let unitPrice = getOptionPrice(selectedRec, selectedSize);
 
       const newRow = [
-        bestMatch.name,
-        bestMatch.company,
+        selectedRec.name,
+        selectedRec.company,
         selectedSize ||
-          getOptionsDisplay(bestMatch.options).split(" • ")[0] ||
+          getOptionsDisplay(selectedRec.options).split(" • ")[0] ||
           "Standard",
         quantity,
         unitPrice * quantity,
@@ -636,16 +740,17 @@ export default function MaterialsTab() {
           }
         );
       } catch (uploadErr) {
-        alert(
+        showToast(
           "Failed to upload CSV: " +
-            (uploadErr.response?.data?.message || uploadErr.message)
+            (uploadErr.response?.data?.message || uploadErr.message),
+          { type: "error" }
         );
         setIsAddingToSheet(false);
         return;
       }
       const newCsvUrl = uploadRes.data.documentLink;
       if (!newCsvUrl) {
-        alert("Upload failed: No documentLink returned");
+        showToast("Upload failed: No documentLink returned", { type: "error" });
         setIsAddingToSheet(false);
         return;
       }
@@ -663,20 +768,72 @@ export default function MaterialsTab() {
           }
         );
       } catch (updateErr) {
-        alert(
+        showToast(
           "Failed to update project files: " +
-            (updateErr.response?.data?.message || updateErr.message)
+            (updateErr.response?.data?.message || updateErr.message),
+          { type: "error" }
         );
         setIsAddingToSheet(false);
         return;
       }
-      alert("Material added to project sheet successfully!");
+      showToast("Material added to project sheet successfully!", { type: "success" });
       setShowAddToSheetModal(false);
       setSelectedSize("");
       setQuantity(1);
+
+      // Remove the designer's need from materialsList and add the recommended material to materials array
+      try {
+        // First, remove from materialsList
+        await axios.delete(`${serverUrl}/api/project/material/list`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            projectId: project._id,
+            name: selectedSidebar, // The name of the designer's need
+          },
+        });
+
+        // Then, add the recommended material to the materials array
+        const need = project.materialsList.find(
+          (n) => n.name === selectedSidebar
+        );
+        const materialQuantity = need ? need.quantity : quantity;
+
+        await axios.post(
+          `${serverUrl}/api/project/material?projectId=${project._id}`,
+          {
+            materialId: selectedRec._id,
+            options: selectedSize ? [selectedSize] : [], // Pass selected option if any
+            quantity: materialQuantity,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // Clear the recommendation for this material since it's now resolved
+        setRecommendations((prev) => {
+          const updated = { ...prev };
+          delete updated[selectedSidebar];
+          return updated;
+        });
+
+        // Clear selection if it was the current one
+        if (selectedSidebar === selectedSidebar) {
+          setSelectedSidebar("");
+        }
+      } catch (replaceErr) {
+        console.error("Failed to replace material:", replaceErr);
+        // Don't show error to user since CSV was already added successfully
+      }
+
       if (refreshProject) refreshProject(); // Refresh project data
-    } catch (err) {
-      alert("Failed to add material to sheet");
+    } catch {
+      showToast("Failed to add material to sheet", { type: "error" });
     } finally {
       setIsAddingToSheet(false);
     }
@@ -707,25 +864,27 @@ export default function MaterialsTab() {
           },
         }
       );
-      alert("Material updated!");
+      showToast("Material updated!", { type: "success" });
       setEditMaterial(null);
       if (refreshProject) refreshProject(); // Refresh project data
     } catch (err) {
-      alert(
-        err?.response?.data?.message || "Failed to update material in project."
+      showToast(
+        err?.response?.data?.message || "Failed to update material in project.",
+        { type: "error" }
       );
     }
   };
 
   const handleDeleteMaterial = async (materialId, option) => {
     if (userRole === "admin") {
-      alert(
-        "Admins cannot remove materials. Only designers can manage materials."
+      showToast(
+        "Admins cannot remove materials. Only designers can manage materials.",
+        { type: "error" }
       );
       return;
     }
     if (!project || !project._id) {
-      alert("No project selected.");
+      showToast("No project selected.", { type: "error" });
       return;
     }
     if (!window.confirm("Are you sure you want to remove this material?"))
@@ -745,34 +904,18 @@ export default function MaterialsTab() {
           },
         }
       );
-      alert("Material removed!");
+      showToast("Material removed!", { type: "success" });
       if (refreshProject) refreshProject(); // Refresh project data
     } catch (err) {
-      alert(
+      showToast(
         err?.response?.data?.message ||
-          "Failed to remove material from project."
+          "Failed to remove material from project.",
+        { type: "error" }
       );
     }
   };
 
-  useEffect(() => {
-    if (!showModal) return;
-    const fetchMaterials = async () => {
-      setLoading(true);
-      try {
-        const token = Cookies.get("token");
-        const res = await axios.get(`${serverUrl}/api/material`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setMaterials(res.data.material || []);
-      } catch {
-        setMaterials([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMaterials();
-  }, [showModal, serverUrl]);
+  // Removed unused materials fetch effect
 
   const isAdmin = userRole === "admin";
 
@@ -824,6 +967,33 @@ export default function MaterialsTab() {
                   <h2 className="text-xl font-bold text-gray-900 mb-2 tracking-tight">
                     {project?.title || "Project Materials"}
                   </h2>
+                  {project.budget && (
+                    <p className="text-sm text-gray-500 font-medium">
+                      Budget: {Number(project.budget).toLocaleString()}
+                    </p>
+                  )}
+                  {Array.isArray(project.materialsList) &&
+                    project.materialsList.length > 0 && (
+                      <p className="text-sm font-medium mt-1">
+                        Planned Total:{" "}
+                        {plannedTotal > 0
+                          ? `₱${plannedTotal.toLocaleString()}`
+                          : "—"}
+                        {project?.budget ? (
+                          plannedTotal > 0 ? (
+                            plannedTotal <= Number(project.budget) ? (
+                              <span className="ml-2 text-green-700">
+                                (within budget)
+                              </span>
+                            ) : (
+                              <span className="ml-2 text-red-700">
+                                (over budget)
+                              </span>
+                            )
+                          ) : null
+                        ) : null}
+                      </p>
+                    )}
                   <p className="text-sm text-gray-500 font-medium">
                     Material Breakdown
                   </p>
@@ -921,9 +1091,10 @@ export default function MaterialsTab() {
                                       setSelectedSidebar("");
                                   })
                                   .catch((err) => {
-                                    alert(
+                                    showToast(
                                       err?.response?.data?.message ||
-                                        "Failed to remove item"
+                                        "Failed to remove item",
+                                      { type: "error" }
                                     );
                                   });
                               }}
@@ -949,7 +1120,7 @@ export default function MaterialsTab() {
               {/* Materials List (catalog entries) */}
               <div className="space-y-3 h-full">
                 {project.materials && project.materials.length > 0 ? (
-                  project.materials.map((item, index) => (
+                  project.materials.map((item) => (
                     <div
                       key={`${item.material._id}${
                         item.option?.map((o) => o.option).join("-") || ""
@@ -1047,8 +1218,6 @@ export default function MaterialsTab() {
                       >
                         <FaTrash />
                       </button>
-
-                      {/* per-card Recommend removed; global button below */}
                     </div>
                   ))
                 ) : (
@@ -1072,18 +1241,21 @@ export default function MaterialsTab() {
             <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0">
               <button
                 className="w-full bg-white border border-[#1D3C34] text-[#1D3C34] px-4 py-2 rounded-lg hover:bg-[#1D3C34] hover:text-white flex items-center justify-center gap-2 text-sm font-semibold disabled:opacity-50"
-                onClick={() =>
-                  selectedSidebar && handleRecommendMaterial(selectedSidebar)
+                onClick={handleRecommendAllMaterials}
+                disabled={
+                  recsLoading ||
+                  !Array.isArray(project.materialsList) ||
+                  project.materialsList.length === 0
                 }
-                disabled={!selectedSidebar}
                 title={
-                  selectedSidebar
-                    ? `Recommend materials for ${selectedSidebar}`
-                    : "Select a material or need first"
+                  Array.isArray(project.materialsList) &&
+                  project.materialsList.length > 0
+                    ? "Recommend materials for all items"
+                    : "Add items to the list first"
                 }
               >
                 <FaIndustry className="text-sm" />
-                Recommend Materials
+                {recsLoading ? "Recommending…" : "Recommend Materials"}
               </button>
             </div>
           </div>
@@ -1091,46 +1263,37 @@ export default function MaterialsTab() {
           {/* Right Content Area */}
           <div className="flex-1 overflow-y-auto ">
             <div className="p-8">
-              {loading && selectedSidebar ? (
-                <div className="text-center py-20">
-                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center">
-                    <FaShoppingCart className="h-12 w-12 text-gray-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-600 mb-3 tracking-tight">
-                    Finding best match for{" "}
-                    <span className="text-[#1D3C34]">{selectedSidebar}</span>...
-                  </h3>
-                  <p className="text-gray-500 font-medium max-w-md mx-auto leading-relaxed">
-                    Please wait while we search for the best material match.
-                  </p>
-                </div>
-              ) : bestMatch ? (
-                <div className="max-w-7xl mx-auto">
-                  {/* Best Match Heading */}
-                  <h2 className="text-xl font-bold text-[#1D3C34] mb-6 text-center">
-                    Best Match for: {selectedSidebar}
-                  </h2>
+              {(() => {
+                // First check if selectedSidebar matches an actual material in the project
+                const actualMaterial = project?.materials?.find(
+                  (item) => item.material.name === selectedSidebar
+                );
+                if (actualMaterial) {
+                  // Show details of the actual selected material in the same format as recommendations
+                  const material = actualMaterial.material;
+                  const options = actualMaterial.option || [];
+                  const quantity = actualMaterial.quantity;
+                  const totalPrice = actualMaterial.totalPrice;
 
-                  {/* Side-by-Side Layout */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Cheaper Alternative */}
-                    {bestMatch.cheaper && (
-                      <div className="order-2 lg:order-1">
-                        <div className="text-center mb-3">
-                          <span className="text-xs text-green-700 font-bold uppercase bg-green-50 px-2 py-1 rounded-full">
-                            Cheaper Alternative
-                          </span>
-                        </div>
-                        <div className="bg-white rounded-xl overflow-hidden shadow-xl border-2 border-green-200 h-full">
+                  return (
+                    <div className="max-w-7xl mx-auto">
+                      {/* Selected Material Heading */}
+                      <h2 className="text-xl font-bold text-[#1D3C34] mb-6 text-center">
+                        Selected Material: {material.name}
+                      </h2>
+
+                      {/* Single Card Layout */}
+                      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 max-w-2xl mx-auto">
+                        <div className="bg-white rounded-xl overflow-hidden shadow-xl border-2 border-[#1D3C34]">
                           {/* Product Image */}
-                          <div className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100">
+                          <div className="relative overflow-hidden bg-gradient-to-br from-[#f0fdf4] to-[#ecfdf5]">
                             <img
                               src={
-                                Array.isArray(bestMatch.cheaper.image)
-                                  ? bestMatch.cheaper.image[0]
-                                  : bestMatch.cheaper.image
+                                Array.isArray(material.image)
+                                  ? material.image[0]
+                                  : material.image
                               }
-                              alt={bestMatch.cheaper.name}
+                              alt={material.name}
                               className="w-full h-48 object-cover"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -1138,26 +1301,27 @@ export default function MaterialsTab() {
                           {/* Product Info */}
                           <div className="p-4">
                             <h3 className="font-bold text-xl text-gray-900 mb-3 tracking-tight">
-                              {bestMatch.cheaper.name}
+                              {material.name}
                             </h3>
                             <p className="text-gray-600 leading-relaxed font-medium mb-4">
-                              {bestMatch.cheaper.description}
+                              {material.description}
                             </p>
 
                             <div className="mb-6">
                               <div className="flex items-baseline space-x-2">
-                                <span className="text-3xl font-bold text-green-700 tracking-tight">
-                                  {formatPrice(bestMatch.cheaper.price)}
+                                <span className="text-3xl font-bold text-[#1D3C34] tracking-tight">
+                                  {formatPrice(totalPrice)}
                                 </span>
                                 <span className="text-sm text-gray-500 font-medium">
-                                  per unit
+                                  total ({quantity} ×{" "}
+                                  {formatPrice(material.price)})
                                 </span>
                               </div>
                             </div>
 
                             <div className="grid grid-cols-1 gap-3 mb-6">
                               <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                                <div className="w-6 h-6 bg-green-600 rounded-lg flex items-center justify-center">
+                                <div className="w-6 h-6 bg-[#1D3C34] rounded-lg flex items-center justify-center">
                                   <FaIndustry className="h-3 w-3 text-white" />
                                 </div>
                                 <div>
@@ -1165,13 +1329,13 @@ export default function MaterialsTab() {
                                     Company
                                   </span>
                                   <div className="text-sm font-bold text-gray-800">
-                                    {bestMatch.cheaper.company}
+                                    {material.company}
                                   </div>
                                 </div>
                               </div>
 
                               <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                                <div className="w-6 h-6 bg-green-600 rounded-lg flex items-center justify-center">
+                                <div className="w-6 h-6 bg-[#1D3C34] rounded-lg flex items-center justify-center">
                                   <FaTags className="h-3 w-3 text-white" />
                                 </div>
                                 <div>
@@ -1179,274 +1343,423 @@ export default function MaterialsTab() {
                                     Category
                                   </span>
                                   <div className="text-sm font-bold text-gray-800">
-                                    {bestMatch.cheaper.category}
+                                    {material.category}
                                   </div>
                                 </div>
                               </div>
 
                               <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                                <div className="w-6 h-6 bg-green-600 rounded-lg flex items-center justify-center">
+                                <div className="w-6 h-6 bg-[#1D3C34] rounded-lg flex items-center justify-center">
                                   <FaBox className="h-3 w-3 text-white" />
                                 </div>
                                 <div>
                                   <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                                    Options
+                                    Selected Options
                                   </span>
                                   <div className="text-sm font-bold text-gray-800">
-                                    {getOptionsDisplay(bestMatch.options)}
+                                    {getOptionsDisplay(options)}
                                   </div>
                                 </div>
                               </div>
                             </div>
 
-                            {/* Only show Add to Project button if not admin */}
-                            {!isAdmin ? (
-                              <button
-                                className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] flex items-center justify-center gap-2 shadow-lg"
-                                onClick={handleAddToSheetClick}
-                                disabled={!project || !project._id}
-                              >
-                                <FaShoppingCart />
-                                Add to Project
-                              </button>
-                            ) : (
-                              <div className="w-full text-center text-sm text-gray-500 py-3">
-                                Only designers can add materials to project
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Best Match - Main Card */}
-                    <div className="order-1 lg:order-2">
-                      <div className="text-center mb-3">
-                        <span className="text-xs text-[#1D3C34] font-bold uppercase bg-[#f0fdf4] px-2 py-1 rounded-full">
-                          Best Match
-                        </span>
-                      </div>
-                      <div className="bg-white rounded-xl overflow-hidden shadow-xl border-2 border-[#1D3C34] h-full">
-                        {/* Product Image */}
-                        <div className="relative overflow-hidden bg-gradient-to-br from-[#f0fdf4] to-[#ecfdf5]">
-                          <img
-                            src={
-                              Array.isArray(bestMatch.image)
-                                ? bestMatch.image[0]
-                                : bestMatch.image
-                            }
-                            alt={bestMatch.name}
-                            className="w-full h-48 object-cover"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                        </div>
-                        {/* Product Info */}
-                        <div className="p-4">
-                          <h3 className="font-bold text-xl text-gray-900 mb-3 tracking-tight">
-                            {bestMatch.name}
-                          </h3>
-                          <p className="text-gray-600 leading-relaxed font-medium mb-4">
-                            {bestMatch.description}
-                          </p>
-
-                          <div className="mb-6">
-                            <div className="flex items-baseline space-x-2">
-                              <span className="text-3xl font-bold text-[#1D3C34] tracking-tight">
-                                {formatPrice(bestMatch.price)}
-                              </span>
-                              <span className="text-sm text-gray-500 font-medium">
-                                per unit
-                              </span>
+                            {/* Show quantity info */}
+                            <div className="w-full text-center text-sm text-gray-500 py-3 bg-gray-50 rounded-lg">
+                              Quantity: {quantity} | Unit Price:{" "}
+                              {formatPrice(material.price)}
                             </div>
                           </div>
-
-                          <div className="grid grid-cols-1 gap-3 mb-6">
-                            <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                              <div className="w-6 h-6 bg-[#1D3C34] rounded-lg flex items-center justify-center">
-                                <FaIndustry className="h-3 w-3 text-white" />
-                              </div>
-                              <div>
-                                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                                  Company
-                                </span>
-                                <div className="text-sm font-bold text-gray-800">
-                                  {bestMatch.company}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                              <div className="w-6 h-6 bg-[#1D3C34] rounded-lg flex items-center justify-center">
-                                <FaTags className="h-3 w-3 text-white" />
-                              </div>
-                              <div>
-                                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                                  Category
-                                </span>
-                                <div className="text-sm font-bold text-gray-800">
-                                  {bestMatch.category}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                              <div className="w-6 h-6 bg-[#1D3C34] rounded-lg flex items-center justify-center">
-                                <FaBox className="h-3 w-3 text-white" />
-                              </div>
-                              <div>
-                                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                                  Options
-                                </span>
-                                <div className="text-sm font-bold text-gray-800">
-                                  {getOptionsDisplay(bestMatch.options)}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Only show Add to Project button if not admin */}
-                          {!isAdmin ? (
-                            <button
-                              className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] flex items-center justify-center gap-2 shadow-lg"
-                              onClick={handleAddToSheetClick}
-                              disabled={!project || !project._id || !bestMatch}
-                            >
-                              <FaShoppingCart />
-                              Add to Project
-                            </button>
-                          ) : (
-                            <div className="w-full text-center text-sm text-gray-500 py-3">
-                              Only designers can add materials to project
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
+                  );
+                }
 
-                    {/* More Expensive Alternative */}
-                    {bestMatch.moreExpensive && (
-                      <div className="order-3">
-                        <div className="text-center mb-3">
-                          <span className="text-xs text-red-700 font-bold uppercase bg-red-50 px-2 py-1 rounded-full">
-                            Expensive Alternative
-                          </span>
-                        </div>
-                        <div className="bg-white rounded-xl overflow-hidden shadow-xl border-2 border-red-200 h-full">
-                          {/* Product Image */}
-                          <div className="relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100">
-                            <img
-                              src={
-                                Array.isArray(bestMatch.moreExpensive.image)
-                                  ? bestMatch.moreExpensive.image[0]
-                                  : bestMatch.moreExpensive.image
-                              }
-                              alt={bestMatch.moreExpensive.name}
-                              className="w-full h-48 object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                          </div>
-                          {/* Product Info */}
-                          <div className="p-4">
-                            <h3 className="font-bold text-xl text-gray-900 mb-3 tracking-tight">
-                              {bestMatch.moreExpensive.name}
-                            </h3>
-                            <p className="text-gray-600 leading-relaxed font-medium mb-4">
-                              {bestMatch.moreExpensive.description}
-                            </p>
-
-                            <div className="mb-6">
-                              <div className="flex items-baseline space-x-2">
-                                <span className="text-3xl font-bold text-red-700 tracking-tight">
-                                  {formatPrice(bestMatch.moreExpensive.price)}
-                                </span>
-                                <span className="text-sm text-gray-500 font-medium">
-                                  per unit
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-3 mb-6">
-                              <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                                <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center">
-                                  <FaIndustry className="h-3 w-3 text-white" />
-                                </div>
-                                <div>
-                                  <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                                    Company
-                                  </span>
-                                  <div className="text-sm font-bold text-gray-800">
-                                    {bestMatch.moreExpensive.company}
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                                <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center">
-                                  <FaTags className="h-3 w-3 text-white" />
-                                </div>
-                                <div>
-                                  <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                                    Category
-                                  </span>
-                                  <div className="text-sm font-bold text-gray-800">
-                                    {bestMatch.moreExpensive.category}
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                                <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center">
-                                  <FaBox className="h-3 w-3 text-white" />
-                                </div>
-                                <div>
-                                  <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                                    Options
-                                  </span>
-                                  <div className="text-sm font-bold text-gray-800">
-                                    {getOptionsDisplay(
-                                      bestMatch.moreExpensive?.options
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Only show Add to Project button if not admin */}
-                            {!isAdmin ? (
-                              <button
-                                className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] flex items-center justify-center gap-2 shadow-lg"
-                                onClick={handleAddToSheetClick}
-                                disabled={!project || !project._id}
-                              >
-                                <FaShoppingCart />
-                                Add to Project
-                              </button>
-                            ) : (
-                              <div className="w-full text-center text-sm text-gray-500 py-3">
-                                Only designers can add materials to project
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                // Otherwise, show recommendation logic
+                const current = selectedSidebar
+                  ? recommendations[selectedSidebar]
+                  : null;
+                const selectedRec =
+                  current?.selected || current?.bestMatch || null;
+                if (recsLoading && selectedSidebar && !selectedRec) {
+                  return (
+                    <div className="text-center py-20">
+                      <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center">
+                        <FaShoppingCart className="h-12 w-12 text-gray-400" />
                       </div>
-                    )}
+                      <h3 className="text-2xl font-bold text-gray-600 mb-3 tracking-tight">
+                        Finding best match for{" "}
+                        <span className="text-[#1D3C34]">
+                          {selectedSidebar}
+                        </span>
+                        ...
+                      </h3>
+                      <p className="text-gray-500 font-medium max-w-md mx-auto leading-relaxed">
+                        Please wait while we search for the best material match.
+                      </p>
+                    </div>
+                  );
+                }
+                if (selectedRec) {
+                  const cheaper = current?.cheaper;
+                  const moreExpensive = current?.moreExpensive;
+                  return (
+                    <div className="max-w-7xl mx-auto">
+                      {/* Best Match Heading */}
+                      <h2 className="text-xl font-bold text-[#1D3C34] mb-6 text-center">
+                        {current?.choice === "cheaper"
+                          ? "Selected (Cheaper)"
+                          : "Best Match"}{" "}
+                        for: {selectedSidebar}
+                      </h2>
+
+                      {/* Side-by-Side Layout */}
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Cheaper Alternative */}
+                        {cheaper && (
+                          <div className="order-2 lg:order-1">
+                            <div className="text-center mb-3">
+                              <span className="text-xs text-green-700 font-bold uppercase bg-green-50 px-2 py-1 rounded-full">
+                                Cheaper Alternative
+                              </span>
+                            </div>
+                            <div className="bg-white rounded-xl overflow-hidden shadow-xl border-2 border-green-200 h-full">
+                              {/* Product Image */}
+                              <div className="relative overflow-hidden bg-gradient-to-br from-green-50 to-green-100">
+                                <img
+                                  src={
+                                    Array.isArray(cheaper.image)
+                                      ? cheaper.image[0]
+                                      : cheaper.image
+                                  }
+                                  alt={cheaper.name}
+                                  className="w-full h-48 object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                              </div>
+                              {/* Product Info */}
+                              <div className="p-4">
+                                <h3 className="font-bold text-xl text-gray-900 mb-3 tracking-tight">
+                                  {cheaper.name}
+                                </h3>
+                                <p className="text-gray-600 leading-relaxed font-medium mb-4">
+                                  {cheaper.description}
+                                </p>
+
+                                <div className="mb-6">
+                                  <div className="flex items-baseline space-x-2">
+                                    <span className="text-3xl font-bold text-green-700 tracking-tight">
+                                      {formatPrice(cheaper.price)}
+                                    </span>
+                                    <span className="text-sm text-gray-500 font-medium">
+                                      per unit
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-3 mb-6">
+                                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                                    <div className="w-6 h-6 bg-green-600 rounded-lg flex items-center justify-center">
+                                      <FaIndustry className="h-3 w-3 text-white" />
+                                    </div>
+                                    <div>
+                                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                        Company
+                                      </span>
+                                      <div className="text-sm font-bold text-gray-800">
+                                        {cheaper.company}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                                    <div className="w-6 h-6 bg-green-600 rounded-lg flex items-center justify-center">
+                                      <FaTags className="h-3 w-3 text-white" />
+                                    </div>
+                                    <div>
+                                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                        Category
+                                      </span>
+                                      <div className="text-sm font-bold text-gray-800">
+                                        {cheaper.category}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                                    <div className="w-6 h-6 bg-green-600 rounded-lg flex items-center justify-center">
+                                      <FaBox className="h-3 w-3 text-white" />
+                                    </div>
+                                    <div>
+                                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                        Options
+                                      </span>
+                                      <div className="text-sm font-bold text-gray-800">
+                                        {getOptionsDisplay(cheaper.options)}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Only show Add to Project button if not admin */}
+                                {!isAdmin ? (
+                                  <button
+                                    className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] flex items-center justify-center gap-2 shadow-lg"
+                                    onClick={handleAddToSheetClick}
+                                    disabled={!project || !project._id}
+                                  >
+                                    <FaShoppingCart />
+                                    Add to Project
+                                  </button>
+                                ) : (
+                                  <div className="w-full text-center text-sm text-gray-500 py-3">
+                                    Only designers can add materials to project
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Best Match - Main Card */}
+                        <div className="order-1 lg:order-2">
+                          <div className="text-center mb-3">
+                            <span className="text-xs text-[#1D3C34] font-bold uppercase bg-[#f0fdf4] px-2 py-1 rounded-full">
+                              Best Match
+                            </span>
+                          </div>
+                          <div className="bg-white rounded-xl overflow-hidden shadow-xl border-2 border-[#1D3C34] h-full">
+                            {/* Product Image */}
+                            <div className="relative overflow-hidden bg-gradient-to-br from-[#f0fdf4] to-[#ecfdf5]">
+                              <img
+                                src={
+                                  Array.isArray(selectedRec.image)
+                                    ? selectedRec.image[0]
+                                    : selectedRec.image
+                                }
+                                alt={selectedRec.name}
+                                className="w-full h-48 object-cover"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                            </div>
+                            {/* Product Info */}
+                            <div className="p-4">
+                              <h3 className="font-bold text-xl text-gray-900 mb-3 tracking-tight">
+                                {selectedRec.name}
+                              </h3>
+                              <p className="text-gray-600 leading-relaxed font-medium mb-4">
+                                {selectedRec.description}
+                              </p>
+
+                              <div className="mb-6">
+                                <div className="flex items-baseline space-x-2">
+                                  <span className="text-3xl font-bold text-[#1D3C34] tracking-tight">
+                                    {formatPrice(selectedRec.price)}
+                                  </span>
+                                  <span className="text-sm text-gray-500 font-medium">
+                                    per unit
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 gap-3 mb-6">
+                                <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                                  <div className="w-6 h-6 bg-[#1D3C34] rounded-lg flex items-center justify-center">
+                                    <FaIndustry className="h-3 w-3 text-white" />
+                                  </div>
+                                  <div>
+                                    <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                      Company
+                                    </span>
+                                    <div className="text-sm font-bold text-gray-800">
+                                      {selectedRec.company}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                                  <div className="w-6 h-6 bg-[#1D3C34] rounded-lg flex items-center justify-center">
+                                    <FaTags className="h-3 w-3 text-white" />
+                                  </div>
+                                  <div>
+                                    <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                      Category
+                                    </span>
+                                    <div className="text-sm font-bold text-gray-800">
+                                      {selectedRec.category}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                                  <div className="w-6 h-6 bg-[#1D3C34] rounded-lg flex items-center justify-center">
+                                    <FaBox className="h-3 w-3 text-white" />
+                                  </div>
+                                  <div>
+                                    <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                      Options
+                                    </span>
+                                    <div className="text-sm font-bold text-gray-800">
+                                      {getOptionsDisplay(selectedRec.options)}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Only show Add to Project button if not admin */}
+                              {!isAdmin ? (
+                                <button
+                                  className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] flex items-center justify-center gap-2 shadow-lg"
+                                  onClick={handleAddToSheetClick}
+                                  disabled={
+                                    !project || !project._id || !selectedRec
+                                  }
+                                >
+                                  <FaShoppingCart />
+                                  Add to Project
+                                </button>
+                              ) : (
+                                <div className="w-full text-center text-sm text-gray-500 py-3">
+                                  Only designers can add materials to project
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* More Expensive Alternative */}
+                        {moreExpensive && (
+                          <div className="order-3">
+                            <div className="text-center mb-3">
+                              <span className="text-xs text-red-700 font-bold uppercase bg-red-50 px-2 py-1 rounded-full">
+                                Expensive Alternative
+                              </span>
+                            </div>
+                            <div className="bg-white rounded-xl overflow-hidden shadow-xl border-2 border-red-200 h-full">
+                              {/* Product Image */}
+                              <div className="relative overflow-hidden bg-gradient-to-br from-red-50 to-red-100">
+                                <img
+                                  src={
+                                    Array.isArray(moreExpensive.image)
+                                      ? moreExpensive.image[0]
+                                      : moreExpensive.image
+                                  }
+                                  alt={moreExpensive.name}
+                                  className="w-full h-48 object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                              </div>
+                              {/* Product Info */}
+                              <div className="p-4">
+                                <h3 className="font-bold text-xl text-gray-900 mb-3 tracking-tight">
+                                  {moreExpensive.name}
+                                </h3>
+                                <p className="text-gray-600 leading-relaxed font-medium mb-4">
+                                  {moreExpensive.description}
+                                </p>
+
+                                <div className="mb-6">
+                                  <div className="flex items-baseline space-x-2">
+                                    <span className="text-3xl font-bold text-red-700 tracking-tight">
+                                      {formatPrice(moreExpensive.price)}
+                                    </span>
+                                    <span className="text-sm text-gray-500 font-medium">
+                                      per unit
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-3 mb-6">
+                                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                                    <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center">
+                                      <FaIndustry className="h-3 w-3 text-white" />
+                                    </div>
+                                    <div>
+                                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                        Company
+                                      </span>
+                                      <div className="text-sm font-bold text-gray-800">
+                                        {moreExpensive.company}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                                    <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center">
+                                      <FaTags className="h-3 w-3 text-white" />
+                                    </div>
+                                    <div>
+                                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                        Category
+                                      </span>
+                                      <div className="text-sm font-bold text-gray-800">
+                                        {moreExpensive.category}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                                    <div className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center">
+                                      <FaBox className="h-3 w-3 text-white" />
+                                    </div>
+                                    <div>
+                                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                                        Options
+                                      </span>
+                                      <div className="text-sm font-bold text-gray-800">
+                                        {getOptionsDisplay(
+                                          moreExpensive?.options
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Only show Add to Project button if not admin */}
+                                {!isAdmin ? (
+                                  <button
+                                    className="w-full px-6 py-3 bg-[#1D3C34] text-white rounded-xl font-semibold hover:bg-[#145c4b] flex items-center justify-center gap-2 shadow-lg"
+                                    onClick={handleAddToSheetClick}
+                                    disabled={!project || !project._id}
+                                  >
+                                    <FaShoppingCart />
+                                    Add to Project
+                                  </button>
+                                ) : (
+                                  <div className="w-full text-center text-sm text-gray-500 py-3">
+                                    Only designers can add materials to project
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="text-center py-20">
+                    <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center">
+                      <FaIndustry className="h-12 w-12 text-gray-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-600 mb-3 tracking-tight">
+                      {selectedSidebar
+                        ? `No recommendations for ${selectedSidebar}`
+                        : "No material selected"}
+                    </h3>
+                    <p className="text-gray-500 font-medium max-w-md mx-auto leading-relaxed">
+                      {selectedSidebar
+                        ? isAdmin
+                          ? "Select a different material on the left."
+                          : "Click 'Recommend Materials' to get suggestions for this item."
+                        : isAdmin
+                        ? "Select a material on the left."
+                        : "Click 'Recommend Materials' below to prefetch all options, then select an item on the left."}
+                    </p>
                   </div>
-                </div>
-              ) : (
-                <div className="text-center py-20">
-                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center">
-                    <FaIndustry className="h-12 w-12 text-gray-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-600 mb-3 tracking-tight">
-                    No recommendations yet
-                  </h3>
-                  <p className="text-gray-500 font-medium max-w-md mx-auto leading-relaxed">
-                    {isAdmin
-                      ? "Select a material on the left."
-                      : "Select a material on the left, then click 'Recommend Materials' below to see options."}
-                  </p>
-                </div>
-              )}
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -1796,9 +2109,25 @@ export default function MaterialsTab() {
                 &times;
               </button>
               <h3 className="text-xl font-bold mb-4 text-center">
-                Add "{bestMatch?.name}" to Project Sheet
+                {(() => {
+                  const current = selectedSidebar
+                    ? recommendations[selectedSidebar]
+                    : null;
+                  const selectedRec =
+                    current?.selected || current?.bestMatch || null;
+                  return `Add "${
+                    selectedRec?.name || "Material"
+                  }" to Project Sheet`;
+                })()}
               </h3>
-              {bestMatch?.options && bestMatch.options.length > 0 && (
+              {(() => {
+                const current = selectedSidebar
+                  ? recommendations[selectedSidebar]
+                  : null;
+                const selectedRec =
+                  current?.selected || current?.bestMatch || null;
+                return selectedRec?.options && selectedRec.options.length > 0;
+              })() && (
                 <div className="mb-4">
                   <label className="block mb-1 font-medium">Size/Option:</label>
                   <select
@@ -1809,15 +2138,27 @@ export default function MaterialsTab() {
                     disabled={isAddingToSheet}
                   >
                     <option value="">-- Select --</option>
-                    {bestMatch.options.map((opt, index) => {
+                    {(() => {
+                      const current = selectedSidebar
+                        ? recommendations[selectedSidebar]
+                        : null;
+                      const selectedRec =
+                        current?.selected || current?.bestMatch || null;
+                      return selectedRec?.options || [];
+                    })().map((opt, index) => {
                       const optionLabel =
                         opt.option ||
                         opt.size ||
                         opt.name ||
                         opt.type ||
                         `Option ${index + 1}`;
+                      const current = selectedSidebar
+                        ? recommendations[selectedSidebar]
+                        : null;
+                      const selectedRec =
+                        current?.selected || current?.bestMatch || null;
                       const optionPrice = getOptionPrice(
-                        bestMatch,
+                        selectedRec,
                         optionLabel
                       );
                       return (
@@ -1847,7 +2188,9 @@ export default function MaterialsTab() {
                   onClick={handleAddToSheet}
                   disabled={
                     isAddingToSheet ||
-                    (bestMatch?.options?.length > 0 && !selectedSize)
+                    ((selectedSidebar ? recommendations[selectedSidebar] : null)
+                      ?.selected?.options?.length > 0 &&
+                      !selectedSize)
                   }
                 >
                   {isAddingToSheet ? (
