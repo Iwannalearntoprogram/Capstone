@@ -26,8 +26,31 @@ const register = catchAsync(async (req, res, next) => {
   }
 
   // Check if email already exists
-  const userExists = await User.findOne({ email });
-  if (userExists) return next(new AppError("Email already in use", 400));
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedUsername = username.trim();
+
+  const [emailExists, usernameExists] = await Promise.all([
+    User.findOne({ email: normalizedEmail }),
+    User.findOne({ username: normalizedUsername }),
+  ]);
+
+  if (emailExists) {
+    return next(
+      new AppError(
+        "That email is already registered. Please use a different email address.",
+        400
+      )
+    );
+  }
+
+  if (usernameExists) {
+    return next(
+      new AppError(
+        "That username is already taken. Choose another username to continue.",
+        400
+      )
+    );
+  }
 
   // Hash the password
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -36,14 +59,37 @@ const register = catchAsync(async (req, res, next) => {
     fullName: `${firstName} ${lastName}`,
     firstName,
     lastName,
-    username,
-    email,
+    username: normalizedUsername,
+    email: normalizedEmail,
     password: hashedPassword,
     phoneNumber,
     role: role || "client",
   });
 
-  await newUser.save();
+  try {
+    await newUser.save();
+  } catch (error) {
+    if (error?.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0];
+      if (field === "email") {
+        return next(
+          new AppError(
+            "That email is already registered. Please use a different email address.",
+            400
+          )
+        );
+      }
+      if (field === "username") {
+        return next(
+          new AppError(
+            "That username is already taken. Choose another username to continue.",
+            400
+          )
+        );
+      }
+    }
+    return next(new AppError("Registration failed. Please try again.", 400));
+  }
 
   return res
     .status(201)
