@@ -1,18 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import defaultProfile from "../assets/images/user.png";
 import Cookies from "js-cookie";
-import axios from "axios";
 import api from "../services/api";
+import { useToast } from "../components/ToastProvider";
 
 function ProfilePage() {
-  const navigate = useNavigate();
   const serverUrl = import.meta.env.VITE_SERVER_URL;
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editFields, setEditFields] = useState({});
+  const { showToast } = useToast();
 
   const userCookie = Cookies.get("user");
   const user = userCookie ? JSON.parse(userCookie) : null;
@@ -28,13 +27,16 @@ function ProfilePage() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        setCurrentUser(response.data.user);
-      } catch (err) {
+        if (response?.data?.user) {
+          setCurrentUser(response.data.user);
+          Cookies.set("user", JSON.stringify(response.data.user));
+        }
+      } catch {
         setCurrentUser(user); // fallback to cookie
       }
     };
     fetchUser();
-  }, []);
+  }, [serverUrl, user]);
   // Helper: get editable fields by role
 
   // Helper: get display fields by role
@@ -86,10 +88,10 @@ function ProfilePage() {
     if (!currentUser) return [];
     // Designer: only Full Name (first/last), Bio, and Date Joined
     if (currentUser.role === "designer") {
-      return ["firstName", "lastName", "aboutMe", "createdAt"];
+      return ["firstName", "lastName", "aboutMe", "createdAt", "profileImage"];
     }
     // Other roles
-    let fields = ["firstName", "lastName"];
+    let fields = ["firstName", "lastName", "profileImage"];
     if (["admin", "storage_admin"].includes(currentUser.role)) {
       fields = fields.concat([
         "birthday",
@@ -162,9 +164,9 @@ function ProfilePage() {
       setCurrentUser(response.data.user);
       Cookies.set("user", JSON.stringify(response.data.user));
       setEditMode(false);
-      alert("Profile updated successfully!");
-    } catch (err) {
-      alert("Failed to update profile.");
+      showToast("Profile updated successfully!", { type: "success" });
+    } catch {
+      showToast("Failed to update profile.", { type: "error" });
     }
   };
 
@@ -192,13 +194,13 @@ function ProfilePage() {
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
+      showToast("Please select an image file", { type: "error" });
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert("File size must be less than 5MB");
+      showToast("File size must be less than 5MB", { type: "error" });
       return;
     }
 
@@ -227,12 +229,18 @@ function ProfilePage() {
         };
         Cookies.set("user", JSON.stringify(updatedUser));
         setCurrentUser(updatedUser);
+        setEditFields((prev) => ({
+          ...prev,
+          profileImage: response.data.imageLink,
+        }));
 
-        alert("Profile picture updated successfully!");
+        showToast("Profile picture updated!", { type: "success" });
       }
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Failed to update profile picture. Please try again.");
+      showToast("Failed to update profile picture. Please try again.", {
+        type: "error",
+      });
     } finally {
       setIsUploading(false);
     }
@@ -248,7 +256,7 @@ function ProfilePage() {
               alt="Profile"
               className="w-32 h-32 object-cover rounded-full mb-2 ring-2 ring-[#1D3C34] ring-offset-2"
             />
-            {getEditableFields().includes("profileImage") && (
+            {editMode && getEditableFields().includes("profileImage") && (
               <button
                 onClick={handleEditProfilePicture}
                 disabled={isUploading}
@@ -286,7 +294,7 @@ function ProfilePage() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                      d="M11 4h2a2 2 0 012 2v2m-8 6v4h4l8-8a2 2 0 10-4-4l-8 8z"
                     />
                   </svg>
                 )}

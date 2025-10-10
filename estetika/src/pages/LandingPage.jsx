@@ -15,7 +15,7 @@ const URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 function LandingPage() {
   const handleDownloadApp = () => {
     // Download APK from backend server
-    const downloadUrl = `${URL}/downloads/Moss.apk`;
+    const downloadUrl = `${URL}/downloads/Moss Manila.apk`;
 
     // Create a temporary link element and trigger download
     const link = document.createElement("a");
