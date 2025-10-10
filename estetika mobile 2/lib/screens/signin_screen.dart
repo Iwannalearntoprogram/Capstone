@@ -4,6 +4,7 @@ import 'package:estetika_ui/screens/home_screen.dart';
 import 'package:estetika_ui/screens/forgot_password_screen.dart';
 import 'package:estetika_ui/widgets/custom_scaffold.dart';
 import 'package:estetika_ui/widgets/google_sign_in_button.dart';
+import 'package:estetika_ui/widgets/app_logo.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
@@ -411,6 +412,11 @@ class _SignInScreenState extends State<SigninScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        const AppLogo(
+                          width: 160,
+                          height: 160,
+                        ),
+                        const SizedBox(height: 24.0),
                         Text(
                           'Welcome Back',
                           style: TextStyle(
