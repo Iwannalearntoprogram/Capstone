@@ -53,6 +53,9 @@ module.exports = (err, req, res, next) => {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === "production") {
     let error = { ...err };
+    error.message = err.message;
+    error.statusCode = err.statusCode;
+    error.status = err.status;
     if (error.name === "CastError") error = handleCastErrorDB(error);
     if (error.code === 11000) error = handleDulipicateFieldDB(error);
     sendErrorProd(error, res);
