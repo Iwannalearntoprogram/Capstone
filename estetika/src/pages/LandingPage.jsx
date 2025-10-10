@@ -15,7 +15,7 @@ const URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 function LandingPage() {
   const handleDownloadApp = () => {
     // Download APK from backend server
-    const downloadUrl = `${URL}/downloads/estetika.apk`;
+    const downloadUrl = `${URL}/downloads/Moss.apk`;
 
     // Create a temporary link element and trigger download
     const link = document.createElement("a");
@@ -48,8 +48,11 @@ function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src={logo} alt="Moss Manila" className="h-8 w-auto" 
-              fetchpriority="high"
+              <img
+                src={logo}
+                alt="Moss Manila"
+                className="h-8 w-auto"
+                fetchpriority="high"
                 loading="eager"
               />
             </div>
@@ -196,7 +199,7 @@ function LandingPage() {
                   alt="Modern Residential Interior with Teal Chairs and Gold Accents"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   fetchpriority="high"
-                loading="eager"
+                  loading="eager"
                 />
               </div>
               <div className="p-6">
@@ -217,7 +220,7 @@ function LandingPage() {
                   alt="Commercial Space with Coral Seating and Dark Wood"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   fetchpriority="high"
-                loading="eager"
+                  loading="eager"
                 />
               </div>
               <div className="p-6">
@@ -238,7 +241,7 @@ function LandingPage() {
                   alt="Elegant Workspace with Wood Panels and Modern Design"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   fetchpriority="high"
-                loading="eager"
+                  loading="eager"
                 />
               </div>
               <div className="p-6">
@@ -259,7 +262,7 @@ function LandingPage() {
                   alt="Modern Office Space with Natural Light and Coral Chairs"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   fetchpriority="high"
-                loading="eager"
+                  loading="eager"
                 />
               </div>
               <div className="p-6">
@@ -380,7 +383,6 @@ function LandingPage() {
                 >
                   <FaInstagram className="w-6 h-6" />
                   <span className="sr-only">Instagram</span>
-
                 </a>
                 <a
                   href="https://youtube.com/@MrMrsBofMossDesign"
