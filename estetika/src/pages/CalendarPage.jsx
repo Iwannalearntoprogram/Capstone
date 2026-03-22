@@ -1,7 +1,20 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { Calendar, Views, dateFnsLocalizer } from "react-big-calendar";
-import { format, parse, startOfWeek, getDay } from "date-fns";
+import {
+  addMinutes,
+  addDays,
+  addMonths,
+  addWeeks,
+  endOfWeek,
+  format,
+  getDay,
+  parse,
+  startOfWeek,
+  subDays,
+  subMonths,
+  subWeeks,
+} from "date-fns";
 import enUS from "date-fns/locale/en-US";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { FiPlus, FiEdit2 } from "react-icons/fi";
@@ -11,9 +24,17 @@ import Cookies from "js-cookie";
 import Select from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import "../styles/Calendar.css";
 import "../styles/datepicker-custom.css";
+import {
+  trimValue,
+  validateDateOrder,
+  validateRequiredText,
+} from "../utils/validation";
 
 const locales = { "en-US": enUS };
+const MOBILE_VIEWS = [Views.MONTH, Views.AGENDA, Views.DAY];
+const DESKTOP_VIEWS = [Views.MONTH, Views.WEEK, Views.DAY];
 
 const localizer = dateFnsLocalizer({
   format,
@@ -26,8 +47,15 @@ const localizer = dateFnsLocalizer({
 Modal.setAppElement("#root"); // For accessibility
 
 const CalendarPage = () => {
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 640
+  );
   const [events, setEvents] = useState([]);
-  const [view, setView] = useState(Views.MONTH);
+  const [view, setView] = useState(() =>
+    typeof window !== "undefined" && window.innerWidth < 640
+      ? Views.AGENDA
+      : Views.MONTH
+  );
   const [date, setDate] = useState(new Date());
 
   const [showViewModal, setShowViewModal] = useState(false);
@@ -53,6 +81,91 @@ const CalendarPage = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [recipientOptions, setRecipientOptions] = useState([]);
   const [selectedRecipients, setSelectedRecipients] = useState([]);
+  const [eventErrors, setEventErrors] = useState({});
+  const [eventMessage, setEventMessage] = useState("");
+  const availableViews = isMobile ? MOBILE_VIEWS : DESKTOP_VIEWS;
+  const activeView = availableViews.includes(view) ? view : availableViews[0];
+
+  const normalizeCalendarEvent = (event, index) => {
+    if (!event || typeof event !== "object") {
+      return null;
+    }
+
+    const startValue = event.start ?? event.startDate;
+    const endValue = event.end ?? event.endDate ?? startValue;
+    const start = new Date(startValue);
+    const parsedEnd = new Date(endValue);
+
+    if (Number.isNaN(start.getTime())) {
+      return null;
+    }
+
+    const end =
+      Number.isNaN(parsedEnd.getTime()) || parsedEnd <= start
+        ? addMinutes(start, 30)
+        : parsedEnd;
+
+    return {
+      ...event,
+      id: event.id ?? event._id ?? `calendar-event-${index}`,
+      title: trimValue(event.title || event.name || event.label || "") || "Untitled event",
+      start,
+      end,
+    };
+  };
+
+  const validateEventForm = () => {
+    const nextErrors = {
+      title: validateRequiredText(newEvent.title, "Title"),
+      dates: validateDateOrder(newEvent.start, newEvent.end, {
+        startLabel: "From",
+        endLabel: "To",
+      }),
+      alarm:
+        newEvent.alarm && newEvent.start && new Date(newEvent.alarm) > new Date(newEvent.start)
+          ? "Alarm must be at or before the event start time."
+          : "",
+    };
+
+    setEventErrors(nextErrors);
+    return !Object.values(nextErrors).some(Boolean);
+  };
+
+  const handleEventFieldChange = (field, value) => {
+    const nextEvent = {
+      ...newEvent,
+      [field]: value,
+    };
+    setNewEvent(nextEvent);
+    setEventMessage("");
+    setEventErrors((prev) => ({
+      ...prev,
+      [field]: field === "title" ? validateRequiredText(value, "Title") : prev[field],
+      ...((field === "start" || field === "end")
+        ? {
+            dates:
+              nextEvent.start && nextEvent.end
+                ? validateDateOrder(nextEvent.start, nextEvent.end, {
+                    startLabel: "From",
+                    endLabel: "To",
+                  })
+                : "",
+            alarm:
+              nextEvent.alarm && nextEvent.start && new Date(nextEvent.alarm) > new Date(nextEvent.start)
+                ? "Alarm must be at or before the event start time."
+                : "",
+          }
+        : {}),
+      ...(field === "alarm"
+        ? {
+            alarm:
+              value && nextEvent.start && new Date(value) > new Date(nextEvent.start)
+                ? "Alarm must be at or before the event start time."
+                : "",
+          }
+        : {}),
+    }));
+  };
 
   const formatToDateTimeLocal = (date) => {
     if (!date) return "";
@@ -111,6 +224,8 @@ const CalendarPage = () => {
     });
     setRecipients([]);
     setRecipientInput("");
+    setEventErrors({});
+    setEventMessage("");
     setShowAddModal(true);
   };
 
@@ -125,10 +240,13 @@ const CalendarPage = () => {
   };
 
   const handleAddEvent = async () => {
-    if (!newEvent.title) return alert("Please enter a title!");
+    if (!validateEventForm()) {
+      setEventMessage("Please fix the highlighted fields.");
+      return;
+    }
 
     const body = {
-      title: newEvent.title,
+      title: trimValue(newEvent.title),
       alarm: newEvent.alarm || "",
       startDate: newEvent.start ? newEvent.start.toISOString() : "",
       endDate: newEvent.end ? newEvent.end.toISOString() : "",
@@ -146,23 +264,34 @@ const CalendarPage = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      const savedEvent = response.data.event || {
-        ...newEvent,
-        id: Date.now(),
-      };
-      setEvents([...events, savedEvent]);
+      const savedEvent = normalizeCalendarEvent(
+        response.data.event ||
+          response.data.newEvent || {
+            ...newEvent,
+            id: Date.now(),
+          },
+        events.length
+      );
+
+      if (savedEvent) {
+        setEvents([...events, savedEvent]);
+      }
+
       closeAddModal();
     } catch (err) {
-      alert("Failed to add event.");
+      setEventMessage("Failed to add event.");
       console.error(err);
     }
   };
 
   const handleUpdateEvent = async () => {
-    if (!newEvent.title) return alert("Please enter a title!");
+    if (!validateEventForm()) {
+      setEventMessage("Please fix the highlighted fields.");
+      return;
+    }
 
     const body = {
-      title: newEvent.title,
+      title: trimValue(newEvent.title),
       alarm: newEvent.alarm || "",
       startDate: newEvent.start ? newEvent.start.toISOString() : "",
       endDate: newEvent.end ? newEvent.end.toISOString() : "",
@@ -183,20 +312,24 @@ const CalendarPage = () => {
           },
         }
       );
-      const updatedEvent = response.data.event || {
-        ...selectedEvent,
-        ...body,
-        start: new Date(body.startDate),
-        end: new Date(body.endDate),
-      };
+      const updatedEvent = normalizeCalendarEvent(
+        response.data.event ||
+          response.data.updatedEvent || {
+            ...selectedEvent,
+            ...body,
+            start: new Date(body.startDate),
+            end: new Date(body.endDate),
+          }
+      );
+
       setEvents(
         events.map((event) =>
-          event._id === selectedEvent._id ? updatedEvent : event
+          event._id === selectedEvent._id && updatedEvent ? updatedEvent : event
         )
       );
       closeEditModal();
     } catch (err) {
-      alert("Failed to update event.");
+      setEventMessage("Failed to update event.");
       console.error(err);
     }
   };
@@ -242,6 +375,8 @@ const CalendarPage = () => {
     setRecipients([]);
     setRecipientInput("");
     setSelectedRecipients([]);
+    setEventErrors({});
+    setEventMessage("");
   };
 
   const closeEditModal = () => {
@@ -260,7 +395,26 @@ const CalendarPage = () => {
     setRecipients([]);
     setRecipientInput("");
     setSelectedRecipients([]);
+    setEventErrors({});
+    setEventMessage("");
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (view !== activeView) {
+      setView(activeView);
+    }
+  }, [activeView, view]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -278,11 +432,9 @@ const CalendarPage = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        const mappedEvents = (response.data.event || []).map((ev) => ({
-          ...ev,
-          start: new Date(ev.startDate),
-          end: new Date(ev.endDate),
-        }));
+        const mappedEvents = (response.data.event || [])
+          .map((ev, index) => normalizeCalendarEvent(ev, index))
+          .filter(Boolean);
         setEvents(mappedEvents);
       } catch (err) {
         console.error("Failed to fetch events:", err);
@@ -328,56 +480,164 @@ const CalendarPage = () => {
     fetchUsers();
   }, [serverUrl]);
 
+  const handleCalendarNavigate = (direction) => {
+    if (direction === "today") {
+      setDate(new Date());
+      return;
+    }
+
+    const moveDate = {
+      [Views.MONTH]:
+        direction === "prev"
+          ? subMonths(date, 1)
+          : addMonths(date, 1),
+      [Views.WEEK]:
+        direction === "prev"
+          ? subWeeks(date, 1)
+          : addWeeks(date, 1),
+      [Views.DAY]:
+        direction === "prev"
+          ? subDays(date, 1)
+          : addDays(date, 1),
+      [Views.AGENDA]:
+        direction === "prev"
+          ? subWeeks(date, 1)
+          : addWeeks(date, 1),
+    };
+
+    setDate(moveDate[view] || date);
+  };
+
+  const getCalendarLabel = () => {
+    if (view === Views.MONTH) {
+      return format(date, "MMMM yyyy");
+    }
+
+    if (view === Views.WEEK) {
+      const start = startOfWeek(date, { weekStartsOn: 1 });
+      const end = endOfWeek(date, { weekStartsOn: 1 });
+      return `${format(start, "MMM d")} - ${format(end, "MMM d, yyyy")}`;
+    }
+
+    return format(date, "MMMM d, yyyy");
+  };
+
   return (
-    <div className="rounded-[15px] mt-[50px] p-[30px] bg-white min-h-screen shadow-[0_2px_8px_0_rgba(99,99,99,0.2)]">
-      <div className="flex justify-between items-center mb-5">
+    <div className="min-h-screen rounded-[15px] bg-white p-4 shadow-[0_2px_8px_0_rgba(99,99,99,0.2)] sm:p-6 lg:p-8">
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-2xl font-semibold text-[#1D3C34] font-avenir">
           Project Calendar
         </h2>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <button
             onClick={handleAddEventButton}
-            className="bg-[#1D3C34] text-white px-4 py-2 rounded-lg hover:bg-[#145c4b] transition flex items-center gap-2"
+            className="flex items-center justify-center gap-2 rounded-lg bg-[#1D3C34] px-4 py-2 text-white transition hover:bg-[#145c4b]"
           >
             <FiPlus size={20} />
-            Add Event
+            {isMobile ? "Add" : "Add Event"}
           </button>
           <button
             onClick={() => setShowAllEvents((prev) => !prev)}
-            className={`px-4 py-2 rounded-lg flex items-center gap-2 transition font-semibold border ${
+            className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2 font-semibold transition ${
               showAllEvents
                 ? "bg-[#1D3C34] text-white border-[#1D3C34]"
                 : "bg-white text-[#1D3C34] border-[#1D3C34] hover:bg-gray-100"
             }`}
             aria-pressed={showAllEvents}
           >
-            {showAllEvents ? "Showing All Events" : "Show All Events"}
+            {isMobile
+              ? showAllEvents
+                ? "All Events"
+                : "My Team"
+              : showAllEvents
+              ? "Showing All Events"
+              : "Show All Events"}
           </button>
         </div>
       </div>
 
-      <Calendar
-        localizer={localizer}
-        events={events}
-        views={[Views.MONTH, Views.WEEK, Views.DAY]}
-        selectable={false}
-        onSelectEvent={handleEventClick}
-        defaultView={view}
-        view={view}
-        date={date}
-        onView={setView}
-        onNavigate={setDate}
-        style={{ height: 500 }}
-        eventPropGetter={() => ({
-          style: {
-            backgroundColor: "#1D3C34",
-            color: "#fff",
-            borderRadius: "6px",
-            border: "none",
-          },
-        })}
-        className="rbc-calendar"
-      />
+      <div className="calendar-shell">
+        <div className="mb-4 rounded-2xl border border-[#1D3C34]/10 bg-[#F8F4F1] p-3 sm:p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-[#1D3C34]">
+                {getCalendarLabel()}
+              </p>
+              <p className="text-xs text-gray-500">
+                {isMobile
+                  ? "Month, agenda, and day views are enabled on mobile."
+                  : "Month, week, and day views are available."}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => handleCalendarNavigate("today")}
+                className="rounded-lg border border-[#1D3C34]/20 bg-white px-3 py-2 text-sm font-medium text-[#1D3C34]"
+              >
+                Today
+              </button>
+              <button
+                type="button"
+                onClick={() => handleCalendarNavigate("prev")}
+                className="rounded-lg border border-[#1D3C34]/20 bg-white px-3 py-2 text-sm font-medium text-[#1D3C34]"
+              >
+                Prev
+              </button>
+              <button
+                type="button"
+                onClick={() => handleCalendarNavigate("next")}
+                className="rounded-lg border border-[#1D3C34]/20 bg-white px-3 py-2 text-sm font-medium text-[#1D3C34]"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {availableViews.map((calendarView) => (
+              <button
+                key={calendarView}
+                type="button"
+                onClick={() => setView(calendarView)}
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  view === calendarView
+                    ? "bg-[#1D3C34] text-white"
+                    : "border border-[#1D3C34]/20 bg-white text-[#1D3C34]"
+                }`}
+              >
+                {calendarView.charAt(0).toUpperCase() + calendarView.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white p-2 sm:p-4">
+          <Calendar
+            localizer={localizer}
+            events={events}
+            views={availableViews}
+            selectable={false}
+            onSelectEvent={handleEventClick}
+            view={activeView}
+            date={date}
+            onView={setView}
+            onNavigate={setDate}
+            toolbar={false}
+            titleAccessor={(event) => event?.title || "Untitled event"}
+            tooltipAccessor={(event) => event?.title || "Untitled event"}
+            style={{ height: isMobile ? 560 : 500 }}
+            eventPropGetter={() => ({
+              style: {
+                backgroundColor: "#1D3C34",
+                color: "#fff",
+                borderRadius: "6px",
+                border: "none",
+              },
+            })}
+            className="rbc-calendar calendar-surface"
+          />
+        </div>
+      </div>
 
       <Modal
         isOpen={showViewModal}
@@ -461,9 +721,12 @@ const CalendarPage = () => {
           type="text"
           placeholder="Title"
           value={newEvent.title}
-          onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+          onChange={(e) => handleEventFieldChange("title", e.target.value)}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
+        {eventErrors.title && (
+          <p className="text-red-500 text-sm -mt-2 mb-4">{eventErrors.title}</p>
+        )}
         <label className="block mb-2">Recipients:</label>
         <Select
           isMulti
@@ -486,15 +749,10 @@ const CalendarPage = () => {
         <DatePicker
           selected={newEvent.start}
           onChange={(date) => {
-            setNewEvent({
-              ...newEvent,
-              start: date,
-              // Adjust end time if it's before the new start time
-              end:
-                newEvent.end && date && newEvent.end < date
-                  ? date
-                  : newEvent.end,
-            });
+            handleEventFieldChange("start", date);
+            if (newEvent.end && date && newEvent.end < date) {
+              handleEventFieldChange("end", date);
+            }
           }}
           showTimeSelect
           timeFormat="h:mm aa"
@@ -509,7 +767,7 @@ const CalendarPage = () => {
         <label className="block mb-2">To:</label>
         <DatePicker
           selected={newEvent.end}
-          onChange={(date) => setNewEvent({ ...newEvent, end: date })}
+          onChange={(date) => handleEventFieldChange("end", date)}
           showTimeSelect
           timeFormat="h:mm aa"
           timeIntervals={15}
@@ -527,15 +785,16 @@ const CalendarPage = () => {
           placeholderText="Select end date and time"
           wrapperClassName="w-full"
         />
+        {eventErrors.dates && (
+          <p className="text-red-500 text-sm -mt-2 mb-4">{eventErrors.dates}</p>
+        )}
 
         <label className="block mb-2">Location:</label>
         <input
           type="text"
           placeholder="Location"
           value={newEvent.location}
-          onChange={(e) =>
-            setNewEvent({ ...newEvent, location: e.target.value })
-          }
+          onChange={(e) => handleEventFieldChange("location", e.target.value)}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
 
@@ -543,10 +802,7 @@ const CalendarPage = () => {
         <DatePicker
           selected={newEvent.alarm ? new Date(newEvent.alarm) : null}
           onChange={(date) =>
-            setNewEvent({
-              ...newEvent,
-              alarm: date ? date.toISOString() : null,
-            })
+            handleEventFieldChange("alarm", date ? date.toISOString() : null)
           }
           showTimeSelect
           timeFormat="h:mm aa"
@@ -557,13 +813,19 @@ const CalendarPage = () => {
           isClearable
           wrapperClassName="w-full"
         />
+        {eventErrors.alarm && (
+          <p className="text-red-500 text-sm -mt-2 mb-4">{eventErrors.alarm}</p>
+        )}
 
         <textarea
           placeholder="Notes"
           value={newEvent.notes}
-          onChange={(e) => setNewEvent({ ...newEvent, notes: e.target.value })}
+          onChange={(e) => handleEventFieldChange("notes", e.target.value)}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
+        {eventMessage && (
+          <p className="text-red-500 text-sm mb-4">{eventMessage}</p>
+        )}
 
         <div className="flex justify-end gap-2">
           <button
@@ -594,9 +856,12 @@ const CalendarPage = () => {
           type="text"
           placeholder="Title"
           value={newEvent.title}
-          onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+          onChange={(e) => handleEventFieldChange("title", e.target.value)}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
+        {eventErrors.title && (
+          <p className="text-red-500 text-sm -mt-2 mb-4">{eventErrors.title}</p>
+        )}
         <label className="block mb-2">Recipients:</label>
         <Select
           isMulti
@@ -619,15 +884,10 @@ const CalendarPage = () => {
         <DatePicker
           selected={newEvent.start}
           onChange={(date) => {
-            setNewEvent({
-              ...newEvent,
-              start: date,
-              // Adjust end time if it's before the new start time
-              end:
-                newEvent.end && date && newEvent.end < date
-                  ? date
-                  : newEvent.end,
-            });
+            handleEventFieldChange("start", date);
+            if (newEvent.end && date && newEvent.end < date) {
+              handleEventFieldChange("end", date);
+            }
           }}
           showTimeSelect
           timeFormat="h:mm aa"
@@ -642,7 +902,7 @@ const CalendarPage = () => {
         <label className="block mb-2">To:</label>
         <DatePicker
           selected={newEvent.end}
-          onChange={(date) => setNewEvent({ ...newEvent, end: date })}
+          onChange={(date) => handleEventFieldChange("end", date)}
           showTimeSelect
           timeFormat="h:mm aa"
           timeIntervals={15}
@@ -660,15 +920,16 @@ const CalendarPage = () => {
           placeholderText="Select end date and time"
           wrapperClassName="w-full"
         />
+        {eventErrors.dates && (
+          <p className="text-red-500 text-sm -mt-2 mb-4">{eventErrors.dates}</p>
+        )}
 
         <label className="block mb-2">Location:</label>
         <input
           type="text"
           placeholder="Location"
           value={newEvent.location}
-          onChange={(e) =>
-            setNewEvent({ ...newEvent, location: e.target.value })
-          }
+          onChange={(e) => handleEventFieldChange("location", e.target.value)}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
 
@@ -676,10 +937,7 @@ const CalendarPage = () => {
         <DatePicker
           selected={newEvent.alarm ? new Date(newEvent.alarm) : null}
           onChange={(date) =>
-            setNewEvent({
-              ...newEvent,
-              alarm: date ? date.toISOString() : null,
-            })
+            handleEventFieldChange("alarm", date ? date.toISOString() : null)
           }
           showTimeSelect
           timeFormat="h:mm aa"
@@ -690,13 +948,19 @@ const CalendarPage = () => {
           isClearable
           wrapperClassName="w-full"
         />
+        {eventErrors.alarm && (
+          <p className="text-red-500 text-sm -mt-2 mb-4">{eventErrors.alarm}</p>
+        )}
 
         <textarea
           placeholder="Notes"
           value={newEvent.notes}
-          onChange={(e) => setNewEvent({ ...newEvent, notes: e.target.value })}
+          onChange={(e) => handleEventFieldChange("notes", e.target.value)}
           className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
+        {eventMessage && (
+          <p className="text-red-500 text-sm mb-4">{eventMessage}</p>
+        )}
 
         <div className="flex justify-end gap-2">
           <button

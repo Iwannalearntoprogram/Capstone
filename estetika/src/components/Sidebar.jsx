@@ -1,13 +1,15 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 
-const Sidebar = ({ isOpen }) => {
+const Sidebar = ({ isOpen, toggleSidebar }) => {
   const location = useLocation(); // React Router hook to get current path
   const role = localStorage.getItem("role");
+  const handleNavigate = () => toggleSidebar?.();
+  const linkClasses = "block text-inherit no-underline";
 
   return (
     <div
-      className={`fixed top-[50px] left-0 h-full min-w-[250px] pr-8 pl-2 pt-4 bg-[#1D3C34] text-white transition-transform duration-300 z-[999] ${
+      className={`fixed top-[50px] left-0 h-[calc(100vh-50px)] w-[min(85vw,250px)] pr-6 pl-2 pt-4 bg-[#1D3C34] text-white transition-transform duration-300 z-50 overflow-y-auto ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
@@ -21,7 +23,8 @@ const Sidebar = ({ isOpen }) => {
         >
           <Link
             to="/dashboard/home"
-            className="block text-inherit no-underline"
+            className={linkClasses}
+            onClick={handleNavigate}
           >
             Home
           </Link>
@@ -36,7 +39,8 @@ const Sidebar = ({ isOpen }) => {
           >
             <Link
               to="/dashboard/projects"
-              className="block text-inherit no-underline"
+              className={linkClasses}
+              onClick={handleNavigate}
             >
               Projects
             </Link>
@@ -51,7 +55,8 @@ const Sidebar = ({ isOpen }) => {
         >
           <Link
             to="/dashboard/inbox"
-            className="block text-inherit no-underline"
+            className={linkClasses}
+            onClick={handleNavigate}
           >
             Messages
           </Link>
@@ -65,7 +70,8 @@ const Sidebar = ({ isOpen }) => {
         >
           <Link
             to="/dashboard/calendar"
-            className="block text-inherit no-underline "
+            className={linkClasses}
+            onClick={handleNavigate}
           >
             Calendar
           </Link>
@@ -82,7 +88,8 @@ const Sidebar = ({ isOpen }) => {
         >
           <Link
             to="/dashboard/materials/items"
-            className="block text-inherit no-underline"
+            className={linkClasses}
+            onClick={handleNavigate}
           >
             Materials
           </Link>
@@ -98,7 +105,8 @@ const Sidebar = ({ isOpen }) => {
           >
             <Link
               to="/dashboard/materials-custom"
-              className="block text-inherit no-underline"
+              className={linkClasses}
+              onClick={handleNavigate}
             >
               Materials Management
             </Link>
@@ -114,7 +122,8 @@ const Sidebar = ({ isOpen }) => {
           >
             <Link
               to="/dashboard/add-user"
-              className="block text-inherit no-underline"
+              className={linkClasses}
+              onClick={handleNavigate}
             >
               Account Management
             </Link>
@@ -129,7 +138,8 @@ const Sidebar = ({ isOpen }) => {
         >
           <Link
             to="/dashboard/profile"
-            className="block text-inherit no-underline"
+            className={linkClasses}
+            onClick={handleNavigate}
           >
             Profile
           </Link>

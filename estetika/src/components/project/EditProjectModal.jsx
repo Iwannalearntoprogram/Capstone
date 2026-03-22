@@ -8,6 +8,8 @@ const EditProjectModal = ({
   isSaving,
   editData,
   onChange,
+  errors = {},
+  message = "",
 }) => {
   if (!isOpen) return null;
 
@@ -33,6 +35,7 @@ const EditProjectModal = ({
 
         {/* Content */}
         <form onSubmit={onSubmit} className="p-6 flex flex-col gap-4">
+          {message && <p className="text-red-500 text-sm">{message}</p>}
           <label>
             <span className="block text-gray-700 font-medium mb-1">Title</span>
             <input
@@ -43,6 +46,9 @@ const EditProjectModal = ({
               className="border rounded px-2 py-1 w-full"
               required
             />
+            {errors.title && (
+              <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+            )}
           </label>
           <label>
             <span className="block text-gray-700 font-medium mb-1">Description</span>
@@ -52,6 +58,9 @@ const EditProjectModal = ({
               onChange={onChange}
               className="border rounded px-2 py-1 w-full"
             />
+            {errors.description && (
+              <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+            )}
           </label>
           <label>
             <span className="block text-gray-700 font-medium mb-1">Budget</span>
@@ -62,6 +71,9 @@ const EditProjectModal = ({
               onChange={onChange}
               className="border rounded px-2 py-1 w-full"
             />
+            {errors.budget && (
+              <p className="text-red-500 text-sm mt-1">{errors.budget}</p>
+            )}
           </label>
           <label>
             <span className="block text-gray-700 font-medium mb-1">Start Date</span>
@@ -82,6 +94,9 @@ const EditProjectModal = ({
               onChange={onChange}
               className="border rounded px-2 py-1 w-full"
             />
+            {errors.dates && (
+              <p className="text-red-500 text-sm mt-1">{errors.dates}</p>
+            )}
           </label>
           <div className="flex gap-3 mt-4">
             <button

@@ -4,6 +4,14 @@ import defaultProfile from "../assets/images/user.png";
 import Cookies from "js-cookie";
 import axios from "axios";
 import api from "../services/api";
+import {
+  normalizePhone,
+  trimValue,
+  validateEmail,
+  validatePhilippinePhone,
+  validateRequiredText,
+  validateUrl,
+} from "../utils/validation";
 
 function ProfilePage() {
   const navigate = useNavigate();
@@ -13,6 +21,8 @@ function ProfilePage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editFields, setEditFields] = useState({});
+  const [editErrors, setEditErrors] = useState({});
+  const [saveError, setSaveError] = useState("");
 
   const userCookie = Cookies.get("user");
   const user = userCookie ? JSON.parse(userCookie) : null;
@@ -109,17 +119,64 @@ function ProfilePage() {
   // Handle edit button
   const handleEdit = () => {
     setEditFields({ ...currentUser });
+    setEditErrors({});
+    setSaveError("");
     setEditMode(true);
+  };
+
+  const validateProfileField = (field, value) => {
+    switch (field) {
+      case "firstName":
+        return validateRequiredText(value, "First name");
+      case "lastName":
+        return validateRequiredText(value, "Last name");
+      case "email":
+        return validateEmail(value);
+      case "phoneNumber": {
+        const normalized = normalizePhone(value);
+        return normalized ? validatePhilippinePhone(normalized) : "";
+      }
+      case "linkedIn":
+        return trimValue(value)
+          ? validateUrl(value, "LinkedIn URL", { allowBlank: false })
+          : "";
+      case "birthday":
+      case "createdAt":
+        if (!value) return "";
+        return Number.isNaN(new Date(value).getTime())
+          ? "Enter a valid date."
+          : "";
+      default:
+        return "";
+    }
+  };
+
+  const validateProfileForm = () => {
+    const nextErrors = {};
+    getEditableFields().forEach((field) => {
+      nextErrors[field] = validateProfileField(field, editFields[field]);
+    });
+    setEditErrors(nextErrors);
+    return !Object.values(nextErrors).some(Boolean);
   };
 
   // Handle field change
   const handleFieldChange = (field, value) => {
     setEditFields((prev) => ({ ...prev, [field]: value }));
+    setSaveError("");
+    setEditErrors((prev) => ({
+      ...prev,
+      [field]: validateProfileField(field, value),
+    }));
   };
 
   // Handle save
   const handleSave = async () => {
     if (!currentUser) return;
+    if (!validateProfileForm()) {
+      setSaveError("Please fix the highlighted fields.");
+      return;
+    }
     const token = Cookies.get("token");
     // Only send changed fields
     const payload = {};
@@ -130,7 +187,14 @@ function ProfilePage() {
         editFields[field] !== undefined &&
         editFields[field] !== currentUser[field]
       ) {
-        payload[field] = editFields[field];
+        payload[field] =
+          field === "email"
+            ? trimValue(editFields[field]).toLowerCase()
+            : field === "phoneNumber"
+            ? normalizePhone(editFields[field])
+            : typeof editFields[field] === "string"
+            ? trimValue(editFields[field])
+            : editFields[field];
         if (field === "firstName") firstNameChanged = true;
         if (field === "lastName") lastNameChanged = true;
       }
@@ -164,7 +228,7 @@ function ProfilePage() {
       setEditMode(false);
       alert("Profile updated successfully!");
     } catch (err) {
-      alert("Failed to update profile.");
+      setSaveError("Failed to update profile.");
     }
   };
 
@@ -172,6 +236,8 @@ function ProfilePage() {
   const handleCancel = () => {
     setEditMode(false);
     setEditFields({});
+    setEditErrors({});
+    setSaveError("");
   };
 
   const handleLogout = () => {
@@ -239,8 +305,8 @@ function ProfilePage() {
   };
 
   return (
-    <div className="flex w-full min-h-full gap-4 px-32">
-      <div className="w-1/4">
+    <div className="flex w-full min-h-full flex-col gap-4 px-0 sm:px-2 lg:flex-row lg:px-6">
+      <div className="w-full shrink-0 lg:w-[18rem]">
         <div className="flex flex-col items-center bg-white p-4 rounded-lg shadow-md">
           <div className="relative">
             <img
@@ -346,7 +412,7 @@ function ProfilePage() {
           )}
         </div>
       </div>
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="font-bold text-xl mb-4">About me</h2>
           <div className="space-y-3">
@@ -361,29 +427,31 @@ function ProfilePage() {
                       className="border rounded px-2 py-1 min-h-[80px]"
                     />
                   ) : (
-                    <input
-                      type={
-                        key === "birthday" || key === "createdAt"
-                          ? "date"
-                          : "text"
-                      }
-                      value={
-                        key === "createdAt"
-                          ? editFields[key]
-                            ? new Date(editFields[key])
-                                .toISOString()
-                                .slice(0, 10)
-                            : ""
-                          : editFields[key] || ""
-                      }
-                      onChange={(e) =>
-                        handleFieldChange(
-                          key,
-                          key === "createdAt" ? e.target.value : e.target.value
-                        )
-                      }
-                      className="border rounded px-2 py-1"
-                    />
+                    <>
+                      <input
+                        type={
+                          key === "birthday" || key === "createdAt"
+                            ? "date"
+                            : "text"
+                        }
+                        value={
+                          key === "createdAt"
+                            ? editFields[key]
+                              ? new Date(editFields[key])
+                                  .toISOString()
+                                  .slice(0, 10)
+                              : ""
+                            : editFields[key] || ""
+                        }
+                        onChange={(e) => handleFieldChange(key, e.target.value)}
+                        className="border rounded px-2 py-1"
+                      />
+                      {editErrors[key] && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {editErrors[key]}
+                        </p>
+                      )}
+                    </>
                   )
                 ) : key === "fullName" ? (
                   <p className="text-gray-800">
@@ -400,6 +468,9 @@ function ProfilePage() {
                 )}
               </div>
             ))}
+            {editMode && saveError && (
+              <p className="text-red-500 text-sm">{saveError}</p>
+            )}
           </div>
         </div>
       </div>

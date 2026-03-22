@@ -96,9 +96,11 @@ const user_update = catchAsync(async (req, res, next) => {
 
   if (!updatedUser) return next(new AppError("User not Found.", 404));
 
-  const expiration = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
-  const payload = { user: JSON.stringify(updatedUser), exp: expiration };
-  const token = jwt.sign(payload, KEY);
+  const token = jwt.sign(
+    { id: updatedUser._id, role: updatedUser.role },
+    KEY,
+    { expiresIn: "1d" }
+  );
 
   return res.json({
     message: "Account Successfully Updated",

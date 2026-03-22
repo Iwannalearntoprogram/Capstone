@@ -4,6 +4,11 @@ import Cookies from "js-cookie";
 import { useOutletContext } from "react-router-dom";
 import PhaseCard from "./phases/PhaseCard";
 import EditPhasesModal from "../../components/project/EditPhasesModal";
+import {
+  validateDateOrder,
+  validateNotPastDate,
+  validateRequiredText,
+} from "../../utils/validation";
 
 // Progress ring component
 function RingProgressBar({
@@ -183,6 +188,8 @@ function ProgressTab() {
     startDate: "",
     endDate: "",
   });
+  const [phaseFormErrors, setPhaseFormErrors] = useState({});
+  const [phaseFormMessage, setPhaseFormMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const phases = Array.isArray(project?.timeline) ? project.timeline : [];
@@ -231,9 +238,29 @@ function ProgressTab() {
   // For designer: handle phase form change, with validation
   const handlePhaseChange = (e) => {
     const { name, value } = e.target;
-    setPhaseForm((prev) => ({
-      ...prev,
+    const nextForm = {
+      ...phaseForm,
       [name]: value,
+    };
+    setPhaseForm(nextForm);
+    setPhaseFormMessage("");
+    setPhaseFormErrors((prev) => ({
+      ...prev,
+      [name]:
+        name === "title"
+          ? validateRequiredText(value, "Phase title")
+          : "",
+      ...(name === "startDate"
+        ? { startDate: validateNotPastDate(value, "Start date") }
+        : {}),
+      ...(name === "startDate" || name === "endDate"
+        ? {
+            dates:
+              nextForm.startDate && nextForm.endDate
+                ? validateDateOrder(nextForm.startDate, nextForm.endDate)
+                : "",
+          }
+        : {}),
     }));
   };
 
@@ -247,15 +274,14 @@ function ProgressTab() {
       return;
     }
 
-    // Validation: end date cannot be before start date
-    if (phaseForm.endDate < phaseForm.startDate) {
-      alert("End date cannot be before start date.");
-      return;
-    }
-    // Validation: start date cannot be in the past
-    const today = new Date().toISOString().slice(0, 10);
-    if (phaseForm.startDate < today) {
-      alert("Start date cannot be in the past.");
+    const nextErrors = {
+      title: validateRequiredText(phaseForm.title, "Phase title"),
+      startDate: validateNotPastDate(phaseForm.startDate, "Start date"),
+      dates: validateDateOrder(phaseForm.startDate, phaseForm.endDate),
+    };
+    setPhaseFormErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) {
+      setPhaseFormMessage("Please fix the highlighted fields.");
       return;
     }
 
@@ -277,9 +303,11 @@ function ProgressTab() {
       );
       setShowModal(false);
       setPhaseForm({ title: "", startDate: "", endDate: "" });
+      setPhaseFormErrors({});
+      setPhaseFormMessage("");
       location.reload();
     } catch (err) {
-      alert("Failed to add phase.");
+      setPhaseFormMessage("Failed to add phase.");
     }
     setIsSubmitting(false);
   };
@@ -321,6 +349,11 @@ function ProgressTab() {
                   onChange={handlePhaseChange}
                   required
                 />
+                {phaseFormErrors.title && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {phaseFormErrors.title}
+                  </p>
+                )}
               </label>
               <label className="">
                 Start Date
@@ -333,6 +366,11 @@ function ProgressTab() {
                   required
                   min={new Date().toISOString().slice(0, 10)}
                 />
+                {phaseFormErrors.startDate && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {phaseFormErrors.startDate}
+                  </p>
+                )}
               </label>
               <label className="">
                 End Date
@@ -347,7 +385,15 @@ function ProgressTab() {
                     phaseForm.startDate || new Date().toISOString().slice(0, 10)
                   }
                 />
+                {phaseFormErrors.dates && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {phaseFormErrors.dates}
+                  </p>
+                )}
               </label>
+              {phaseFormMessage && (
+                <p className="text-red-500 text-sm">{phaseFormMessage}</p>
+              )}
               <button
                 type="submit"
                 className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition cursor-pointer"

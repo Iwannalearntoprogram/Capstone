@@ -20,6 +20,7 @@ const MaterialModal = ({
   onAddOption,
   onUpdateOption,
   onRemoveOption,
+  errors = {},
 }) => {
   if (!isOpen) return null;
 
@@ -265,6 +266,9 @@ const MaterialModal = ({
                       className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] transition-all bg-white"
                       required
                     />
+                    {errors.name && (
+                      <p className="text-red-500 text-sm">{errors.name}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -281,6 +285,9 @@ const MaterialModal = ({
                       className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] transition-all bg-white"
                       required
                     />
+                    {errors.company && (
+                      <p className="text-red-500 text-sm">{errors.company}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -297,6 +304,9 @@ const MaterialModal = ({
                       className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] bg-white"
                       required
                     />
+                    {errors.category && (
+                      <p className="text-red-500 text-sm">{errors.category}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -320,6 +330,9 @@ const MaterialModal = ({
                         required
                       />
                     </div>
+                    {errors.price && (
+                      <p className="text-red-500 text-sm">{errors.price}</p>
+                    )}
                   </div>
                 </div>
 
@@ -337,6 +350,9 @@ const MaterialModal = ({
                     rows={4}
                     required
                   />
+                  {errors.description && (
+                    <p className="text-red-500 text-sm">{errors.description}</p>
+                  )}
                 </div>
               </div>
 
@@ -416,6 +432,9 @@ const MaterialModal = ({
                       </div>
                     </div>
                   ))}
+                  {errors.attributes && (
+                    <p className="text-red-500 text-sm">{errors.attributes}</p>
+                  )}
                 </div>
               )}
 
@@ -537,6 +556,9 @@ const MaterialModal = ({
                       </div>
                     ))}
                   </div>
+                )}
+                {errors.options && (
+                  <p className="text-red-500 text-sm mt-4">{errors.options}</p>
                 )}
               </div>
 

@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
 import { BudgetContext } from "../context/BudgetContext";
+import { validateRequiredText } from "../utils/validation";
 
 const VendorList = () => {
   const { vendors, addVendor } = useContext(BudgetContext);
@@ -9,15 +10,24 @@ const VendorList = () => {
     specialty: "",
     notes: "",
   });
+  const [errors, setErrors] = useState({});
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewVendor((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: name === "name" ? validateRequiredText(value, "Vendor name") : "",
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!newVendor.name) return;
+    const nextErrors = {
+      name: validateRequiredText(newVendor.name, "Vendor name"),
+    };
+    setErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) return;
 
     const vendorToAdd = {
       ...newVendor,
@@ -48,6 +58,7 @@ const VendorList = () => {
               placeholder="Vendor Name"
               required
             />
+            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
           </div>
           <div className="form-group">
             <input

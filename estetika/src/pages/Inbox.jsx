@@ -5,14 +5,12 @@ import UserList from "../components/inbox/UserList";
 import ChatWindow from "../components/inbox/ChatWindow";
 import Cookies from "js-cookie";
 import {
+  FiArrowLeft,
   FiSend,
   FiPaperclip,
-  FiMic,
-  FiSmile,
-  FiBell,
-  FiMenu,
 } from "react-icons/fi";
 import defaultProfile from "../assets/images/user.png";
+import { trimValue, validateFile } from "../utils/validation";
 
 function Inbox() {
   const storedUserId = localStorage.getItem("id");
@@ -24,6 +22,8 @@ function Inbox() {
   const [content, setContent] = useState("");
   const [search, setSearch] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [showMobileList, setShowMobileList] = useState(true);
+  const [chatError, setChatError] = useState("");
 
   const selectedUserRef = useRef(selectedUser);
   const userIdRef = useRef(userId);
@@ -125,6 +125,9 @@ function Inbox() {
   const handleUserSelect = (user) => {
     setSelectedUser(user);
     fetchMessages(user);
+    if (window.innerWidth < 1024) {
+      setShowMobileList(false);
+    }
     // Mark all messages from this user as read
     if (user && user._id) {
       axios.post(
@@ -143,15 +146,24 @@ function Inbox() {
   };
 
   const sendMessage = () => {
-    if (!content || !selectedUser) return;
+    const trimmedContent = trimValue(content);
+    if (!selectedUser) {
+      setChatError("Select a conversation before sending a message.");
+      return;
+    }
+    if (!trimmedContent) {
+      setChatError("Message cannot be empty.");
+      return;
+    }
+    setChatError("");
     socket.emit("send_private_message", {
       sender: userId,
       recipientId: selectedUser._id,
-      content,
+      content: trimmedContent,
     });
     setMessages((prev) => [
       ...prev,
-      { sender: userId, content, timestamp: new Date() },
+      { sender: userId, content: trimmedContent, timestamp: new Date() },
     ]);
     setContent("");
     // Mark all messages from this user as read (replying counts as read)
@@ -172,6 +184,16 @@ function Inbox() {
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+    if (!selectedUser) {
+      setChatError("Select a conversation before sending a file.");
+      return;
+    }
+    const fileError = validateFile(file, { label: "File", maxSizeMb: 10 });
+    if (fileError) {
+      setChatError(fileError);
+      return;
+    }
+    setChatError("");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -208,6 +230,7 @@ function Inbox() {
       socket.emit("send_private_file", fileMessage);
     } catch (error) {
       console.error("File upload failed:", error);
+      setChatError("File upload failed.");
     }
   };
 
@@ -227,6 +250,25 @@ function Inbox() {
   }, []);
 
   useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setShowMobileList(true);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedUser) {
+      setShowMobileList(true);
+    }
+  }, [selectedUser]);
+
+  useEffect(() => {
     const handleFileMessage = (fileMessage) => {
       const selected = selectedUserRef.current;
       if (fileMessage.sender === selected?._id) {
@@ -242,8 +284,12 @@ function Inbox() {
   }, []);
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans">
-      <div className="w-1/5 bg-white border-r border-gray-200 flex flex-col pt-12 max-h-full">
+    <div className="flex min-h-[calc(100vh-50px)] bg-gray-50 font-sans lg:overflow-hidden">
+      <div
+        className={`${
+          !selectedUser || showMobileList ? "flex" : "hidden"
+        } min-h-[calc(100vh-50px)] w-full flex-col bg-white border-r border-gray-200 lg:flex lg:w-[320px] lg:max-w-[320px]`}
+      >
         <div className="p-4 border-b border-gray-100">
           <input
             type="text"
@@ -265,10 +311,22 @@ function Inbox() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col bg-gray-50 mt-12">
+      <div
+        className={`${
+          selectedUser ? "flex" : "hidden"
+        } min-h-[calc(100vh-50px)] min-w-0 flex-1 flex-col bg-gray-50 lg:flex`}
+      >
         {selectedUser ? (
           <>
-            <div className="bg-white px-6 py-4 border-b border-gray-200 flex items-center gap-3">
+            <div className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-4 sm:px-6">
+              <button
+                type="button"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 lg:hidden"
+                onClick={() => setShowMobileList(true)}
+                aria-label="Back to conversations"
+              >
+                <FiArrowLeft size={18} />
+              </button>
               {selectedUser.profileImage ? (
                 <img
                   src={selectedUser.profileImage}
@@ -294,20 +352,28 @@ function Inbox() {
               </div>
             </div>
 
-            <div className="flex-1 px-6 py-5">
+            <div className="flex-1 min-h-0 px-3 py-4 sm:px-6 sm:py-5">
               <ChatWindow messages={messages} userId={userId} />
             </div>
 
-            <div className="bg-white px-6 py-4 border-t border-gray-200">
+            <div className="border-t border-gray-200 bg-white px-4 py-4 sm:px-6">
               <div className="flex items-center gap-3">
                 <input
                   className="flex-1 px-4 py-3 border border-gray-300 rounded-full text-sm outline-none focus:border-blue-500"
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={(e) => {
+                    setContent(e.target.value);
+                    setChatError("");
+                  }}
                   placeholder="Type message here..."
-                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
                 />
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2">
                   <label className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
                     <FiPaperclip size={16} />
                     <input
@@ -325,10 +391,13 @@ function Inbox() {
                   </button>
                 </div>
               </div>
+              {chatError && (
+                <p className="mt-2 text-red-500 text-sm">{chatError}</p>
+              )}
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
+          <div className="hidden flex-1 items-center justify-center text-gray-500 lg:flex">
             <div className="text-center">
               <div className="text-6xl mb-4">💬</div>
               <h3 className="text-xl font-semibold mb-2">

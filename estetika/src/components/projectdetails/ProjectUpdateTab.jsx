@@ -4,6 +4,11 @@ import Cookies from "js-cookie";
 import { useOutletContext } from "react-router-dom";
 import Modal from "react-modal";
 import { FaTrash, FaInfoCircle } from "react-icons/fa";
+import {
+  trimValue,
+  validateFile,
+  validateRequiredText,
+} from "../../utils/validation";
 
 const ProjectUpdateTab = () => {
   const [update, setUpdate] = useState(null);
@@ -18,6 +23,7 @@ const ProjectUpdateTab = () => {
     imageLink: "",
   });
   const [selectedImage, setSelectedImage] = useState(null);
+  const [updateErrors, setUpdateErrors] = useState({});
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   const { project } = useOutletContext();
@@ -75,8 +81,19 @@ const ProjectUpdateTab = () => {
       return;
     }
 
-    if (!newUpdate.description) {
-      setMessage("Description is required.");
+    const nextErrors = {
+      description: validateRequiredText(newUpdate.description, "Description"),
+      image: selectedImage
+        ? validateFile(selectedImage, {
+            label: "Image",
+            allowedMimePrefixes: ["image/"],
+            maxSizeMb: 10,
+          })
+        : "",
+    };
+    setUpdateErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) {
+      setMessage("Please fix the highlighted fields.");
       return;
     }
 
@@ -112,7 +129,7 @@ const ProjectUpdateTab = () => {
 
       // 2. Post update with or without imageLink
       const body = {
-        description: newUpdate.description,
+        description: trimValue(newUpdate.description),
         imageLink: imageLink,
         projectId: project._id,
         clientId: project.projectCreator._id,
@@ -131,6 +148,7 @@ const ProjectUpdateTab = () => {
         setClosing(false);
         setNewUpdate({ description: "", imageLink: "" });
         setSelectedImage(null);
+        setUpdateErrors({});
       }, 300);
       // Optionally, refetch updates here
       setTimeout(() => window.location.reload(), 400);
@@ -174,6 +192,7 @@ const ProjectUpdateTab = () => {
       setClosing(false);
       setNewUpdate({ description: "", imageLink: "" });
       setSelectedImage(null);
+      setUpdateErrors({});
     }, 300);
   };
 
@@ -321,12 +340,24 @@ const ProjectUpdateTab = () => {
             <textarea
               placeholder="Describe the progress, changes, or updates you've made..."
               value={newUpdate.description}
-              onChange={(e) =>
-                setNewUpdate({ ...newUpdate, description: e.target.value })
-              }
+              onChange={(e) => {
+                setNewUpdate({ ...newUpdate, description: e.target.value });
+                setUpdateErrors((prev) => ({
+                  ...prev,
+                  description: validateRequiredText(
+                    e.target.value,
+                    "Description"
+                  ),
+                }));
+              }}
               className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] resize-none transition-all bg-white"
               rows={5}
             />
+            {updateErrors.description && (
+              <p className="text-red-500 text-sm">
+                {updateErrors.description}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -342,7 +373,17 @@ const ProjectUpdateTab = () => {
                 accept="image/*"
                 onChange={(e) => {
                   if (e.target.files && e.target.files[0]) {
-                    setSelectedImage(e.target.files[0]);
+                    const file = e.target.files[0];
+                    const fileError = validateFile(file, {
+                      label: "Image",
+                      allowedMimePrefixes: ["image/"],
+                      maxSizeMb: 10,
+                    });
+                    setSelectedImage(fileError ? null : file);
+                    setUpdateErrors((prev) => ({
+                      ...prev,
+                      image: fileError,
+                    }));
                   }
                 }}
                 className="hidden"
@@ -377,6 +418,9 @@ const ProjectUpdateTab = () => {
                 </div>
               </label>
             </div>
+            {updateErrors.image && (
+              <p className="text-red-500 text-sm">{updateErrors.image}</p>
+            )}
 
             {/* Image Preview */}
             {selectedImage && (

@@ -426,9 +426,9 @@ export default function MaterialDetailsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 px-10 py-10">
-        <div className="flex gap-4">
-          <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-10 xl:grid-cols-2">
+        <div className="flex flex-col-reverse gap-4 sm:flex-row">
+          <div className="flex gap-4 overflow-x-auto pb-1 sm:flex-col sm:overflow-visible">
             {material.image?.map((img, idx) => (
               <img
                 key={idx}
@@ -442,11 +442,11 @@ export default function MaterialDetailsPage() {
               />
             ))}
           </div>
-          <div className="flex-1 flex items-center">
+          <div className="flex min-w-0 flex-1 items-center justify-center">
             <img
               src={material.image?.[mainImageIdx]}
               alt="main"
-              className="w-[45rem] h-[28rem] rounded-lg shadow-md object-contain bg-white"
+              className="h-[16rem] w-full max-w-full rounded-lg bg-white object-contain shadow-md sm:h-[22rem] xl:h-[28rem] xl:max-w-[45rem]"
             />
           </div>
         </div>
@@ -502,7 +502,7 @@ export default function MaterialDetailsPage() {
             </div>
           ) : (
             userRole === "designer" && (
-              <div className="mt-6 flex items-center gap-4">
+              <div className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                 <div className="flex items-center border px-2 rounded">
                   <Button
                     className="px-2 py-1 hover:bg-gray-100"
@@ -535,7 +535,7 @@ export default function MaterialDetailsPage() {
               similarProducts.length > 0 &&
               "Similar Products"}
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 min-h-[180px]">
+          <div className="grid min-h-[180px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {fetchingSimilarProduct ? (
               <div className="col-span-4 flex items-center justify-center text-gray-400 text-lg py-10">
                 Loading similar products...

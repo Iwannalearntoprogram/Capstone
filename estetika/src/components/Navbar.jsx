@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaRegBell } from "react-icons/fa";
+import { FiMenu } from "react-icons/fi";
 import axios from "axios";
 import Cookies from "js-cookie";
 import logo from "../assets/images/logo-moss.png";
@@ -14,22 +15,19 @@ const Navbar = ({ toggleSidebar }) => {
   const notifRef = useRef();
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
-
-  // Get user from auth store
   const { user } = useAuthStore();
   const username = user?.fullName || user?.username || "User";
   const role = (() => {
     if (!user?.role || typeof user.role !== "string") return "";
     const roleLower = user.role.toLowerCase();
     if (roleLower === "storage_admin") return "Storage Admin";
-    const formatted = user.role.replace(/[_-]+/g, " ");
-    return formatted
+    return user.role
+      .replace(/[_-]+/g, " ")
       .split(" ")
-      .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ""))
+      .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : ""))
       .join(" ");
   })();
 
-  // Fetch notifications from API
   useEffect(() => {
     const fetchNotifications = async () => {
       if (!user?.id) return;
@@ -43,23 +41,22 @@ const Navbar = ({ toggleSidebar }) => {
             },
           }
         );
-        // Ensure notifications is always an array
-        let notifs = res.data.notifications;
-        if (notifs) {
-          if (Array.isArray(notifs)) {
-            setNotifications(notifs);
-          } else {
-            setNotifications([notifs]);
-          }
+
+        const notifs = res.data.notifications;
+        if (Array.isArray(notifs)) {
+          setNotifications(notifs);
+        } else if (notifs) {
+          setNotifications([notifs]);
         } else {
           setNotifications([]);
         }
-      } catch (err) {
+      } catch {
         setNotifications([]);
       }
     };
+
     fetchNotifications();
-  }, [user?.id]);
+  }, [serverUrl, user?.id]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -67,38 +64,39 @@ const Navbar = ({ toggleSidebar }) => {
         setShowNotifications(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 w-full h-[50px] bg-[#1D3C34] text-white flex items-center justify-between px-5 shadow-md z-50">
-      {/* Left */}
-      <div className="flex items-center space-x-4">
+    <div className="fixed top-0 left-0 z-50 flex h-[50px] w-full items-center justify-between gap-3 bg-[#1D3C34] px-3 text-white shadow-md sm:px-5">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-4">
         <button
+          type="button"
           onClick={toggleSidebar}
-          className="text-[20px] text-white focus:outline-none"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-white focus:outline-none focus:ring-2 focus:ring-white/50"
+          aria-label="Toggle navigation"
         >
-          ☰
+          <FiMenu className="h-5 w-5" />
         </button>
-        <div className="text-white font-semibold text-lg flex items-center">
-          <span className="mr-1">Estetika</span>
-          <span className="mx-1">|</span>
-          <img src={logo} alt="logo" className="h-5 w-auto" />
+        <div className="flex min-w-0 items-center text-sm font-semibold sm:text-lg">
+          <span className="truncate">Estetika</span>
+          <span className="mx-1 hidden sm:inline">|</span>
+          <img src={logo} alt="logo" className="hidden h-5 w-auto sm:block" />
         </div>
       </div>
 
-      {/* Right */}
-      <div className="relative" ref={notifRef}>
-        <div className="flex items-center space-x-4">
-          <button onClick={() => setShowNotifications(!showNotifications)}>
-            <FaRegBell className="w-5 h-5 text-white cursor-pointer" />
+      <div className="relative shrink-0" ref={notifRef}>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <button type="button" onClick={() => setShowNotifications((prev) => !prev)}>
+            <FaRegBell className="h-5 w-5 cursor-pointer text-white" />
           </button>
           <div
-            className="flex gap-4 cursor-pointer"
+            className="flex cursor-pointer items-center gap-2 sm:gap-4"
             onClick={() => navigate("/dashboard/profile")}
           >
-            <div className="text-right">
+            <div className="hidden text-right md:block">
               <div className="text-sm font-semibold">{username}</div>
               <div className="text-xs text-gray-300">{role}</div>
             </div>
@@ -111,18 +109,13 @@ const Navbar = ({ toggleSidebar }) => {
         </div>
 
         {showNotifications && (
-          <div className="absolute right-32 mt-4 w-80 bg-white text-black rounded-lg shadow-xl z-50 p-4 border">
-            <h3 className="text-lg font-semibold mb-2 text-center">
-              Notifications
-            </h3>
-            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+          <div className="absolute right-0 mt-4 w-[min(20rem,calc(100vw-1rem))] rounded-lg border bg-white p-4 text-black shadow-xl sm:w-80">
+            <h3 className="mb-2 text-center text-lg font-semibold">Notifications</h3>
+            <div className="max-h-[400px] space-y-3 overflow-y-auto">
               {notifications.length === 0 && (
-                <div className="text-center text-gray-400 text-sm">
-                  No notifications.
-                </div>
+                <div className="text-center text-sm text-gray-400">No notifications.</div>
               )}
               {notifications.map((notif, index) => {
-                // Determine route based on notification type or attached IDs
                 let route = null;
                 if (notif.event) {
                   route = `/calendar?eventId=${notif.event}`;
@@ -131,10 +124,11 @@ const Navbar = ({ toggleSidebar }) => {
                 } else if (notif.task) {
                   route = `/tasks/${notif.task}`;
                 }
+
                 return (
                   <div
                     key={notif._id || index}
-                    className={`flex items-start space-x-3 cursor-pointer hover:bg-gray-100 rounded-md p-2 transition ${
+                    className={`flex cursor-pointer items-start space-x-3 rounded-md p-2 transition hover:bg-gray-100 ${
                       route ? "hover:shadow" : ""
                     }`}
                     onClick={() => {
@@ -144,11 +138,9 @@ const Navbar = ({ toggleSidebar }) => {
                       }
                     }}
                   >
-                    <span className="text-xl">{notif.icon || "🔔"}</span>
+                    <span className="text-xl">{notif.icon || "!"}</span>
                     <div className="flex-1">
-                      <p className="font-semibold">
-                        {notif.title || "Notification"}
-                      </p>
+                      <p className="font-semibold">{notif.title || "Notification"}</p>
                       <p className="text-sm text-gray-600">{notif.message}</p>
                       <p className="text-xs text-gray-400">
                         {notif.time || notif.createdAt

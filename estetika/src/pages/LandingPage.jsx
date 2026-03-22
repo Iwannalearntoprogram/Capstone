@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaInstagram, FaYoutube } from "react-icons/fa";
+import { FiMenu, FiX } from "react-icons/fi";
 import logo from "../assets/images/logo-moss-2.webp";
 // Project images
 import projectModernResidential from "../assets/images/project-modern-residential.webp";
@@ -13,6 +14,8 @@ import projectDiningRoom from "../assets/images/about-us-image.webp";
 const URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 
 function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const handleDownloadApp = () => {
     // Download APK from backend server
     const downloadUrl = `${URL}/downloads/Moss.apk`;
@@ -36,6 +39,7 @@ function LandingPage() {
         block: "start",
       });
     }
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -88,25 +92,73 @@ function LandingPage() {
                 </a>
               </div>
             </div>
-            <Link
-              to="/login"
-              className="bg-[#1D3C34] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#16442A] transition"
-            >
-              Login
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                to="/login"
+                className="bg-[#1D3C34] text-white px-3 sm:px-4 py-2 rounded-md text-sm font-medium hover:bg-[#16442A] transition"
+              >
+                Login
+              </Link>
+              <button
+                type="button"
+                className="md:hidden flex h-10 w-10 items-center justify-center rounded-md border border-gray-200 text-gray-700"
+                onClick={() => setMobileMenuOpen((prev) => !prev)}
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? (
+                  <FiX className="h-5 w-5" />
+                ) : (
+                  <FiMenu className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-gray-100 py-3">
+              <div className="flex flex-col gap-2">
+                <a
+                  href="#about"
+                  onClick={(e) => handleSmoothScroll(e, "about")}
+                  className="text-gray-700 hover:text-[#1D3C34] px-2 py-2 text-sm font-medium transition"
+                >
+                  About Us
+                </a>
+                <a
+                  href="#projects"
+                  onClick={(e) => handleSmoothScroll(e, "projects")}
+                  className="text-gray-700 hover:text-[#1D3C34] px-2 py-2 text-sm font-medium transition"
+                >
+                  Projects
+                </a>
+                <a
+                  href="#work-with-us"
+                  onClick={(e) => handleSmoothScroll(e, "work-with-us")}
+                  className="text-gray-700 hover:text-[#1D3C34] px-2 py-2 text-sm font-medium transition"
+                >
+                  Work With Us
+                </a>
+                <a
+                  href="#contact"
+                  onClick={(e) => handleSmoothScroll(e, "contact")}
+                  className="text-gray-700 hover:text-[#1D3C34] px-2 py-2 text-sm font-medium transition"
+                >
+                  Contact
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-gray-100 to-gray-200 py-20 pt-32">
+      <section className="relative bg-gradient-to-br from-gray-100 to-gray-200 py-16 pt-28 sm:py-20 sm:pt-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <p className="text-sm text-gray-600 uppercase tracking-wide mb-4">
                 CREATING STANDOUT INTERIORS AT MOMENTS THAT CALL FOR IT
               </p>
-              <h1 className="text-5xl font-light text-gray-900 mb-6">
+              <h1 className="text-4xl sm:text-5xl font-light text-gray-900 mb-6">
                 Where Vision Meets Sophistication
               </h1>
               <p className="text-lg text-gray-600 mb-8">
@@ -131,7 +183,7 @@ function LandingPage() {
                 </a>
               </div>
             </div>
-            <div className="relative rounded-lg h-96 overflow-hidden">
+            <div className="relative rounded-lg h-72 sm:h-96 overflow-hidden">
               <img
                 src={projectElegantLiving}
                 alt="Elegant living room with gold circular lighting and luxury cream sofa"
@@ -187,7 +239,7 @@ function LandingPage() {
       <section id="projects" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-light text-gray-900 mb-8">
+            <h2 className="text-3xl sm:text-4xl font-light text-gray-900 mb-8">
               Featured Projects
             </h2>
           </div>
@@ -288,7 +340,7 @@ function LandingPage() {
               How It Works
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="bg-[#1D3C34] text-white w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
                 1
@@ -344,7 +396,7 @@ function LandingPage() {
       {/* Footer */}
       <footer id="contact" className="bg-[#1D3C34] text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             <div>
               <h3 className="text-lg font-medium mb-4">Contact & Info</h3>
               <div className="space-y-2">

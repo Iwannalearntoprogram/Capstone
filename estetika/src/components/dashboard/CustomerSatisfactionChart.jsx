@@ -61,8 +61,8 @@ const CustomerSatisfactionChart = () => {
         data={data}
         margin={{
           top: 10,
-          right: 30,
-          left: 0,
+          right: 8,
+          left: -18,
           bottom: 0,
         }}
       >
@@ -91,7 +91,7 @@ const CustomerSatisfactionChart = () => {
         </defs>
 
         <CartesianGrid vertical={false} />
-        <XAxis dataKey="year" />
+        <XAxis dataKey="year" tick={{ fontSize: 11 }} minTickGap={8} />
         <Tooltip />
         <Area
           type="monotone"

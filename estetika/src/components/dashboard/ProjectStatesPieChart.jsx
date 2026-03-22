@@ -49,14 +49,14 @@ const ProjectStatesPieChart = ({ data }) => {
 
   const CustomLegend = ({ payload }) => {
     return (
-      <div className="flex flex-wrap justify-center gap-4 mt-4">
+      <div className="mt-4 flex flex-wrap justify-center gap-3">
         {payload.map((entry, index) => (
           <div key={index} className="flex items-center gap-2">
             <div
               className="w-3 h-3 rounded-full"
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-xs font-medium text-gray-700 sm:text-sm">
               {entry.value}:{" "}
               {dataToShow.find((d) => d.name === entry.value)?.value || 0}
             </span>
@@ -72,9 +72,9 @@ const ProjectStatesPieChart = ({ data }) => {
         <Pie
           data={dataToShow}
           cx="50%"
-          cy="50%"
-          innerRadius={40}
-          outerRadius={80}
+          cy="46%"
+          innerRadius={34}
+          outerRadius={72}
           paddingAngle={2}
           dataKey="value"
         >

@@ -147,3 +147,83 @@
 .event-modal label {
   font-family: "Avenir Next Cyr";
 }
+
+.calendar-shell .rbc-calendar {
+  min-height: 0;
+  min-width: 0;
+}
+
+.calendar-shell .rbc-header {
+  padding: 10px 4px;
+  font-size: 0.875rem;
+}
+
+.calendar-shell .rbc-date-cell {
+  padding-right: 6px;
+}
+
+.calendar-shell .rbc-event {
+  font-size: 0.75rem;
+}
+
+.calendar-shell .rbc-month-row {
+  min-height: 5rem;
+}
+
+@media (max-width: 639px) {
+  .calendar-shell .rbc-month-view {
+    font-size: 0.75rem;
+  }
+
+  .calendar-shell .rbc-month-row {
+    min-height: 4rem;
+  }
+
+  .calendar-shell .rbc-row-content {
+    z-index: 2;
+  }
+
+  .calendar-shell .rbc-header {
+    padding: 8px 2px;
+    font-size: 0.75rem;
+  }
+
+  .calendar-shell .rbc-date-cell {
+    padding-right: 4px;
+    font-size: 0.75rem;
+  }
+
+  .calendar-shell .rbc-button-link {
+    font-size: 0.75rem;
+  }
+
+  .calendar-shell .rbc-event,
+  .calendar-shell .rbc-show-more {
+    font-size: 0.6875rem;
+  }
+
+  .calendar-shell .rbc-time-view,
+  .calendar-shell .rbc-agenda-view {
+    font-size: 0.875rem;
+  }
+
+  .calendar-shell .rbc-agenda-view table {
+    font-size: 0.8125rem;
+  }
+
+  .calendar-shell .rbc-time-header-content,
+  .calendar-shell .rbc-time-content {
+    min-width: 0;
+  }
+
+  .calendar-shell .rbc-time-gutter,
+  .calendar-shell .rbc-time-header-gutter {
+    width: 52px;
+    min-width: 52px;
+  }
+
+  .calendar-shell .rbc-agenda-date-cell,
+  .calendar-shell .rbc-agenda-time-cell {
+    white-space: nowrap;
+  }
+}

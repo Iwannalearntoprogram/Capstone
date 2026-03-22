@@ -12,6 +12,7 @@ import {
 import Cookies from "js-cookie";
 import axios from "axios";
 import { useOutletContext } from "react-router-dom";
+import { trimValue, validateFile, validateRequiredText } from "../../utils/validation";
 
 export default function FilesTab() {
   const { project, refreshProject } = useOutletContext();
@@ -23,6 +24,8 @@ export default function FilesTab() {
   const [newFileName, setNewFileName] = useState("");
   const [newFileContent, setNewFileContent] = useState("");
   const [creatingFile, setCreatingFile] = useState(false);
+  const [newFileError, setNewFileError] = useState("");
+  const [uploadError, setUploadError] = useState("");
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -115,12 +118,20 @@ export default function FilesTab() {
   };
 
   const handleCreateNewFile = async () => {
-    if (!newFileName.trim()) {
-      alert("File name is required");
+    const trimmedName = trimValue(newFileName);
+    if (!trimmedName) {
+      setNewFileError("File name is required.");
       return;
     }
+    if (!/^[A-Za-z0-9._\-\s]+$/.test(trimmedName)) {
+      setNewFileError(
+        "File name can only use letters, numbers, spaces, dots, hyphens, and underscores."
+      );
+      return;
+    }
+    setNewFileError("");
     // Basic safe filename enforcement
-    let safeName = newFileName.trim();
+    let safeName = trimmedName;
     if (!safeName.includes(".")) {
       safeName += ".txt";
     }
@@ -148,7 +159,7 @@ export default function FilesTab() {
     } catch (e) {
       const msg =
         e?.response?.data?.message || e?.message || "Failed to create file";
-      alert(msg);
+      setNewFileError(msg);
     } finally {
       setCreatingFile(false);
     }
@@ -163,6 +174,25 @@ export default function FilesTab() {
 
     const file = e.target.files[0];
     if (file) {
+      const fileError = validateFile(file, {
+        label: "File",
+        allowedMimePrefixes: ["image/"],
+        allowedMimeTypes: [
+          "text/csv",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-excel",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/pdf",
+        ],
+        maxSizeMb: 10,
+      });
+      if (fileError) {
+        setUploadError(fileError);
+        e.target.value = "";
+        return;
+      }
+      setUploadError("");
       setSelectedFile((prev) => [...prev, file || []]);
     }
   };
@@ -179,6 +209,10 @@ export default function FilesTab() {
     let fileLink;
 
     try {
+      if (!selectedFile[0]) {
+        setUploadError("Please select a file to upload.");
+        return;
+      }
       formData.append("document", selectedFile[0]);
 
       const res = await axios.post(
@@ -195,6 +229,9 @@ export default function FilesTab() {
       fileLink = res.data.documentLink;
     } catch (error) {
       console.error("Error adding file:", error);
+      setUploadError(
+        error?.response?.data?.message || "Error uploading file."
+      );
     }
 
     try {
@@ -212,8 +249,12 @@ export default function FilesTab() {
       );
       refreshProject && refreshProject();
       setSelectedFile([]);
+      setUploadError("");
     } catch (error) {
       console.error("Error adding file:", error);
+      setUploadError(
+        error?.response?.data?.message || "Error adding file to project."
+      );
     }
   };
 
@@ -421,10 +462,18 @@ export default function FilesTab() {
               <input
                 type="text"
                 value={newFileName}
-                onChange={(e) => setNewFileName(e.target.value)}
+                onChange={(e) => {
+                  setNewFileName(e.target.value);
+                  setNewFileError(
+                    validateRequiredText(e.target.value, "File name")
+                  );
+                }}
                 placeholder="specifications.txt"
                 className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
               />
+              {newFileError && (
+                <p className="text-red-500 text-sm mt-1">{newFileError}</p>
+              )}
             </label>
             <label className="block mb-4 text-sm font-medium text-gray-700">
               Content (optional)
@@ -463,6 +512,9 @@ export default function FilesTab() {
             </div>
           </div>
         </div>
+      )}
+      {uploadError && (
+        <p className="text-red-500 text-sm mt-3">{uploadError}</p>
       )}
     </div>
   );

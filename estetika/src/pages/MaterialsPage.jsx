@@ -7,6 +7,14 @@ import Toast from "../components/common/Toast";
 import { FiSearch, FiPlus } from "react-icons/fi";
 import Cookies from "js-cookie";
 import axios from "axios";
+import {
+  trimValue,
+  validateAttributeGroups,
+  validateFile,
+  validateOptionRows,
+  validatePositiveNumber,
+  validateRequiredText,
+} from "../utils/validation";
 
 const MaterialsPage = () => {
   const [materialsData, setMaterialsData] = useState([]);
@@ -30,6 +38,7 @@ const MaterialsPage = () => {
   const [selectedImagePreviews, setSelectedImagePreviews] = useState([]);
   const [existingImageUrls, setExistingImageUrls] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [materialErrors, setMaterialErrors] = useState({});
 
   // Delete modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -80,6 +89,36 @@ const MaterialsPage = () => {
   }, [serverUrl]);
 
   const handleAddMaterial = async () => {
+    const nextErrors = {
+      name: validateRequiredText(newMaterial.name, "Material name"),
+      company: validateRequiredText(newMaterial.company, "Company"),
+      category: validateRequiredText(newMaterial.category, "Category"),
+      price: validatePositiveNumber(newMaterial.price, "Base price"),
+      description: validateRequiredText(newMaterial.description, "Description"),
+      options: validateOptionRows(newMaterial.options),
+      attributes: validateAttributeGroups(
+        Array.isArray(newMaterial.attributes)
+          ? newMaterial.attributes.reduce((groups, attribute) => {
+              const existing = groups.find((group) => group.key === attribute.key);
+              if (existing) {
+                existing.values.push(attribute.value);
+              } else {
+                groups.push({
+                  key: attribute.key,
+                  values: [attribute.value],
+                });
+              }
+              return groups;
+            }, [])
+          : []
+      ),
+    };
+    setMaterialErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) {
+      showToast("Please fix the highlighted fields.", "warning");
+      return;
+    }
+
     const formData = new FormData();
     const token = Cookies.get("token");
 
@@ -111,29 +150,17 @@ const MaterialsPage = () => {
     // Create material with new data structure
     try {
       const materialData = {
-        name: newMaterial.name,
-        company: newMaterial.company,
+        name: trimValue(newMaterial.name),
+        company: trimValue(newMaterial.company),
         price: Number(newMaterial.price),
-        description: newMaterial.description,
+        description: trimValue(newMaterial.description),
         image: imageUrls,
-        options: newMaterial.options.filter((opt) => opt.option.trim() !== ""),
-        category: newMaterial.category,
+        options: newMaterial.options.filter((opt) => trimValue(opt.option) !== ""),
+        category: trimValue(newMaterial.category),
         attributes: Array.isArray(newMaterial.attributes)
           ? newMaterial.attributes
           : [],
       };
-
-      if (
-        !materialData.name ||
-        !materialData.company ||
-        !materialData.category
-      ) {
-        showToast(
-          "Please fill in all required fields (Name, Company, Category).",
-          "warning"
-        );
-        return;
-      }
 
       const res = await axios.post(`${serverUrl}/api/material`, materialData, {
         headers: {
@@ -174,11 +201,41 @@ const MaterialsPage = () => {
     setExistingImageUrls(Array.isArray(material.image) ? material.image : []);
     setSelectedImages([]);
     setSelectedImagePreviews([]);
+    setMaterialErrors({});
     setShowModal(true);
   };
 
   const handleUpdateMaterial = async () => {
     if (!editingMaterialId) return;
+    const nextErrors = {
+      name: validateRequiredText(newMaterial.name, "Material name"),
+      company: validateRequiredText(newMaterial.company, "Company"),
+      category: validateRequiredText(newMaterial.category, "Category"),
+      price: validatePositiveNumber(newMaterial.price, "Base price"),
+      description: validateRequiredText(newMaterial.description, "Description"),
+      options: validateOptionRows(newMaterial.options),
+      attributes: validateAttributeGroups(
+        Array.isArray(newMaterial.attributes)
+          ? newMaterial.attributes.reduce((groups, attribute) => {
+              const existing = groups.find((group) => group.key === attribute.key);
+              if (existing) {
+                existing.values.push(attribute.value);
+              } else {
+                groups.push({
+                  key: attribute.key,
+                  values: [attribute.value],
+                });
+              }
+              return groups;
+            }, [])
+          : []
+      ),
+    };
+    setMaterialErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) {
+      showToast("Please fix the highlighted fields.", "warning");
+      return;
+    }
     setIsSaving(true);
     const token = Cookies.get("token");
 
@@ -208,12 +265,12 @@ const MaterialsPage = () => {
     }
 
     const payload = {
-      name: newMaterial.name,
-      company: newMaterial.company,
+      name: trimValue(newMaterial.name),
+      company: trimValue(newMaterial.company),
       price: Number(newMaterial.price),
-      description: newMaterial.description,
+      description: trimValue(newMaterial.description),
       options: newMaterial.options,
-      category: newMaterial.category,
+      category: trimValue(newMaterial.category),
       image: [...existingImageUrls, ...uploadedUrls],
       attributes: Array.isArray(newMaterial.attributes)
         ? newMaterial.attributes
@@ -305,6 +362,40 @@ const MaterialsPage = () => {
 
   const handleMaterialChange = (field, value) => {
     setNewMaterial({ ...newMaterial, [field]: value });
+    setMaterialErrors((prev) => ({
+      ...prev,
+      [field]:
+        field === "name"
+          ? validateRequiredText(value, "Material name")
+          : field === "company"
+          ? validateRequiredText(value, "Company")
+          : field === "category"
+          ? validateRequiredText(value, "Category")
+          : field === "price"
+          ? validatePositiveNumber(value, "Base price")
+          : field === "description"
+          ? validateRequiredText(value, "Description")
+          : field === "attributes"
+          ? validateAttributeGroups(
+              Array.isArray(value)
+                ? value.reduce((groups, attribute) => {
+                    const existing = groups.find(
+                      (group) => group.key === attribute.key
+                    );
+                    if (existing) {
+                      existing.values.push(attribute.value);
+                    } else {
+                      groups.push({
+                        key: attribute.key,
+                        values: [attribute.value],
+                      });
+                    }
+                    return groups;
+                  }, [])
+                : []
+            )
+          : "",
+    }));
   };
 
   const resetForm = () => {
@@ -323,6 +414,7 @@ const MaterialsPage = () => {
     setSelectedImages([]);
     setSelectedImagePreviews([]);
     setExistingImageUrls([]);
+    setMaterialErrors({});
   };
 
   const addOptionField = () => {
@@ -346,15 +438,41 @@ const MaterialsPage = () => {
       [field]: field === "addToPrice" ? Number(value) : value,
     };
     setNewMaterial({ ...newMaterial, options: updatedOptions });
+    setMaterialErrors((prev) => ({
+      ...prev,
+      options: validateOptionRows(updatedOptions),
+    }));
   };
 
   const removeOption = (index) => {
     const updatedOptions = newMaterial.options.filter((_, i) => i !== index);
     setNewMaterial({ ...newMaterial, options: updatedOptions });
+    setMaterialErrors((prev) => ({
+      ...prev,
+      options: validateOptionRows(updatedOptions),
+    }));
   };
 
   const handleImageSelection = (e) => {
     const files = Array.from(e.target.files);
+    const fileError = files.find((file) =>
+      validateFile(file, {
+        label: "Image",
+        allowedMimePrefixes: ["image/"],
+        maxSizeMb: 10,
+      })
+    );
+    if (fileError) {
+      showToast(
+        validateFile(fileError, {
+          label: "Image",
+          allowedMimePrefixes: ["image/"],
+          maxSizeMb: 10,
+        }),
+        "error"
+      );
+      return;
+    }
     setSelectedImages((prev) => [...prev, ...files]);
 
     // Create preview URLs for the new files
@@ -472,7 +590,7 @@ const MaterialsPage = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-7xl mx-auto p-6">
+      <div className="w-full max-w-7xl mx-auto p-4 sm:p-6">
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -486,14 +604,14 @@ const MaterialsPage = () => {
             </div>
 
             {/* Search and Add Button */}
-            <div className="flex items-center gap-4">
-              <div className="relative">
+            <div className="flex w-full flex-col items-stretch gap-4 sm:w-auto sm:flex-row sm:items-center">
+              <div className="relative w-full sm:w-auto">
                 <input
                   type="text"
                   placeholder="Search materials..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-64 p-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent shadow-sm transition-all"
+                  className="w-full p-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent shadow-sm transition-all sm:w-64"
                 />
                 <FiSearch
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -505,7 +623,7 @@ const MaterialsPage = () => {
               {(canAddMaterial || canManageMaterials) && (
                 <button
                   onClick={() => setShowModal(true)}
-                  className="bg-gradient-to-r from-[#1D3C34] to-[#2a5a47] text-white px-6 py-3 rounded-xl hover:from-[#145c4b] hover:to-[#1e4638] transition-all flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1D3C34] to-[#2a5a47] px-6 py-3 text-white shadow-lg transition-all hover:from-[#145c4b] hover:to-[#1e4638] hover:shadow-xl"
                 >
                   <FiPlus size={20} />
                   Add Material
@@ -516,8 +634,8 @@ const MaterialsPage = () => {
 
           {/* Stats Bar */}
           <div className="mt-6 bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-[#1D3C34]">
                     {materialsData.length}
@@ -544,7 +662,7 @@ const MaterialsPage = () => {
         </div>
 
         {/* Filters - always visible */}
-        <div className="flex flex-wrap gap-4 mb-4 items-center justify-center bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+        <div className="mb-4 grid grid-cols-1 items-end gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-5">
           {/* Category Filter (dropdown) */}
           <div className="flex flex-col items-start">
             <span className="font-semibold text-gray-700 mb-1">Category</span>
@@ -582,23 +700,23 @@ const MaterialsPage = () => {
             <span className="font-semibold text-gray-700 mb-1">
               Price Range
             </span>
-            <div className="flex gap-2">
+            <div className="flex w-full flex-col gap-2 sm:flex-row">
               <input
                 type="number"
                 value={priceMin}
                 onChange={(e) => setPriceMin(e.target.value)}
                 placeholder="Min"
-                className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 w-36 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+                className="w-full rounded-xl border border-gray-300 bg-gray-100 px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34] sm:w-36"
                 min="0"
                 max="100000000"
               />
-              <span className="mx-1 text-gray-500">-</span>
+              <span className="mx-1 hidden text-gray-500 sm:inline">-</span>
               <input
                 type="number"
                 value={priceMax}
                 onChange={(e) => setPriceMax(e.target.value)}
                 placeholder="Max"
-                className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 w-36 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+                className="w-full rounded-xl border border-gray-300 bg-gray-100 px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34] sm:w-36"
                 min="0"
                 max="100000000"
               />
@@ -607,7 +725,7 @@ const MaterialsPage = () => {
           {/* Sales/Price Sort Toggle */}
           <div className="flex flex-col items-start">
             <span className="font-semibold text-gray-700 mb-1">Sort By</span>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() =>
                   setSortType(
@@ -651,7 +769,7 @@ const MaterialsPage = () => {
                 setPriceMin("");
                 setPriceMax("");
               }}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#1D3C34] to-[#2a5a47] text-white font-semibold shadow hover:from-[#145c4b] hover:to-[#1e4638] transition-all border border-[#1D3C34]"
+              className="w-full rounded-xl border border-[#1D3C34] bg-gradient-to-r from-[#1D3C34] to-[#2a5a47] px-4 py-2 font-semibold text-white shadow transition-all hover:from-[#145c4b] hover:to-[#1e4638]"
             >
               Clear Filters
             </button>
@@ -790,6 +908,7 @@ const MaterialsPage = () => {
           onAddOption={addOptionField}
           onUpdateOption={updateOption}
           onRemoveOption={removeOption}
+          errors={materialErrors}
         />
       )}
 

@@ -1,6 +1,11 @@
 import React, { useState, useContext } from "react";
 import { BudgetContext } from "../context/BudgetContext";
 import DatePicker from "react-datepicker";
+import {
+  validateFile,
+  validatePositiveNumber,
+  validateRequiredText,
+} from "../utils/validation";
 // import 'react-datepicker/dist/react-datepicker.css';
 
 const ExpenseForm = () => {
@@ -14,10 +19,20 @@ const ExpenseForm = () => {
     date: new Date(),
     receipt: null,
   });
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setExpense((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]:
+        name === "description"
+          ? validateRequiredText(value, "Description")
+          : name === "amount"
+          ? validatePositiveNumber(value, "Amount")
+          : "",
+    }));
   };
 
   const handleDateChange = (date) => {
@@ -25,11 +40,37 @@ const ExpenseForm = () => {
   };
 
   const handleFileChange = (e) => {
-    setExpense((prev) => ({ ...prev, receipt: e.target.files[0] }));
+    const file = e.target.files[0];
+    setExpense((prev) => ({ ...prev, receipt: file }));
+    setErrors((prev) => ({
+      ...prev,
+      receipt: file
+        ? validateFile(file, {
+            label: "Receipt",
+            allowedMimePrefixes: ["image/"],
+            allowedMimeTypes: ["application/pdf"],
+            maxSizeMb: 10,
+          })
+        : "",
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const nextErrors = {
+      description: validateRequiredText(expense.description, "Description"),
+      amount: validatePositiveNumber(expense.amount, "Amount"),
+      receipt: expense.receipt
+        ? validateFile(expense.receipt, {
+            label: "Receipt",
+            allowedMimePrefixes: ["image/"],
+            allowedMimeTypes: ["application/pdf"],
+            maxSizeMb: 10,
+          })
+        : "",
+    };
+    setErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) return;
     const newExpense = {
       ...expense,
       id: Date.now(),
@@ -61,6 +102,9 @@ const ExpenseForm = () => {
           onChange={handleChange}
           required
         />
+        {errors.description && (
+          <p className="text-red-500 text-sm">{errors.description}</p>
+        )}
       </div>
 
       <div className="form-row">
@@ -75,6 +119,9 @@ const ExpenseForm = () => {
             step="0.01"
             required
           />
+          {errors.amount && (
+            <p className="text-red-500 text-sm">{errors.amount}</p>
+          )}
         </div>
 
         <div className="form-group">
@@ -118,6 +165,9 @@ const ExpenseForm = () => {
       <div className="form-group">
         <label>Receipt (optional)</label>
         <input type="file" accept="image/*,.pdf" onChange={handleFileChange} />
+        {errors.receipt && (
+          <p className="text-red-500 text-sm">{errors.receipt}</p>
+        )}
       </div>
 
       <button type="submit" className="submit-btn">

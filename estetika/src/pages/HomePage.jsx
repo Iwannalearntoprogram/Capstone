@@ -13,6 +13,12 @@ import {
   createRecommendation,
   deleteRecommendation,
 } from "../services/designRecommendationService";
+import {
+  trimValue,
+  validateFile,
+  validatePositiveNumber,
+  validateRequiredText,
+} from "../utils/validation";
 
 const calculateCategorySales = (materials = []) => {
   const categorySales = {};
@@ -83,7 +89,9 @@ const HomePage = () => {
   const [mobileContentLoading, setMobileContentLoading] = useState(true);
   const [editingAboutText, setEditingAboutText] = useState(false);
   const [aboutTextValue, setAboutTextValue] = useState("");
+  const [aboutTextError, setAboutTextError] = useState("");
   const [uploadingCarouselImage, setUploadingCarouselImage] = useState(false);
+  const [carouselMessage, setCarouselMessage] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const [projectsData, setProjectsData] = useState([]);
@@ -107,6 +115,8 @@ const HomePage = () => {
   const [brokenRecImages, setBrokenRecImages] = useState({});
   const [drModalOpen, setDrModalOpen] = useState(false);
   const [drUploadingImage, setDrUploadingImage] = useState(false);
+  const [drErrors, setDrErrors] = useState({});
+  const [drMessage, setDrMessage] = useState("");
   const roomTypes = [
     "Living Room",
     "Bedroom",
@@ -1096,11 +1106,17 @@ const HomePage = () => {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
+    const fileError = validateFile(file, {
+      label: "Image",
+      allowedMimePrefixes: ["image/"],
+      maxSizeMb: 10,
+    });
+    if (fileError) {
+      setCarouselMessage(fileError);
       return;
     }
 
+    setCarouselMessage("");
     setUploadingCarouselImage(true);
     try {
       const token = Cookies.get("token");
@@ -1185,12 +1201,15 @@ const HomePage = () => {
   };
 
   const handleSaveAboutText = async () => {
+    const nextError = validateRequiredText(aboutTextValue, "About text");
+    setAboutTextError(nextError);
+    if (nextError) return;
     try {
       const token = Cookies.get("token");
       const response = await axios.patch(
         `${serverUrl}/api/mobile-home-content/about`,
         {
-          aboutText: aboutTextValue,
+          aboutText: trimValue(aboutTextValue),
         },
         {
           headers: {
@@ -1210,6 +1229,7 @@ const HomePage = () => {
 
   const handleCancelEditAboutText = () => {
     setAboutTextValue(mobileContent?.aboutText || "");
+    setAboutTextError("");
     setEditingAboutText(false);
   };
 
@@ -1263,20 +1283,29 @@ const HomePage = () => {
 
   const handleDrCreate = async (e) => {
     e?.preventDefault?.();
-    if (!drForm.title || !drForm.min || !drForm.max) {
-      alert("Title and budget min/max are required");
-      return;
-    }
     const min = Number(drForm.min);
     const max = Number(drForm.max);
-    if (Number.isNaN(min) || Number.isNaN(max) || min >= max) {
-      alert("Budget min must be less than max and both must be numbers");
+    const nextErrors = {
+      title: validateRequiredText(drForm.title, "Title"),
+      min: validatePositiveNumber(drForm.min, "Budget minimum"),
+      max: validatePositiveNumber(drForm.max, "Budget maximum"),
+      budget:
+        !Number.isNaN(min) &&
+        !Number.isNaN(max) &&
+        min >= max
+          ? "Budget minimum must be less than budget maximum."
+          : "",
+    };
+    setDrErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) {
+      setDrMessage("Please fix the highlighted fields.");
       return;
     }
+    setDrMessage("");
     setDrSubmitting(true);
     try {
       const payload = {
-        title: drForm.title,
+        title: trimValue(drForm.title),
         imageLink: normalizeDriveLink(drForm.imageLink) || undefined,
         specification: drForm.specification || undefined,
         budgetRange: { min, max },
@@ -1330,10 +1359,16 @@ const HomePage = () => {
 
   const handleDrImageFile = async (file) => {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
+    const fileError = validateFile(file, {
+      label: "Image",
+      allowedMimePrefixes: ["image/"],
+      maxSizeMb: 10,
+    });
+    if (fileError) {
+      setDrErrors((prev) => ({ ...prev, imageLink: fileError }));
       return;
     }
+    setDrErrors((prev) => ({ ...prev, imageLink: "" }));
     setDrUploadingImage(true);
     try {
       const token = Cookies.get("token");
@@ -1360,11 +1395,11 @@ const HomePage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen grid grid-cols-8 gap-4 auto-rows-max">
+    <div className="grid min-h-screen w-full max-w-full grid-cols-1 auto-rows-max gap-3 overflow-x-hidden lg:grid-cols-2 lg:gap-4 xl:grid-cols-8">
       {" "}
       {/* project overview */}
-      <div className="col-span-5 bg-white rounded-xl p-4 shadow-md min-h-[300px]">
-        <div className="mb-8 flex justify-between items-start">
+      <div className="min-h-[300px] min-w-0 overflow-hidden rounded-xl bg-white p-3 shadow-md sm:p-4 lg:col-span-2 xl:col-span-5">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="font-bold">Projects Overview</h2>
             <p className="text-sm">Projects Summary</p>
@@ -1372,7 +1407,7 @@ const HomePage = () => {
           <button
             onClick={generateProjectPDF}
             disabled={generatingPDF}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700 disabled:bg-blue-300 sm:w-auto"
           >
             {generatingPDF ? (
               <>
@@ -1399,62 +1434,62 @@ const HomePage = () => {
             )}
           </button>
         </div>
-        <div className="flex gap-4 justify-center">
-          <div className="h-40 w-40 bg-green-100 rounded-xl relative">
-            <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="relative h-32 rounded-xl bg-green-100 sm:h-40">
+            <p className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl font-bold sm:text-5xl">
               {`${overviewLoading ? "0" : projectStates.active}`}
             </p>
-            <p className="w-full text-center absolute bottom-4 ">
+            <p className="absolute bottom-3 w-full px-2 text-center text-sm sm:bottom-4 sm:text-base">
               Active Projects
             </p>
           </div>
-          <div className="h-40 w-40 bg-amber-100 rounded-xl relative">
-            <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
+          <div className="relative h-32 rounded-xl bg-amber-100 sm:h-40">
+            <p className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl font-bold sm:text-5xl">
               {`${overviewLoading ? "0" : projectStates.completed}`}
             </p>
-            <p className="w-full text-center absolute bottom-4 ">
+            <p className="absolute bottom-3 w-full px-2 text-center text-sm sm:bottom-4 sm:text-base">
               Completed Projects
             </p>
           </div>
-          <div className="h-40 w-40 bg-red-100 rounded-xl relative">
-            <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
+          <div className="relative h-32 rounded-xl bg-red-100 sm:h-40">
+            <p className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl font-bold sm:text-5xl">
               {`${overviewLoading ? "0" : projectStates.delayed}`}
             </p>
-            <p className="w-full text-center absolute bottom-4 ">Delayed</p>
+            <p className="absolute bottom-3 w-full px-2 text-center text-sm sm:bottom-4 sm:text-base">Delayed</p>
           </div>
-          <div className="h-40 w-40 bg-purple-100 rounded-xl relative">
-            <p className="absolute font-bold text-5xl top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2">
+          <div className="relative h-32 rounded-xl bg-purple-100 sm:h-40">
+            <p className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl font-bold sm:text-5xl">
               {`${overviewLoading ? "0" : projectStates.cancelled}`}
             </p>
-            <p className="w-full text-center absolute bottom-4 ">Cancelled</p>
+            <p className="absolute bottom-3 w-full px-2 text-center text-sm sm:bottom-4 sm:text-base">Cancelled</p>
           </div>
         </div>
       </div>{" "}
       {/* customer satisfaction */}
-      <div className="col-span-3 bg-white rounded-xl p-4 shadow-md min-h-[300px]">
+      <div className="min-h-[300px] min-w-0 overflow-hidden rounded-xl bg-white p-3 shadow-md sm:p-4 lg:col-span-2 xl:col-span-3">
         <h2 className="font-bold mb-4">Customer Satisfaction</h2>
-        <div className="h-52 w-full">
+        <div className="h-48 w-full sm:h-52">
           <CustomerSatisfactionChart />
         </div>
       </div>{" "}
       {/* project states distribution */}
       <div
         id="project-completion-chart"
-        className="col-span-4 bg-white rounded-xl p-8 shadow-md min-h-[300px]"
+        className="min-h-[300px] min-w-0 overflow-hidden rounded-xl bg-white p-3 shadow-md sm:p-8 lg:col-span-1 xl:col-span-4"
       >
         <h2 className="font-bold mb-4">Project Completion</h2>
-        <div className="h-52 w-full">
+        <div className="h-56 w-full sm:h-52">
           <ProjectStatesPieChart data={projectStates} />
         </div>
       </div>{" "}
       {/* project top materials */}
-      <div className="col-span-4 bg-white rounded-xl p-4 shadow-md min-h-[300px]">
+      <div className="min-h-[300px] min-w-0 overflow-hidden rounded-xl bg-white p-3 shadow-md sm:p-4 lg:col-span-1 xl:col-span-4">
         <h2 className="font-bold mb-4">Top Materials</h2>
         {materialsLoading ? (
           <p>Loading materials...</p>
         ) : (
-          <div className="flex gap-4">
-            <table className="min-w-full text-sm table-fixed">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-0 table-fixed text-xs sm:min-w-[32rem] sm:text-sm">
               <thead>
                 <tr>
                   <th className="px-4 py-2 text-left font-semibold w-[10%]">
@@ -1475,7 +1510,7 @@ const HomePage = () => {
                     className="border-b border-gray-200 h-12"
                   >
                     <td className="px-4 py-2 w-[10%]">{idx + 1}</td>
-                    <td className="px-4 py-2 w-[40%]">{item.category}</td>
+                    <td className="px-4 py-2 w-[40%] break-words">{item.category}</td>
                     <td className="px-4 py-2 w-[50%]">
                       <div className="flex qitems-center gap-2">
                         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
@@ -1533,23 +1568,23 @@ const HomePage = () => {
       {/* Designers Section */}
       {role === "admin" ||
         (role === "storage_admin" && (
-          <div className="col-span-8 bg-white rounded-xl p-4 shadow-md">
+          <div className="min-w-0 overflow-hidden rounded-xl bg-white p-3 shadow-md sm:p-4 lg:col-span-2 xl:col-span-8">
             {" "}
-            <div className="mb-4 flex justify-between items-center">
+            <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="font-bold text-lg">Team Designers</h2>
                 <p className="text-sm text-gray-600">
                   Active designers in the system
                 </p>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <div className="text-sm text-gray-500">
                   Total: {designers.length} designers
                 </div>
                 <button
                   onClick={generateDesignersPDF}
                   disabled={generatingDesignersPDF}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700 disabled:bg-indigo-300 sm:w-auto"
                 >
                   {generatingDesignersPDF ? (
                     <>
@@ -1600,7 +1635,7 @@ const HomePage = () => {
                 <p>No designers found</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 lg:gap-4">
                 {designers.map((designer) => {
                   const designerProjects = projectsData.filter(
                     (project) =>
@@ -1632,7 +1667,7 @@ const HomePage = () => {
                   return (
                     <div
                       key={designer._id}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-300 group flex flex-col h-fit"
+                      className="group flex h-fit flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-lg sm:p-6"
                     >
                       {/* Header with Avatar and Basic Info */}
                       <div className="flex items-center space-x-4 mb-4">
@@ -1774,7 +1809,7 @@ const HomePage = () => {
         ))}
       {/* Mobile App Home Content Management Section */}
       {role === "admin" && (
-        <div className="col-span-8 bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl p-8 shadow-lg border border-slate-200">
+        <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-blue-50 p-3 shadow-lg sm:p-6 lg:col-span-2 xl:col-span-8 xl:p-8">
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-blue-600 rounded-lg">
@@ -1868,6 +1903,11 @@ const HomePage = () => {
                         )}
                       </label>
                     </div>
+                    {carouselMessage && (
+                      <p className="mt-3 text-red-500 text-sm">
+                        {carouselMessage}
+                      </p>
+                    )}
                   </div>
 
                   {/* Image Count and Stats */}
@@ -2046,7 +2086,12 @@ const HomePage = () => {
                       <div className="relative">
                         <textarea
                           value={aboutTextValue}
-                          onChange={(e) => setAboutTextValue(e.target.value)}
+                          onChange={(e) => {
+                            setAboutTextValue(e.target.value);
+                            setAboutTextError(
+                              validateRequiredText(e.target.value, "About text")
+                            );
+                          }}
                           className="w-full h-40 p-4 border border-slate-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-slate-700"
                           placeholder="Enter compelling about us text that will engage your mobile app users..."
                         />
@@ -2054,6 +2099,9 @@ const HomePage = () => {
                           {aboutTextValue.length} characters
                         </div>
                       </div>
+                      {aboutTextError && (
+                        <p className="text-red-500 text-sm">{aboutTextError}</p>
+                      )}
                       <div className="flex gap-3">
                         <button
                           onClick={handleSaveAboutText}
@@ -2327,7 +2375,7 @@ const HomePage = () => {
       )}
       {/* Design Recommendation Manager (Admin) */}
       {(role === "admin" || role === "storage_admin") && (
-        <div className="col-span-8 bg-white rounded-xl p-6 shadow-md border border-slate-200">
+        <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-md sm:p-6 lg:col-span-2 xl:col-span-8">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="font-bold text-lg">
@@ -2351,7 +2399,7 @@ const HomePage = () => {
 
           {/* Modal */}
           {drModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div
                 className="absolute inset-0 bg-black/40"
                 onClick={() => setDrModalOpen(false)}
@@ -2381,12 +2429,20 @@ const HomePage = () => {
                     </label>
                     <input
                       value={drForm.title}
-                      onChange={(e) =>
-                        setDrForm((f) => ({ ...f, title: e.target.value }))
-                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setDrForm((f) => ({ ...f, title: value }));
+                        setDrErrors((prev) => ({
+                          ...prev,
+                          title: validateRequiredText(value, "Title"),
+                        }));
+                      }}
                       className="w-full border border-slate-300 rounded-lg px-3 py-2"
                       placeholder="Warm Contemporary Living"
                     />
+                    {drErrors.title && (
+                      <p className="mt-1 text-red-500 text-sm">{drErrors.title}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm text-slate-600 mb-1">
@@ -2414,13 +2470,30 @@ const HomePage = () => {
                       </label>
                       <input
                         value={drForm.min}
-                        onChange={(e) =>
-                          setDrForm((f) => ({ ...f, min: e.target.value }))
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setDrForm((f) => ({ ...f, min: value }));
+                          setDrErrors((prev) => ({
+                            ...prev,
+                            min: validatePositiveNumber(
+                              value,
+                              "Budget minimum"
+                            ),
+                            budget:
+                              value &&
+                              drForm.max &&
+                              Number(value) >= Number(drForm.max)
+                                ? "Budget minimum must be less than budget maximum."
+                                : "",
+                          }));
+                        }}
                         className="w-full border border-slate-300 rounded-lg px-3 py-2"
                         placeholder="80000"
                         inputMode="numeric"
                       />
+                      {drErrors.min && (
+                        <p className="mt-1 text-red-500 text-sm">{drErrors.min}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm text-slate-600 mb-1">
@@ -2428,15 +2501,37 @@ const HomePage = () => {
                       </label>
                       <input
                         value={drForm.max}
-                        onChange={(e) =>
-                          setDrForm((f) => ({ ...f, max: e.target.value }))
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setDrForm((f) => ({ ...f, max: value }));
+                          setDrErrors((prev) => ({
+                            ...prev,
+                            max: validatePositiveNumber(
+                              value,
+                              "Budget maximum"
+                            ),
+                            budget:
+                              drForm.min &&
+                              value &&
+                              Number(drForm.min) >= Number(value)
+                                ? "Budget minimum must be less than budget maximum."
+                                : "",
+                          }));
+                        }}
                         className="w-full border border-slate-300 rounded-lg px-3 py-2"
                         placeholder="120000"
                         inputMode="numeric"
                       />
+                      {drErrors.max && (
+                        <p className="mt-1 text-red-500 text-sm">{drErrors.max}</p>
+                      )}
                     </div>
                   </div>
+                  {drErrors.budget && (
+                    <p className="md:col-span-3 -mt-2 text-red-500 text-sm">
+                      {drErrors.budget}
+                    </p>
+                  )}
                   <div className="md:col-span-2">
                     <label className="block text-sm text-slate-600 mb-1">
                       Design Preferences (comma or 'and' separated)
@@ -2517,16 +2612,22 @@ const HomePage = () => {
                       <div className="mt-3">
                         <input
                           value={drForm.imageLink}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             setDrForm((f) => ({
                               ...f,
                               imageLink: e.target.value,
-                            }))
-                          }
+                            }));
+                            setDrErrors((prev) => ({ ...prev, imageLink: "" }));
+                          }}
                           className="w-full border border-slate-300 rounded-lg px-3 py-2"
                           placeholder="https:// (Google Drive, direct URL, etc.)"
                         />
                       </div>
+                      {drErrors.imageLink && (
+                        <p className="mt-2 text-red-500 text-sm">
+                          {drErrors.imageLink}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="md:col-span-3">
@@ -2545,6 +2646,11 @@ const HomePage = () => {
                       placeholder="Short description..."
                     />
                   </div>
+                  {drMessage && (
+                    <p className="md:col-span-3 text-red-500 text-sm">
+                      {drMessage}
+                    </p>
+                  )}
                   <div className="md:col-span-3 flex items-center justify-end gap-2">
                     <button
                       type="button"

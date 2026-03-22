@@ -7,6 +7,12 @@ import axios from "axios";
 import ProjectCard from "../components/project/ProjectCard";
 import ProjectDetailsModal from "../components/project/ProjectDetailsModal";
 import ConfirmationModal from "../components/project/ConfirmationModal";
+import {
+  trimValue,
+  validateDateOrder,
+  validatePositiveNumber,
+  validateRequiredText,
+} from "../utils/validation";
 
 const ProjectsPage = () => {
   const token = Cookies.get("token");
@@ -29,6 +35,8 @@ const ProjectsPage = () => {
     startDate: "",
     endDate: "",
   });
+  const [projectFormErrors, setProjectFormErrors] = useState({});
+  const [projectFormMessage, setProjectFormMessage] = useState("");
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [deletedProjects, setDeletedProjects] = useState([]);
@@ -161,11 +169,26 @@ const ProjectsPage = () => {
 
   const handleAddProject = async (e) => {
     e.preventDefault();
+    const nextErrors = {
+      title: validateRequiredText(newProject.title, "Project title"),
+      description: validateRequiredText(newProject.description, "Description"),
+      budget: validatePositiveNumber(newProject.budget, "Budget"),
+      dates: validateDateOrder(newProject.startDate, newProject.endDate),
+    };
+    setProjectFormErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) {
+      setProjectFormMessage("Please fix the highlighted fields.");
+      return;
+    }
+
     try {
+      setProjectFormMessage("");
       await axios.post(
         `${serverUrl}/api/project`,
         {
           ...newProject,
+          title: trimValue(newProject.title),
+          description: trimValue(newProject.description),
           budget: Number(newProject.budget),
           projectCreator: id,
         },
@@ -183,6 +206,7 @@ const ProjectsPage = () => {
         startDate: "",
         endDate: "",
       });
+      setProjectFormErrors({});
 
       const response = await axios.get(
         `${serverUrl}/api/project?projectCreator=${id}`,
@@ -195,7 +219,7 @@ const ProjectsPage = () => {
       setProjects(response.data.project);
       setFilteredProjects(response.data.project);
     } catch (err) {
-      alert("Failed to add project.");
+      setProjectFormMessage("Failed to add project.");
     }
   };
 
@@ -289,7 +313,7 @@ const ProjectsPage = () => {
   const isAdmin = userRole === "admin";
 
   return (
-    <div className="px-4 py-8 mx-auto">
+    <div className="mx-auto px-1 py-4 sm:px-2 sm:py-6">
       {/* Add Project Modal - Only show if admin */}
       {showModal && isAdmin && (
         <div className="fixed inset-0 bg-black/20 bg-opacity-40 flex items-center justify-center z-50 backdrop-blur-xs">
@@ -317,6 +341,11 @@ const ProjectsPage = () => {
                   }
                   required
                 />
+                {projectFormErrors.title && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {projectFormErrors.title}
+                  </p>
+                )}
               </label>
               <label className="">
                 Description
@@ -332,6 +361,11 @@ const ProjectsPage = () => {
                   }
                   required
                 />
+                {projectFormErrors.description && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {projectFormErrors.description}
+                  </p>
+                )}
               </label>
               <label className="">
                 Budget
@@ -348,6 +382,11 @@ const ProjectsPage = () => {
                   }
                   required
                 />
+                {projectFormErrors.budget && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {projectFormErrors.budget}
+                  </p>
+                )}
               </label>
               <label className="">
                 Start Date
@@ -378,7 +417,15 @@ const ProjectsPage = () => {
                   }
                   required
                 />
+                {projectFormErrors.dates && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {projectFormErrors.dates}
+                  </p>
+                )}
               </label>
+              {projectFormMessage && (
+                <p className="text-red-500 text-sm">{projectFormMessage}</p>
+              )}
               <button
                 type="submit"
                 className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition"
@@ -391,10 +438,10 @@ const ProjectsPage = () => {
       )}
 
       {/* Search Bar and Add Project Button */}
-      <div className="flex justify-between items-center mb-6 gap-4">
+      <div className="flex flex-col items-stretch gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-800">Projects</h1>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 w-full max-w-sm border rounded-full px-3 py-2 shadow-sm">
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+          <div className="flex w-full items-center gap-2 rounded-full border px-3 py-2 shadow-sm sm:w-[20rem]">
             <FaSearch className="text-gray-400" />
             <input
               type="text"
@@ -420,7 +467,7 @@ const ProjectsPage = () => {
           {isAdmin && (
             <button
               onClick={() => setShowRecycleBin((prev) => !prev)}
-              className="bg-gray-200 text-gray-800 px-4 py-2 rounded-full hover:bg-gray-300 transition flex items-center gap-2 whitespace-nowrap"
+              className="flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-gray-200 px-4 py-2 text-gray-800 transition hover:bg-gray-300"
             >
               Recycle Bin
             </button>
@@ -434,7 +481,7 @@ const ProjectsPage = () => {
           <h2 className="text-lg font-semibold mb-2">
             Recycle Bin ({deletedProjects.length})
           </h2>
-          <div className="grid grid-cols-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
             {deletedProjects.map((item) => (
               <ProjectCard
                 key={item._id}

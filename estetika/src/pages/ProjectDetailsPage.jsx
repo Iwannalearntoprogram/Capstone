@@ -5,6 +5,12 @@ import Cookies from "js-cookie";
 
 import ReactModal from "react-modal";
 import EditProjectModal from "../components/project/EditProjectModal";
+import {
+  trimValue,
+  validateDateOrder,
+  validatePositiveNumber,
+  validateRequiredText,
+} from "../utils/validation";
 
 function ProjectDetailsPage() {
   const { id } = useParams();
@@ -18,6 +24,8 @@ function ProjectDetailsPage() {
     startDate: "",
     endDate: "",
   });
+  const [editErrors, setEditErrors] = useState({});
+  const [editMessage, setEditMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   // Prepare modal data when opening
@@ -30,6 +38,8 @@ function ProjectDetailsPage() {
         startDate: project.startDate ? project.startDate.slice(0, 10) : "",
         endDate: project.endDate ? project.endDate.slice(0, 10) : "",
       });
+      setEditErrors({});
+      setEditMessage("");
       setIsEditOpen(true);
     }
   };
@@ -39,18 +49,49 @@ function ProjectDetailsPage() {
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditData((prev) => ({ ...prev, [name]: value }));
+    setEditMessage("");
+    setEditErrors((prev) => ({
+      ...prev,
+      [name]:
+        name === "title"
+          ? validateRequiredText(value, "Title")
+          : name === "description"
+          ? validateRequiredText(value, "Description")
+          : name === "budget"
+          ? validatePositiveNumber(value, "Budget")
+          : "",
+      ...(name === "startDate" || name === "endDate"
+        ? {
+            dates: validateDateOrder(
+              name === "startDate" ? value : editData.startDate,
+              name === "endDate" ? value : editData.endDate
+            ),
+          }
+        : {}),
+    }));
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    const nextErrors = {
+      title: validateRequiredText(editData.title, "Title"),
+      description: validateRequiredText(editData.description, "Description"),
+      budget: validatePositiveNumber(editData.budget, "Budget"),
+      dates: validateDateOrder(editData.startDate, editData.endDate),
+    };
+    setEditErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) {
+      setEditMessage("Please fix the highlighted fields.");
+      return;
+    }
     setIsSaving(true);
     try {
       const token = Cookies.get("token");
       await axios.put(
         `${serverUrl}/api/project?id=${id}`,
         {
-          title: editData.title,
-          description: editData.description,
+          title: trimValue(editData.title),
+          description: trimValue(editData.description),
           budget: editData.budget,
           startDate: editData.startDate,
           endDate: editData.endDate,
@@ -62,7 +103,7 @@ function ProjectDetailsPage() {
       closeEditModal();
       fetchProject();
     } catch (err) {
-      alert("Failed to update project.");
+      setEditMessage("Failed to update project.");
     } finally {
       setIsSaving(false);
     }
@@ -106,10 +147,10 @@ function ProjectDetailsPage() {
   ];
 
   return (
-    <div className=" mx-auto px-4 py-8">
+    <div className="mx-auto px-0 py-4 sm:px-2 sm:py-6">
       {/* Project Header */}
       <div className="mb-8">
-        <h1 className="text-3xl text-center font-bold mb-2">
+        <h1 className="text-2xl text-center font-bold mb-2 sm:text-3xl">
           {project?.title || "Project Not Found"}
         </h1>
         {/* Edit Button (hidden if status is pending) */}
@@ -131,18 +172,20 @@ function ProjectDetailsPage() {
           isSaving={isSaving}
           editData={editData}
           onChange={handleEditChange}
+          errors={editErrors}
+          message={editMessage}
         />
       </div>
 
       {/* Tabs */}
-      <div className="mb-8 ">
-        <nav className="flex gap-6 justify-center">
+      <div className="mb-8 overflow-x-auto">
+        <nav className="mx-auto flex min-w-max justify-center gap-4 border-b border-black/5 pb-1 sm:gap-6">
           {tabs.map((tab) => (
             <NavLink
               key={tab.path}
               to={`/dashboard/projects/${id}/${tab.path}`}
               className={({ isActive }) =>
-                `py-2 px-1 border-b-2 transition-colors duration-200 ${
+                `whitespace-nowrap py-2 px-1 border-b-2 transition-colors duration-200 ${
                   isActive
                     ? "border-[#1d3c34] text-[#1d3c34] font-semibold"
                     : "border-transparent text-gray-500 hover:text-[#1d3c34]"
@@ -156,7 +199,7 @@ function ProjectDetailsPage() {
       </div>
 
       {/* Tab Content */}
-      <div className="px-20 rounded-xl  min-h-[200px]">
+      <div className="min-h-[200px] rounded-xl px-0 sm:px-2 lg:px-8">
         <Outlet context={{ project, refreshProject: fetchProject }} />
       </div>
     </div>

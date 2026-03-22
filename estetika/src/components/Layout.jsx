@@ -2,15 +2,13 @@ import React, { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
-import marbleBg from "../assets/images/white-marble-bg.png"; // Import the image
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
   const location = useLocation();
 
-  // Check if current route is /inbox
-  const isInbox = location.pathname.startsWith("/inbox");
+  const isInbox = location.pathname.startsWith("/dashboard/inbox");
 
   return (
     <div
@@ -21,9 +19,19 @@ const Layout = () => {
       <Navbar toggleSidebar={toggleSidebar} />
       <div className="flex flex-1">
         <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+        {sidebarOpen && (
+          <button
+            type="button"
+            className="fixed inset-0 top-[50px] z-40 bg-black/30 lg:hidden"
+            onClick={toggleSidebar}
+            aria-label="Close sidebar"
+          />
+        )}
         <main
           className={`flex-1 text-black ${
-            isInbox ? "" : "p-12 pt-[calc(50px+3rem)]"
+            isInbox
+              ? "pt-[50px]"
+              : "px-1.5 py-6 pt-[74px] sm:px-6 lg:px-8 xl:px-12"
           }`}
         >
           <Outlet />

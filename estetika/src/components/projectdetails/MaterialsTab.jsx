@@ -18,6 +18,13 @@ import {
   FaClock,
 } from "react-icons/fa";
 import Papa from "papaparse"; // Make sure papaparse is installed
+import {
+  trimValue,
+  validateAttributeGroups,
+  validateIntegerMin,
+  validatePositiveNumber,
+  validateRequiredText,
+} from "../../utils/validation";
 
 export default function MaterialsTab() {
   const { project, refreshProject } = useOutletContext();
@@ -40,6 +47,7 @@ export default function MaterialsTab() {
   const [materialAttributes, setMaterialAttributes] = useState([
     { key: "", values: [""] },
   ]);
+  const [customMaterialErrors, setCustomMaterialErrors] = useState({});
   // Request Material state
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [reqCategory, setReqCategory] = useState("");
@@ -49,6 +57,8 @@ export default function MaterialsTab() {
   const [reqBudget, setReqBudget] = useState("");
   const [reqNotes, setReqNotes] = useState("");
   const [isRequesting, setIsRequesting] = useState(false);
+  const [requestErrors, setRequestErrors] = useState({});
+  const [requestMessage, setRequestMessage] = useState("");
   // My Requests state
   const [myRequests, setMyRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
@@ -264,13 +274,14 @@ export default function MaterialsTab() {
   const addMaterialToProj = async (e) => {
     e.preventDefault();
     if (!project || !project._id) return;
+    const nextErrors = {
+      materialName: validateRequiredText(materialName, "Material name"),
+      attributes: validateAttributeGroups(materialAttributes, { required: true }),
+      quantity: validateIntegerMin(quantity, "Quantity", 1),
+    };
+    setCustomMaterialErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) return;
 
-    // Validate material name
-    if (!materialName.trim()) {
-      return alert("Please enter a material name.");
-    }
-
-    // Validate attributes
     const validAttributes = materialAttributes
       .map((attr) => ({
         key: (attr.key || "").trim(),
@@ -279,12 +290,6 @@ export default function MaterialsTab() {
         ),
       }))
       .filter((attr) => attr.key && attr.values.some((v) => v));
-
-    if (validAttributes.length === 0) {
-      return alert("Please add at least one attribute with a value.");
-    }
-
-    if (quantity < 1) return alert("Quantity must be at least 1.");
 
     try {
       const token = Cookies.get("token");
@@ -321,6 +326,7 @@ export default function MaterialsTab() {
       setMaterialName("");
       setMaterialAttributes([{ key: "", values: [""] }]);
       setQuantity(1);
+      setCustomMaterialErrors({});
       if (refreshProject) refreshProject(); // Refresh project data
     } catch (err) {
       console.error(err);
@@ -503,7 +509,19 @@ export default function MaterialsTab() {
 
   const submitMaterialRequest = async () => {
     if (!project || !project._id) return alert("No project context");
-    if (!reqCategory.trim()) return alert("Category is required");
+    const nextErrors = {
+      category: validateRequiredText(reqCategory, "Category"),
+      attributes: validateAttributeGroups(reqAttributes),
+      budgetMax: reqBudget
+        ? validatePositiveNumber(reqBudget, "Budget max")
+        : "",
+    };
+    setRequestErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) {
+      setRequestMessage("Please fix the highlighted fields.");
+      return;
+    }
+    setRequestMessage("");
     setIsRequesting(true);
     try {
       const token = Cookies.get("token");
@@ -526,7 +544,7 @@ export default function MaterialsTab() {
 
       const payload = {
         projectId: project._id,
-        category: reqCategory,
+        category: trimValue(reqCategory),
         attributes: attributesPayload,
         budgetMax: reqBudget ? Number(reqBudget) : undefined,
         notes: reqNotes || undefined,
@@ -543,10 +561,14 @@ export default function MaterialsTab() {
       setReqAttributes([{ key: "", values: [""] }]);
       setReqBudget("");
       setReqNotes("");
+      setRequestErrors({});
+      setRequestMessage("");
       // Refresh requests list
       fetchMyRequests();
     } catch (e) {
-      alert(e?.response?.data?.message || "Failed to submit recommendation");
+      setRequestMessage(
+        e?.response?.data?.message || "Failed to submit recommendation"
+      );
     } finally {
       setIsRequesting(false);
     }
@@ -786,10 +808,10 @@ export default function MaterialsTab() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
+      <div className="min-h-screen overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="flex items-center space-x-4 px-6 py-5">
+          <div className="flex items-center space-x-4 px-4 py-5 sm:px-6">
             <button className="group p-3 hover:bg-gray-100 rounded-xl hover:shadow-md">
               <FaArrowLeft className="h-5 w-5 text-gray-600 group-hover:text-[#1D3C34]" />
             </button>
@@ -806,7 +828,7 @@ export default function MaterialsTab() {
 
         {/* Show admin message if admin */}
         {isAdmin && (
-          <div className="mx-6 my-4 flex items-center gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="mx-4 my-4 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-4 sm:mx-6">
             <FaInfoCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
             <span className="text-sm text-blue-800">
               View only mode - Only designers can add and manage materials
@@ -814,10 +836,10 @@ export default function MaterialsTab() {
           </div>
         )}
 
-        <div className="flex h-screen">
+        <div className="flex min-h-[calc(100vh-10rem)] flex-col lg:flex-row">
           {/* Left Sidebar */}
-          <div className="w-80 bg-white border-r border-gray-200 overflow-y-auto">
-            <div className="p-6">
+          <div className="max-h-[45vh] w-full overflow-y-auto border-b border-gray-200 bg-white lg:max-h-none lg:w-80 lg:min-w-80 lg:border-b-0 lg:border-r">
+            <div className="p-4 sm:p-6">
               {/* Sidebar Header */}
               <div className="mb-8 flex flex-col-reverse gap-4 items-start">
                 <div>
@@ -836,7 +858,7 @@ export default function MaterialsTab() {
                 </div>
                 {/* Only show Add button if not admin */}
                 {!isAdmin && (
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       className="group bg-gradient-to-r from-[#1D3C34] to-[#145c4b] text-white px-4 py-3 rounded-xl hover:shadow-lg flex items-center gap-2"
                       onClick={handleAddClick}
@@ -1089,8 +1111,8 @@ export default function MaterialsTab() {
           </div>
 
           {/* Right Content Area */}
-          <div className="flex-1 overflow-y-auto ">
-            <div className="p-8">
+          <div className="min-w-0 flex-1 overflow-y-auto">
+            <div className="p-4 sm:p-6 lg:p-8">
               {loading && selectedSidebar ? (
                 <div className="text-center py-20">
                   <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center">
@@ -1657,11 +1679,25 @@ export default function MaterialsTab() {
                   <input
                     type="text"
                     value={materialName}
-                    onChange={(e) => setMaterialName(e.target.value)}
+                    onChange={(e) => {
+                      setMaterialName(e.target.value);
+                      setCustomMaterialErrors((prev) => ({
+                        ...prev,
+                        materialName: validateRequiredText(
+                          e.target.value,
+                          "Material name"
+                        ),
+                      }));
+                    }}
                     placeholder="e.g., Eames Style Lounge Chair"
                     className="mt-1 w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
                     required
                   />
+                  {customMaterialErrors.materialName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {customMaterialErrors.materialName}
+                    </p>
+                  )}
                 </label>
 
                 {/* Attributes */}
@@ -1753,6 +1789,11 @@ export default function MaterialsTab() {
                       </div>
                     </div>
                   ))}
+                  {customMaterialErrors.attributes && (
+                    <p className="text-red-500 text-sm mt-2">
+                      {customMaterialErrors.attributes}
+                    </p>
+                  )}
                 </div>
 
                 {/* Quantity */}
@@ -1764,9 +1805,21 @@ export default function MaterialsTab() {
                       min={1}
                       className="mt-1 w-full border border-gray-300 rounded px-3 py-2"
                       value={quantity}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        setQuantity(value);
+                        setCustomMaterialErrors((prev) => ({
+                          ...prev,
+                          quantity: validateIntegerMin(value, "Quantity", 1),
+                        }));
+                      }}
                       required
                     />
+                    {customMaterialErrors.quantity && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {customMaterialErrors.quantity}
+                      </p>
+                    )}
                   </label>
                 </div>
 
@@ -1919,22 +1972,52 @@ export default function MaterialsTab() {
                   <input
                     type="text"
                     value={reqCategory}
-                    onChange={(e) => setReqCategory(e.target.value)}
+                    onChange={(e) => {
+                      setReqCategory(e.target.value);
+                      setRequestErrors((prev) => ({
+                        ...prev,
+                        category: validateRequiredText(
+                          e.target.value,
+                          "Category"
+                        ),
+                      }));
+                    }}
                     placeholder="e.g., Sofa, Lighting, Cabinet"
                     className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
                   />
+                  {requestErrors.category && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {requestErrors.category}
+                    </p>
+                  )}
                 </label>
                 <label className="block text-sm font-medium text-gray-700">
                   Budget Max (optional)
                   <input
                     type="number"
                     value={reqBudget}
-                    onChange={(e) => setReqBudget(e.target.value)}
+                    onChange={(e) => {
+                      setReqBudget(e.target.value);
+                      setRequestErrors((prev) => ({
+                        ...prev,
+                        budgetMax: e.target.value
+                          ? validatePositiveNumber(
+                              e.target.value,
+                              "Budget max"
+                            )
+                          : "",
+                      }));
+                    }}
                     min="0"
                     step="1"
                     placeholder="Optional"
                     className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
                   />
+                  {requestErrors.budgetMax && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {requestErrors.budgetMax}
+                    </p>
+                  )}
                 </label>
               </div>
               <div className="mt-4">
@@ -2021,6 +2104,11 @@ export default function MaterialsTab() {
                     </div>
                   </div>
                 ))}
+                {requestErrors.attributes && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {requestErrors.attributes}
+                  </p>
+                )}
               </div>
               <label className="block text-sm font-medium text-gray-700 mt-2">
                 Notes (optional)
@@ -2033,6 +2121,11 @@ export default function MaterialsTab() {
                 />
               </label>
               <div className="flex justify-center mt-6">
+                {requestMessage && (
+                  <p className="text-red-500 text-sm mb-3">{requestMessage}</p>
+                )}
+              </div>
+              <div className="flex justify-center">
                 <button
                   className="px-4 py-2 bg-[#1D3C34] text-white rounded hover:bg-[#145c4b] transition flex items-center gap-2 disabled:opacity-50"
                   onClick={submitMaterialRequest}

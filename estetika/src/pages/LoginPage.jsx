@@ -1,22 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/images/logo-moss-2.png";
 import marbleBg from "../assets/images/white-marble-bg.png";
 import { useAuthStore } from "../store/AuthStore";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import {
+  trimValue,
+  validateEmail,
+  validateMinPassword,
+  validateOtp,
+} from "../utils/validation";
 
 const URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 
 function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [loginErrors, setLoginErrors] = useState({});
   const [error, setError] = useState("");
   const [otpError, setOtpError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState("");
-  const [authenticated, setAuthenticated] = useState(false);
   const [isSkippingOtp, setIsSkippingOtp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   // Forgot password flow state
@@ -29,10 +35,44 @@ function LoginPage() {
   const [forgotSuccess, setForgotSuccess] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [forgotFieldErrors, setForgotFieldErrors] = useState({});
 
   const navigate = useNavigate();
-  const { login, token, setUserAndToken, checkRecentVerification } =
-    useAuthStore();
+  const { login, setUserAndToken, checkRecentVerification } = useAuthStore();
+
+  const validateLoginForm = () => {
+    const nextErrors = {
+      email: validateEmail(formData.email),
+      password: formData.password ? "" : "Password is required.",
+    };
+    setLoginErrors(nextErrors);
+    return !Object.values(nextErrors).some(Boolean);
+  };
+
+  const validateForgotStepOne = () => {
+    const nextErrors = {
+      email: validateEmail(formData.email),
+      newPassword: validateMinPassword(newPassword, 6),
+      confirmNewPassword: "",
+    };
+
+    if (confirmNewPassword !== newPassword) {
+      nextErrors.confirmNewPassword = "Passwords do not match.";
+    } else if (!confirmNewPassword) {
+      nextErrors.confirmNewPassword = "Please confirm your new password.";
+    }
+
+    setForgotFieldErrors(nextErrors);
+    return !Object.values(nextErrors).some(Boolean);
+  };
+
+  const validateForgotStepTwo = () => {
+    const nextErrors = {
+      forgotOtp: validateOtp(forgotOtp),
+    };
+    setForgotFieldErrors(nextErrors);
+    return !Object.values(nextErrors).some(Boolean);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,13 +80,22 @@ function LoginPage() {
       ...prevData,
       [name]: value,
     }));
+    setLoginErrors((prev) => ({
+      ...prev,
+      [name]: name === "email" ? validateEmail(value) : value ? "" : "Password is required.",
+    }));
   };
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    if (!validateLoginForm()) return;
     setIsSubmitting(true);
 
-    const result = await login(formData.email, formData.password, URL);
+    const result = await login(
+      trimValue(formData.email).toLowerCase(),
+      formData.password,
+      URL
+    );
 
     setIsSubmitting(false);
     if (result.success) {
@@ -54,7 +103,7 @@ function LoginPage() {
       const user = result.user || (result.data && result.data.user);
       console.log("User data:", user);
       if (user && user.isArchived) {
-        alert("You are currently archived. Please contact the admins.");
+        setError("You are currently archived. Please contact the admins.");
         return;
       }
 
@@ -126,10 +175,16 @@ function LoginPage() {
   };
 
   const handleVerifyOtp = async () => {
+    const otpValidationError = validateOtp(otpCode);
+    if (otpValidationError) {
+      setOtpError(otpValidationError);
+      return;
+    }
+
     try {
       const response = await axios.post(`${URL}/api/auth/verify-otp`, {
-        email: formData.email,
-        otp: otpCode,
+        email: trimValue(formData.email).toLowerCase(),
+        otp: trimValue(otpCode),
       });
 
       if (response.status === 200) {
@@ -171,28 +226,18 @@ function LoginPage() {
     setForgotError("");
     setForgotSuccess("");
     setForgotLoading(false);
+    setForgotFieldErrors({});
   };
 
   const handleForgotInitiate = async (e) => {
     e.preventDefault();
     setForgotError("");
     setForgotSuccess("");
-    if (!formData.email) {
-      setForgotError("Please enter your email above first.");
-      return;
-    }
-    if (newPassword.length < 6) {
-      setForgotError("Password must be at least 6 characters.");
-      return;
-    }
-    if (newPassword !== confirmNewPassword) {
-      setForgotError("Passwords do not match.");
-      return;
-    }
+    if (!validateForgotStepOne()) return;
     setForgotLoading(true);
     try {
       await axios.post(`${URL}/api/auth/forgot/initiate`, {
-        email: formData.email,
+        email: trimValue(formData.email).toLowerCase(),
         password: newPassword,
       });
       setForgotStep(2);
@@ -210,15 +255,12 @@ function LoginPage() {
     e.preventDefault();
     setForgotError("");
     setForgotSuccess("");
-    if (!forgotOtp) {
-      setForgotError("Enter the OTP sent to your email.");
-      return;
-    }
+    if (!validateForgotStepTwo()) return;
     setForgotLoading(true);
     try {
       await axios.post(`${URL}/api/auth/forgot/confirm`, {
-        email: formData.email,
-        otp: forgotOtp,
+        email: trimValue(formData.email).toLowerCase(),
+        otp: trimValue(forgotOtp),
       });
       setForgotSuccess("Password reset successful. You can now log in.");
       // Prefill password field for convenience
@@ -240,14 +282,16 @@ function LoginPage() {
     if (resendCooldown > 0) return;
     setForgotError("");
     setForgotSuccess("");
-    if (!formData.email) {
-      setForgotError("Email is required to resend OTP.");
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      setForgotFieldErrors((prev) => ({ ...prev, email: emailError }));
+      setForgotError(emailError);
       return;
     }
     try {
       setForgotLoading(true);
       await axios.post(`${URL}/api/auth/forgot/resend`, {
-        email: formData.email,
+        email: trimValue(formData.email).toLowerCase(),
       });
       setForgotSuccess("OTP re-sent to your email.");
       // start 30s cooldown
@@ -272,7 +316,7 @@ function LoginPage() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center h-screen bg-cover bg-center bg-no-repeat"
+      className="flex flex-col items-center justify-center min-h-screen px-4 py-8 bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${marbleBg})` }}
     >
       {/* OTP Modal */}
@@ -299,9 +343,13 @@ function LoginPage() {
             <input
               type="text"
               value={otpCode}
-              onChange={(e) => setOtpCode(e.target.value)}
+              onChange={(e) => {
+                setOtpCode(e.target.value);
+                setOtpError(validateOtp(e.target.value));
+              }}
               className="w-full p-2 border border-gray-400 rounded mb-3"
               placeholder="Enter OTP"
+              maxLength={6}
             />
             <button
               onClick={handleVerifyOtp}
@@ -368,16 +416,26 @@ function LoginPage() {
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const value = e.target.value;
                       setFormData((prev) => ({
                         ...prev,
-                        email: e.target.value,
-                      }))
-                    }
+                        email: value,
+                      }));
+                      setForgotFieldErrors((prev) => ({
+                        ...prev,
+                        email: validateEmail(value),
+                      }));
+                    }}
                     placeholder="Enter your email"
                     className="w-full p-2 border border-gray-300 rounded"
                     required
                   />
+                  {forgotFieldErrors.email && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {forgotFieldErrors.email}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 text-gray-700">
@@ -386,10 +444,26 @@ function LoginPage() {
                   <input
                     type="password"
                     value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setNewPassword(value);
+                      setForgotFieldErrors((prev) => ({
+                        ...prev,
+                        newPassword: validateMinPassword(value, 6),
+                        confirmNewPassword:
+                          confirmNewPassword && confirmNewPassword !== value
+                            ? "Passwords do not match."
+                            : "",
+                      }));
+                    }}
                     className="w-full p-2 border border-gray-300 rounded"
                     required
                   />
+                  {forgotFieldErrors.newPassword && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {forgotFieldErrors.newPassword}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 text-gray-700">
@@ -398,10 +472,27 @@ function LoginPage() {
                   <input
                     type="password"
                     value={confirmNewPassword}
-                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setConfirmNewPassword(value);
+                      setForgotFieldErrors((prev) => ({
+                        ...prev,
+                        confirmNewPassword:
+                          !value
+                            ? "Please confirm your new password."
+                            : value !== newPassword
+                            ? "Passwords do not match."
+                            : "",
+                      }));
+                    }}
                     className="w-full p-2 border border-gray-300 rounded"
                     required
                   />
+                  {forgotFieldErrors.confirmNewPassword && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {forgotFieldErrors.confirmNewPassword}
+                    </p>
+                  )}
                 </div>
                 {forgotError && (
                   <p className="text-red-500 text-sm" aria-live="polite">
@@ -433,11 +524,24 @@ function LoginPage() {
                   <input
                     type="text"
                     value={forgotOtp}
-                    onChange={(e) => setForgotOtp(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setForgotOtp(value);
+                      setForgotFieldErrors((prev) => ({
+                        ...prev,
+                        forgotOtp: validateOtp(value),
+                      }));
+                    }}
                     className="w-full p-2 border border-gray-300 rounded"
                     placeholder="6-digit code"
                     required
+                    maxLength={6}
                   />
+                  {forgotFieldErrors.forgotOtp && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {forgotFieldErrors.forgotOtp}
+                    </p>
+                  )}
                 </div>
                 {forgotError && (
                   <p className="text-red-500 text-sm" aria-live="polite">
@@ -481,8 +585,8 @@ function LoginPage() {
       </Link>
 
       {/* Login UI */}
-      <div className="flex flex-col md:flex-row shadow-lg rounded-lg overflow-hidden max-w-4xl z-10">
-        <div className="flex flex-col items-center justify-center p-12 md:w-1/2 bg-white shadow-md rounded-l-lg">
+      <div className="flex w-full max-w-4xl flex-col md:flex-row shadow-lg rounded-2xl overflow-hidden z-10">
+        <div className="flex flex-col items-center justify-center p-6 sm:p-8 lg:p-12 md:w-1/2 bg-white shadow-md">
           <div className="mb-8">
             <img src={logo} alt="logo" className="h-16 w-auto mx-auto" />
           </div>
@@ -499,6 +603,11 @@ function LoginPage() {
               onChange={handleChange}
               required
             />
+            {loginErrors.email && (
+              <p className="text-red-500 text-sm mb-3 px-2">
+                {loginErrors.email}
+              </p>
+            )}
             <div className="relative mb-4">
               <input
                 type={showPassword ? "text" : "password"}
@@ -524,6 +633,11 @@ function LoginPage() {
   </span>
               </button>
             </div>
+            {loginErrors.password && (
+              <p className="text-red-500 text-sm mb-3 px-2">
+                {loginErrors.password}
+              </p>
+            )}
             <button
               type="submit"
               className="mb-8 w-full bg-[#1D3C34] text-white py-2 rounded-full hover:bg-[#16442A] transition"
@@ -552,7 +666,7 @@ function LoginPage() {
           </button>
         </div>
 
-        <div className="flex flex-col items-center justify-center bg-[#1D3C34] text-white p-8 md:w-1/2 rounded-r-lg">
+        <div className="flex flex-col items-center justify-center bg-[#1D3C34] text-white p-6 sm:p-8 md:w-1/2 min-h-40">
           <p className="text-center mb-6">
             Log in and keep your projects moving forward!
           </p>

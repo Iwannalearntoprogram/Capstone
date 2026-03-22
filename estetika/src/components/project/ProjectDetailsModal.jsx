@@ -8,6 +8,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
   const [status, setStatus] = useState(project.status);
   const [designers, setDesigners] = useState([]);
   const [selectedDesigner, setSelectedDesigner] = useState("");
+  const [assignError, setAssignError] = useState("");
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -65,9 +66,13 @@ const ProjectDetailsModal = ({ project, onClose }) => {
 
   const handleAssignDesigner = async (e) => {
     e.preventDefault();
-    if (!selectedDesigner) return;
+    if (!selectedDesigner) {
+      setAssignError("Please select a designer.");
+      return;
+    }
     setLoading(true);
     setActionMessage("");
+    setAssignError("");
     try {
       const token = Cookies.get("token");
       const prevMembers = Array.isArray(project.members)
@@ -142,7 +147,10 @@ const ProjectDetailsModal = ({ project, onClose }) => {
             <select
               className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none"
               value={selectedDesigner}
-              onChange={(e) => setSelectedDesigner(e.target.value)}
+              onChange={(e) => {
+                setSelectedDesigner(e.target.value);
+                setAssignError(e.target.value ? "" : "Please select a designer.");
+              }}
               required
             >
               <option value="">-- Select Designer --</option>
@@ -161,6 +169,9 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                   </option>
                 ))}
             </select>
+            {assignError && (
+              <p className="text-red-500 text-sm -mt-2 mb-3">{assignError}</p>
+            )}
             <div className="flex justify-center mt-4">
               <button
                 type="submit"

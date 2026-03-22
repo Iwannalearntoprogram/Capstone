@@ -1,248 +1,151 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../store/AuthStore";
 import axios from "axios";
 import Cookies from "js-cookie";
-import {} from "react-icons/fa";
 import {
-  FaUser,
-  FaPhone,
   FaBriefcase,
+  FaEdit,
   FaEnvelope,
-  FaLock,
-  FaUserTag,
-  FaPlus,
-  FaUserShield,
-  FaUserTie,
-  FaUsers,
   FaEye,
   FaEyeSlash,
+  FaLock,
+  FaPhone,
+  FaPlus,
+  FaUser,
+  FaUsers,
+  FaUserShield,
   FaUserSlash,
-  FaEdit,
+  FaUserTag,
+  FaUserTie,
 } from "react-icons/fa";
 import defaultProfile from "../assets/images/user.png";
+import {
+  trimValue,
+  validateEmail,
+  validateRequiredText,
+  validateStrongPassword,
+  validateUsername,
+} from "../utils/validation";
+
+const USERNAME_MAX_LENGTH = 30;
+const NAME_MAX_LENGTH = 50;
+const PHONE_MAX_LENGTH = 15;
+
+const INITIAL_USER_FORM = {
+  username: "",
+  firstName: "",
+  lastName: "",
+  email: "",
+  password: "",
+  phoneNumber: "",
+  role: "designer",
+};
+
+const getRoleColor = (role) =>
+  ({
+    admin: "bg-red-100 text-red-800",
+    designer: "bg-blue-100 text-blue-800",
+    client: "bg-green-100 text-green-800",
+    storage_admin: "bg-yellow-100 text-yellow-800",
+  }[role] || "bg-gray-100 text-gray-800");
+
+const getRoleLabel = (role) =>
+  ({
+    admin: "Admin",
+    designer: "Designer",
+    client: "Client",
+    storage_admin: "Storage Admin",
+  }[role] || "User");
+
+const userCounts = (users, role) =>
+  role === "all"
+    ? users.length
+    : role === "archived"
+    ? users.filter((u) => u.isArchived).length
+    : users.filter((u) => u.role === role).length;
+
+const sanitizePhoneInput = (value = "") =>
+  String(value).replace(/\D/g, "").slice(0, PHONE_MAX_LENGTH);
+
+const validateUserPhone = (value) => {
+  const digitsOnly = sanitizePhoneInput(value);
+  if (!digitsOnly) return "Phone number is required.";
+  if (digitsOnly.length < 10) {
+    return "Phone number must contain at least 10 digits.";
+  }
+  return "";
+};
+
+const validateName = (value, label) =>
+  validateRequiredText(value, label, { maxLength: NAME_MAX_LENGTH });
+
+const getPasswordStrength = (value) => {
+  if (!value) return null;
+
+  let score = 0;
+  if (value.length >= 8) score += 1;
+  if (value.length >= 12) score += 1;
+  if (/[a-z]/.test(value)) score += 1;
+  if (/[A-Z]/.test(value)) score += 1;
+  if (/\d/.test(value)) score += 1;
+  if (/[^A-Za-z0-9]/.test(value)) score += 1;
+
+  if (score <= 3) {
+    return { label: "Weak", className: "text-red-500" };
+  }
+  if (score <= 5) {
+    return { label: "Medium", className: "text-amber-500" };
+  }
+  return { label: "Strong", className: "text-emerald-600" };
+};
+
+const formErrors = (data, requirePassword = false) => ({
+  username: validateUsername(data.username),
+  firstName: validateName(data.firstName, "First name"),
+  lastName: validateName(data.lastName, "Last name"),
+  email: validateEmail(data.email),
+  phoneNumber: validateUserPhone(data.phoneNumber),
+  role: trimValue(data.role) ? "" : "Role is required.",
+  password: requirePassword ? validateStrongPassword(data.password) : "",
+});
+
+const normalizeUser = (data, includePassword = false) => {
+  const payload = {
+    username: trimValue(data.username),
+    firstName: trimValue(data.firstName),
+    lastName: trimValue(data.lastName),
+    email: trimValue(data.email).toLowerCase(),
+    phoneNumber: sanitizePhoneInput(data.phoneNumber),
+    role: data.role,
+  };
+  if (includePassword) payload.password = data.password;
+  return payload;
+};
 
 export default function UsersPage() {
   const { user: currentUser } = useAuthStore();
-  // Edit designer state
-  const [editUser, setEditUser] = useState(null);
-  const [editFormData, setEditFormData] = useState({});
-  const [editLoading, setEditLoading] = useState(false);
-  const [editMessage, setEditMessage] = useState("");
-
-  // Open edit modal
-  const openEditModal = (user) => {
-    setEditUser(user);
-    setEditFormData({
-      username: user.username || "",
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
-      email: user.email || "",
-      phoneNumber: user.phoneNumber || "",
-      role: user.role || "designer",
-    });
-    setEditMessage("");
-  };
-
-  // Close edit modal
-  const closeEditModal = () => {
-    setEditUser(null);
-    setEditFormData({});
-    setEditMessage("");
-  };
-
-  // Handle edit input change
-  const handleEditInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Submit edit
-  const handleEditSubmit = async () => {
-    setEditLoading(true);
-    setEditMessage("");
-    try {
-      const token = Cookies.get("token");
-      await axios.put(
-        `${serverUrl}/api/user?id=${editUser._id}`,
-        editFormData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setEditMessage("User updated successfully!");
-      setUsers((prev) =>
-        prev.map((u) =>
-          u._id === editUser._id ? { ...u, ...editFormData } : u
-        )
-      );
-      setTimeout(() => {
-        closeEditModal();
-      }, 1200);
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        "An error occurred while updating the user";
-      setEditMessage(errorMessage);
-    } finally {
-      setEditLoading(false);
-    }
-  };
-  const [formData, setFormData] = useState({
-    username: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    phoneNumber: "",
-    role: "designer",
-  });
-
-  const [users, setUsers] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingUsers, setLoadingUsers] = useState(true);
-  const [message, setMessage] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
-  const [showPassword, setShowPassword] = useState(false);
   const serverUrl = import.meta.env.VITE_SERVER_URL;
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoadingUsers(true);
-        const token = Cookies.get("token");
-        const response = await axios.get(`${serverUrl}/api/user`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setUsers(response.data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      } finally {
-        setLoadingUsers(false);
-      }
-    };
-
-    fetchUsers();
-  }, [serverUrl]);
-
-  // Filter users based on active tab
-  const filteredUsers = users.filter((user) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "archived") return user.isArchived;
-    return user.role === activeTab && !user.isArchived;
-  });
-
-  // Get user counts for each role
-  const getUserCount = (role) => {
-    if (role === "all") return users.length;
-    return users.filter((user) => user.role === role).length;
-  };
-
-  const tabs = [
-    {
-      id: "all",
-      label: "All Users",
-      icon: FaUsers,
-      count: getUserCount("all"),
-    },
-    {
-      id: "admin",
-      label: "Admin",
-      icon: FaUserShield,
-      count: getUserCount("admin"),
-    },
-    {
-      id: "designer",
-      label: "Designer",
-      icon: FaUserTie,
-      count: getUserCount("designer"),
-    },
-    {
-      id: "client",
-      label: "Client",
-      icon: FaUser,
-      count: getUserCount("client"),
-    },
-    {
-      id: "storage_admin",
-      label: "Storage Admin",
-      icon: FaUserTag,
-      count: getUserCount("storage_admin"),
-    },
-    {
-      id: "archived",
-      label: "Archived",
-      icon: FaUserSlash,
-      count: users.filter((u) => u.isArchived).length,
-    },
-  ];
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async () => {
-    setIsLoading(true);
-    setMessage("");
-
-    try {
-      const token = Cookies.get("token");
-      const response = await axios.post(
-        `${serverUrl}/api/auth/register`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setMessage("User created successfully!");
-      // Reset form
-      setFormData({
-        username: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        phoneNumber: "",
-        role: "designer",
-      });
-      // Refresh users list
-      fetchUsers();
-      // Close modal after a brief delay to show success message
-      setTimeout(() => {
-        setShowModal(false);
-        setMessage("");
-      }, 2000);
-    } catch (error) {
-      console.error("Error creating user:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        "An error occurred while creating the user";
-      setMessage(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [activeTab, setActiveTab] = useState("all");
+  const [showModal, setShowModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState(INITIAL_USER_FORM);
+  const [errors, setErrors] = useState({});
+  const [editUser, setEditUser] = useState(null);
+  const [editData, setEditData] = useState(null);
+  const [editErrors, setEditErrors] = useState({});
+  const [editMessage, setEditMessage] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
 
   const fetchUsers = async () => {
     try {
       setLoadingUsers(true);
       const token = Cookies.get("token");
       const response = await axios.get(`${serverUrl}/api/user`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data);
     } catch (error) {
@@ -252,82 +155,189 @@ export default function UsersPage() {
     }
   };
 
-  const handleArchiveUser = async (userId, isArchived) => {
+  useEffect(() => {
+    fetchUsers();
+  }, [serverUrl]);
+
+  const filteredUsers = users.filter((user) => {
+    if (activeTab === "all") return true;
+    if (activeTab === "archived") return user.isArchived;
+    return user.role === activeTab && !user.isArchived;
+  });
+
+  const tabs = [
+    ["all", "All Users", FaUsers],
+    ["admin", "Admin", FaUserShield],
+    ["designer", "Designer", FaUserTie],
+    ["client", "Client", FaUser],
+    ["storage_admin", "Storage Admin", FaUserTag],
+    ["archived", "Archived", FaUserSlash],
+  ];
+
+  const handleField = (setter, errorSetter, requirePassword = false) => (e) => {
+    const { name, value } = e.target;
+    setter((prev) => ({ ...prev, [name]: value }));
+    errorSetter((prev) => ({
+      ...prev,
+      [name]: formErrors({ ...(name ? { [name]: value } : {}), ...{} }, requirePassword)[name],
+    }));
+  };
+
+  const openEdit = (user) => {
+    setEditUser(user);
+    setEditData({
+      username: user.username || "",
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      email: user.email || "",
+      phoneNumber: sanitizePhoneInput(user.phoneNumber || ""),
+      role: user.role || "designer",
+    });
+    setEditErrors({});
+    setEditMessage("");
+  };
+
+  const closeEdit = () => {
+    setEditUser(null);
+    setEditData(null);
+    setEditErrors({});
+    setEditMessage("");
+  };
+
+  const handleArchive = async (userId, isArchived) => {
     try {
       setLoadingUsers(true);
       const token = Cookies.get("token");
-      console.log(token);
       await axios.put(
         `${serverUrl}/api/user?id=${userId}`,
         { isArchived },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setUsers((prev) =>
-        prev.map((u) => (u._id === userId ? { ...u, isArchived } : u))
-      );
-    } catch (error) {
-      console.error("Error updating user status:", error);
-      alert(
-        error.response?.data?.message ||
-          "An error occurred while updating the user status"
+        prev.map((user) => (user._id === userId ? { ...user, isArchived } : user))
       );
     } finally {
       setLoadingUsers(false);
     }
   };
 
-  const closeModal = () => {
-    setShowModal(false);
-    setMessage("");
-    setFormData({
-      username: "",
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: "",
-      phoneNumber: "",
-      role: "designer",
-    });
-  };
-
-  const getRoleColor = (role) => {
-    switch (role) {
-      case "admin":
-        return "bg-red-100 text-red-800";
-      case "designer":
-        return "bg-blue-100 text-blue-800";
-      case "client":
-        return "bg-green-100 text-green-800";
-      case "storage_admin":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+  const submitCreate = async () => {
+    const nextErrors = formErrors(formData, true);
+    setErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) {
+      setMessage("Please fix the highlighted fields.");
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const token = Cookies.get("token");
+      await axios.post(
+        `${serverUrl}/api/auth/register`,
+        normalizeUser(formData, true),
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMessage("User created successfully!");
+      setFormData(INITIAL_USER_FORM);
+      setErrors({});
+      await fetchUsers();
+      setTimeout(() => {
+        setShowModal(false);
+        setMessage("");
+      }, 1000);
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Failed to create user.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const submitEdit = async () => {
+    const nextErrors = formErrors(editData || {});
+    setEditErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) {
+      setEditMessage("Please fix the highlighted fields.");
+      return;
+    }
+    try {
+      setEditLoading(true);
+      const token = Cookies.get("token");
+      await axios.put(
+        `${serverUrl}/api/user?id=${editUser._id}`,
+        normalizeUser(editData),
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUsers((prev) =>
+        prev.map((user) =>
+          user._id === editUser._id ? { ...user, ...normalizeUser(editData) } : user
+        )
+      );
+      setEditMessage("User updated successfully!");
+      setTimeout(closeEdit, 1000);
+    } catch (error) {
+      setEditMessage(error.response?.data?.message || "Failed to update user.");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const actions = (user) => (
+    <div className="flex items-center gap-2 self-start sm:self-auto">
+      {currentUser?.role === "admin" && user.role === "designer" && (
+        <button
+          className="rounded-lg border border-[#1D3C34] p-1.5 text-[#1D3C34] transition hover:bg-emerald-50 sm:p-2"
+          onClick={() => openEdit(user)}
+        >
+          <FaEdit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+        </button>
+      )}
+      <button
+        className={`rounded-lg p-1.5 transition hover:bg-yellow-100 sm:p-2 ${
+          user.isArchived ? "text-red-600" : "text-gray-400"
+        }`}
+        onClick={() => handleArchive(user._id, !user.isArchived)}
+      >
+        <FaUserSlash className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+      </button>
+    </div>
+  );
+
+  const field = (label, Icon, name, value, onChange, error, extra = {}) => (
+    <div className="space-y-2">
+      <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+        <Icon className="h-4 w-4" style={{ color: "#1D3C34" }} />
+        {label}
+      </label>
+      <input
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+        {...extra}
+      />
+      {error && <p className="text-sm text-red-500">{error}</p>}
+    </div>
+  );
+
+  const passwordStrength = getPasswordStrength(formData.password);
+
   return (
-    <div className="">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-xl overflow-hidden mb-6">
-          <div className="bg-[#1D3C34] px-6 py-4">
-            <div className="flex items-center justify-between">
+    <div>
+      <div className="mx-auto w-full max-w-full sm:max-w-7xl">
+        <div className="mb-3 overflow-hidden rounded-2xl bg-white shadow-xl sm:mb-6">
+          <div className="bg-[#1D3C34] px-3 py-3 sm:px-6 sm:py-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                  <FaUser className="w-6 h-6" />
+                <h1 className="flex items-center gap-2 text-lg font-bold text-white sm:text-2xl">
+                  <FaUser className="h-4.5 w-4.5 sm:h-6 sm:w-6" />
                   Users Management
                 </h1>
-                <p className="text-emerald-100 mt-1">
+                <p className="mt-1 text-xs text-emerald-100 sm:text-base">
                   Manage and view all system users
                 </p>
               </div>
               <button
                 onClick={() => setShowModal(true)}
-                className="bg-white text-[#1D3C34] px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-200 flex items-center gap-2"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-[#1D3C34] sm:w-auto sm:px-4 sm:text-base"
               >
                 <FaPlus />
                 Add User
@@ -335,525 +345,291 @@ export default function UsersPage() {
             </div>
           </div>
         </div>
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-xl overflow-hidden mb-6">
+
+        <div className="mb-3 overflow-hidden rounded-2xl bg-white shadow-xl sm:mb-6">
           <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6" aria-label="Tabs">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`${
-                      activeTab === tab.id
-                        ? "border-[#1D3C34] text-[#1D3C34]"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {tab.label}
-                    <span
-                      className={`${
-                        activeTab === tab.id
-                          ? "bg-[#1D3C34] text-white"
-                          : "bg-gray-100 text-gray-600"
-                      } ml-2 py-0.5 px-2.5 rounded-lg text-xs font-medium transition-colors`}
-                    >
-                      {tab.count}
-                    </span>
-                  </button>
-                );
-              })}
+            <nav className="grid grid-cols-1 gap-2 p-2.5 min-[360px]:grid-cols-2 sm:flex sm:space-x-4 sm:overflow-x-auto sm:whitespace-nowrap sm:px-6 sm:py-0">
+              {tabs.map(([id, label, Icon]) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id)}
+                  className={`flex min-w-0 items-center justify-center gap-1.5 rounded-xl border px-2 py-2 text-[13px] font-medium transition sm:gap-2 sm:rounded-none sm:border-x-0 sm:border-t-0 sm:border-b-2 sm:px-1 sm:py-4 sm:text-sm ${
+                    activeTab === id
+                      ? "border-[#1D3C34] bg-[#1D3C34]/5 text-[#1D3C34]"
+                      : "border-gray-200 text-gray-500"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+                  <span className="truncate text-center">{label}</span>
+                  <span className={`rounded-lg px-2 py-0.5 text-[11px] sm:px-2.5 sm:text-xs ${
+                    activeTab === id ? "bg-[#1D3C34] text-white" : "bg-gray-100 text-gray-600"
+                  }`}>
+                    {userCounts(users, id)}
+                  </span>
+                </button>
+              ))}
             </nav>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-xl overflow-hidden">
-          <div className="p-6">
+
+        <div className="overflow-hidden rounded-2xl bg-white shadow-xl">
+          <div className="p-2.5 sm:p-6">
             {loadingUsers ? (
-              <div className="text-center py-20">
-                <div className="text-gray-500">Loading users...</div>
-              </div>
+              <div className="py-20 text-center text-gray-500">Loading users...</div>
             ) : filteredUsers.length === 0 ? (
-              <div className="text-center py-20">
-                <FaUser className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                  No users found
-                </h3>
+              <div className="py-20 text-center">
+                <FaUser className="mx-auto mb-4 h-16 w-16 text-gray-300" />
+                <h3 className="mb-2 text-xl font-semibold text-gray-600">No users found</h3>
                 <p className="text-gray-500">
-                  {activeTab === "all"
-                    ? "Start by adding your first user to the system."
-                    : `No ${activeTab} users found.`}
+                  {activeTab === "all" ? "Start by adding your first user." : `No ${activeTab} users found.`}
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                        User
-                      </th>
-                      <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                        Email
-                      </th>
-                      <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                        Phone
-                      </th>
-                      <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                        Role
-                      </th>
-                      <th className="text-left py-4 px-4 font-semibold text-gray-700">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredUsers.map((user) => (
-                      <tr
-                        key={user._id}
-                        className="border-b border-gray-100 hover:bg-gray-50"
-                      >
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={user.profileImage || defaultProfile}
-                              alt="Profile"
-                              className="w-10 h-10 rounded-lg object-cover"
-                            />
-                            <div>
-                              <div className="font-semibold text-gray-900">
-                                {user.firstName} {user.lastName}
+              <>
+                <div className="grid gap-3 md:hidden">
+                  {filteredUsers.map((user) => (
+                    <div key={user._id} className="rounded-2xl border border-gray-200 bg-white p-2.5 shadow-sm">
+                      <div className="flex flex-col gap-2.5">
+                        <div className="flex items-start justify-between gap-2.5">
+                          <div className="flex min-w-0 items-start gap-2.5">
+                          <img
+                            src={user.profileImage || defaultProfile}
+                            alt=""
+                            className="h-10 w-10 shrink-0 rounded-xl object-cover"
+                          />
+                            <div className="min-w-0">
+                              <div className="break-words text-[15px] font-semibold leading-tight text-gray-900">
+                              {user.firstName} {user.lastName}
                               </div>
-                              <div className="text-sm text-gray-500">
-                                @{user.username}
+                              <div className="truncate text-xs text-gray-500">@{user.username}</div>
+                              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                <span className={`inline-flex rounded-lg px-2 py-0.5 text-[10px] font-semibold ${getRoleColor(user.role)}`}>
+                                  {getRoleLabel(user.role)}
+                                </span>
+                                <span className="text-[10px] text-gray-500">
+                                  {user.isArchived ? "Archived user" : "Active user"}
+                                </span>
                               </div>
                             </div>
                           </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="text-gray-900">{user.email}</div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="text-gray-900">
-                            {user.phoneNumber}
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span
-                            className={`px-3 py-1 rounded-lg text-xs font-semibold ${getRoleColor(
-                              user.role
-                            )}`}
-                          >
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className={`flex items-center gap-2`}>
-                            {/* Edit button only for designers, only for admin */}
-                            {currentUser?.role === "admin" &&
-                              user.role === "designer" && (
-                                <button
-                                  className="p-2 text-[#1D3C34] hover:bg-emerald-50 rounded-lg transition-colors border border-[#1D3C34] hover:border-emerald-400"
-                                  onClick={() => openEditModal(user)}
-                                  title="Edit Designer"
-                                  disabled={loadingUsers}
-                                  style={{ boxShadow: "0 1px 4px 0 #1D3C3422" }}
-                                >
-                                  <FaEdit className="w-4 h-4" />
-                                </button>
-                              )}
-                            <button
-                              className={`p-2 ${
-                                user.isArchived
-                                  ? "text-red-600"
-                                  : "text-gray-400"
-                              } hover:bg-yellow-100 rounded-lg transition-colors`}
-                              onClick={() =>
-                                handleArchiveUser(user._id, !user.isArchived)
-                              }
-                              disabled={loadingUsers}
-                              title={
-                                user.isArchived
-                                  ? "Unarchive User"
-                                  : "Archive User"
-                              }
-                            >
-                              <FaUserSlash />
-                            </button>
-                          </div>
-                        </td>
-                        {/* Edit Designer Modal */}
-                        {editUser && (
-                          <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-[100] p-4">
-                            <div className="bg-white rounded-lg shadow-xl overflow-hidden max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-[#1D3C34]">
-                              {/* Modal Header */}
-                              <div className="bg-[#1D3C34] px-6 py-4">
-                                <div className="flex items-center justify-between">
-                                  <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                                    <FaUserTie className="w-6 h-6 text-emerald-300" />
-                                    Edit Designer
-                                  </h1>
-                                  <button
-                                    onClick={closeEditModal}
-                                    className="text-white hover:text-emerald-200 text-2xl"
-                                  >
-                                    ×
-                                  </button>
-                                </div>
-                              </div>
-                              <div className="p-6 sm:p-8 bg-[#f8faf9]">
-                                {/* Success/Error Message */}
-                                {editMessage && (
-                                  <div
-                                    className={`mb-6 p-4 rounded-lg ${
-                                      editMessage.includes("successfully")
-                                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                                        : "bg-red-50 text-red-800 border border-red-200"
-                                    }`}
-                                  >
-                                    {editMessage}
-                                  </div>
-                                )}
-                                {/* Form Fields */}
-                                <div className="space-y-6">
-                                  {/* Username */}
-                                  <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                      <FaUserTag
-                                        className="w-4 h-4"
-                                        style={{ color: "#1D3C34" }}
-                                      />
-                                      Username
-                                    </label>
-                                    <input
-                                      type="text"
-                                      name="username"
-                                      value={editFormData.username || ""}
-                                      onChange={handleEditInputChange}
-                                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                                      placeholder="Enter username"
-                                      required
-                                      disabled={editLoading}
-                                    />
-                                  </div>
-                                  {/* Name Fields */}
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                      <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                        <FaUser
-                                          className="w-4 h-4"
-                                          style={{ color: "#1D3C34" }}
-                                        />
-                                        First Name
-                                      </label>
-                                      <input
-                                        type="text"
-                                        name="firstName"
-                                        value={editFormData.firstName || ""}
-                                        onChange={handleEditInputChange}
-                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                                        placeholder="Enter first name"
-                                        required
-                                        disabled={editLoading}
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                        <FaUser
-                                          className="w-4 h-4"
-                                          style={{ color: "#1D3C34" }}
-                                        />
-                                        Last Name
-                                      </label>
-                                      <input
-                                        type="text"
-                                        name="lastName"
-                                        value={editFormData.lastName || ""}
-                                        onChange={handleEditInputChange}
-                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                                        placeholder="Enter last name"
-                                        required
-                                        disabled={editLoading}
-                                      />
-                                    </div>
-                                  </div>
-                                  {/* Email */}
-                                  <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                      <FaEnvelope
-                                        className="w-4 h-4"
-                                        style={{ color: "#1D3C34" }}
-                                      />
-                                      Email
-                                    </label>
-                                    <input
-                                      type="email"
-                                      name="email"
-                                      value={editFormData.email || ""}
-                                      onChange={handleEditInputChange}
-                                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                                      placeholder="Enter email address"
-                                      required
-                                      disabled={editLoading}
-                                    />
-                                  </div>
-                                  {/* Phone Number */}
-                                  <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                      <FaPhone
-                                        className="w-4 h-4"
-                                        style={{ color: "#1D3C34" }}
-                                      />
-                                      Phone Number
-                                    </label>
-                                    <input
-                                      type="tel"
-                                      name="phoneNumber"
-                                      value={editFormData.phoneNumber || ""}
-                                      onChange={handleEditInputChange}
-                                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-800 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                                      placeholder="Enter phone number"
-                                      required
-                                      disabled={editLoading}
-                                    />
-                                  </div>
-                                  {/* Role (readonly) */}
-                                  <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                      <FaBriefcase
-                                        className="w-4 h-4"
-                                        style={{ color: "#1D3C34" }}
-                                      />
-                                      Role
-                                    </label>
-                                    <input
-                                      type="text"
-                                      name="role"
-                                      value={editFormData.role || "designer"}
-                                      readOnly
-                                      className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
-                                    />
-                                  </div>
-                                </div>
-                                {/* Action Buttons */}
-                                <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-6 border-t border-gray-100">
-                                  <button
-                                    type="button"
-                                    onClick={handleEditSubmit}
-                                    disabled={editLoading}
-                                    className="flex-1 bg-[#21413A] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#16302B] focus:ring-2 focus:ring-[#16302B] focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                                  >
-                                    {editLoading ? "Saving..." : "Save Changes"}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={closeEditModal}
-                                    disabled={editLoading}
-                                    className="flex-1 sm:flex-none bg-gray-100 text-[#1D3C34] px-6 py-3 rounded-lg font-semibold hover:bg-emerald-50 focus:ring-2 focus:ring-emerald-200 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-[#1D3C34]"
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              </div>
+                          <div className="shrink-0">{actions(user)}</div>
+                        </div>
+
+                        <div className="grid gap-2.5 rounded-2xl bg-gray-50 p-2.5 text-sm text-gray-600">
+                          <div className="flex items-start gap-2.5">
+                            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white text-[#1D3C34] shadow-sm">
+                              <FaEnvelope className="h-3 w-3" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Email</div>
+                              <div className="mt-0.5 break-all text-[13px] text-gray-800">{user.email}</div>
                             </div>
                           </div>
-                        )}
+
+                          <div className="flex items-start gap-2.5">
+                            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white text-[#1D3C34] shadow-sm">
+                              <FaPhone className="h-3 w-3" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Phone</div>
+                              <div className="mt-0.5 text-[13px] text-gray-800">{user.phoneNumber || "Not provided"}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="hidden overflow-x-auto md:block">
+                  <table className="w-full min-w-[720px]">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="px-4 py-4 text-left font-semibold text-gray-700">User</th>
+                        <th className="px-4 py-4 text-left font-semibold text-gray-700">Email</th>
+                        <th className="px-4 py-4 text-left font-semibold text-gray-700">Phone</th>
+                        <th className="px-4 py-4 text-left font-semibold text-gray-700">Role</th>
+                        <th className="px-4 py-4 text-left font-semibold text-gray-700">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.map((user) => (
+                        <tr key={user._id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-3">
+                              <img src={user.profileImage || defaultProfile} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                              <div>
+                                <div className="font-semibold text-gray-900">{user.firstName} {user.lastName}</div>
+                                <div className="text-sm text-gray-500">@{user.username}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-gray-900">{user.email}</td>
+                          <td className="px-4 py-4 text-gray-900">{user.phoneNumber}</td>
+                          <td className="px-4 py-4">
+                            <span className={`rounded-lg px-3 py-1 text-xs font-semibold ${getRoleColor(user.role)}`}>
+                              {getRoleLabel(user.role)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4">{actions(user)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         </div>
       </div>
 
-      {/* Add User Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl overflow-hidden max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="bg-[#1D3C34] px-6 py-4">
+      {editUser && editData && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border-2 border-[#1D3C34] bg-white shadow-xl">
+            <div className="bg-[#1D3C34] px-4 py-4 sm:px-6">
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                  <FaUser className="w-6 h-6" />
-                  Add New User
+                <h1 className="flex items-center gap-2 text-xl font-bold text-white sm:text-2xl">
+                  <FaUserTie className="h-5 w-5 text-emerald-300 sm:h-6 sm:w-6" />
+                  Edit Designer
                 </h1>
-                <button
-                  onClick={closeModal}
-                  className="text-white hover:text-gray-200 text-2xl"
-                >
-                  ×
+                <button onClick={closeEdit} className="text-2xl leading-none text-white">x</button>
+              </div>
+            </div>
+            <div className="bg-[#f8faf9] p-4 sm:p-8">
+              {editMessage && <div className="mb-6 rounded-lg border p-4">{editMessage}</div>}
+              <div className="space-y-6">
+                {field("Username", FaUserTag, "username", editData.username, (e) => {
+                  const value = e.target.value;
+                  setEditData((prev) => ({ ...prev, username: value }));
+                  setEditErrors((prev) => ({ ...prev, username: validateUsername(value) }));
+                }, editErrors.username, { placeholder: "Enter username", maxLength: USERNAME_MAX_LENGTH })}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {field("First Name", FaUser, "firstName", editData.firstName, (e) => {
+                    const value = e.target.value;
+                    setEditData((prev) => ({ ...prev, firstName: value }));
+                    setEditErrors((prev) => ({ ...prev, firstName: validateName(value, "First name") }));
+                  }, editErrors.firstName, { placeholder: "Enter first name", maxLength: NAME_MAX_LENGTH })}
+                  {field("Last Name", FaUser, "lastName", editData.lastName, (e) => {
+                    const value = e.target.value;
+                    setEditData((prev) => ({ ...prev, lastName: value }));
+                    setEditErrors((prev) => ({ ...prev, lastName: validateName(value, "Last name") }));
+                  }, editErrors.lastName, { placeholder: "Enter last name", maxLength: NAME_MAX_LENGTH })}
+                </div>
+                {field("Email", FaEnvelope, "email", editData.email, (e) => {
+                  const value = e.target.value;
+                  setEditData((prev) => ({ ...prev, email: value }));
+                  setEditErrors((prev) => ({ ...prev, email: validateEmail(value) }));
+                }, editErrors.email, { placeholder: "Enter email address", type: "email" })}
+                {field("Phone Number", FaPhone, "phoneNumber", editData.phoneNumber, (e) => {
+                  const value = sanitizePhoneInput(e.target.value);
+                  setEditData((prev) => ({ ...prev, phoneNumber: value }));
+                  setEditErrors((prev) => ({ ...prev, phoneNumber: validateUserPhone(value) }));
+                }, editErrors.phoneNumber, {
+                  placeholder: "Enter phone number",
+                  type: "tel",
+                  inputMode: "numeric",
+                  pattern: "[0-9]*",
+                  maxLength: PHONE_MAX_LENGTH,
+                })}
+                {field("Role", FaBriefcase, "role", editData.role, () => {}, "", { readOnly: true })}
+              </div>
+              <div className="mt-8 flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row">
+                <button onClick={submitEdit} disabled={editLoading} className="flex-1 rounded-lg bg-[#21413A] px-6 py-3 font-semibold text-white">
+                  {editLoading ? "Saving..." : "Save Changes"}
+                </button>
+                <button onClick={closeEdit} className="flex-1 rounded-lg border border-[#1D3C34] bg-gray-100 px-6 py-3 font-semibold text-[#1D3C34] sm:flex-none">
+                  Cancel
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
 
-            <div className="p-6 sm:p-8">
-              {/* Success/Error Message */}
-              {message && (
-                <div
-                  className={`mb-6 p-4 rounded-lg ${
-                    message.includes("successfully")
-                      ? "bg-green-50 text-green-800 border border-green-200"
-                      : "bg-red-50 text-red-800 border border-red-200"
-                  }`}
-                >
-                  {message}
-                </div>
-              )}
-
-              {/* Form Fields */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-xl">
+            <div className="bg-[#1D3C34] px-4 py-4 sm:px-6">
+              <div className="flex items-center justify-between">
+                <h1 className="flex items-center gap-2 text-xl font-bold text-white sm:text-2xl">
+                  <FaUser className="h-5 w-5 sm:h-6 sm:w-6" />
+                  Add New User
+                </h1>
+                <button onClick={() => setShowModal(false)} className="text-2xl leading-none text-white">x</button>
+              </div>
+            </div>
+            <div className="p-4 sm:p-8">
+              {message && <div className="mb-6 rounded-lg border p-4">{message}</div>}
               <div className="space-y-6">
-                {/* Username */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <FaUserTag
-                      className="w-4 h-4"
-                      style={{ color: "#1D3C34" }}
-                    />
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                    placeholder="Enter username"
-                    required
-                    disabled={isLoading}
-                  />
+                {field("Username", FaUserTag, "username", formData.username, (e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({ ...prev, username: value }));
+                  setErrors((prev) => ({ ...prev, username: validateUsername(value) }));
+                }, errors.username, { placeholder: "Enter username", maxLength: USERNAME_MAX_LENGTH })}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {field("First Name", FaUser, "firstName", formData.firstName, (e) => {
+                    const value = e.target.value;
+                    setFormData((prev) => ({ ...prev, firstName: value }));
+                    setErrors((prev) => ({ ...prev, firstName: validateName(value, "First name") }));
+                  }, errors.firstName, { placeholder: "Enter first name", maxLength: NAME_MAX_LENGTH })}
+                  {field("Last Name", FaUser, "lastName", formData.lastName, (e) => {
+                    const value = e.target.value;
+                    setFormData((prev) => ({ ...prev, lastName: value }));
+                    setErrors((prev) => ({ ...prev, lastName: validateName(value, "Last name") }));
+                  }, errors.lastName, { placeholder: "Enter last name", maxLength: NAME_MAX_LENGTH })}
                 </div>
-
-                {/* Name Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                      <FaUser
-                        className="w-4 h-4"
-                        style={{ color: "#1D3C34" }}
-                      />
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                      placeholder="Enter first name"
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                      <FaUser
-                        className="w-4 h-4"
-                        style={{ color: "#1D3C34" }}
-                      />
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                      placeholder="Enter last name"
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-
-                {/* Email */}
+                {field("Email", FaEnvelope, "email", formData.email, (e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({ ...prev, email: value }));
+                  setErrors((prev) => ({ ...prev, email: validateEmail(value) }));
+                }, errors.email, { placeholder: "Enter email address", type: "email" })}
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <FaEnvelope
-                      className="w-4 h-4"
-                      style={{ color: "#1D3C34" }}
-                    />
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                    placeholder="Enter email address"
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-
-                {/* Password */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <FaLock className="w-4 h-4" style={{ color: "#1D3C34" }} />
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <FaLock className="h-4 w-4" style={{ color: "#1D3C34" }} />
                     Password
                   </label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
-                      name="password"
                       value={formData.password}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white pr-12"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({ ...prev, password: value }));
+                        setErrors((prev) => ({ ...prev, password: validateStrongPassword(value) }));
+                      }}
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 pr-12 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
                       placeholder="Enter password"
-                      required
-                      disabled={isLoading}
                     />
-                    <span
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      tabIndex={0}
-                      role="button"
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
-                    >
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500" onClick={() => setShowPassword((prev) => !prev)}>
                       {showPassword ? <FaEyeSlash /> : <FaEye />}
                     </span>
                   </div>
+                  {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+                  {passwordStrength && (
+                    <p className={`text-sm font-medium ${passwordStrength.className}`}>
+                      Password strength: {passwordStrength.label}
+                    </p>
+                  )}
                 </div>
-
-                {/* Phone Number */}
+                {field("Phone Number", FaPhone, "phoneNumber", formData.phoneNumber, (e) => {
+                  const value = sanitizePhoneInput(e.target.value);
+                  setFormData((prev) => ({ ...prev, phoneNumber: value }));
+                  setErrors((prev) => ({ ...prev, phoneNumber: validateUserPhone(value) }));
+                }, errors.phoneNumber, {
+                  placeholder: "Enter phone number",
+                  type: "tel",
+                  inputMode: "numeric",
+                  pattern: "[0-9]*",
+                  maxLength: PHONE_MAX_LENGTH,
+                })}
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <FaPhone className="w-4 h-4" style={{ color: "#1D3C34" }} />
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                    placeholder="Enter phone number"
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-
-                {/* Role */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <FaBriefcase
-                      className="w-4 h-4"
-                      style={{ color: "#1D3C34" }}
-                    />
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <FaBriefcase className="h-4 w-4" style={{ color: "#1D3C34" }} />
                     Role
                   </label>
                   <select
-                    name="role"
                     value={formData.role}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1D3C34] focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white appearance-none"
-                    required
-                    disabled={isLoading}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, role: e.target.value }))}
+                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
                   >
                     <option value="admin">Admin</option>
                     <option value="designer">Designer</option>
@@ -862,23 +638,11 @@ export default function UsersPage() {
                   </select>
                 </div>
               </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-6 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isLoading}
-                  className="flex-1 bg-gradient-to-r from-[#1D3C34] to-[#145c4b] text-white px-6 py-3 rounded-lg font-semibold hover:from-[#145c4b] hover:to-[#0e3d29] focus:ring-2 focus:ring-[#1D3C34] focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+              <div className="mt-8 flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row">
+                <button onClick={submitCreate} disabled={isLoading} className="flex-1 rounded-lg bg-gradient-to-r from-[#1D3C34] to-[#145c4b] px-6 py-3 font-semibold text-white">
                   {isLoading ? "Creating User..." : "Create User"}
                 </button>
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  disabled={isLoading}
-                  className="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
+                <button onClick={() => setShowModal(false)} className="flex-1 rounded-lg bg-gray-100 px-6 py-3 font-semibold text-gray-700 sm:flex-none">
                   Cancel
                 </button>
               </div>

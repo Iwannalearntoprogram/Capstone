@@ -5,9 +5,20 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import logo from "../assets/images/logo-moss-2.png";
 import marbleBg from "../assets/images/white-marble-bg.png";
+import {
+  normalizePhone,
+  trimValue,
+  validateEmail,
+  validatePasswordConfirmation,
+  validatePhilippinePhone,
+  validateRequiredText,
+  validateStrongPassword,
+  validateUsername,
+} from "../utils/validation";
 
 function SignupPage() {
   const navigate = useNavigate();
+  const serverUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -23,23 +34,74 @@ function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [passwordError, setPasswordError] = useState("");
-  const [phoneError, setPhoneError] = useState("");
+  const [formErrors, setFormErrors] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const validateForm = (nextFormData = formData, nextAcceptedTerms = acceptedTerms) => {
+    const nextErrors = {
+      firstName: validateRequiredText(nextFormData.firstName, "First name"),
+      lastName: validateRequiredText(nextFormData.lastName, "Last name"),
+      email: validateEmail(nextFormData.email),
+      username: validateUsername(nextFormData.username),
+      password: validateStrongPassword(nextFormData.password),
+      confirmPassword: validatePasswordConfirmation(
+        nextFormData.password,
+        nextFormData.confirmPassword
+      ),
+      phoneNumber: validatePhilippinePhone(nextFormData.phoneNumber),
+      terms: nextAcceptedTerms
+        ? ""
+        : "You must accept the Terms and Conditions.",
+    };
+
+    setFormErrors(nextErrors);
+    return !Object.values(nextErrors).some(Boolean);
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
     if (type === "checkbox") {
       setAcceptedTerms(checked);
-    } else {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value,
+      setFormErrors((prev) => ({
+        ...prev,
+        terms: checked ? "" : "You must accept the Terms and Conditions.",
       }));
-
-      if (name === "password") {
-        validatePassword(value);
-      }
+    } else {
+      const nextFormData = {
+        ...formData,
+        [name]: value,
+      };
+      setFormData(nextFormData);
+      setSubmitError("");
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]:
+          name === "firstName"
+            ? validateRequiredText(value, "First name")
+            : name === "lastName"
+            ? validateRequiredText(value, "Last name")
+            : name === "email"
+            ? validateEmail(value)
+            : name === "username"
+            ? validateUsername(value)
+            : name === "password"
+            ? validateStrongPassword(value)
+            : name === "confirmPassword"
+            ? validatePasswordConfirmation(nextFormData.password, value)
+            : "",
+        ...(name === "password"
+          ? {
+              confirmPassword: nextFormData.confirmPassword
+                ? validatePasswordConfirmation(
+                    value,
+                    nextFormData.confirmPassword
+                  )
+                : prev.confirmPassword,
+            }
+          : {}),
+      }));
     }
   };
 
@@ -48,14 +110,11 @@ function SignupPage() {
       ...prevData,
       phoneNumber: value,
     }));
-
-    if (!/^(\+63\d{10})$/.test(value)) {
-      setPhoneError(
-        "Phone number must start with +63 and have 10 digits after."
-      );
-    } else {
-      setPhoneError("");
-    }
+    setSubmitError("");
+    setFormErrors((prev) => ({
+      ...prev,
+      phoneNumber: validatePhilippinePhone(value),
+    }));
   };
 
   const togglePasswordVisibility = () => {
@@ -66,47 +125,29 @@ function SignupPage() {
     setShowConfirmPassword((prev) => !prev);
   };
 
-  const validatePassword = (password) => {
-    const passwordRegex =
-      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      setPasswordError(
-        "Password must be at least 8 characters and include an uppercase letter, number, and symbol."
-      );
-    } else {
-      setPasswordError("");
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!acceptedTerms) {
-      alert("You must accept the Terms and Conditions.");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match.");
-      return;
-    }
-
-    if (passwordError || phoneError) {
-      alert("Please fix the errors in the form.");
+    setSubmitError("");
+    if (!validateForm()) {
+      setSubmitError("Please fix the highlighted fields.");
       return;
     }
 
     const { confirmPassword, ...rawData } = formData;
-
-    const cleanedPhoneNumber = rawData.phoneNumber?.replace(/\s+/g, "");
+    const cleanedPhoneNumber = normalizePhone(rawData.phoneNumber);
 
     const dataToSend = {
       ...rawData,
+      firstName: trimValue(rawData.firstName),
+      lastName: trimValue(rawData.lastName),
+      email: trimValue(rawData.email).toLowerCase(),
+      username: trimValue(rawData.username),
       phoneNumber: cleanedPhoneNumber,
     };
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/register", {
+      setIsSubmitting(true);
+      const response = await fetch(`${serverUrl}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dataToSend),
@@ -115,24 +156,25 @@ function SignupPage() {
       const data = await response.json();
 
       if (response.ok) {
-        alert(data.message);
         navigate("/login");
       } else {
-        alert(data.message || "Something went wrong.");
+        setSubmitError(data.message || "Something went wrong.");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred. Please try again.");
+      setSubmitError("An error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-screen bg-cover bg-center bg-no-repeat"
+      className="flex flex-col items-center justify-center min-h-screen px-4 py-8 bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${marbleBg})` }}
     >
-      <div className="flex flex-col md:flex-row bg-white shadow-lg rounded-lg overflow-hidden max-w-4xl">
-        <div className="flex flex-col items-center justify-center bg-[#1D3C34] text-white p-8 md:w-1/2 rounded-l-lg">
+      <div className="flex w-full max-w-4xl flex-col md:flex-row bg-white shadow-lg rounded-2xl overflow-hidden">
+        <div className="flex flex-col items-center justify-center bg-[#1D3C34] text-white p-6 sm:p-8 md:w-1/2 min-h-40">
           <h2 className="text-2xl font-semibold mb-4">Welcome Back!</h2>
           <p className="text-center mb-6">
             Log in and keep your projects moving forward!
@@ -144,7 +186,7 @@ function SignupPage() {
           </Link>
         </div>
 
-        <div className="flex flex-col items-center justify-center p-8 md:w-1/2">
+        <div className="flex flex-col items-center justify-center p-6 sm:p-8 md:w-1/2">
           <img src={logo} alt="logo" className="h-16 w-auto mb-4" />
           <h2 className="text-2xl font-semibold text-[#1D3C34] mb-4">
             Create Account
@@ -160,6 +202,11 @@ function SignupPage() {
               onChange={handleChange}
               required
             />
+            {formErrors.firstName && (
+              <p className="text-red-500 text-sm -mt-2 mb-4 px-2">
+                {formErrors.firstName}
+              </p>
+            )}
             <input
               type="text"
               name="lastName"
@@ -169,6 +216,11 @@ function SignupPage() {
               onChange={handleChange}
               required
             />
+            {formErrors.lastName && (
+              <p className="text-red-500 text-sm -mt-2 mb-4 px-2">
+                {formErrors.lastName}
+              </p>
+            )}
             <input
               type="email"
               name="email"
@@ -178,6 +230,11 @@ function SignupPage() {
               onChange={handleChange}
               required
             />
+            {formErrors.email && (
+              <p className="text-red-500 text-sm -mt-2 mb-4 px-2">
+                {formErrors.email}
+              </p>
+            )}
             <input
               type="text"
               name="username"
@@ -187,6 +244,11 @@ function SignupPage() {
               onChange={handleChange}
               required
             />
+            {formErrors.username && (
+              <p className="text-red-500 text-sm -mt-2 mb-4 px-2">
+                {formErrors.username}
+              </p>
+            )}
 
             {/* Password */}
             <div className="relative mb-4">
@@ -206,8 +268,8 @@ function SignupPage() {
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
-            {passwordError && (
-              <p className="text-red-500 text-sm mb-4">{passwordError}</p>
+            {formErrors.password && (
+              <p className="text-red-500 text-sm mb-4">{formErrors.password}</p>
             )}
 
             {/* Confirm Password */}
@@ -228,6 +290,11 @@ function SignupPage() {
                 {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
+            {formErrors.confirmPassword && (
+              <p className="text-red-500 text-sm mb-4">
+                {formErrors.confirmPassword}
+              </p>
+            )}
 
             {/* Phone Input */}
             <PhoneInput
@@ -238,8 +305,10 @@ function SignupPage() {
               className="w-full p-2 mb-4 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
               placeholder="Enter phone number"
             />
-            {phoneError && (
-              <p className="text-red-500 text-sm mb-4">{phoneError}</p>
+            {formErrors.phoneNumber && (
+              <p className="text-red-500 text-sm mb-4">
+                {formErrors.phoneNumber}
+              </p>
             )}
 
             <select
@@ -266,12 +335,19 @@ function SignupPage() {
                 I accept the Terms and Conditions
               </label>
             </div>
+            {formErrors.terms && (
+              <p className="text-red-500 text-sm mb-4">{formErrors.terms}</p>
+            )}
+            {submitError && (
+              <p className="text-red-500 text-sm mb-4">{submitError}</p>
+            )}
 
             <button
               type="submit"
-              className="w-full bg-[#1D3C34] text-white py-2 rounded-full hover:bg-[#16442A] transition"
+              className="w-full bg-[#1D3C34] text-white py-2 rounded-full hover:bg-[#16442A] transition disabled:opacity-60"
+              disabled={isSubmitting}
             >
-              Sign Up
+              {isSubmitting ? "Signing Up..." : "Sign Up"}
             </button>
           </form>
         </div>
