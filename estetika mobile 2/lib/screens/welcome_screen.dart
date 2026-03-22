@@ -2,6 +2,7 @@ import 'package:estetika_ui/screens/signin_screen.dart';
 import 'package:estetika_ui/screens/signup_screen.dart';
 import 'package:estetika_ui/widgets/custom_scaffold.dart';
 import 'package:estetika_ui/widgets/welcome_button.dart';
+import 'package:estetika_ui/widgets/app_logo.dart';
 import 'package:flutter/material.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -9,6 +10,10 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final double logoWidth = size.width * 0.6;
+    final double clampedLogoWidth = logoWidth.clamp(180.0, 320.0);
+
     return CustomScaffold(
       showBackIcon: false, // This disables the back icon
       child: Stack(
@@ -27,11 +32,9 @@ class WelcomeScreen extends StatelessWidget {
             child: Padding(
               padding:
                   const EdgeInsets.only(top: 100.0), // Adjust the top padding
-              child: Image.asset(
-                'assets/images/mosslogo.png', // Path to your PNG file
-                width: 700, // Increased the width of the logo
-                height: 300, // Increased the height of the logo
-                fit: BoxFit.contain,
+              child: AppLogo(
+                width: clampedLogoWidth,
+                height: clampedLogoWidth,
               ),
             ),
           ),
@@ -53,7 +56,8 @@ class WelcomeScreen extends StatelessWidget {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => SigninScreen()),
+                              MaterialPageRoute(
+                                  builder: (context) => SigninScreen()),
                             );
                           },
                           color: Colors.transparent, // Transparent button
@@ -77,7 +81,8 @@ class WelcomeScreen extends StatelessWidget {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => SignUpScreen()),
+                              MaterialPageRoute(
+                                  builder: (context) => SignUpScreen()),
                             );
                           },
                           color: Colors.white, // Beige button color
