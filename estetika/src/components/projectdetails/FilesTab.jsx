@@ -346,14 +346,14 @@ export default function FilesTab() {
     <div className="mt-6">
       {/* Action buttons - Only show if not admin */}
       {!isAdmin && (
-        <div className="flex items-center gap-4 mb-4">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
           <button
             onClick={handleNewClick}
-            className="bg-[#1D3C34] text-white px-4 py-2 rounded flex items-center text-sm hover:bg-[#16442A] transition"
+            className="flex items-center rounded bg-[#1D3C34] px-4 py-2 text-sm text-white transition hover:bg-[#16442A]"
           >
             <FaPlus className="w-4 h-4 mr-1" /> New
           </button>
-          <label className="bg-[#1D3C34] text-white px-4 py-2 rounded flex items-center text-sm hover:bg-[#16442A] transition cursor-pointer">
+          <label className="flex cursor-pointer items-center rounded bg-[#1D3C34] px-4 py-2 text-sm text-white transition hover:bg-[#16442A]">
             <FaUpload className="w-4 h-4 mr-1" /> Upload
             <input
               type="file"
@@ -376,9 +376,43 @@ export default function FilesTab() {
         </div>
       )}
 
-      <div className="bg-white shadow rounded-lg overflow-hidden border">
-        {" "}
-        <table className="w-full text-sm">
+      <div className="space-y-3 md:hidden">
+        {projectFiles.map((fileUrl) => (
+          <div
+            key={fileUrl}
+            className="flex items-start justify-between gap-3 rounded-lg border bg-white p-4 shadow-sm"
+          >
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="mt-0.5 shrink-0">{getFileIcon(fileUrl)}</div>
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="break-all text-sm text-gray-900 hover:text-[#1D3C34]"
+              >
+                {getFileName(fileUrl)}
+              </a>
+            </div>
+            {!isAdmin && (
+              <button
+                onClick={() => handleDeleteFile(fileUrl)}
+                disabled={deletingFiles.has(fileUrl)}
+                className="rounded p-1 text-red-600 transition-colors hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+                title="Delete file"
+              >
+                {deletingFiles.has(fileUrl) ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
+                ) : (
+                  <FaTrash className="h-4 w-4" />
+                )}
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-lg border bg-white shadow md:block">
+        <table className="w-full min-w-[420px] text-sm">
           <thead className="bg-gray-50 text-left">
             <tr>
               <th className="w-10 p-3"></th>
@@ -389,12 +423,12 @@ export default function FilesTab() {
                 </th>
               )}
             </tr>
-          </thead>{" "}
+          </thead>
           <tbody>
-            {projectFiles.map((fileUrl, idx) => (
+            {projectFiles.map((fileUrl) => (
               <tr
                 key={fileUrl}
-                className="border-t hover:bg-gray-50 transition-colors"
+                className="border-t transition-colors hover:bg-gray-50"
               >
                 <td className="p-3">{getFileIcon(fileUrl)}</td>
                 <td className="p-3">
@@ -402,7 +436,7 @@ export default function FilesTab() {
                     href={fileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-900 hover:text-[#1D3C34] cursor-pointer"
+                    className="cursor-pointer text-gray-900 hover:text-[#1D3C34]"
                   >
                     {getFileName(fileUrl)}
                   </a>
@@ -412,13 +446,13 @@ export default function FilesTab() {
                     <button
                       onClick={() => handleDeleteFile(fileUrl)}
                       disabled={deletingFiles.has(fileUrl)}
-                      className="text-red-600 hover:text-red-800 p-1 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="rounded p-1 text-red-600 transition-colors hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
                       title="Delete file"
                     >
                       {deletingFiles.has(fileUrl) ? (
-                        <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
                       ) : (
-                        <FaTrash className="w-4 h-4" />
+                        <FaTrash className="h-4 w-4" />
                       )}
                     </button>
                   </td>

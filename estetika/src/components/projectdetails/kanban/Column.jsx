@@ -180,7 +180,7 @@ export default function Column({ column, tasks, project }) {
   const isAdmin = userRole === "admin";
 
   return (
-    <div className="flex-1 rounded-xl flex flex-col">
+    <div className="min-w-0 rounded-xl flex flex-col">
       <h3 className="bg-[#eac5b1] p-4 py-2 font-bold rounded-tl-xl rounded-tr-xl">
         {column.title}
       </h3>

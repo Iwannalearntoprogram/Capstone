@@ -100,48 +100,54 @@ const TimelineTab = () => {
     gridTemplateColumns: `200px repeat(${months.length}, 1fr)`,
   };
 
+  const timelineWidth = `${Math.max(920, 200 + months.length * 96)}px`;
+
   return (
-    <div className="p-4 bg-white rounded-xl shadow-md relative">
-      <div className="text-sm font-medium mb-4" style={gridStyle}>
-        <div className="border-b pb-2">Task</div>
-        {months.map((month, index) => (
-          <div key={index} className="text-center border-b pb-2">
-            {format(month, "MMM yyyy")}
-          </div>
-        ))}
-      </div>
-      {phases.map((phase, phaseIndex) => {
-        const phaseTasks = Array.isArray(phase.tasks) ? phase.tasks : [];
-        return (
-          <React.Fragment key={phaseIndex}>
-            <TimelinePhaseRow
-              phase={phase}
-              phaseTasks={phaseTasks}
-              months={months}
-              startDate={startDate}
-              gridStyle={gridStyle}
-              handleMouseMove={handleMouseMove}
-              handleMouseLeave={handleMouseLeave}
-              format={format}
-              phaseRowColor={phaseRowColor}
-            />
-            {phaseTasks.map((task, taskIndex) => (
-              <TimelineTaskRow
-                key={taskIndex}
-                task={task}
-                phase={phase}
-                months={months}
-                startDate={startDate}
-                gridStyle={gridStyle}
-                handleMouseMove={handleMouseMove}
-                handleMouseLeave={handleMouseLeave}
-                format={format}
-                taskRowColor={taskRowColor}
-              />
+    <div className="relative rounded-xl bg-white p-3 shadow-md sm:p-4">
+      <div className="overflow-x-auto pb-2">
+        <div style={{ minWidth: timelineWidth }}>
+          <div className="mb-4 text-sm font-medium" style={gridStyle}>
+            <div className="border-b pb-2">Task</div>
+            {months.map((month, index) => (
+              <div key={index} className="border-b pb-2 text-center">
+                {format(month, "MMM yyyy")}
+              </div>
             ))}
-          </React.Fragment>
-        );
-      })}
+          </div>
+          {phases.map((phase, phaseIndex) => {
+            const phaseTasks = Array.isArray(phase.tasks) ? phase.tasks : [];
+            return (
+              <React.Fragment key={phaseIndex}>
+                <TimelinePhaseRow
+                  phase={phase}
+                  phaseTasks={phaseTasks}
+                  months={months}
+                  startDate={startDate}
+                  gridStyle={gridStyle}
+                  handleMouseMove={handleMouseMove}
+                  handleMouseLeave={handleMouseLeave}
+                  format={format}
+                  phaseRowColor={phaseRowColor}
+                />
+                {phaseTasks.map((task, taskIndex) => (
+                  <TimelineTaskRow
+                    key={taskIndex}
+                    task={task}
+                    phase={phase}
+                    months={months}
+                    startDate={startDate}
+                    gridStyle={gridStyle}
+                    handleMouseMove={handleMouseMove}
+                    handleMouseLeave={handleMouseLeave}
+                    format={format}
+                    taskRowColor={taskRowColor}
+                  />
+                ))}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
       {/* Tooltip */}
       {tooltip.visible && tooltip.data && (
         <div

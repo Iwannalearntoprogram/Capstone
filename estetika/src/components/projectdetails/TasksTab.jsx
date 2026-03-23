@@ -54,7 +54,7 @@ function TasksTab() {
   };
 
   return (
-    <div className="flex gap-4">
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
       <DndContext onDragEnd={handleDragEnd}>
         {columns.map((column) => (
           <Column

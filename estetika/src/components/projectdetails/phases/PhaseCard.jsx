@@ -78,15 +78,15 @@ function PhaseCard({ phase, tasks, projectId }) {
   const phaseTasks = tasks.filter((task) => task.phaseId === phase._id);
 
   return (
-    <div className="bg-white rounded-lg shadow-lg border border-gray-300 p-6">
+    <div className="rounded-lg border border-gray-300 bg-white p-4 shadow-lg sm:p-6">
       <h2 className="text-lg font-bold mb-2">{phase.title}</h2>
-      <div className="text-sm text-gray-500 mb-2">
-        {phase.startDate
-          ? `Start: ${new Date(phase.startDate).toLocaleDateString()}`
-          : ""}
-        {phase.endDate
-          ? ` | End: ${new Date(phase.endDate).toLocaleDateString()}`
-          : ""}
+      <div className="mb-2 flex flex-col gap-1 text-sm text-gray-500 sm:flex-row sm:items-center sm:gap-2">
+        {phase.startDate && (
+          <span>Start: {new Date(phase.startDate).toLocaleDateString()}</span>
+        )}
+        {phase.endDate && (
+          <span>End: {new Date(phase.endDate).toLocaleDateString()}</span>
+        )}
       </div>
       <RingProgressBar
         progress={typeof phaseProgress === "number" ? phaseProgress : 0}
@@ -104,9 +104,9 @@ function PhaseCard({ phase, tasks, projectId }) {
         {phaseTasks.map((task) => (
           <li
             key={task._id || task.name}
-            className="flex justify-between items-center"
+            className="flex flex-col gap-1 rounded-lg border border-gray-100 p-3 sm:flex-row sm:items-center sm:justify-between"
           >
-            <span>{task.title || task.name}</span>
+            <span className="break-words">{task.title || task.name}</span>
             <span className="text-sm text-gray-600">{task.status}</span>
           </li>
         ))}

@@ -147,17 +147,17 @@ function ProjectDetailsPage() {
   ];
 
   return (
-    <div className="mx-auto px-0 py-4 sm:px-2 sm:py-6">
+    <div className="mx-auto px-3 py-4 sm:px-4 sm:py-6 lg:px-6">
       {/* Project Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl text-center font-bold mb-2 sm:text-3xl">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="mb-2 break-words text-center text-2xl font-bold sm:text-3xl">
           {project?.title || "Project Not Found"}
         </h1>
         {/* Edit Button (hidden if status is pending) */}
         {project && project.status !== "pending" && (
           <div className="flex justify-center mt-4">
             <button
-              className="bg-[#1d3c34] text-white px-4 py-2 rounded hover:bg-[#145026] transition-colors duration-200"
+              className="w-full rounded bg-[#1d3c34] px-4 py-2 text-white transition-colors duration-200 hover:bg-[#145026] sm:w-auto"
               onClick={openEditModal}
             >
               Edit Project
@@ -178,17 +178,17 @@ function ProjectDetailsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-8 overflow-x-auto">
-        <nav className="mx-auto flex min-w-max justify-center gap-4 border-b border-black/5 pb-1 sm:gap-6">
+      <div className="mb-6 sm:mb-8">
+        <nav className="grid grid-cols-3 gap-2 sm:flex sm:justify-center sm:gap-6 sm:border-b sm:border-black/5 sm:pb-1">
           {tabs.map((tab) => (
             <NavLink
               key={tab.path}
               to={`/dashboard/projects/${id}/${tab.path}`}
               className={({ isActive }) =>
-                `whitespace-nowrap py-2 px-1 border-b-2 transition-colors duration-200 ${
+                `flex min-w-0 items-center justify-center rounded-md px-2 py-2 text-center text-xs font-medium transition-colors duration-200 sm:whitespace-nowrap sm:rounded-none sm:border-b-2 sm:px-1 sm:text-base ${
                   isActive
-                    ? "border-[#1d3c34] text-[#1d3c34] font-semibold"
-                    : "border-transparent text-gray-500 hover:text-[#1d3c34]"
+                    ? "bg-[#1d3c34] text-white sm:bg-transparent sm:border-[#1d3c34] sm:text-[#1d3c34] sm:font-semibold"
+                    : "border border-black/5 bg-white text-gray-500 hover:text-[#1d3c34] sm:border-transparent sm:bg-transparent"
                 }`
               }
             >
@@ -199,7 +199,7 @@ function ProjectDetailsPage() {
       </div>
 
       {/* Tab Content */}
-      <div className="min-h-[200px] rounded-xl px-0 sm:px-2 lg:px-8">
+      <div className="min-h-[200px] rounded-xl px-0 sm:px-1 lg:px-4">
         <Outlet context={{ project, refreshProject: fetchProject }} />
       </div>
     </div>

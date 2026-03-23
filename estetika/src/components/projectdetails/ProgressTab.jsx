@@ -325,7 +325,7 @@ function ProgressTab() {
   const isDesigner = userRole === "designer";
 
   return (
-    <div className="space-y-8 bg-white rounded-xl shadow p-6">
+    <div className="space-y-6 rounded-xl bg-white p-4 shadow sm:space-y-8 sm:p-6">
       {/* Modal - Only show for designer */}
       {showModal && isDesigner && (
         <div className="fixed inset-0 bg-black/30 h-full flex items-center justify-center z-50">
@@ -408,9 +408,9 @@ function ProgressTab() {
 
       {/* Add Phase button - Only show for designer */}
       {isDesigner && (
-        <div className="flex justify-end mb-4 gap-2">
+        <div className="mb-4 flex justify-end gap-2">
           <button
-            className="bg-[#1D3C34] text-white px-4 py-2 rounded font-semibold hover:bg-[#16442A] transition cursor-pointer"
+            className="w-full rounded bg-[#1D3C34] px-4 py-2 font-semibold text-white transition hover:bg-[#16442A] sm:w-auto"
             onClick={handleAddPhaseClick}
           >
             Add Phase
@@ -420,9 +420,9 @@ function ProgressTab() {
 
       {/* Edit Phases button - Only show for designer */}
       {isDesigner && (
-        <div className="flex justify-end mb-4 gap-2">
+        <div className="mb-4 flex justify-end gap-2">
           <button
-            className="bg-green-700 text-white px-4 py-2 rounded font-semibold hover:bg-green-800 transition cursor-pointer"
+            className="w-full rounded bg-green-700 px-4 py-2 font-semibold text-white transition hover:bg-green-800 sm:w-auto"
             onClick={openPhasesEditModal}
           >
             Edit Phases

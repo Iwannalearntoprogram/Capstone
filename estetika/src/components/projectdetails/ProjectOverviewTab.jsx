@@ -47,7 +47,7 @@ export default function ProjectOverviewTab() {
 
   const InfoCard = ({ icon: Icon, label, value, className = "" }) => (
     <div
-      className={`bg-white rounded-lg p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow ${className}`}
+      className={`rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md ${className}`}
     >
       <div className="flex items-start space-x-3">
         <div className="p-2 rounded-lg" style={{ backgroundColor: "#f0fdf4" }}>
@@ -64,24 +64,24 @@ export default function ProjectOverviewTab() {
   );
 
   return (
-    <div className="mx-auto p-6 bg-gray-50 rounded-lg">
+    <div className="mx-auto rounded-lg bg-gray-50 p-3 sm:p-4 lg:p-6">
       <div
-        className="bg-gradient-to-r from-emerald-700 to-green-800 rounded-lg p-8 mb-8 text-white"
+        className="mb-6 rounded-lg bg-gradient-to-r from-emerald-700 to-green-800 p-5 text-white sm:mb-8 sm:p-8"
         style={{ background: "linear-gradient(to right, #1D3C34, #15803d)" }}
       >
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-2">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="mb-2 break-words text-2xl font-bold sm:text-3xl">
               {project.title || "Untitled Project"}
             </h1>
-            <p className="text-green-100 text-lg max-w-2xl">
+            <p className="max-w-2xl break-words text-base text-green-100 sm:text-lg">
               {project.description || "No description available"}
             </p>
           </div>
           <div
-            className={`px-4 py-2 rounded-lg border ${getStatusColor(
+            className={`w-full rounded-lg border px-4 py-2 sm:w-auto ${getStatusColor(
               project.status
-            )} bg-white flex-shrink-0`}
+            )} bg-white shrink-0`}
           >
             <div className="flex items-center space-x-2">
               <FaCheckCircle className="h-4 w-4" />
@@ -95,7 +95,7 @@ export default function ProjectOverviewTab() {
 
       {/* Design Recommendation Section */}
       {project.designRecommendation && (
-        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 mb-8">
+        <div className="mb-8 rounded-lg border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
           <div className="flex items-center space-x-3 mb-6">
             <div
               className="p-2 rounded-lg"
@@ -157,7 +157,7 @@ export default function ProjectOverviewTab() {
 
                 {/* Budget Range */}
                 {project.designRecommendation.budgetRange && (
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <FaDollarSign className="h-4 w-4 text-green-600" />
                     <span className="text-sm font-medium text-gray-600">
                       Budget Range:
@@ -173,7 +173,7 @@ export default function ProjectOverviewTab() {
 
                 {/* Popularity */}
                 {project.designRecommendation.popularity !== undefined && (
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <FaHeart className="h-4 w-4 text-red-500" />
                     <span className="text-sm font-medium text-gray-600">
                       Popularity:
@@ -273,7 +273,7 @@ export default function ProjectOverviewTab() {
       </div>
 
       {/* Designers Section */}
-      <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 ">
+      <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
         <div className="flex items-center space-x-3 mb-6">
           <div
             className="p-2 rounded-lg"
@@ -297,7 +297,7 @@ export default function ProjectOverviewTab() {
             {designers.map((designer, i) => (
               <div
                 key={designer._id || i}
-                className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-all duration-300"
+                className="rounded-lg border border-gray-200 bg-gradient-to-br from-gray-50 to-white p-4 transition-all duration-300 hover:shadow-lg sm:p-6"
                 style={{
                   "--tw-border-opacity": "1",
                   borderColor: "rgb(229 231 235 / var(--tw-border-opacity))",
@@ -307,17 +307,17 @@ export default function ProjectOverviewTab() {
                   (e.target.style.borderColor = "rgb(229 231 235)")
                 }
               >
-                <div className="flex items-center space-x-4 mb-4">
+                <div className="mb-4 flex items-center space-x-3 sm:space-x-4">
                   <img
                     src={designer.profileImage || defaultProfile}
                     alt={designer.fullName || designer.username || "Designer"}
                     className="w-12 h-12 rounded-lg object-cover bg-gray-100"
                   />
-                  <div>
-                    <h3 className="font-bold text-gray-900 text-lg">
+                  <div className="min-w-0">
+                    <h3 className="truncate font-bold text-lg text-gray-900">
                       {designer.fullName || designer.username || "Unknown"}
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="truncate text-sm text-gray-500">
                       @{designer.username || "N/A"}
                     </p>
                   </div>
