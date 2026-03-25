@@ -25,6 +25,15 @@ export const createRecommendation = async (payload) => {
   return res.data;
 };
 
+export const updateRecommendation = async (id, payload) => {
+  const res = await axios.put(
+    `${serverUrl}/api/project/recommendation?id=${id}`,
+    payload,
+    { headers: { ...authHeaders(), "Content-Type": "application/json" } }
+  );
+  return res.data;
+};
+
 export const deleteRecommendation = async (id) => {
   const res = await axios.delete(
     `${serverUrl}/api/project/recommendation?id=${id}`,
@@ -36,5 +45,6 @@ export const deleteRecommendation = async (id) => {
 export default {
   getRecommendations,
   createRecommendation,
+  updateRecommendation,
   deleteRecommendation,
 };

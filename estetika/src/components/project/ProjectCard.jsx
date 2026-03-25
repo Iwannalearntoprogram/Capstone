@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   FaEdit,
   FaUsers,
@@ -30,8 +31,6 @@ const ProjectCard = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPendingEditModal, setShowPendingEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [userRole, setUserRole] = useState(null);
-  const [userId, setUserId] = useState(null);
   const [editProjectForm, setEditProjectForm] = useState({
     status: project.status || "",
   });
@@ -83,14 +82,8 @@ const ProjectCard = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
-
-  // Get user role and ID from localStorage
-  useEffect(() => {
-    const role = localStorage.getItem("role");
-    const id = localStorage.getItem("id");
-    setUserRole(role);
-    setUserId(id);
-  }, []);
+  const userRole = localStorage.getItem("role");
+  const userId = localStorage.getItem("id");
 
   useEffect(() => {
     setEditProjectForm({ status: project.status || "" });
@@ -126,18 +119,50 @@ const ProjectCard = ({
     }).format(budget);
   };
 
-  const getStatusColor = (status) => {
+  const getStatusMeta = (status) => {
     switch (status) {
       case "ongoing":
-        return "bg-blue-100 text-blue-800";
+        return {
+          label: "Ongoing",
+          badge: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+          accent: "from-emerald-500 to-teal-400",
+          progressBar: "bg-emerald-600",
+        };
+      case "delayed":
+        return {
+          label: "Delayed",
+          badge: "bg-rose-50 text-rose-700 ring-rose-100",
+          accent: "from-rose-500 to-orange-300",
+          progressBar: "bg-emerald-600",
+        };
       case "completed":
-        return "bg-green-100 text-green-800";
+        return {
+          label: "Completed",
+          badge: "bg-slate-100 text-slate-700 ring-slate-200",
+          accent: "from-slate-800 to-slate-500",
+          progressBar: "bg-slate-700",
+        };
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
+        return {
+          label: "Pending",
+          badge: "bg-amber-50 text-amber-700 ring-amber-100",
+          accent: "from-amber-400 to-yellow-300",
+          progressBar: "bg-amber-500",
+        };
       case "cancelled":
-        return "bg-red-100 text-red-800";
+        return {
+          label: "Cancelled",
+          badge: "bg-stone-100 text-stone-600 ring-stone-200",
+          accent: "from-stone-400 to-stone-300",
+          progressBar: "bg-stone-400",
+        };
       default:
-        return "bg-gray-100 text-gray-800";
+        return {
+          label: "Unknown",
+          badge: "bg-gray-100 text-gray-700 ring-gray-200",
+          accent: "from-gray-400 to-gray-300",
+          progressBar: "bg-gray-500",
+        };
     }
   };
 
@@ -316,71 +341,92 @@ const ProjectCard = ({
   };
 
   const statusOptions = getStatusOptions();
+  const statusMeta = getStatusMeta(project.status);
+  const progressValue = Number.isFinite(Number(project.progress))
+    ? Math.min(Math.max(Number(project.progress), 0), 100)
+    : 0;
+  const memberCount = Array.isArray(project.members) ? project.members.length : 0;
+  const timelineLabel =
+    formattedStartDate || formattedEndDate
+      ? `${formattedStartDate || "TBD"} - ${formattedEndDate || "TBD"}`
+      : "Timeline to be confirmed";
+  const renderModal = (modalContent) =>
+    typeof document !== "undefined"
+      ? createPortal(modalContent, document.body)
+      : null;
 
   return (
     <>
       {/* Edit Project Modal - Only show for designers who can edit status */}
       {showEditModal && canEditStatus && (
-        <div className="fixed inset-0 bg-black/30 h-full flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 shadow-lg w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
-            <button
-              className="absolute top-2 right-4 text-gray-500 text-2xl cursor-pointer"
-              onClick={() => setShowEditModal(false)}
-            >
-              &times;
-            </button>
-            <h2 className="text-xl font-bold mb-4">Update Project Status</h2>
-            <form onSubmit={handleEditProject} className="flex flex-col gap-4">
-              <label className="">
-                Status
-                <select
-                  name="status"
-                  className="border rounded p-2 mt-1 w-full outline-black"
-                  value={editProjectForm.status}
-                  onChange={handleEditProjectChange}
-                  required
-                >
-                  <option value="">Select Status</option>
-                  {statusOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
+        renderModal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]">
+            <div className="relative w-full max-w-md rounded-[14px] border border-stone-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.2)]">
               <button
-                type="submit"
-                className="bg-[#1D3C34] text-white rounded p-2 font-semibold hover:bg-[#16442A] transition cursor-pointer"
-                disabled={isSubmitting}
+                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-[10px] border border-stone-200 text-xl text-gray-400 transition hover:border-stone-300 hover:text-gray-600"
+                onClick={() => setShowEditModal(false)}
               >
-                {isSubmitting ? "Updating..." : "Update Status"}
+                &times;
               </button>
-            </form>
+              <h2 className="pr-8 text-xl font-bold text-slate-900">
+                Update Project Status
+              </h2>
+              <form onSubmit={handleEditProject} className="mt-5 flex flex-col gap-4">
+                <label className="text-sm font-medium text-slate-700">
+                  <span className="block">Status</span>
+                  <select
+                    name="status"
+                    className="mt-2 w-full rounded-md border border-stone-300 bg-white px-3 py-2.5 outline-black"
+                    value={editProjectForm.status}
+                    onChange={handleEditProjectChange}
+                    required
+                  >
+                    <option value="">Select Status</option>
+                    {statusOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <button
+                  type="submit"
+                  className="rounded-md bg-[#1D3C34] px-4 py-2.5 font-semibold text-white transition hover:bg-[#16442A] disabled:opacity-60"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Updating..." : "Update Status"}
+                </button>
+              </form>
+            </div>
           </div>
-        </div>
+        )
       )}
 
       {showPendingEditModal && isAdmin && project.status === "pending" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl bg-white p-6 shadow-lg">
-            <button
-              className="absolute right-4 top-2 cursor-pointer text-2xl text-gray-500"
-              onClick={() => setShowPendingEditModal(false)}
-            >
-              &times;
-            </button>
-            <h2 className="mb-4 text-xl font-bold">Edit Pending Project</h2>
-            <form
-              onSubmit={handlePendingProjectEdit}
-              className="grid grid-cols-1 gap-4 md:grid-cols-2"
-            >
+        renderModal(
+          <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/45 p-4 backdrop-blur-[2px]">
+            <div className="flex min-h-full items-start justify-center py-6 sm:items-center">
+              <div className="relative w-full max-w-5xl rounded-[14px] border border-stone-200 bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.2)] sm:p-6">
+                <button
+                  className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-[10px] border border-stone-200 text-xl text-gray-400 transition hover:border-stone-300 hover:text-gray-600"
+                  onClick={() => setShowPendingEditModal(false)}
+                >
+                  &times;
+                </button>
+                <h2 className="pr-8 text-xl font-bold text-slate-900">
+                  Edit Pending Project
+                </h2>
+                <form
+                  onSubmit={handlePendingProjectEdit}
+                  className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2"
+                >
               <label className="block">
                 Project Title
                 <input
                   name="title"
                   type="text"
-                  className="mt-1 w-full rounded border p-2"
+                  className="mt-1 w-full rounded-md border p-2"
                   value={pendingProjectForm.title}
                   onChange={handlePendingProjectChange}
                   maxLength={120}
@@ -398,7 +444,7 @@ const ProjectCard = ({
                 <input
                   name="budget"
                   type="number"
-                  className="mt-1 w-full rounded border p-2"
+                  className="mt-1 w-full rounded-md border p-2"
                   value={pendingProjectForm.budget}
                   onChange={handlePendingProjectChange}
                   min="0.01"
@@ -416,7 +462,7 @@ const ProjectCard = ({
                 Description
                 <textarea
                   name="description"
-                  className="mt-1 w-full rounded border p-2"
+                  className="mt-1 w-full rounded-md border p-2"
                   rows={4}
                   value={pendingProjectForm.description}
                   onChange={handlePendingProjectChange}
@@ -435,7 +481,7 @@ const ProjectCard = ({
                 <input
                   name="startDate"
                   type="date"
-                  className="mt-1 w-full rounded border p-2"
+                  className="mt-1 w-full rounded-md border p-2"
                   value={pendingProjectForm.startDate}
                   onChange={handlePendingProjectChange}
                   required
@@ -447,7 +493,7 @@ const ProjectCard = ({
                 <input
                   name="endDate"
                   type="date"
-                  className="mt-1 w-full rounded border p-2"
+                  className="mt-1 w-full rounded-md border p-2"
                   value={pendingProjectForm.endDate}
                   onChange={handlePendingProjectChange}
                   required
@@ -464,7 +510,7 @@ const ProjectCard = ({
                 Room Type
                 <select
                   name="roomType"
-                  className="mt-1 w-full rounded border bg-white p-2"
+                  className="mt-1 w-full rounded-md border bg-white p-2"
                   value={pendingProjectForm.roomType}
                   onChange={handlePendingProjectChange}
                   required
@@ -487,7 +533,7 @@ const ProjectCard = ({
                 Project Type
                 <select
                   name="projectType"
-                  className="mt-1 w-full rounded border bg-white p-2"
+                  className="mt-1 w-full rounded-md border bg-white p-2"
                   value={pendingProjectForm.projectType}
                   onChange={handlePendingProjectChange}
                   required
@@ -510,7 +556,7 @@ const ProjectCard = ({
                 Priority
                 <select
                   name="priority"
-                  className="mt-1 w-full rounded border bg-white p-2"
+                  className="mt-1 w-full rounded-md border bg-white p-2"
                   value={pendingProjectForm.priority}
                   onChange={handlePendingProjectChange}
                   required
@@ -534,7 +580,7 @@ const ProjectCard = ({
                 <input
                   name="projectSize"
                   type="number"
-                  className="mt-1 w-full rounded border p-2"
+                  className="mt-1 w-full rounded-md border p-2"
                   value={pendingProjectForm.projectSize}
                   onChange={handlePendingProjectChange}
                   min="0.01"
@@ -553,7 +599,7 @@ const ProjectCard = ({
                 <input
                   name="projectLocation"
                   type="text"
-                  className="mt-1 w-full rounded border p-2"
+                  className="mt-1 w-full rounded-md border p-2"
                   value={pendingProjectForm.projectLocation}
                   onChange={handlePendingProjectChange}
                   maxLength={120}
@@ -571,7 +617,7 @@ const ProjectCard = ({
                 <input
                   name="designInspiration"
                   type="url"
-                  className="mt-1 w-full rounded border p-2"
+                  className="mt-1 w-full rounded-md border p-2"
                   value={pendingProjectForm.designInspiration}
                   onChange={handlePendingProjectChange}
                   placeholder="https://..."
@@ -586,115 +632,194 @@ const ProjectCard = ({
               <div className="flex justify-end gap-2 md:col-span-2">
                 <button
                   type="button"
-                  className="rounded border px-4 py-2 text-slate-700 hover:bg-slate-50"
+                  className="rounded-md border px-4 py-2 text-slate-700 hover:bg-slate-50"
                   onClick={() => setShowPendingEditModal(false)}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded bg-[#1D3C34] px-4 py-2 font-semibold text-white hover:bg-[#16442A] transition"
+                  className="rounded-md bg-[#1D3C34] px-4 py-2 font-semibold text-white hover:bg-[#16442A] transition"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Saving..." : "Save Changes"}
                 </button>
               </div>
-            </form>
+                </form>
+              </div>
+            </div>
           </div>
-        </div>
+        )
       )}
 
       {/* Project Details Modal for Adding Designers */}
       {showDetailsModal && (
-        <ProjectDetailsModal
-          project={project}
-          onClose={() => setShowDetailsModal(false)}
-        />
+        renderModal(
+          <ProjectDetailsModal
+            project={project}
+            onClose={() => setShowDetailsModal(false)}
+          />
+        )
       )}
 
-      <div className="bg-white border rounded-xl p-4 shadow-md flex flex-col justify-between h-full">
-        <div className="flex items-start justify-between border-b pb-2 mb-3">
-          <div className="flex-1">
-            <h3 className="text-lg font-bold flex items-center gap-2 mb-1">
-              {project.title}
-              {/* Only show edit icon for non-pending projects and designers who can edit status */}
-              {canEditStatus && project.status !== "pending" && (
-                <FiEdit2
-                  className="text-gray-400 text-sm cursor-pointer hover:text-gray-600"
-                  onClick={() => setShowEditModal(true)}
-                  title="Update Status"
-                />
-              )}
-            </h3>
-            <div className="flex items-center gap-2">
+      <div className="group flex h-full flex-col rounded-[12px] border border-stone-200/80 bg-white p-3.5 shadow-[0_10px_24px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_16px_32px_rgba(15,23,42,0.1)]">
+        <div
+          className={`h-1 w-12 rounded-sm bg-gradient-to-r ${statusMeta.accent}`}
+        />
+
+        <div className="mt-3 flex items-start justify-between gap-2.5">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5">
               <span
-                className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(
-                  project.status
-                )}`}
+                className={`rounded-lg px-2.5 py-1 text-[10px] font-semibold ring-1 ring-inset ${statusMeta.badge}`}
               >
-                {project.status?.charAt(0).toUpperCase() +
-                  project.status?.slice(1)}
+                {statusMeta.label}
               </span>
               {project.roomType && (
-                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                <span className="rounded-lg bg-stone-100 px-2.5 py-1 text-[10px] font-medium text-slate-600">
                   {project.roomType}
                 </span>
               )}
-              {/* Show member badge for designers */}
+              {project.projectType && (
+                <span className="rounded-lg bg-stone-100 px-2.5 py-1 text-[10px] font-medium text-slate-600">
+                  {project.projectType}
+                </span>
+              )}
               {isDesigner && isProjectMember && (
-                <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-[10px] font-medium text-emerald-700">
                   Member
                 </span>
               )}
             </div>
+
+            <h3 className="mt-2.5 text-base font-semibold tracking-tight text-slate-900">
+              {project.title || "Untitled project"}
+            </h3>
+            <p className="mt-1 line-clamp-3 text-[13px] leading-5 text-slate-600">
+              {project.description ||
+                "Project details will appear here once the brief is finalized."}
+            </p>
           </div>
-          <div className="flex gap-2 ml-2">
-            {!restoreMode && isAdmin && project.status === "pending" && (
+
+          {!restoreMode && (
+            <div className="flex shrink-0 items-center gap-1.5">
+              {isAdmin && project.status === "pending" && (
+                <button
+                  className="flex items-center gap-1 rounded-lg border border-stone-200 bg-white px-2 py-1.5 text-[10px] font-medium text-slate-600 transition hover:border-stone-300 hover:bg-stone-50"
+                  onClick={() => {
+                    setPendingProjectForm(getPendingProjectForm(project));
+                    setPendingProjectErrors({});
+                    setShowPendingEditModal(true);
+                  }}
+                >
+                  <FaEdit size={10} />
+                  Edit
+                </button>
+              )}
+              {canEditStatus && project.status !== "pending" && (
+                <button
+                  className="flex h-8.5 w-8.5 items-center justify-center rounded-lg border border-stone-200 bg-white text-slate-500 transition hover:border-stone-300 hover:bg-stone-50 hover:text-slate-700"
+                  onClick={() => setShowEditModal(true)}
+                  title="Update Status"
+                >
+                  <FiEdit2 size={12} />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-400">
+            Budget
+          </p>
+          <p className="mt-1 text-[1.65rem] font-semibold tracking-tight text-emerald-700">
+            {project.budget ? formatBudget(project.budget) : "Not set"}
+          </p>
+
+          <div className="mt-2.5 grid gap-2 sm:grid-cols-2">
+            <div className="rounded-[10px] bg-stone-50 px-3 py-2.5">
+              <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-stone-400">
+                <FaMapMarkerAlt size={10} />
+                Location
+              </div>
+              <p className="mt-1 text-[13px] text-slate-600">
+                {project.projectLocation || "To be confirmed"}
+              </p>
+            </div>
+
+            <div className="rounded-[10px] bg-stone-50 px-3 py-2.5">
+              <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-stone-400">
+                <FaRulerCombined size={10} />
+                Size
+              </div>
+              <p className="mt-1 text-[13px] text-slate-600">
+                {project.projectSize ? `${project.projectSize} sq ft` : "Not set"}
+              </p>
+            </div>
+
+            <div className="rounded-[10px] bg-stone-50 px-3 py-2.5 sm:col-span-2">
+              <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-stone-400">
+                <FaRegCalendarAlt size={10} />
+                Timeline
+              </div>
+              <p className="mt-1 text-[13px] text-slate-600">{timelineLabel}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-auto pt-4">
+          <div className="rounded-[10px] border border-stone-200/80 bg-stone-50/90 px-3 py-3">
+            <div className="flex items-center justify-between text-[11px] font-medium text-slate-500">
+              <span>Progress</span>
+              <span className="text-slate-700">{progressValue}%</span>
+            </div>
+            <div className="mt-2.5 h-1.5 overflow-hidden rounded-md bg-stone-200">
+              <div
+                className={`h-full rounded-md ${statusMeta.progressBar}`}
+                style={{ width: `${progressValue}%` }}
+              ></div>
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-slate-500">
+              <span className="flex items-center gap-1.5">
+                <FaUsers size={10} className="text-stone-400" />
+                {memberCount} member{memberCount === 1 ? "" : "s"}
+              </span>
+              <span>{formattedEndDate ? `Due ${formattedEndDate}` : "No due date"}</span>
+            </div>
+          </div>
+
+          <div className="mt-2.5 flex items-center gap-2">
+            {!restoreMode ? (
               <button
-                className="flex items-center gap-1 rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 transition hover:bg-gray-200"
-                onClick={() => {
-                  setPendingProjectForm(getPendingProjectForm(project));
-                  setPendingProjectErrors({});
-                  setShowPendingEditModal(true);
-                }}
-              >
-                <FaEdit size={12} />
-                Edit
-              </button>
-            )}
-            {/* Only show view button if not restoreMode */}
-            {!restoreMode && (
-              <button
-                className="bg-[#1D3C34] text-white text-sm px-3 py-1 rounded hover:bg-[#145c4b] transition"
+                className="flex-1 rounded-lg bg-[#1D3C34] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#173129]"
                 onClick={() => onView && onView(project._id)}
               >
-                View
+                View Project
               </button>
-            )}
-            {/* Restore button for recycle bin */}
-            {restoreMode && (
+            ) : (
               <button
-                className="bg-green-600 text-white text-sm px-2 py-1 rounded hover:bg-green-700 transition flex items-center"
+                className="flex-1 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-800"
                 onClick={() => onDelete && onDelete(project._id)}
                 title="Restore Project"
               >
-                Restore
+                Restore Project
               </button>
             )}
-            {/* Add Designer button - Only show if admin and can add designer and not restoreMode */}
+
             {!restoreMode && canAddDesigner && (
               <button
-                className="bg-blue-600 text-white text-sm px-2 py-1 rounded hover:bg-blue-700 transition flex items-center"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-200 bg-white text-slate-600 transition hover:border-stone-300 hover:bg-stone-50"
                 onClick={handleAddDesigner}
                 title="Add Designer"
               >
                 <FaUserPlus size={12} />
               </button>
             )}
-            {/* Only show delete button if admin and not restoreMode */}
+
             {!restoreMode && isAdmin && (
               <button
-                className="bg-gray-100 text-gray-600 text-sm px-2 py-1 rounded hover:bg-red-500 hover:text-white flex items-center"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-200 bg-white text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
                 onClick={() => onDelete && onDelete(project._id)}
                 title="Delete Project"
               >
@@ -702,81 +827,6 @@ const ProjectCard = ({
               </button>
             )}
           </div>
-        </div>
-
-        <div className="flex-1 mb-3">
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-            {project.description}
-          </p>
-
-          <div className="space-y-2 text-sm">
-            {project.budget && (
-              <div className="flex items-center gap-2 text-green-600">
-                <span className="font-medium">
-                  {formatBudget(project.budget)}
-                </span>
-              </div>
-            )}
-
-            {project.projectLocation && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <FaMapMarkerAlt size={12} />
-                <span className="text-xs truncate">
-                  {project.projectLocation}
-                </span>
-              </div>
-            )}
-
-            {project.projectSize && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <FaRulerCombined size={12} />
-                <span className="text-xs">{project.projectSize} sq ft</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {(formattedStartDate || formattedEndDate) && (
-          <div className="border-t pt-2 mb-2">
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              {formattedStartDate && (
-                <div className="flex items-center gap-1">
-                  <span className="text-gray-400">Start:</span>
-                  <span>{formattedStartDate}</span>
-                </div>
-              )}
-              {formattedEndDate && (
-                <div className="flex items-center gap-1">
-                  <span className="text-gray-400">End:</span>
-                  <span className="text-red-500 font-medium">
-                    {formattedEndDate}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="flex justify-between items-center text-sm text-gray-500 border-t pt-2">
-          <div className="flex items-center gap-1">
-            <FaUsers size={12} />
-            <span className="text-xs">
-              {project.members?.length || 0} members
-            </span>
-          </div>
-          {project.progress !== undefined && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400">Progress:</span>
-              <div className="w-12 bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-[#1D3C34] h-2 rounded-full"
-                  style={{ width: `${project.progress}%` }}
-                ></div>
-              </div>
-              <span className="text-xs font-medium">{project.progress}%</span>
-            </div>
-          )}
         </div>
       </div>
     </>

@@ -12,6 +12,7 @@ const EditProjectModal = ({
   message = "",
 }) => {
   if (!isOpen) return null;
+  const priorityOptions = ["Budget", "Style"];
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -74,6 +75,39 @@ const EditProjectModal = ({
             {errors.budget && (
               <p className="text-red-500 text-sm mt-1">{errors.budget}</p>
             )}
+          </label>
+          <label>
+            <span className="block text-gray-700 font-medium mb-1">Priority</span>
+            <select
+              name="priority"
+              value={editData.priority}
+              onChange={onChange}
+              className="border rounded px-2 py-1 w-full bg-white"
+              required
+            >
+              <option value="">Select priority</option>
+              {priorityOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            {errors.priority && (
+              <p className="text-red-500 text-sm mt-1">{errors.priority}</p>
+            )}
+          </label>
+          <label>
+            <span className="block text-gray-700 font-medium mb-1">
+              Design Preference
+            </span>
+            <textarea
+              name="designPreference"
+              value={editData.designPreference}
+              onChange={onChange}
+              className="border rounded px-2 py-1 w-full"
+              rows={3}
+              placeholder="Modern, warm, minimalist, natural textures..."
+            />
           </label>
           <label>
             <span className="block text-gray-700 font-medium mb-1">Start Date</span>

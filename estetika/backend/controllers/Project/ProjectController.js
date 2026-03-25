@@ -6,6 +6,9 @@ const Material = require("../../models/Project/Material");
 const DeletedProject = require("../../models/Project/DeletedProject");
 const Notification = require("../../models/utils/Notification");
 const notifyMany = require("../../utils/notifyMany");
+const {
+  getRecommendedMaterialForProject,
+} = require("../../utils/materialRecommendation");
 require("../../utils/recycleBinCron");
 
 const hasOwn = (object, key) =>
@@ -150,6 +153,12 @@ const validateProjectPayload = (
     }
   }
 
+  if (hasOwn(payload, "designPreference")) {
+    const rawValue = payload.designPreference;
+    normalized.designPreference =
+      typeof rawValue === "string" ? rawValue.trim() : rawValue ?? "";
+  }
+
   const parsedStartDate = validateDateField("startDate", "Start date");
   const parsedEndDate = validateDateField("endDate", "End date");
 
@@ -248,6 +257,9 @@ const project_get = catchAsync(async (req, res, next) => {
     if (isPastEndDate(project.endDate) && project.status === "ongoing") {
       project.status = "delayed";
     }
+
+    project.recommendedMaterial =
+      await getRecommendedMaterialForProject(project);
   } else {
     project.forEach((proj, idx) => {
       if (proj.toObject) project[idx] = proj = proj.toObject();
@@ -313,7 +325,6 @@ const project_post = catchAsync(async (req, res, next) => {
     priority,
     projectSize,
     projectLocation,
-    designPreference,
     designInspiration,
     designRecommendation,
   } = req.body;
@@ -349,7 +360,7 @@ const project_post = catchAsync(async (req, res, next) => {
     priority: normalized.priority,
     projectSize: normalized.projectSize,
     projectLocation: normalized.projectLocation,
-    designPreference,
+    designPreference: normalized.designPreference,
     designInspiration: hasOwn(normalized, "designInspiration")
       ? normalized.designInspiration
       : designInspiration,
@@ -415,7 +426,6 @@ const project_put = catchAsync(async (req, res, next) => {
     priority,
     projectSize,
     projectLocation,
-    designPreference,
     designInspiration,
     designRecommendation,
     projectUpdates,
@@ -473,7 +483,9 @@ const project_put = catchAsync(async (req, res, next) => {
     updates.projectSize = normalized.projectSize;
   if (hasOwn(normalized, "projectLocation"))
     updates.projectLocation = normalized.projectLocation;
-  if (designPreference) updates.designPreference = designPreference;
+  if (hasOwn(normalized, "designPreference")) {
+    updates.designPreference = normalized.designPreference;
+  }
   if (hasOwn(normalized, "designInspiration")) {
     updates.designInspiration = normalized.designInspiration;
   }

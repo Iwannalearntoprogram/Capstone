@@ -240,20 +240,185 @@ const design_recommendation_get = catchAsync(async (req, res, next) => {
 });
 
 const design_recommendation_match = catchAsync(async (req, res, next) => {
-  const { roomType, designPreferences, budget } = req.query;
+  const { roomType, designPreferences, budget, priority } = req.query;
 
   if (!roomType || !budget) {
     return next(
       new AppError("Room type and budget are required for matching", 400)
     );
   }
+
   const budgetNum = Number(budget);
   const normalizedPreferences = normalizeAndExpandKeywords(designPreferences);
+  const normalizedPriority = priority === "Budget" ? "Budget" : "Style";
+  const scoreWeights =
+    normalizedPriority === "Budget"
+      ? {
+          preference: 4,
+          tag: 2,
+          partial: 1,
+          budget: 5,
+        }
+      : {
+          preference: 7,
+          tag: 4,
+          partial: 2,
+          budget: 1.5,
+        };
 
-  // Log incoming request parameters for match endpoint
-  // no-op logging removed
+  const buildScoringStage = (budgetScoreField, budgetScoreExpression) => ({
+    $addFields: {
+      preferenceMatchCount: {
+        $size: {
+          $setIntersection: ["$designPreferences", normalizedPreferences],
+        },
+      },
+      tagMatchCount: {
+        $size: {
+          $setIntersection: ["$tags", normalizedPreferences],
+        },
+      },
+      partialMatchScore: {
+        $add: [
+          {
+            $size: {
+              $filter: {
+                input: "$designPreferences",
+                cond: {
+                  $anyElementTrue: {
+                    $map: {
+                      input: normalizedPreferences,
+                      as: "pref",
+                      in: {
+                        $or: [
+                          {
+                            $regexMatch: {
+                              input: "$$this",
+                              regex: "$$pref",
+                              options: "i",
+                            },
+                          },
+                          {
+                            $regexMatch: {
+                              input: "$$pref",
+                              regex: "$$this",
+                              options: "i",
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $multiply: [
+              0.5,
+              {
+                $size: {
+                  $filter: {
+                    input: "$tags",
+                    cond: {
+                      $anyElementTrue: {
+                        $map: {
+                          input: normalizedPreferences,
+                          as: "pref",
+                          in: {
+                            $or: [
+                              {
+                                $regexMatch: {
+                                  input: "$$this",
+                                  regex: "$$pref",
+                                  options: "i",
+                                },
+                              },
+                              {
+                                $regexMatch: {
+                                  input: "$$pref",
+                                  regex: "$$this",
+                                  options: "i",
+                                },
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      },
+      [budgetScoreField]: budgetScoreExpression,
+      totalScore: {
+        $add: [
+          { $multiply: ["$preferenceMatchCount", scoreWeights.preference] },
+          { $multiply: ["$tagMatchCount", scoreWeights.tag] },
+          { $multiply: ["$partialMatchScore", scoreWeights.partial] },
+          { $multiply: [`$${budgetScoreField}`, scoreWeights.budget] },
+          { $divide: ["$popularity", 100] },
+        ],
+      },
+    },
+  });
 
-  const pipeline = [
+  const buildSortStage = (
+    budgetScoreField,
+    { includeBudgetMax = false } = {}
+  ) => {
+    const sort =
+      normalizedPriority === "Budget"
+        ? {
+            totalScore: -1,
+            [budgetScoreField]: -1,
+            preferenceMatchCount: -1,
+            tagMatchCount: -1,
+            partialMatchScore: -1,
+            popularity: -1,
+            createdAt: -1,
+          }
+        : {
+            totalScore: -1,
+            preferenceMatchCount: -1,
+            tagMatchCount: -1,
+            partialMatchScore: -1,
+            popularity: -1,
+            [budgetScoreField]: -1,
+            createdAt: -1,
+          };
+
+    if (includeBudgetMax) {
+      sort["budgetRange.max"] = -1;
+    }
+
+    return { $sort: sort };
+  };
+
+  const buildProjectionStage = (budgetScoreField) => ({
+    $project: {
+      title: 1,
+      imageLink: 1,
+      specification: 1,
+      budgetRange: 1,
+      designPreferences: 1,
+      type: 1,
+      popularity: 1,
+      tags: 1,
+      createdAt: 1,
+      updatedAt: 1,
+      matchScore: "$totalScore",
+      preferenceMatches: "$preferenceMatchCount",
+      tagMatches: "$tagMatchCount",
+      partialMatches: "$partialMatchScore",
+      budgetCompatibility: `$${budgetScoreField}`,
+    },
+  });
+
+  const topMatchesPipeline = [
     {
       $match: {
         type: roomType,
@@ -263,485 +428,110 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
         ],
       },
     },
-    {
-      $addFields: {
-        preferenceMatchCount: {
-          $size: {
-            $setIntersection: ["$designPreferences", normalizedPreferences],
-          },
-        },
-        tagMatchCount: {
-          $size: {
-            $setIntersection: ["$tags", normalizedPreferences],
-          },
-        },
-        partialMatchScore: {
-          $add: [
-            // Count partial matches in designPreferences
-            {
-              $size: {
-                $filter: {
-                  input: "$designPreferences",
-                  cond: {
-                    $anyElementTrue: {
-                      $map: {
-                        input: normalizedPreferences,
-                        as: "pref",
-                        in: {
-                          $or: [
-                            {
-                              $regexMatch: {
-                                input: "$$this",
-                                regex: "$$pref",
-                                options: "i",
-                              },
-                            },
-                            {
-                              $regexMatch: {
-                                input: "$$pref",
-                                regex: "$$this",
-                                options: "i",
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            // Count partial matches in tags (with lower weight)
-            {
-              $multiply: [
-                0.5,
-                {
-                  $size: {
-                    $filter: {
-                      input: "$tags",
-                      cond: {
-                        $anyElementTrue: {
-                          $map: {
-                            input: normalizedPreferences,
-                            as: "pref",
-                            in: {
-                              $or: [
-                                {
-                                  $regexMatch: {
-                                    input: "$$this",
-                                    regex: "$$pref",
-                                    options: "i",
-                                  },
-                                },
-                                {
-                                  $regexMatch: {
-                                    input: "$$pref",
-                                    regex: "$$this",
-                                    options: "i",
-                                  },
-                                },
-                              ],
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              ],
-            },
+    buildScoringStage("budgetFitScore", {
+      $cond: {
+        if: {
+          $and: [
+            { $gte: [budgetNum, "$budgetRange.min"] },
+            { $lte: [budgetNum, "$budgetRange.max"] },
           ],
         },
-        budgetFitScore: {
-          $cond: {
-            if: {
-              $and: [
-                { $gte: [budgetNum, "$budgetRange.min"] },
-                { $lte: [budgetNum, "$budgetRange.max"] },
-              ],
-            },
-            then: {
-              $subtract: [
-                1,
-                {
-                  $abs: {
-                    $divide: [
-                      {
-                        $subtract: [
-                          budgetNum,
-                          { $avg: ["$budgetRange.min", "$budgetRange.max"] },
-                        ],
-                      },
-                      { $subtract: ["$budgetRange.max", "$budgetRange.min"] },
+        then: {
+          $subtract: [
+            1,
+            {
+              $abs: {
+                $divide: [
+                  {
+                    $subtract: [
+                      budgetNum,
+                      { $avg: ["$budgetRange.min", "$budgetRange.max"] },
                     ],
                   },
-                },
-              ],
+                  { $subtract: ["$budgetRange.max", "$budgetRange.min"] },
+                ],
+              },
             },
-            else: 0,
-          },
-        },
-        totalScore: {
-          $add: [
-            { $multiply: ["$preferenceMatchCount", 5] },
-            { $multiply: ["$tagMatchCount", 3] },
-            { $multiply: ["$partialMatchScore", 1] },
-            { $multiply: ["$budgetFitScore", 2] },
-            { $divide: ["$popularity", 100] },
           ],
         },
+        else: 0,
       },
-    },
-    {
-      $sort: {
-        totalScore: -1,
-        preferenceMatchCount: -1,
-        tagMatchCount: -1,
-        budgetFitScore: -1,
-        popularity: -1,
-        createdAt: -1,
-      },
-    },
-    {
-      $limit: 1,
-    },
-    {
-      $project: {
-        title: 1,
-        imageLink: 1,
-        specification: 1,
-        budgetRange: 1,
-        designPreferences: 1,
-        type: 1,
-        popularity: 1,
-        tags: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        matchScore: "$totalScore",
-        preferenceMatches: "$preferenceMatchCount",
-        tagMatches: "$tagMatchCount",
-        partialMatches: "$partialMatchScore",
-        budgetCompatibility: "$budgetFitScore",
-      },
-    },
+    }),
+    buildSortStage("budgetFitScore"),
+    { $limit: 3 },
+    buildProjectionStage("budgetFitScore"),
   ];
-  // Adjust pipeline to return top 3 matches
-  const pipelineTop3 = pipeline.map((stage) => {
-    if (stage.$limit !== undefined) {
-      return { $limit: 3 };
-    }
-    return stage;
-  });
-  const matchedRecommendations = await DesignRecommendation.aggregate(
-    pipelineTop3
-  );
-  let topMatches = matchedRecommendations;
 
-  // Fill to 3: cheaper options first
-  let remaining = 3 - topMatches.length;
-  if (remaining > 0) {
-    const excludeIds = topMatches.map((d) => d._id);
-    const cheaperPipeline = [
-      {
-        $match: {
-          type: roomType,
-          "budgetRange.max": { $lt: budgetNum },
-          _id: { $nin: excludeIds },
-        },
+  const buildCheaperPipeline = (excludeIds, remaining) => [
+    {
+      $match: {
+        type: roomType,
+        "budgetRange.max": { $lt: budgetNum },
+        _id: { $nin: excludeIds },
       },
-      {
-        $addFields: {
-          preferenceMatchCount: {
-            $size: {
-              $setIntersection: ["$designPreferences", normalizedPreferences],
-            },
-          },
-          tagMatchCount: {
-            $size: { $setIntersection: ["$tags", normalizedPreferences] },
-          },
-          partialMatchScore: {
-            $add: [
+    },
+    buildScoringStage("budgetClosenessScore", {
+      $subtract: [
+        1,
+        {
+          $divide: [
+            { $subtract: [budgetNum, "$budgetRange.max"] },
+            { $max: [budgetNum, 1] },
+          ],
+        },
+      ],
+    }),
+    buildSortStage("budgetClosenessScore", { includeBudgetMax: true }),
+    { $limit: remaining },
+    buildProjectionStage("budgetClosenessScore"),
+  ];
+
+  const buildRelaxedPipeline = (excludeIds, remaining) => [
+    {
+      $match: {
+        type: roomType,
+        _id: { $nin: excludeIds },
+      },
+    },
+    buildScoringStage("budgetClosenessScore", {
+      $subtract: [
+        1,
+        {
+          $abs: {
+            $divide: [
               {
-                $size: {
-                  $filter: {
-                    input: "$designPreferences",
-                    cond: {
-                      $anyElementTrue: {
-                        $map: {
-                          input: normalizedPreferences,
-                          as: "pref",
-                          in: {
-                            $or: [
-                              {
-                                $regexMatch: {
-                                  input: "$$this",
-                                  regex: "$$pref",
-                                  options: "i",
-                                },
-                              },
-                              {
-                                $regexMatch: {
-                                  input: "$$pref",
-                                  regex: "$$this",
-                                  options: "i",
-                                },
-                              },
-                            ],
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              {
-                $multiply: [
-                  0.5,
-                  {
-                    $size: {
-                      $filter: {
-                        input: "$tags",
-                        cond: {
-                          $anyElementTrue: {
-                            $map: {
-                              input: normalizedPreferences,
-                              as: "pref",
-                              in: {
-                                $or: [
-                                  {
-                                    $regexMatch: {
-                                      input: "$$this",
-                                      regex: "$$pref",
-                                      options: "i",
-                                    },
-                                  },
-                                  {
-                                    $regexMatch: {
-                                      input: "$$pref",
-                                      regex: "$$this",
-                                      options: "i",
-                                    },
-                                  },
-                                ],
-                              },
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
+                $subtract: [
+                  budgetNum,
+                  { $avg: ["$budgetRange.min", "$budgetRange.max"] },
                 ],
               },
-            ],
-          },
-          budgetClosenessScore: {
-            $subtract: [
-              1,
-              {
-                $divide: [
-                  { $subtract: [budgetNum, "$budgetRange.max"] },
-                  { $max: [budgetNum, 1] },
-                ],
-              },
-            ],
-          },
-          totalScore: {
-            $add: [
-              { $multiply: ["$preferenceMatchCount", 5] },
-              { $multiply: ["$tagMatchCount", 3] },
-              { $multiply: ["$partialMatchScore", 1] },
-              { $multiply: ["$budgetClosenessScore", 2] },
-              { $divide: ["$popularity", 100] },
+              { $max: [budgetNum, 1] },
             ],
           },
         },
-      },
-      {
-        $sort: {
-          totalScore: -1,
-          "budgetRange.max": -1,
-          preferenceMatchCount: -1,
-          tagMatchCount: -1,
-          popularity: -1,
-          createdAt: -1,
-        },
-      },
-      { $limit: remaining },
-      {
-        $project: {
-          title: 1,
-          imageLink: 1,
-          specification: 1,
-          budgetRange: 1,
-          designPreferences: 1,
-          type: 1,
-          popularity: 1,
-          tags: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          matchScore: "$totalScore",
-          preferenceMatches: "$preferenceMatchCount",
-          tagMatches: "$tagMatchCount",
-          partialMatches: "$partialMatchScore",
-          budgetCompatibility: "$budgetClosenessScore",
-        },
-      },
-    ];
-    const cheaperRecommendations = await DesignRecommendation.aggregate(
-      cheaperPipeline
+      ],
+    }),
+    buildSortStage("budgetClosenessScore"),
+    { $limit: remaining },
+    buildProjectionStage("budgetClosenessScore"),
+  ];
+
+  let topMatches = await DesignRecommendation.aggregate(topMatchesPipeline);
+
+  const fillStageFactories =
+    normalizedPriority === "Budget"
+      ? [buildCheaperPipeline, buildRelaxedPipeline]
+      : [buildRelaxedPipeline, buildCheaperPipeline];
+
+  for (const buildPipeline of fillStageFactories) {
+    const remaining = 3 - topMatches.length;
+    if (remaining <= 0) break;
+
+    const excludeIds = topMatches.map((item) => item._id);
+    const additions = await DesignRecommendation.aggregate(
+      buildPipeline(excludeIds, remaining)
     );
-    topMatches = topMatches.concat(cheaperRecommendations);
-  }
-
-  // If still short, relax budget entirely (keep type), score by preferences/popularity
-  remaining = 3 - topMatches.length;
-  if (remaining > 0) {
-    const excludeIds = topMatches.map((d) => d._id);
-    const relaxedPipeline = [
-      {
-        $match: {
-          type: roomType,
-          _id: { $nin: excludeIds },
-        },
-      },
-      {
-        $addFields: {
-          preferenceMatchCount: {
-            $size: {
-              $setIntersection: ["$designPreferences", normalizedPreferences],
-            },
-          },
-          tagMatchCount: {
-            $size: { $setIntersection: ["$tags", normalizedPreferences] },
-          },
-          partialMatchScore: {
-            $add: [
-              {
-                $size: {
-                  $filter: {
-                    input: "$designPreferences",
-                    cond: {
-                      $anyElementTrue: {
-                        $map: {
-                          input: normalizedPreferences,
-                          as: "pref",
-                          in: {
-                            $or: [
-                              {
-                                $regexMatch: {
-                                  input: "$$this",
-                                  regex: "$$pref",
-                                  options: "i",
-                                },
-                              },
-                              {
-                                $regexMatch: {
-                                  input: "$$pref",
-                                  regex: "$$this",
-                                  options: "i",
-                                },
-                              },
-                            ],
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              {
-                $multiply: [
-                  0.5,
-                  {
-                    $size: {
-                      $filter: {
-                        input: "$tags",
-                        cond: {
-                          $anyElementTrue: {
-                            $map: {
-                              input: normalizedPreferences,
-                              as: "pref",
-                              in: {
-                                $or: [
-                                  {
-                                    $regexMatch: {
-                                      input: "$$this",
-                                      regex: "$$pref",
-                                      options: "i",
-                                    },
-                                  },
-                                  {
-                                    $regexMatch: {
-                                      input: "$$pref",
-                                      regex: "$$this",
-                                      options: "i",
-                                    },
-                                  },
-                                ],
-                              },
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
-                ],
-              },
-            ],
-          },
-          budgetClosenessScore: {
-            $subtract: [
-              1,
-              {
-                $abs: {
-                  $divide: [
-                    {
-                      $subtract: [
-                        budgetNum,
-                        { $avg: ["$budgetRange.min", "$budgetRange.max"] },
-                      ],
-                    },
-                    { $max: [budgetNum, 1] },
-                  ],
-                },
-              },
-            ],
-          },
-          totalScore: {
-            $add: [
-              { $multiply: ["$preferenceMatchCount", 5] },
-              { $multiply: ["$tagMatchCount", 3] },
-              { $multiply: ["$partialMatchScore", 1] },
-              { $multiply: ["$budgetClosenessScore", 2] },
-              { $divide: ["$popularity", 100] },
-            ],
-          },
-        },
-      },
-      { $sort: { totalScore: -1, popularity: -1, createdAt: -1 } },
-      { $limit: remaining },
-      {
-        $project: {
-          title: 1,
-          imageLink: 1,
-          specification: 1,
-          budgetRange: 1,
-          designPreferences: 1,
-          type: 1,
-          popularity: 1,
-          tags: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          matchScore: "$totalScore",
-          preferenceMatches: "$preferenceMatchCount",
-          tagMatches: "$tagMatchCount",
-          partialMatches: "$partialMatchScore",
-          budgetCompatibility: "$budgetClosenessScore",
-        },
-      },
-    ];
-    const relaxed = await DesignRecommendation.aggregate(relaxedPipeline);
-    topMatches = topMatches.concat(relaxed);
+    topMatches = topMatches.concat(additions);
   }
 
   return res.status(200).json({
@@ -751,12 +541,7 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
           ? "Best cheaper design recommendations matched successfully"
           : "Best design recommendations matched successfully"
         : "No matching design recommendations found",
-    recommendations: (() => {
-      const out = topMatches.slice(0, 3);
-      // Log the outgoing response (exactly what we send back)
-      // no-op logging removed
-      return out;
-    })(),
+    recommendations: topMatches.slice(0, 3),
     hasMatch: topMatches.length > 0,
     isCheaperAlternative:
       topMatches.length > 0 && topMatches[0].budgetRange
@@ -764,9 +549,10 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
         : false,
     criteria: {
       roomType,
-      designPreferences: designPreferences,
+      designPreferences,
       normalizedPreferences,
       budget: budgetNum,
+      priority: normalizedPriority,
     },
   });
 });
