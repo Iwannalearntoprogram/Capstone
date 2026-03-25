@@ -1,9 +1,9 @@
-import { useParams, NavLink, Outlet, useLocation } from "react-router-dom";
+import { useParams, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { FiArrowLeft } from "react-icons/fi";
 
-import ReactModal from "react-modal";
 import EditProjectModal from "../components/project/EditProjectModal";
 import {
   trimValue,
@@ -15,12 +15,15 @@ import {
 function ProjectDetailsPage() {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [project, setProject] = useState(location.state?.project || null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editData, setEditData] = useState({
     title: "",
     description: "",
     budget: "",
+    priority: "",
+    designPreference: "",
     startDate: "",
     endDate: "",
   });
@@ -35,6 +38,8 @@ function ProjectDetailsPage() {
         title: project.title || "",
         description: project.description || "",
         budget: project.budget || "",
+        priority: project.priority || "",
+        designPreference: project.designPreference || "",
         startDate: project.startDate ? project.startDate.slice(0, 10) : "",
         endDate: project.endDate ? project.endDate.slice(0, 10) : "",
       });
@@ -59,6 +64,8 @@ function ProjectDetailsPage() {
           ? validateRequiredText(value, "Description")
           : name === "budget"
           ? validatePositiveNumber(value, "Budget")
+          : name === "priority"
+          ? validateRequiredText(value, "Priority")
           : "",
       ...(name === "startDate" || name === "endDate"
         ? {
@@ -77,6 +84,7 @@ function ProjectDetailsPage() {
       title: validateRequiredText(editData.title, "Title"),
       description: validateRequiredText(editData.description, "Description"),
       budget: validatePositiveNumber(editData.budget, "Budget"),
+      priority: validateRequiredText(editData.priority, "Priority"),
       dates: validateDateOrder(editData.startDate, editData.endDate),
     };
     setEditErrors(nextErrors);
@@ -93,6 +101,8 @@ function ProjectDetailsPage() {
           title: trimValue(editData.title),
           description: trimValue(editData.description),
           budget: editData.budget,
+          priority: trimValue(editData.priority),
+          designPreference: trimValue(editData.designPreference),
           startDate: editData.startDate,
           endDate: editData.endDate,
         },
@@ -130,11 +140,10 @@ function ProjectDetailsPage() {
   };
 
   useEffect(() => {
-    // If project is not passed via state, fetch it by id
-    if (!project && id) {
+    if (id) {
       fetchProject();
     }
-  }, [id, project]);
+  }, [id]);
 
   const tabs = [
     { label: "Overview", path: "overview" },
@@ -143,13 +152,31 @@ function ProjectDetailsPage() {
     { label: "Timeline", path: "timeline" },
     { label: "Files", path: "files" },
     { label: "Updates", path: "update" },
-    { label: "Materials", path: "material" },
   ];
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate("/dashboard/projects");
+  };
 
   return (
     <div className="mx-auto px-3 py-4 sm:px-4 sm:py-6 lg:px-6">
       {/* Project Header */}
       <div className="mb-6 sm:mb-8">
+        <div className="mb-4 flex justify-start">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 rounded-md border border-black/10 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-[#1d3c34]/30 hover:text-[#1d3c34]"
+          >
+            <FiArrowLeft size={16} />
+            Back
+          </button>
+        </div>
         <h1 className="mb-2 break-words text-center text-2xl font-bold sm:text-3xl">
           {project?.title || "Project Not Found"}
         </h1>

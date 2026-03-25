@@ -7,9 +7,13 @@ import {
   FaRulerCombined,
   FaCheckCircle,
   FaLightbulb,
-  FaImage,
   FaTags,
   FaHeart,
+  FaBuilding,
+  FaBullseye,
+  FaLayerGroup,
+  FaPalette,
+  FaBoxOpen,
 } from "react-icons/fa";
 import { useOutletContext } from "react-router-dom";
 import defaultProfile from "../../assets/images/user.png";
@@ -29,6 +33,18 @@ export default function ProjectOverviewTab() {
   const designers = Array.isArray(project.members)
     ? project.members.filter((m) => m.role === "designer")
     : [];
+  const recommendedMaterial = project.recommendedMaterial?.material || null;
+  const recommendationAnalysis = project.recommendedMaterial?.analysis || null;
+  const recommendationScore = project.recommendedMaterial?.score || null;
+
+  const formatCurrency = (value) =>
+    typeof value === "number"
+      ? new Intl.NumberFormat("en-PH", {
+          style: "currency",
+          currency: "PHP",
+          maximumFractionDigits: 0,
+        }).format(value)
+      : null;
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -91,6 +107,158 @@ export default function ProjectOverviewTab() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mb-8 rounded-lg border border-gray-100 bg-white p-4 shadow-sm sm:p-6">
+        <div className="mb-5 flex items-center space-x-3">
+          <div
+            className="rounded-lg p-2"
+            style={{ backgroundColor: "#ecfdf5" }}
+          >
+            <FaBoxOpen className="h-6 w-6" style={{ color: "#1D3C34" }} />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Recommended Material
+            </h2>
+            <p className="text-sm text-gray-500">
+              One automatic recommendation based on priority, preferences,
+              description, and budget.
+            </p>
+          </div>
+        </div>
+
+        {recommendedMaterial ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="min-w-0">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    {recommendedMaterial.name}
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {recommendedMaterial.company || "Unknown supplier"}
+                  </p>
+                </div>
+                <div className="shrink-0 rounded-lg bg-emerald-50 px-3 py-2 text-right">
+                  <div className="text-xs font-medium uppercase tracking-wide text-emerald-700">
+                    Material Price
+                  </div>
+                  <div className="text-lg font-bold text-emerald-900">
+                    {formatCurrency(recommendedMaterial.price) || "N/A"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {recommendedMaterial.category && (
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                    {recommendedMaterial.category}
+                  </span>
+                )}
+                {recommendedMaterial.subCategory && (
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                    {recommendedMaterial.subCategory}
+                  </span>
+                )}
+                {recommendationAnalysis?.priority && (
+                  <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+                    Priority: {recommendationAnalysis.priority}
+                  </span>
+                )}
+              </div>
+
+              <p className="mt-4 text-sm leading-7 text-gray-700">
+                {recommendedMaterial.description ||
+                  "No material description available."}
+              </p>
+
+              {Array.isArray(recommendationAnalysis?.reasons) &&
+                recommendationAnalysis.reasons.length > 0 && (
+                  <div className="mt-5 space-y-2">
+                    {recommendationAnalysis.reasons.map((reason, index) => (
+                      <div
+                        key={index}
+                        className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
+                      >
+                        {reason}
+                      </div>
+                    ))}
+                  </div>
+                )}
+            </div>
+
+            <div className="space-y-4">
+              {Array.isArray(recommendedMaterial.image) &&
+              recommendedMaterial.image.length > 0 ? (
+                <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+                  <img
+                    src={recommendedMaterial.image[0]}
+                    alt={recommendedMaterial.name}
+                    className="h-64 w-full object-cover"
+                  />
+                </div>
+              ) : null}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                    Style Fit
+                  </div>
+                  <div className="mt-1 text-lg font-bold text-gray-900">
+                    {recommendationScore
+                      ? `${Math.round(recommendationScore.keywordFit * 100)}%`
+                      : "N/A"}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                    Budget Fit
+                  </div>
+                  <div className="mt-1 text-lg font-bold text-gray-900">
+                    {recommendationScore
+                      ? `${Math.round(recommendationScore.budgetFit * 100)}%`
+                      : "N/A"}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                    Room Fit
+                  </div>
+                  <div className="mt-1 text-lg font-bold text-gray-900">
+                    {recommendationScore
+                      ? `${Math.round(recommendationScore.roomFit * 100)}%`
+                      : "N/A"}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                    Overall Match
+                  </div>
+                  <div className="mt-1 text-lg font-bold text-gray-900">
+                    {recommendationScore
+                      ? `${Math.round(recommendationScore.total * 100)}%`
+                      : "N/A"}
+                  </div>
+                </div>
+              </div>
+
+              {recommendationAnalysis?.estimatedCeiling ? (
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
+                  Recommended ceiling:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {formatCurrency(recommendationAnalysis.estimatedCeiling)}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-sm text-gray-500">
+            No material recommendation is available yet. Add catalog materials or
+            update the project details to generate a better match.
+          </div>
+        )}
       </div>
 
       {/* Design Recommendation Section */}
@@ -270,6 +438,26 @@ export default function ProjectOverviewTab() {
           value={project.projectSize ? `${project.projectSize} sq ft` : null}
         />
         <InfoCard icon={FaHome} label="Room Type" value={project.roomType} />
+        <InfoCard
+          icon={FaBuilding}
+          label="Project Type"
+          value={project.projectType}
+        />
+        <InfoCard
+          icon={FaBullseye}
+          label="Priority"
+          value={project.priority}
+        />
+        <InfoCard
+          icon={FaPalette}
+          label="Design Preference"
+          value={project.designPreference}
+        />
+        <InfoCard
+          icon={FaLayerGroup}
+          label="Matched Keywords"
+          value={recommendationAnalysis?.matchedKeywords?.slice(0, 3).join(", ")}
+        />
       </div>
 
       {/* Designers Section */}

@@ -263,16 +263,22 @@ const ProjectDetailsModal = ({ project, onClose }) => {
       ? "text-rose-700 bg-rose-50 border-rose-200"
       : "text-emerald-700 bg-emerald-50 border-emerald-200";
 
-  const ModalShell = ({ children }) => (
+  const CloseButton = ({ className = "" }) => (
+    <button
+      className={`inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-slate-200 bg-white/95 text-slate-500 transition hover:border-slate-300 hover:text-slate-700 sm:h-10 sm:w-10 sm:rounded-[12px] ${className}`}
+      onClick={onClose}
+      aria-label="Close modal"
+    >
+      <FiX size={18} />
+    </button>
+  );
+
+  const ModalShell = ({ children, hideClose }) => (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f1720]/45 p-3 backdrop-blur-sm sm:p-4">
-      <div className="relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[18px] border border-white/60 bg-[#fcfcfa] shadow-[0_24px_80px_rgba(15,23,32,0.18)] sm:rounded-[22px]">
-        <button
-          className="absolute right-4 top-4 z-20 inline-flex h-9 w-9 items-center justify-center rounded-[16px] border border-slate-200 bg-white/95 text-slate-500 transition hover:border-slate-300 hover:text-slate-700 sm:right-5 sm:top-5 sm:h-10 sm:w-10 sm:rounded-[18px]"
-          onClick={onClose}
-          aria-label="Close modal"
-        >
-          <FiX size={18} />
-        </button>
+      <div className="relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[14px] border border-stone-200/90 bg-[#fcfcfa] shadow-[0_24px_80px_rgba(15,23,32,0.18)] sm:rounded-[16px]">
+        {!hideClose && (
+          <CloseButton className="absolute right-4 top-4 z-20 sm:right-5 sm:top-5" />
+        )}
         {children}
       </div>
     </div>
@@ -285,7 +291,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
     className = "",
   }) => (
     <section
-      className={`rounded-[16px] border border-slate-200/80 bg-white p-4 shadow-sm sm:rounded-[18px] sm:p-5 ${className}`}
+      className={`rounded-[12px] border border-slate-200/80 bg-white p-4 shadow-sm sm:rounded-[14px] sm:p-5 ${className}`}
     >
       {title && (
         <div className="mb-3 flex items-center justify-between gap-3">
@@ -301,13 +307,13 @@ const ProjectDetailsModal = ({ project, onClose }) => {
 
   if (isActiveProject) {
     return (
-      <ModalShell>
-        <div className="min-h-0 overflow-y-auto md:grid md:grid-cols-[1.05fr_0.95fr]">
-          <div className="border-b border-slate-200/80 bg-[linear-gradient(180deg,#f8faf8_0%,#fcfcfa_100%)] p-5 sm:p-6 md:border-b-0 md:border-r md:p-7">
+      <ModalShell hideClose>
+        <div className="min-h-0 overflow-y-auto md:grid md:grid-cols-[1.02fr_0.98fr] md:grid-rows-[1fr]">
+          <div className="border-b border-slate-200/80 bg-[linear-gradient(180deg,#f8faf8_0%,#fcfcfa_100%)] p-5 sm:p-6 md:border-b-0 md:border-r md:p-6">
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
               Team Assignment
             </p>
-            <h2 className="max-w-md text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+            <h2 className="max-w-md text-[2rem] font-semibold tracking-tight text-slate-900">
               Add designer to {project.title}
             </h2>
             <p className="mt-3 max-w-lg text-sm leading-6 text-slate-600">
@@ -315,7 +321,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
               clear.
             </p>
 
-            <div className="mt-8 space-y-4">
+            <div className="mt-6 space-y-3">
               <SectionCard title="Project Snapshot">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
@@ -331,7 +337,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                       Status
                     </p>
                     <span
-                      className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize ${getStatusBadgeClasses(
+                      className={`mt-2 inline-flex rounded-lg px-3 py-1 text-xs font-semibold capitalize ${getStatusBadgeClasses(
                         status
                       )}`}
                     >
@@ -347,7 +353,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                     {currentDesigners.map((designer, index) => (
                       <span
                         key={designer._id || index}
-                      className="inline-flex items-center rounded-[14px] bg-[#eef4f0] px-3 py-1.5 text-sm font-medium text-[#244338]"
+                        className="inline-flex items-center rounded-[10px] bg-[#eef4f0] px-3 py-1.5 text-sm font-medium text-[#244338]"
                       >
                         {designer.fullName ||
                           designer.username ||
@@ -364,14 +370,14 @@ const ProjectDetailsModal = ({ project, onClose }) => {
             </div>
           </div>
 
-          <div className="p-5 sm:p-6 md:p-7">
-            <SectionCard title="Assign Designer" className="h-full">
+          <div className="flex flex-col p-5 sm:p-6 md:p-6">
+            <SectionCard title="Assign Designer" className="flex-1 flex flex-col [&>:last-child]:flex-1" headerRight={<CloseButton />}>
               <form onSubmit={handleAssignDesigner} className="flex h-full flex-col">
                 <label className="text-sm font-medium text-slate-700">
                   Designer
                 </label>
                 <select
-                  className="mt-2 w-full rounded-[16px] border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
+                  className="mt-2 w-full rounded-[10px] border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
                   value={selectedDesigner}
                   onChange={(e) => {
                     setSelectedDesigner(e.target.value);
@@ -394,14 +400,14 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                 )}
 
                 {availableDesigners.length === 0 && (
-                  <div className="mt-4 rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  <div className="mt-4 rounded-[10px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
                     All available designers are already assigned.
                   </div>
                 )}
 
-                <div className="mt-6 rounded-[16px] border border-slate-200 bg-slate-50/70 p-4">
+                <div className="mt-5 rounded-[10px] border border-slate-200 bg-slate-50/70 p-4">
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5 rounded-[14px] bg-white p-2 text-slate-500 shadow-sm">
+                    <div className="mt-0.5 rounded-[10px] bg-white p-2 text-slate-500 shadow-sm">
                       <FiUsers size={16} />
                     </div>
                     <div>
@@ -419,7 +425,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                 <div className="mt-auto pt-8">
                   {actionMessage && (
                     <p
-                      className={`mb-4 rounded-2xl border px-4 py-3 text-sm ${actionMessageClasses}`}
+                      className={`mb-4 rounded-[10px] border px-4 py-3 text-sm ${actionMessageClasses}`}
                     >
                       {actionMessage}
                     </p>
@@ -428,14 +434,14 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                   <div className="flex justify-end gap-3">
                     <button
                       type="button"
-                      className="rounded-[16px] border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                      className="rounded-[10px] border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                       onClick={onClose}
                     >
                       Close
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center gap-2 rounded-[16px] bg-[#1D3C34] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#163129] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex items-center gap-2 rounded-[10px] bg-[#1D3C34] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#163129] disabled:cursor-not-allowed disabled:opacity-60"
                       disabled={loading || availableDesigners.length === 0}
                     >
                       {loading ? "Assigning..." : "Assign Designer"}
@@ -477,7 +483,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
               title="Overview"
               headerRight={
                 <span
-                  className={`inline-flex rounded-full px-3 py-1 text-[10px] font-semibold capitalize sm:text-xs ${getStatusBadgeClasses(
+                  className={`inline-flex rounded-lg px-3 py-1 text-[10px] font-semibold capitalize sm:text-xs ${getStatusBadgeClasses(
                     status
                   )}`}
                 >
@@ -492,7 +498,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                   return (
                     <div
                       key={item.label}
-                      className="rounded-[14px] border border-slate-200 bg-slate-50/70 p-3 sm:rounded-[16px] sm:p-4"
+                      className="rounded-[10px] border border-slate-200 bg-slate-50/70 p-3 sm:rounded-[12px] sm:p-4"
                     >
                       <div className="mb-2 flex items-center gap-2 text-slate-400 sm:mb-3">
                         <Icon size={14} />
@@ -521,8 +527,8 @@ const ProjectDetailsModal = ({ project, onClose }) => {
           <div className="space-y-4">
             <SectionCard title="Timeline">
               <div className="space-y-3">
-                <div className="flex items-start gap-3 rounded-[14px] border border-slate-200 bg-slate-50/70 p-3 sm:rounded-[16px] sm:p-4">
-                  <div className="rounded-[12px] bg-white p-2 text-slate-500 shadow-sm sm:rounded-[14px]">
+                <div className="flex items-start gap-3 rounded-[10px] border border-slate-200 bg-slate-50/70 p-3 sm:rounded-[12px] sm:p-4">
+                  <div className="rounded-[8px] bg-white p-2 text-slate-500 shadow-sm sm:rounded-[10px]">
                     <FiCalendar size={16} />
                   </div>
                   <div>
@@ -535,8 +541,8 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 rounded-[14px] border border-slate-200 bg-slate-50/70 p-3 sm:rounded-[16px] sm:p-4">
-                  <div className="rounded-[12px] bg-white p-2 text-slate-500 shadow-sm sm:rounded-[14px]">
+                <div className="flex items-start gap-3 rounded-[10px] border border-slate-200 bg-slate-50/70 p-3 sm:rounded-[12px] sm:p-4">
+                  <div className="rounded-[8px] bg-white p-2 text-slate-500 shadow-sm sm:rounded-[10px]">
                     <FiClock size={16} />
                   </div>
                   <div>
@@ -559,7 +565,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
 
               {actionMessage && (
                 <div
-                  className={`mt-4 rounded-[16px] border px-4 py-3 text-sm ${actionMessageClasses}`}
+                  className={`mt-4 rounded-[10px] border px-4 py-3 text-sm ${actionMessageClasses}`}
                 >
                   {actionMessage}
                 </div>
@@ -577,13 +583,13 @@ const ProjectDetailsModal = ({ project, onClose }) => {
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-end">
           <button
             type="button"
-            className="w-full rounded-[16px] border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto"
+            className="w-full rounded-[10px] border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto"
             onClick={onClose}
           >
             Close
           </button>
           <button
-            className="inline-flex w-full items-center justify-center gap-2 rounded-[16px] bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             onClick={() => handleStatusChange("cancelled")}
             disabled={loading}
           >
@@ -591,7 +597,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
             {loading ? "Processing..." : "Decline"}
           </button>
           <button
-            className="inline-flex w-full items-center justify-center gap-2 rounded-[16px] bg-[#1D3C34] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#163129] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#1D3C34] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#163129] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
             onClick={() => handleStatusChange("ongoing")}
             disabled={loading}
           >

@@ -11,6 +11,7 @@ import html2canvas from "html2canvas";
 import {
   getRecommendations,
   createRecommendation,
+  updateRecommendation,
   deleteRecommendation,
 } from "../services/designRecommendationService";
 import {
@@ -114,9 +115,11 @@ const HomePage = () => {
   const [drSubmitting, setDrSubmitting] = useState(false);
   const [brokenRecImages, setBrokenRecImages] = useState({});
   const [drModalOpen, setDrModalOpen] = useState(false);
+  const [drEditingId, setDrEditingId] = useState(null);
   const [drUploadingImage, setDrUploadingImage] = useState(false);
   const [drErrors, setDrErrors] = useState({});
   const [drMessage, setDrMessage] = useState("");
+  const [drSearchQuery, setDrSearchQuery] = useState("");
   const roomTypes = [
     "Living Room",
     "Bedroom",
@@ -129,6 +132,92 @@ const HomePage = () => {
     "Outdoor",
     "Other",
   ];
+
+  const resetDrForm = () => {
+    setDrForm({
+      title: "",
+      type: "",
+      min: "",
+      max: "",
+      preferences: "",
+      imageLink: "",
+      specification: "",
+      tags: "",
+    });
+    setDrErrors({});
+    setDrMessage("");
+    setDrEditingId(null);
+  };
+
+  const populateDrForm = (recommendation) => {
+    setDrForm({
+      title: recommendation?.title || "",
+      type: recommendation?.type || "",
+      min:
+        recommendation?.budgetRange?.min !== undefined
+          ? String(recommendation.budgetRange.min)
+          : "",
+      max:
+        recommendation?.budgetRange?.max !== undefined
+          ? String(recommendation.budgetRange.max)
+          : "",
+      preferences: Array.isArray(recommendation?.designPreferences)
+        ? recommendation.designPreferences.join(", ")
+        : "",
+      imageLink: recommendation?.imageLink || "",
+      specification: recommendation?.specification || "",
+      tags: Array.isArray(recommendation?.tags)
+        ? recommendation.tags.join(", ")
+        : "",
+    });
+    setDrErrors({});
+    setDrMessage("");
+    setDrEditingId(recommendation?._id || null);
+  };
+
+  const buildRecommendationPayload = () => {
+    const min = Number(drForm.min);
+    const max = Number(drForm.max);
+
+    return {
+      min,
+      max,
+      payload: {
+        title: trimValue(drForm.title),
+        imageLink: normalizeDriveLink(drForm.imageLink) || undefined,
+        specification: drForm.specification || undefined,
+        budgetRange: { min, max },
+        designPreferences: drForm.preferences
+          ? drForm.preferences
+              .split(/[,;]|and|&|\+/)
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [],
+        type: drForm.type || undefined,
+        tags: drForm.tags
+          ? drForm.tags
+              .split(/[,;]|and|&|\+/)
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [],
+      },
+    };
+  };
+
+  const openCreateDrModal = () => {
+    resetDrForm();
+    setDrModalOpen(true);
+  };
+
+  const openEditDrModal = (recommendation) => {
+    populateDrForm(recommendation);
+    setDrModalOpen(true);
+  };
+
+  const closeDrModal = () => {
+    setDrModalOpen(false);
+    resetDrForm();
+  };
 
   const normalizeDriveLink = (url) => {
     if (!url || typeof url !== "string") return url;
@@ -1281,10 +1370,9 @@ const HomePage = () => {
 
   // removed debug summary effect
 
-  const handleDrCreate = async (e) => {
+  const handleDrSubmit = async (e) => {
     e?.preventDefault?.();
-    const min = Number(drForm.min);
-    const max = Number(drForm.max);
+    const { min, max, payload } = buildRecommendationPayload();
     const nextErrors = {
       title: validateRequiredText(drForm.title, "Title"),
       min: validatePositiveNumber(drForm.min, "Budget minimum"),
@@ -1304,42 +1392,23 @@ const HomePage = () => {
     setDrMessage("");
     setDrSubmitting(true);
     try {
-      const payload = {
-        title: trimValue(drForm.title),
-        imageLink: normalizeDriveLink(drForm.imageLink) || undefined,
-        specification: drForm.specification || undefined,
-        budgetRange: { min, max },
-        designPreferences: drForm.preferences
-          ? drForm.preferences
-              .split(/[,;]|and|&|\+/)
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : [],
-        type: drForm.type || undefined,
-        tags: drForm.tags
-          ? drForm.tags
-              .split(/[,;]|and|&|\+/)
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : [],
-      };
-      const res = await createRecommendation(payload);
-      const created = res?.recommendation || res;
-      setDesignRecommendations((prev) => [created, ...prev]);
-      setDrForm({
-        title: "",
-        type: "",
-        min: "",
-        max: "",
-        preferences: "",
-        imageLink: "",
-        specification: "",
-        tags: "",
-      });
-      alert("Recommendation created");
+      if (drEditingId) {
+        const res = await updateRecommendation(drEditingId, payload);
+        const updated = res?.recommendation || res;
+        setDesignRecommendations((prev) =>
+          prev.map((rec) => (rec._id === drEditingId ? updated : rec))
+        );
+        alert("Recommendation updated");
+      } else {
+        const res = await createRecommendation(payload);
+        const created = res?.recommendation || res;
+        setDesignRecommendations((prev) => [created, ...prev]);
+        alert("Recommendation created");
+      }
+      closeDrModal();
     } catch (err) {
-      console.error("Create recommendation failed", err);
-      alert(err?.response?.data?.message || "Failed to create recommendation");
+      console.error("Save recommendation failed", err);
+      alert(err?.response?.data?.message || "Failed to save recommendation");
     } finally {
       setDrSubmitting(false);
     }
@@ -1393,6 +1462,24 @@ const HomePage = () => {
       setDrUploadingImage(false);
     }
   };
+
+  const filteredDesignRecommendations = designRecommendations.filter((rec) => {
+    const query = drSearchQuery.trim().toLowerCase();
+    if (!query) return true;
+
+    const haystack = [
+      rec?.title,
+      rec?.type,
+      ...(Array.isArray(rec?.designPreferences) ? rec.designPreferences : []),
+      ...(Array.isArray(rec?.tags) ? rec.tags : []),
+      rec?.specification,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(query);
+  });
 
   return (
     <div className="grid min-h-screen w-full max-w-full grid-cols-1 auto-rows-max gap-3 overflow-x-hidden lg:grid-cols-2 lg:gap-4 xl:grid-cols-8">
@@ -2388,13 +2475,19 @@ const HomePage = () => {
           </div>
 
           {/* Add button opens modal */}
-          <div className="mb-4">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
             <button
-              onClick={() => setDrModalOpen(true)}
+              onClick={openCreateDrModal}
               className="bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium"
             >
               Add Recommendation
             </button>
+            <input
+              value={drSearchQuery}
+              onChange={(e) => setDrSearchQuery(e.target.value)}
+              className="w-full sm:w-80 border border-slate-300 rounded-lg px-3 py-2"
+              placeholder="Search recommendations..."
+            />
           </div>
 
           {/* Modal */}
@@ -2402,25 +2495,24 @@ const HomePage = () => {
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div
                 className="absolute inset-0 bg-black/40"
-                onClick={() => setDrModalOpen(false)}
+                onClick={closeDrModal}
               ></div>
               <div className="relative bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-4xl mx-4">
                 <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                   <h3 className="font-semibold text-slate-800">
-                    Add Design Recommendation
+                    {drEditingId
+                      ? "Edit Design Recommendation"
+                      : "Add Design Recommendation"}
                   </h3>
                   <button
-                    onClick={() => setDrModalOpen(false)}
+                    onClick={closeDrModal}
                     className="text-slate-600 hover:bg-slate-100 rounded-lg px-3 py-1"
                   >
                     Close
                   </button>
                 </div>
                 <form
-                  onSubmit={async (e) => {
-                    await handleDrCreate(e);
-                    if (!drSubmitting) setDrModalOpen(false);
-                  }}
+                  onSubmit={handleDrSubmit}
                   className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4"
                 >
                   <div className="md:col-span-1">
@@ -2654,7 +2746,7 @@ const HomePage = () => {
                   <div className="md:col-span-3 flex items-center justify-end gap-2">
                     <button
                       type="button"
-                      onClick={() => setDrModalOpen(false)}
+                      onClick={closeDrModal}
                       className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50"
                     >
                       Cancel
@@ -2664,7 +2756,13 @@ const HomePage = () => {
                       disabled={drSubmitting}
                       className="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-800 text-white disabled:bg-slate-400"
                     >
-                      {drSubmitting ? "Adding..." : "Add"}
+                      {drSubmitting
+                        ? drEditingId
+                          ? "Saving..."
+                          : "Adding..."
+                        : drEditingId
+                          ? "Save Changes"
+                          : "Add"}
                     </button>
                   </div>
                 </form>
@@ -2680,23 +2778,35 @@ const HomePage = () => {
             </div>
           ) : designRecommendations.length === 0 ? (
             <div className="text-slate-500 text-sm">No recommendations yet</div>
+          ) : filteredDesignRecommendations.length === 0 ? (
+            <div className="text-slate-500 text-sm">
+              No recommendations match your search
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              {designRecommendations.map((rec) => (
+              {filteredDesignRecommendations.map((rec) => (
                 <div
                   key={rec._id}
                   className="border border-slate-200 rounded-xl p-4 bg-white"
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between gap-2 mb-2">
                     <h3 className="font-semibold text-slate-800 truncate pr-2">
                       {rec.title}
                     </h3>
-                    <button
-                      onClick={() => handleDrDelete(rec._id)}
-                      className="text-red-600 hover:bg-red-50 rounded-lg px-2 py-1 text-sm"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => openEditDrModal(rec)}
+                        className="text-slate-700 hover:bg-slate-100 rounded-lg px-2 py-1 text-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDrDelete(rec._id)}
+                        className="text-red-600 hover:bg-red-50 rounded-lg px-2 py-1 text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                   {rec.imageLink && !brokenRecImages[rec._id] ? (
                     <img

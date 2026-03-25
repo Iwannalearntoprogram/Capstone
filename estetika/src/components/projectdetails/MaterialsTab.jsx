@@ -1278,31 +1278,8 @@ export default function MaterialsTab() {
           </div>
 
           {/* Right Content Area */}
-<<<<<<< HEAD
           <div className="min-w-0 flex-1 overflow-y-auto">
             <div className="p-4 sm:p-6 lg:p-8">
-              {loading && selectedSidebar ? (
-                <div className="text-center py-20">
-                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl flex items-center justify-center">
-                    <FaShoppingCart className="h-12 w-12 text-gray-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-600 mb-3 tracking-tight">
-                    Finding best match for{" "}
-                    <span className="text-[#1D3C34]">{selectedSidebar}</span>...
-                  </h3>
-                  <p className="text-gray-500 font-medium max-w-md mx-auto leading-relaxed">
-                    Please wait while we search for the best material match.
-                  </p>
-                </div>
-              ) : bestMatch ? (
-                <div className="max-w-7xl mx-auto">
-                  {/* Best Match Heading */}
-                  <h2 className="text-xl font-bold text-[#1D3C34] mb-6 text-center">
-                    Best Match for: {selectedSidebar}
-                  </h2>
-=======
-          <div className="flex-1 overflow-y-auto ">
-            <div className="p-8">
               {(() => {
                 // First check if selectedSidebar matches an actual material in the project
                 const actualMaterial = project?.materials?.find(
@@ -1314,7 +1291,6 @@ export default function MaterialsTab() {
                   const options = actualMaterial.option || [];
                   const quantity = actualMaterial.quantity;
                   const totalPrice = actualMaterial.totalPrice;
->>>>>>> 81ea18d847e78a42c6a48cbe7417c88348c4ec8a
 
                   return (
                     <div className="max-w-7xl mx-auto">
