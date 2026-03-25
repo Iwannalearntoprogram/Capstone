@@ -20,6 +20,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
   const [actionMessageType, setActionMessageType] = useState("success");
   const [status, setStatus] = useState(project?.status);
   const [designers, setDesigners] = useState([]);
+  const [designersLoaded, setDesignersLoaded] = useState(false);
   const [selectedDesigner, setSelectedDesigner] = useState("");
   const [assignError, setAssignError] = useState("");
 
@@ -30,6 +31,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
     setActionMessage("");
     setSelectedDesigner("");
     setAssignError("");
+    setDesignersLoaded(false);
   }, [project]);
 
   useEffect(() => {
@@ -44,6 +46,8 @@ const ProjectDetailsModal = ({ project, onClose }) => {
           setDesigners(designerList);
         } catch (err) {
           setDesigners([]);
+        } finally {
+          setDesignersLoaded(true);
         }
       };
 
@@ -399,7 +403,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                   <p className="mt-2 text-sm text-rose-600">{assignError}</p>
                 )}
 
-                {availableDesigners.length === 0 && (
+                {designersLoaded && availableDesigners.length === 0 && (
                   <div className="mt-4 rounded-[10px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
                     All available designers are already assigned.
                   </div>
