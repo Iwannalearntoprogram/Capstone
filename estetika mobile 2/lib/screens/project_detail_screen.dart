@@ -288,6 +288,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           _buildDetailCard([
             _buildDetailRow('Project Name', _projectData['title']),
             _buildDetailRow('Room Type', _projectData['roomType']),
+            _buildDetailRow('Project Type', _projectData['projectType']),
+            _buildDetailRow('Priority', _projectData['priority']),
             _buildDetailRow('Budget', '₱${_projectData['budget'] ?? 'N/A'}'),
             _buildDetailRow(
                 'Start Date', _formatDate(_projectData['startDate'])),

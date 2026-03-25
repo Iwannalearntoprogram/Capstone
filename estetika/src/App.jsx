@@ -28,7 +28,6 @@ import TimelineTab from "./components/projectdetails/TimelineTab";
 import FilesTab from "./components/projectdetails/FilesTab";
 import ProjectUpdateTab from "./components/projectdetails/ProjectUpdateTab";
 import ProjectOverviewTab from "./components/projectdetails/ProjectOverviewTab";
-import MaterialsTab from "./components/projectdetails/MaterialsTab";
 
 //materials
 import MaterialsPage from "./pages/MaterialsPage";
@@ -182,7 +181,7 @@ function App() {
               path="material"
               element={
                 <ProtectedRoute>
-                  <MaterialsTab />
+                  <Navigate to="../overview" replace />
                 </ProtectedRoute>
               }
             />
