@@ -31,9 +31,11 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
 
   // Track form progress
   double _formProgress = 0.0;
-  final int _totalFormFields = 9;
+  final int _totalFormFields = 11;
 
   String? _roomType;
+  String? _projectType;
+  String? _priority;
   final List<String> _roomTypes = [
     'Living Room',
     'Bedroom',
@@ -45,6 +47,18 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     'Commercial Space',
     'Other'
   ];
+  final List<String> _projectTypes = [
+    'Residential',
+    'Commercial',
+    'Hospitality',
+    'Retail',
+    'Healthcare',
+    'Educational',
+    'Institutional',
+    'Event Spaces',
+    'Renovation',
+  ];
+  final List<String> _priorityOptions = ['Budget', 'Style'];
 
   final List<File> _inspirationImages = [];
   final List<String> _inspirationLinks = [];
@@ -86,33 +100,47 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     }
   }
 
+  void _updateFormProgress() {
+    int filledFields = 0;
+
+    if (_clientNameController.text.isNotEmpty) filledFields++;
+    if (_emailController.text.isNotEmpty) filledFields++;
+    if (_contactNumberController.text.isNotEmpty) filledFields++;
+    if (_projectNameController.text.isNotEmpty) filledFields++;
+    if (_roomType != null) filledFields++;
+    if (_projectType != null) filledFields++;
+    if (_priority != null) filledFields++;
+    if (_projectSizeController.text.isNotEmpty) filledFields++;
+    if (_locationController.text.isNotEmpty) filledFields++;
+    if (_budgetController.text.isNotEmpty) filledFields++;
+    if (_descriptionController.text.isNotEmpty) filledFields++;
+
+    setState(() {
+      _formProgress = filledFields / _totalFormFields;
+    });
+  }
+
+  void _resetRecommendationState() {
+    setState(() {
+      _recommendations = [];
+      _statusMessage = null;
+      _hasMatchFlag = null;
+      _isCheaperAlternativeFlag = null;
+      _selectedRecommendationIndex = null;
+      _isRecommendationLoading = false;
+      _hasViewedRecommendation = false;
+    });
+  }
+
   void _setupTextControllerListeners() {
-    void updateProgress() {
-      int filledFields = 0;
-
-      if (_clientNameController.text.isNotEmpty) filledFields++;
-      if (_emailController.text.isNotEmpty) filledFields++;
-      if (_contactNumberController.text.isNotEmpty) filledFields++;
-      if (_projectNameController.text.isNotEmpty) filledFields++;
-      if (_roomType != null) filledFields++;
-      if (_projectSizeController.text.isNotEmpty) filledFields++;
-      if (_locationController.text.isNotEmpty) filledFields++;
-      if (_budgetController.text.isNotEmpty) filledFields++;
-      if (_descriptionController.text.isNotEmpty) filledFields++;
-
-      setState(() {
-        _formProgress = filledFields / _totalFormFields;
-      });
-    }
-
-    _clientNameController.addListener(updateProgress);
-    _emailController.addListener(updateProgress);
-    _contactNumberController.addListener(updateProgress);
-    _projectNameController.addListener(updateProgress);
-    _projectSizeController.addListener(updateProgress);
-    _locationController.addListener(updateProgress);
-    _budgetController.addListener(updateProgress);
-    _descriptionController.addListener(updateProgress);
+    _clientNameController.addListener(_updateFormProgress);
+    _emailController.addListener(_updateFormProgress);
+    _contactNumberController.addListener(_updateFormProgress);
+    _projectNameController.addListener(_updateFormProgress);
+    _projectSizeController.addListener(_updateFormProgress);
+    _locationController.addListener(_updateFormProgress);
+    _budgetController.addListener(_updateFormProgress);
+    _descriptionController.addListener(_updateFormProgress);
   }
 
   @override
@@ -182,6 +210,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         "roomType": _roomType,
         "designPreferences": _descriptionController.text,
         "budget": double.tryParse(_budgetController.text) ?? 0,
+        "priority": _priority,
       };
       // https://moss-manila.onrender.com/api/project/recommendation/match
       // http://localhost:3000
@@ -192,6 +221,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         'roomType': _roomType ?? '',
         'designPreferences': _descriptionController.text,
         'budget': _budgetController.text,
+        'priority': _priority ?? '',
       });
 
       final response = await http.get(
@@ -787,10 +817,71 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       setState(() {
                         _roomType = newValue;
                       });
+                      _resetRecommendationState();
+                      _updateFormProgress();
                     },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please select room type';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  DropdownButtonFormField<String>(
+                    value: _projectType,
+                    decoration: InputDecoration(
+                      labelText: 'Project Type',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    items: _projectTypes.map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        _projectType = newValue;
+                      });
+                      _updateFormProgress();
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select project type';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  DropdownButtonFormField<String>(
+                    value: _priority,
+                    decoration: InputDecoration(
+                      labelText: 'Priority',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    items: _priorityOptions.map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        _priority = newValue;
+                      });
+                      _resetRecommendationState();
+                      _updateFormProgress();
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select priority';
                       }
                       return null;
                     },
@@ -842,6 +933,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                   // Budget
                   TextFormField(
                     controller: _budgetController,
+                    onChanged: (_) => _resetRecommendationState(),
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       labelText: 'Estimated Budget',
@@ -947,6 +1039,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                   // Description
                   TextFormField(
                     controller: _descriptionController,
+                    onChanged: (_) => _resetRecommendationState(),
                     maxLines: 5,
                     decoration: InputDecoration(
                       labelText: 'Design Preferences & Requirements',
@@ -1238,6 +1331,8 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         _contactNumberController.text.isNotEmpty &&
         _projectNameController.text.isNotEmpty &&
         _roomType != null &&
+        _projectType != null &&
+        _priority != null &&
         _projectSizeController.text.isNotEmpty &&
         _locationController.text.isNotEmpty &&
         _budgetController.text.isNotEmpty &&
@@ -1271,6 +1366,8 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       "endDate": _endDate != null ? _endDate!.toIso8601String() : null,
       "projectCreator": user['_id'] ?? user['id'],
       "roomType": _roomType,
+      "projectType": _projectType,
+      "priority": _priority,
       "projectSize": double.tryParse(_projectSizeController.text) ?? 0,
       "projectLocation": _locationController.text,
       "designInspiration":

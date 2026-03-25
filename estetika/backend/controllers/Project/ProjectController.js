@@ -8,6 +8,172 @@ const Notification = require("../../models/utils/Notification");
 const notifyMany = require("../../utils/notifyMany");
 require("../../utils/recycleBinCron");
 
+const hasOwn = (object, key) =>
+  Object.prototype.hasOwnProperty.call(object, key);
+
+const ROOM_TYPE_OPTIONS = Project.schema.path("roomType")?.enumValues || [];
+const PROJECT_TYPE_OPTIONS = Project.schema.path("projectType")?.enumValues || [];
+const PRIORITY_OPTIONS = Project.schema.path("priority")?.enumValues || [];
+
+const parseDateValue = (value) => {
+  if (!value) return null;
+  const parsed = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const validateProjectPayload = (
+  payload,
+  { requireAll = false, existingProject = null } = {}
+) => {
+  const errors = [];
+  const normalized = {};
+
+  const validateTextField = (key, label, { minLength = 1, maxLength } = {}) => {
+    if (!requireAll && !hasOwn(payload, key)) return;
+
+    const rawValue = payload[key];
+    const trimmed =
+      typeof rawValue === "string" ? rawValue.trim() : rawValue ?? "";
+
+    if (!trimmed) {
+      errors.push(`${label} is required.`);
+      return;
+    }
+
+    if (trimmed.length < minLength) {
+      errors.push(`${label} must be at least ${minLength} characters.`);
+      return;
+    }
+
+    if (maxLength && trimmed.length > maxLength) {
+      errors.push(`${label} must be ${maxLength} characters or fewer.`);
+      return;
+    }
+
+    normalized[key] = trimmed;
+  };
+
+  const validatePositiveNumberField = (key, label) => {
+    if (!requireAll && !hasOwn(payload, key)) return;
+
+    const rawValue = payload[key];
+    if (rawValue === "" || rawValue === null || rawValue === undefined) {
+      errors.push(`${label} is required.`);
+      return;
+    }
+
+    const number = Number(rawValue);
+    if (!Number.isFinite(number)) {
+      errors.push(`${label} must be a valid number.`);
+      return;
+    }
+
+    if (number <= 0) {
+      errors.push(`${label} must be greater than 0.`);
+      return;
+    }
+
+    normalized[key] = number;
+  };
+
+  const validateEnumField = (key, label, options) => {
+    if (!requireAll && !hasOwn(payload, key)) return;
+
+    const rawValue = payload[key];
+    const trimmed =
+      typeof rawValue === "string" ? rawValue.trim() : rawValue ?? "";
+
+    if (!trimmed) {
+      errors.push(`${label} is required.`);
+      return;
+    }
+
+    if (!options.includes(trimmed)) {
+      errors.push(`${label} is invalid.`);
+      return;
+    }
+
+    normalized[key] = trimmed;
+  };
+
+  const validateDateField = (key, label) => {
+    if (!requireAll && !hasOwn(payload, key)) return null;
+
+    const rawValue = payload[key];
+    if (!rawValue) {
+      errors.push(`${label} is required.`);
+      return null;
+    }
+
+    const parsedDate = parseDateValue(rawValue);
+    if (!parsedDate) {
+      errors.push(`${label} is invalid.`);
+      return null;
+    }
+
+    normalized[key] = rawValue;
+    return parsedDate;
+  };
+
+  validateTextField("title", "Project title", {
+    minLength: 3,
+    maxLength: 120,
+  });
+  validateTextField("description", "Description", {
+    minLength: 10,
+    maxLength: 2000,
+  });
+  validatePositiveNumberField("budget", "Budget");
+  validateEnumField("roomType", "Room type", ROOM_TYPE_OPTIONS);
+  validateEnumField("projectType", "Project type", PROJECT_TYPE_OPTIONS);
+  validateEnumField("priority", "Priority", PRIORITY_OPTIONS);
+  validatePositiveNumberField("projectSize", "Project size");
+  validateTextField("projectLocation", "Project location", {
+    minLength: 2,
+    maxLength: 120,
+  });
+
+  if (hasOwn(payload, "designInspiration")) {
+    const rawValue = payload.designInspiration;
+    const trimmed =
+      typeof rawValue === "string" ? rawValue.trim() : rawValue ?? "";
+
+    if (!trimmed) {
+      normalized.designInspiration = "";
+    } else {
+      try {
+        new URL(trimmed);
+        normalized.designInspiration = trimmed;
+      } catch {
+        errors.push("Enter a valid design inspiration link.");
+      }
+    }
+  }
+
+  const parsedStartDate = validateDateField("startDate", "Start date");
+  const parsedEndDate = validateDateField("endDate", "End date");
+
+  const effectiveStartDate =
+    parsedStartDate ||
+    (!requireAll && existingProject ? parseDateValue(existingProject.startDate) : null);
+  const effectiveEndDate =
+    parsedEndDate ||
+    (!requireAll && existingProject ? parseDateValue(existingProject.endDate) : null);
+
+  if (
+    effectiveStartDate &&
+    effectiveEndDate &&
+    effectiveEndDate < effectiveStartDate
+  ) {
+    errors.push("End date cannot be before start date.");
+  }
+
+  return {
+    errors,
+    normalized,
+  };
+};
+
 // Get Project by Id or projectCreator
 const project_get = catchAsync(async (req, res, next) => {
   const { id, projectCreator, member, index } = req.query;
@@ -143,12 +309,21 @@ const project_post = catchAsync(async (req, res, next) => {
     tasks,
     timeline,
     roomType,
+    projectType,
+    priority,
     projectSize,
     projectLocation,
     designPreference,
     designInspiration,
     designRecommendation,
   } = req.body;
+
+  const { errors, normalized } = validateProjectPayload(req.body, {
+    requireAll: true,
+  });
+  if (errors.length > 0) {
+    return next(new AppError(errors[0], 400));
+  }
 
   const isUserValid = await User.findById(projectCreator);
 
@@ -160,20 +335,24 @@ const project_post = catchAsync(async (req, res, next) => {
   }
 
   const newProject = new Project({
-    title,
-    description,
-    budget,
-    startDate,
-    endDate,
+    title: normalized.title,
+    description: normalized.description,
+    budget: normalized.budget,
+    startDate: normalized.startDate,
+    endDate: normalized.endDate,
     files,
     tasks,
     timeline,
     projectCreator,
-    roomType,
-    projectSize,
-    projectLocation,
+    roomType: normalized.roomType,
+    projectType: normalized.projectType,
+    priority: normalized.priority,
+    projectSize: normalized.projectSize,
+    projectLocation: normalized.projectLocation,
     designPreference,
-    designInspiration,
+    designInspiration: hasOwn(normalized, "designInspiration")
+      ? normalized.designInspiration
+      : designInspiration,
     designRecommendation,
   });
 
@@ -232,6 +411,8 @@ const project_put = catchAsync(async (req, res, next) => {
     timeline,
     status,
     roomType,
+    projectType,
+    priority,
     projectSize,
     projectLocation,
     designPreference,
@@ -246,16 +427,24 @@ const project_put = catchAsync(async (req, res, next) => {
   if (!project)
     return next(new AppError("Project not found. Invalid Project ID.", 404));
 
+  const { errors, normalized } = validateProjectPayload(req.body, {
+    existingProject: project,
+  });
+  if (errors.length > 0) {
+    return next(new AppError(errors[0], 400));
+  }
+
   const originalMembers = Array.isArray(project.members)
     ? project.members.map((m) => m.toString())
     : [];
 
   let updates = {};
-  if (title) updates.title = title;
-  if (description) updates.description = description;
-  if (budget !== undefined) updates.budget = budget;
-  if (startDate) updates.startDate = startDate;
-  if (endDate) updates.endDate = endDate;
+  if (hasOwn(normalized, "title")) updates.title = normalized.title;
+  if (hasOwn(normalized, "description"))
+    updates.description = normalized.description;
+  if (hasOwn(normalized, "budget")) updates.budget = normalized.budget;
+  if (hasOwn(normalized, "startDate")) updates.startDate = normalized.startDate;
+  if (hasOwn(normalized, "endDate")) updates.endDate = normalized.endDate;
   if (files) updates.files = files;
   if (members) {
     if (Array.isArray(members)) {
@@ -276,16 +465,26 @@ const project_put = catchAsync(async (req, res, next) => {
   if (tasks) updates.tasks = tasks;
   if (timeline) updates.timeline = timeline;
   if (status) updates.status = status;
-  if (roomType) updates.roomType = roomType;
-  if (projectSize !== undefined) updates.projectSize = projectSize;
-  if (projectLocation) updates.projectLocation = projectLocation;
+  if (hasOwn(normalized, "roomType")) updates.roomType = normalized.roomType;
+  if (hasOwn(normalized, "projectType"))
+    updates.projectType = normalized.projectType;
+  if (hasOwn(normalized, "priority")) updates.priority = normalized.priority;
+  if (hasOwn(normalized, "projectSize"))
+    updates.projectSize = normalized.projectSize;
+  if (hasOwn(normalized, "projectLocation"))
+    updates.projectLocation = normalized.projectLocation;
   if (designPreference) updates.designPreference = designPreference;
-  if (designInspiration) updates.designInspiration = designInspiration;
-  if (designRecommendation) updates.designRecommendation = designRecommendation;
+  if (hasOwn(normalized, "designInspiration")) {
+    updates.designInspiration = normalized.designInspiration;
+  }
+  if (designRecommendation !== undefined)
+    updates.designRecommendation = designRecommendation;
   if (projectUpdates) updates.projectUpdates = projectUpdates;
 
   const updatedProject = await Project.findByIdAndUpdate(id, updates, {
     new: true,
+    runValidators: true,
+    context: "query",
   });
 
   if (!updatedProject) return next(new AppError("Project not found", 404));

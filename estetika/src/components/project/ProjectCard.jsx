@@ -12,15 +12,74 @@ import { FiEdit2 } from "react-icons/fi";
 import axios from "axios";
 import Cookies from "js-cookie";
 import ProjectDetailsModal from "./ProjectDetailsModal";
+import {
+  trimValue,
+  validateDateOrder,
+  validatePositiveNumber,
+  validateRequiredText,
+  validateUrl,
+} from "../../utils/validation";
 
-const ProjectCard = ({ project, onView, onDelete, restoreMode }) => {
+const ProjectCard = ({
+  project,
+  onView,
+  onDelete,
+  restoreMode,
+  onProjectUpdated,
+}) => {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPendingEditModal, setShowPendingEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [userId, setUserId] = useState(null);
   const [editProjectForm, setEditProjectForm] = useState({
     status: project.status || "",
   });
+  const roomTypeOptions = [
+    "Living Room",
+    "Bedroom",
+    "Kitchen",
+    "Bathroom",
+    "Home Office",
+    "Dining Room",
+    "Whole House",
+    "Commercial Space",
+  ];
+  const projectTypeOptions = [
+    "Residential",
+    "Commercial",
+    "Hospitality",
+    "Retail",
+    "Healthcare",
+    "Educational",
+    "Institutional",
+    "Event Spaces",
+    "Renovation",
+  ];
+  const priorityOptions = ["Budget", "Style"];
+  const formatDateInputValue = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toISOString().split("T")[0];
+  };
+  const getPendingProjectForm = (currentProject) => ({
+    title: currentProject.title || "",
+    description: currentProject.description || "",
+    budget: currentProject.budget ?? "",
+    startDate: formatDateInputValue(currentProject.startDate),
+    endDate: formatDateInputValue(currentProject.endDate),
+    roomType: currentProject.roomType || "",
+    projectType: currentProject.projectType || "",
+    priority: currentProject.priority || "",
+    projectSize: currentProject.projectSize ?? "",
+    projectLocation: currentProject.projectLocation || "",
+    designInspiration: currentProject.designInspiration || "",
+  });
+  const [pendingProjectForm, setPendingProjectForm] = useState(
+    getPendingProjectForm(project)
+  );
+  const [pendingProjectErrors, setPendingProjectErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
@@ -32,6 +91,12 @@ const ProjectCard = ({ project, onView, onDelete, restoreMode }) => {
     setUserRole(role);
     setUserId(id);
   }, []);
+
+  useEffect(() => {
+    setEditProjectForm({ status: project.status || "" });
+    setPendingProjectForm(getPendingProjectForm(project));
+    setPendingProjectErrors({});
+  }, [project]);
 
   let formattedEndDate = "";
   if (project.endDate) {
@@ -115,6 +180,117 @@ const ProjectCard = ({ project, onView, onDelete, restoreMode }) => {
     setIsSubmitting(false);
   };
 
+  const handlePendingProjectChange = (e) => {
+    const { name, value } = e.target;
+    setPendingProjectForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setPendingProjectErrors((prev) => ({
+      ...prev,
+      [name]: "",
+      dates:
+        name === "startDate" || name === "endDate"
+          ? ""
+          : prev.dates,
+    }));
+  };
+
+  const handlePendingProjectEdit = async (e) => {
+    e.preventDefault();
+
+    const nextErrors = {
+      title: validateRequiredText(pendingProjectForm.title, "Project title", {
+        minLength: 3,
+        maxLength: 120,
+      }),
+      description: validateRequiredText(
+        pendingProjectForm.description,
+        "Description",
+        { minLength: 10, maxLength: 2000 }
+      ),
+      budget: validatePositiveNumber(pendingProjectForm.budget, "Budget"),
+      dates: validateDateOrder(
+        pendingProjectForm.startDate,
+        pendingProjectForm.endDate
+      ),
+      roomType: validateRequiredText(pendingProjectForm.roomType, "Room type"),
+      projectType: validateRequiredText(
+        pendingProjectForm.projectType,
+        "Project type"
+      ),
+      priority: validateRequiredText(pendingProjectForm.priority, "Priority"),
+      projectSize: validatePositiveNumber(
+        pendingProjectForm.projectSize,
+        "Project size"
+      ),
+      projectLocation: validateRequiredText(
+        pendingProjectForm.projectLocation,
+        "Project location",
+        { minLength: 2, maxLength: 120 }
+      ),
+      designInspiration: validateUrl(
+        pendingProjectForm.designInspiration,
+        "Design inspiration link"
+      ),
+    };
+
+    setPendingProjectErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const token = Cookies.get("token");
+      const recommendationCriteriaChanged =
+        trimValue(project.description) !==
+          trimValue(pendingProjectForm.description) ||
+        Number(project.budget ?? 0) !== Number(pendingProjectForm.budget) ||
+        (project.roomType || "") !== pendingProjectForm.roomType ||
+        (project.priority || "") !== pendingProjectForm.priority;
+      const payload = {
+        title: trimValue(pendingProjectForm.title),
+        description: trimValue(pendingProjectForm.description),
+        budget: Number(pendingProjectForm.budget),
+        startDate: pendingProjectForm.startDate,
+        endDate: pendingProjectForm.endDate,
+        roomType: pendingProjectForm.roomType,
+        projectType: pendingProjectForm.projectType,
+        priority: pendingProjectForm.priority,
+        projectSize: Number(pendingProjectForm.projectSize),
+        projectLocation: trimValue(pendingProjectForm.projectLocation),
+        designInspiration:
+          trimValue(pendingProjectForm.designInspiration) || undefined,
+        ...(recommendationCriteriaChanged
+          ? { designRecommendation: null }
+          : {}),
+      };
+
+      const response = await axios.put(
+        `${serverUrl}/api/project?id=${project._id}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setShowPendingEditModal(false);
+      setPendingProjectErrors({});
+      onProjectUpdated?.(response.data.updatedProject);
+      alert("Pending project updated successfully.");
+    } catch (err) {
+      console.error(err);
+      alert(
+        err?.response?.data?.message || "Failed to update pending project."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const isAdmin = userRole === "admin";
   const isDesigner = userRole === "designer";
 
@@ -185,6 +361,249 @@ const ProjectCard = ({ project, onView, onDelete, restoreMode }) => {
         </div>
       )}
 
+      {showPendingEditModal && isAdmin && project.status === "pending" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+          <div className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl bg-white p-6 shadow-lg">
+            <button
+              className="absolute right-4 top-2 cursor-pointer text-2xl text-gray-500"
+              onClick={() => setShowPendingEditModal(false)}
+            >
+              &times;
+            </button>
+            <h2 className="mb-4 text-xl font-bold">Edit Pending Project</h2>
+            <form
+              onSubmit={handlePendingProjectEdit}
+              className="grid grid-cols-1 gap-4 md:grid-cols-2"
+            >
+              <label className="block">
+                Project Title
+                <input
+                  name="title"
+                  type="text"
+                  className="mt-1 w-full rounded border p-2"
+                  value={pendingProjectForm.title}
+                  onChange={handlePendingProjectChange}
+                  maxLength={120}
+                  required
+                />
+                {pendingProjectErrors.title && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {pendingProjectErrors.title}
+                  </p>
+                )}
+              </label>
+
+              <label className="block">
+                Estimated Budget
+                <input
+                  name="budget"
+                  type="number"
+                  className="mt-1 w-full rounded border p-2"
+                  value={pendingProjectForm.budget}
+                  onChange={handlePendingProjectChange}
+                  min="0.01"
+                  step="0.01"
+                  required
+                />
+                {pendingProjectErrors.budget && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {pendingProjectErrors.budget}
+                  </p>
+                )}
+              </label>
+
+              <label className="block md:col-span-2">
+                Description
+                <textarea
+                  name="description"
+                  className="mt-1 w-full rounded border p-2"
+                  rows={4}
+                  value={pendingProjectForm.description}
+                  onChange={handlePendingProjectChange}
+                  maxLength={2000}
+                  required
+                />
+                {pendingProjectErrors.description && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {pendingProjectErrors.description}
+                  </p>
+                )}
+              </label>
+
+              <label className="block">
+                Start Date
+                <input
+                  name="startDate"
+                  type="date"
+                  className="mt-1 w-full rounded border p-2"
+                  value={pendingProjectForm.startDate}
+                  onChange={handlePendingProjectChange}
+                  required
+                />
+              </label>
+
+              <label className="block">
+                End Date
+                <input
+                  name="endDate"
+                  type="date"
+                  className="mt-1 w-full rounded border p-2"
+                  value={pendingProjectForm.endDate}
+                  onChange={handlePendingProjectChange}
+                  required
+                />
+              </label>
+
+              {pendingProjectErrors.dates && (
+                <p className="-mt-2 text-sm text-red-500 md:col-span-2">
+                  {pendingProjectErrors.dates}
+                </p>
+              )}
+
+              <label className="block">
+                Room Type
+                <select
+                  name="roomType"
+                  className="mt-1 w-full rounded border bg-white p-2"
+                  value={pendingProjectForm.roomType}
+                  onChange={handlePendingProjectChange}
+                  required
+                >
+                  <option value="">Select room type</option>
+                  {roomTypeOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                {pendingProjectErrors.roomType && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {pendingProjectErrors.roomType}
+                  </p>
+                )}
+              </label>
+
+              <label className="block">
+                Project Type
+                <select
+                  name="projectType"
+                  className="mt-1 w-full rounded border bg-white p-2"
+                  value={pendingProjectForm.projectType}
+                  onChange={handlePendingProjectChange}
+                  required
+                >
+                  <option value="">Select project type</option>
+                  {projectTypeOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                {pendingProjectErrors.projectType && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {pendingProjectErrors.projectType}
+                  </p>
+                )}
+              </label>
+
+              <label className="block">
+                Priority
+                <select
+                  name="priority"
+                  className="mt-1 w-full rounded border bg-white p-2"
+                  value={pendingProjectForm.priority}
+                  onChange={handlePendingProjectChange}
+                  required
+                >
+                  <option value="">Select priority</option>
+                  {priorityOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                {pendingProjectErrors.priority && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {pendingProjectErrors.priority}
+                  </p>
+                )}
+              </label>
+
+              <label className="block">
+                Project Size (sq ft)
+                <input
+                  name="projectSize"
+                  type="number"
+                  className="mt-1 w-full rounded border p-2"
+                  value={pendingProjectForm.projectSize}
+                  onChange={handlePendingProjectChange}
+                  min="0.01"
+                  step="0.01"
+                  required
+                />
+                {pendingProjectErrors.projectSize && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {pendingProjectErrors.projectSize}
+                  </p>
+                )}
+              </label>
+
+              <label className="block md:col-span-2">
+                Project Location
+                <input
+                  name="projectLocation"
+                  type="text"
+                  className="mt-1 w-full rounded border p-2"
+                  value={pendingProjectForm.projectLocation}
+                  onChange={handlePendingProjectChange}
+                  maxLength={120}
+                  required
+                />
+                {pendingProjectErrors.projectLocation && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {pendingProjectErrors.projectLocation}
+                  </p>
+                )}
+              </label>
+
+              <label className="block md:col-span-2">
+                Design Inspiration Link
+                <input
+                  name="designInspiration"
+                  type="url"
+                  className="mt-1 w-full rounded border p-2"
+                  value={pendingProjectForm.designInspiration}
+                  onChange={handlePendingProjectChange}
+                  placeholder="https://..."
+                />
+                {pendingProjectErrors.designInspiration && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {pendingProjectErrors.designInspiration}
+                  </p>
+                )}
+              </label>
+
+              <div className="flex justify-end gap-2 md:col-span-2">
+                <button
+                  type="button"
+                  className="rounded border px-4 py-2 text-slate-700 hover:bg-slate-50"
+                  onClick={() => setShowPendingEditModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded bg-[#1D3C34] px-4 py-2 font-semibold text-white hover:bg-[#16442A] transition"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Project Details Modal for Adding Designers */}
       {showDetailsModal && (
         <ProjectDetailsModal
@@ -230,6 +649,19 @@ const ProjectCard = ({ project, onView, onDelete, restoreMode }) => {
             </div>
           </div>
           <div className="flex gap-2 ml-2">
+            {!restoreMode && isAdmin && project.status === "pending" && (
+              <button
+                className="flex items-center gap-1 rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 transition hover:bg-gray-200"
+                onClick={() => {
+                  setPendingProjectForm(getPendingProjectForm(project));
+                  setPendingProjectErrors({});
+                  setShowPendingEditModal(true);
+                }}
+              >
+                <FaEdit size={12} />
+                Edit
+              </button>
+            )}
             {/* Only show view button if not restoreMode */}
             {!restoreMode && (
               <button
