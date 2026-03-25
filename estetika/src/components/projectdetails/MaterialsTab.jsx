@@ -177,7 +177,7 @@ export default function MaterialsTab() {
     if (!entries.length) return "—";
     return entries
       .map(
-        ([k, vals]) => `${k}: ${Array.isArray(vals) ? vals.join(", ") : vals}`
+        ([k, vals]) => `${k}: ${Array.isArray(vals) ? vals.join(", ") : vals}`,
       )
       .join(" • ");
   };
@@ -194,7 +194,7 @@ export default function MaterialsTab() {
           opt.option === selectedOption ||
           opt.size === selectedOption ||
           opt.name === selectedOption ||
-          opt.type === selectedOption
+          opt.type === selectedOption,
       );
 
       if (option && option.addToPrice !== undefined) {
@@ -365,22 +365,22 @@ export default function MaterialsTab() {
     if (!project || !project._id) return;
     const nextErrors = {
       materialName: validateRequiredText(materialName, "Material name"),
-      attributes: validateAttributeGroups(materialAttributes, { required: true }),
+      attributes: validateAttributeGroups(materialAttributes, {
+        required: true,
+      }),
       quantity: validateIntegerMin(quantity, "Quantity", 1),
     };
     setCustomMaterialErrors(nextErrors);
     if (Object.values(nextErrors).some(Boolean)) return;
 
-
     const validAttributes = materialAttributes
       .map((attr) => ({
         key: (attr.key || "").trim(),
         values: (Array.isArray(attr.values) ? attr.values : [""]).map((v) =>
-          (v || "").trim()
+          (v || "").trim(),
         ),
       }))
       .filter((attr) => attr.key && attr.values.some((v) => v));
-
 
     try {
       const token = Cookies.get("token");
@@ -410,7 +410,7 @@ export default function MaterialsTab() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       showToast("Material added to project!", { type: "success" });
       setShowModal(false);
@@ -421,7 +421,10 @@ export default function MaterialsTab() {
       if (refreshProject) refreshProject(); // Refresh project data
     } catch (e) {
       console.error(e);
-      showToast(e?.response?.data?.message || "Failed to add material to project.", { type: "error" });
+      showToast(
+        e?.response?.data?.message || "Failed to add material to project.",
+        { type: "error" },
+      );
     }
   };
 
@@ -437,7 +440,7 @@ export default function MaterialsTab() {
     if (userRole === "admin") {
       showToast(
         "Admins cannot add materials. Only designers can manage materials.",
-        { type: "error" }
+        { type: "error" },
       );
       return;
     }
@@ -456,7 +459,7 @@ export default function MaterialsTab() {
     if (userRole === "admin") {
       showToast(
         "Admins cannot add materials to project. Only designers can manage materials.",
-        { type: "error" }
+        { type: "error" },
       );
       return;
     }
@@ -583,11 +586,11 @@ export default function MaterialsTab() {
         `${serverUrl}/api/material-request?projectId=${project._id}&mine=true`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       // Sort by newest first
       const sorted = (res.data.requests || []).sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
       );
       setMyRequests(sorted);
     } catch (e) {
@@ -625,7 +628,7 @@ export default function MaterialsTab() {
         .map((attr) => ({
           key: (attr.key || "").trim(),
           values: (Array.isArray(attr.values) ? attr.values : [""]).map((v) =>
-            (v || "").trim()
+            (v || "").trim(),
           ),
         }))
         .filter((attr) => attr.key && attr.values.some((v) => v));
@@ -649,7 +652,9 @@ export default function MaterialsTab() {
           "Content-Type": "application/json",
         },
       });
-      showToast("Recommendation submitted to storage admin.", { type: "success" });
+      showToast("Recommendation submitted to storage admin.", {
+        type: "success",
+      });
       setShowRequestModal(false);
       setReqCategory("");
       setReqAttributes([{ key: "", values: [""] }]);
@@ -661,9 +666,12 @@ export default function MaterialsTab() {
       fetchMyRequests();
     } catch (e) {
       setRequestMessage(
-        e?.response?.data?.message || "Failed to submit recommendation"
+        e?.response?.data?.message || "Failed to submit recommendation",
       );
-      showToast(e?.response?.data?.message || "Failed to submit recommendation", { type: "error" });
+      showToast(
+        e?.response?.data?.message || "Failed to submit recommendation",
+        { type: "error" },
+      );
     } finally {
       setIsRequesting(false);
     }
@@ -674,7 +682,7 @@ export default function MaterialsTab() {
     if (userRole === "admin") {
       showToast(
         "Admins cannot add materials to project. Only designers can manage materials.",
-        { type: "error" }
+        { type: "error" },
       );
       return;
     }
@@ -697,7 +705,7 @@ export default function MaterialsTab() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       const proj = projectRes.data.project;
       const files = Array.isArray(proj.files) ? proj.files : [];
@@ -721,11 +729,11 @@ export default function MaterialsTab() {
         // Download and parse existing CSV
         const resp = await axios.get(
           `${serverUrl}/api/upload/fetch-csv?url=${encodeURIComponent(
-            indexCsvUrl
+            indexCsvUrl,
           )}`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
         const text = await resp.data;
         const parsed = Papa.parse(text, { skipEmptyLines: true });
@@ -754,13 +762,13 @@ export default function MaterialsTab() {
               Authorization: `Bearer ${token}`,
               "Content-Type": "multipart/form-data",
             },
-          }
+          },
         );
       } catch (uploadErr) {
         showToast(
           "Failed to upload CSV: " +
             (uploadErr.response?.data?.message || uploadErr.message),
-          { type: "error" }
+          { type: "error" },
         );
         setIsAddingToSheet(false);
         return;
@@ -782,18 +790,20 @@ export default function MaterialsTab() {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
       } catch (updateErr) {
         showToast(
           "Failed to update project files: " +
             (updateErr.response?.data?.message || updateErr.message),
-          { type: "error" }
+          { type: "error" },
         );
         setIsAddingToSheet(false);
         return;
       }
-      showToast("Material added to project sheet successfully!", { type: "success" });
+      showToast("Material added to project sheet successfully!", {
+        type: "success",
+      });
       setShowAddToSheetModal(false);
       setSelectedSize("");
       setQuantity(1);
@@ -813,7 +823,7 @@ export default function MaterialsTab() {
 
         // Then, add the recommended material to the materials array
         const need = project.materialsList.find(
-          (n) => n.name === selectedSidebar
+          (n) => n.name === selectedSidebar,
         );
         const materialQuantity = need ? need.quantity : quantity;
 
@@ -829,7 +839,7 @@ export default function MaterialsTab() {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         // Clear the recommendation for this material since it's now resolved
@@ -879,7 +889,7 @@ export default function MaterialsTab() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       showToast("Material updated!", { type: "success" });
       setEditMaterial(null);
@@ -887,7 +897,7 @@ export default function MaterialsTab() {
     } catch (err) {
       showToast(
         err?.response?.data?.message || "Failed to update material in project.",
-        { type: "error" }
+        { type: "error" },
       );
     }
   };
@@ -896,7 +906,7 @@ export default function MaterialsTab() {
     if (userRole === "admin") {
       showToast(
         "Admins cannot remove materials. Only designers can manage materials.",
-        { type: "error" }
+        { type: "error" },
       );
       return;
     }
@@ -919,7 +929,7 @@ export default function MaterialsTab() {
             materialId,
             option: option || undefined, // if no option, remove all for this materialId
           },
-        }
+        },
       );
       showToast("Material removed!", { type: "success" });
       if (refreshProject) refreshProject(); // Refresh project data
@@ -927,7 +937,7 @@ export default function MaterialsTab() {
       showToast(
         err?.response?.data?.message ||
           "Failed to remove material from project.",
-        { type: "error" }
+        { type: "error" },
       );
     }
   };
@@ -1084,7 +1094,7 @@ export default function MaterialsTab() {
                                 if (!project?._id) return;
                                 if (
                                   !window.confirm(
-                                    "Remove this item from the list?"
+                                    "Remove this item from the list?",
                                   )
                                 )
                                   return;
@@ -1100,7 +1110,7 @@ export default function MaterialsTab() {
                                         projectId: project._id,
                                         name: need.name,
                                       },
-                                    }
+                                    },
                                   )
                                   .then(() => {
                                     if (refreshProject) refreshProject();
@@ -1111,7 +1121,7 @@ export default function MaterialsTab() {
                                     showToast(
                                       err?.response?.data?.message ||
                                         "Failed to remove item",
-                                      { type: "error" }
+                                      { type: "error" },
                                     );
                                   });
                               }}
@@ -1208,7 +1218,7 @@ export default function MaterialsTab() {
                                   item.option[0].name ||
                                   item.option[0].type ||
                                   ""
-                              : ""
+                              : "",
                           );
                           setEditQuantity(item.quantity || 1);
                         }}
@@ -1229,7 +1239,7 @@ export default function MaterialsTab() {
                                   item.option[0].size ||
                                   item.option[0].name ||
                                   item.option[0].type
-                              : undefined
+                              : undefined,
                           );
                         }}
                       >
@@ -1278,12 +1288,12 @@ export default function MaterialsTab() {
           </div>
 
           {/* Right Content Area */}
-          <div className="min-w-0 flex-1 overflow-y-auto">
-            <div className="p-4 sm:p-6 lg:p-8">
+          <div className="flex-1 overflow-y-auto ">
+            <div className="p-8">
               {(() => {
                 // First check if selectedSidebar matches an actual material in the project
                 const actualMaterial = project?.materials?.find(
-                  (item) => item.material.name === selectedSidebar
+                  (item) => item.material.name === selectedSidebar,
                 );
                 if (actualMaterial) {
                   // Show details of the actual selected material in the same format as recommendations
@@ -1725,7 +1735,7 @@ export default function MaterialsTab() {
                                       </span>
                                       <div className="text-sm font-bold text-gray-800">
                                         {getOptionsDisplay(
-                                          moreExpensive?.options
+                                          moreExpensive?.options,
                                         )}
                                       </div>
                                     </div>
@@ -1771,8 +1781,8 @@ export default function MaterialsTab() {
                           ? "Select a different material on the left."
                           : "Click 'Recommend Materials' to get suggestions for this item."
                         : isAdmin
-                        ? "Select a material on the left."
-                        : "Click 'Recommend Materials' below to prefetch all options, then select an item on the left."}
+                          ? "Select a material on the left."
+                          : "Click 'Recommend Materials' below to prefetch all options, then select an item on the left."}
                     </p>
                   </div>
                 );
@@ -1854,7 +1864,7 @@ export default function MaterialsTab() {
                     requestStatusFilter === "all"
                       ? myRequests
                       : myRequests.filter(
-                          (req) => req.status === requestStatusFilter
+                          (req) => req.status === requestStatusFilter,
                         );
                   return filtered.length === 0 ? (
                     <div className="text-center py-16 px-4">
@@ -1908,7 +1918,7 @@ export default function MaterialsTab() {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
-                              }
+                              },
                             )}
                           </p>
                           {req.budgetMax && (
@@ -1993,7 +2003,7 @@ export default function MaterialsTab() {
                         ...prev,
                         materialName: validateRequiredText(
                           e.target.value,
-                          "Material name"
+                          "Material name",
                         ),
                       }));
                     }}
@@ -2037,7 +2047,7 @@ export default function MaterialsTab() {
                             updateMaterialAttribute(
                               attrIdx,
                               "key",
-                              e.target.value
+                              e.target.value,
                             )
                           }
                         />
@@ -2077,7 +2087,7 @@ export default function MaterialsTab() {
                                 updateMaterialAttributeValue(
                                   attrIdx,
                                   valIdx,
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                             />
@@ -2207,7 +2217,7 @@ export default function MaterialsTab() {
                         current?.selected || current?.bestMatch || null;
                       const optionPrice = getOptionPrice(
                         selectedRec,
-                        optionLabel
+                        optionLabel,
                       );
                       return (
                         <option key={opt._id || index} value={optionLabel}>
@@ -2316,7 +2326,7 @@ export default function MaterialsTab() {
                         ...prev,
                         category: validateRequiredText(
                           e.target.value,
-                          "Category"
+                          "Category",
                         ),
                       }));
                     }}
@@ -2339,10 +2349,7 @@ export default function MaterialsTab() {
                       setRequestErrors((prev) => ({
                         ...prev,
                         budgetMax: e.target.value
-                          ? validatePositiveNumber(
-                              e.target.value,
-                              "Budget max"
-                            )
+                          ? validatePositiveNumber(e.target.value, "Budget max")
                           : "",
                       }));
                     }}
@@ -2422,7 +2429,7 @@ export default function MaterialsTab() {
                               updateReqAttributeValue(
                                 attrIdx,
                                 valIdx,
-                                e.target.value
+                                e.target.value,
                               )
                             }
                           />
