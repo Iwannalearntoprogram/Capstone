@@ -9,7 +9,7 @@ import {
   FiSend,
   FiPaperclip,
 } from "react-icons/fi";
-import defaultProfile from "../assets/images/user.png";
+import ProfileImage from "../components/common/ProfileImage";
 import { trimValue, validateFile } from "../utils/validation";
 
 function Inbox() {
@@ -327,19 +327,11 @@ function Inbox() {
               >
                 <FiArrowLeft size={18} />
               </button>
-              {selectedUser.profileImage ? (
-                <img
-                  src={selectedUser.profileImage}
-                  alt="Profile"
-                  className="w-9 h-9 rounded-full object-cover"
-                />
-              ) : (
-                <img
-                  src={defaultProfile}
-                  alt="Default Profile"
-                  className="w-9 h-9 rounded-full object-cover"
-                />
-              )}
+              <ProfileImage
+                src={selectedUser.profileImage}
+                alt="Profile"
+                className="w-9 h-9 rounded-full object-cover"
+              />
               <div>
                 <h3 className="font-semibold text-base text-gray-900">
                   {selectedUser.firstName ||

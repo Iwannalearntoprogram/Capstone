@@ -18,7 +18,7 @@ import {
   FaUserTag,
   FaUserTie,
 } from "react-icons/fa";
-import defaultProfile from "../assets/images/user.png";
+import ProfileImage from "../components/common/ProfileImage";
 import {
   trimValue,
   validateEmail,
@@ -392,8 +392,8 @@ export default function UsersPage() {
                       <div className="flex flex-col gap-2.5">
                         <div className="flex items-start justify-between gap-2.5">
                           <div className="flex min-w-0 items-start gap-2.5">
-                          <img
-                            src={user.profileImage || defaultProfile}
+                          <ProfileImage
+                            src={user.profileImage}
                             alt=""
                             className="h-10 w-10 shrink-0 rounded-xl object-cover"
                           />
@@ -456,7 +456,7 @@ export default function UsersPage() {
                         <tr key={user._id} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-3">
-                              <img src={user.profileImage || defaultProfile} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                              <ProfileImage src={user.profileImage} alt="" className="h-10 w-10 rounded-lg object-cover" />
                               <div>
                                 <div className="font-semibold text-gray-900">{user.firstName} {user.lastName}</div>
                                 <div className="text-sm text-gray-500">@{user.username}</div>

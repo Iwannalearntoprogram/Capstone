@@ -24,7 +24,6 @@ const MessageBubble = ({ message, isSelf }) => {
               src={message.fileLink}
               alt="Uploaded file"
               className="max-w-full rounded-md"
-              onError={(e) => (e.target.src = "/path/to/fallback-image.png")}
             />
           ) : (
             <div className="flex items-center gap-2">
