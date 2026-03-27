@@ -6,7 +6,7 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import jsPDF from "jspdf";
 import { FaCheckCircle, FaPhone, FaBriefcase } from "react-icons/fa";
-import defaultProfile from "../assets/images/user.png";
+import ProfileImage from "../components/common/ProfileImage";
 import html2canvas from "html2canvas";
 import {
   getRecommendations,
@@ -113,7 +113,6 @@ const HomePage = () => {
     tags: "",
   });
   const [drSubmitting, setDrSubmitting] = useState(false);
-  const [brokenRecImages, setBrokenRecImages] = useState({});
   const [drModalOpen, setDrModalOpen] = useState(false);
   const [drEditingId, setDrEditingId] = useState(null);
   const [drUploadingImage, setDrUploadingImage] = useState(false);
@@ -1759,8 +1758,8 @@ const HomePage = () => {
                       {/* Header with Avatar and Basic Info */}
                       <div className="flex items-center space-x-4 mb-4">
                         {/* Avatar */}
-                        <img
-                          src={designer.profileImage || defaultProfile}
+                        <ProfileImage
+                          src={designer.profileImage}
                           alt="Profile"
                           className="w-12 h-12 rounded-lg object-cover"
                         />
@@ -2043,14 +2042,6 @@ const HomePage = () => {
                               src={image.url}
                               alt={image.alt || `Image ${index + 1}`}
                               className="w-16 h-16 object-cover rounded-lg border border-slate-200"
-                              onError={(e) => {
-                                e.target.style.backgroundColor = "#f3f4f6";
-                                e.target.style.display = "flex";
-                                e.target.style.alignItems = "center";
-                                e.target.style.justifyContent = "center";
-                                e.target.innerHTML =
-                                  '<span style="color: #6b7280; font-size: 10px;">Error</span>';
-                              }}
                             />
                           </div>
 
@@ -2330,20 +2321,6 @@ const HomePage = () => {
                                       src={image.url}
                                       alt={image.alt || `Showcase ${index + 1}`}
                                       className="w-full h-full object-cover rounded-xl"
-                                      onError={(e) => {
-                                        console.error(
-                                          "Failed to load carousel image:",
-                                          image.url
-                                        );
-                                        e.target.style.backgroundColor =
-                                          "#f3f4f6";
-                                        e.target.style.display = "flex";
-                                        e.target.style.alignItems = "center";
-                                        e.target.style.justifyContent =
-                                          "center";
-                                        e.target.innerHTML =
-                                          '<span style="color: #6b7280;">Image loading error</span>';
-                                      }}
                                     />
                                   </div>
                                 )
@@ -2695,9 +2672,6 @@ const HomePage = () => {
                             src={normalizeDriveLink(drForm.imageLink)}
                             alt="preview"
                             className="h-24 rounded border"
-                            onError={(e) =>
-                              (e.currentTarget.style.display = "none")
-                            }
                           />
                         </div>
                       )}
@@ -2808,17 +2782,11 @@ const HomePage = () => {
                       </button>
                     </div>
                   </div>
-                  {rec.imageLink && !brokenRecImages[rec._id] ? (
+                  {rec.imageLink ? (
                     <img
                       src={normalizeDriveLink(rec.imageLink)}
                       alt={rec.title}
                       className="w-full h-32 object-cover rounded-lg border mb-2"
-                      onError={() => {
-                        setBrokenRecImages((prev) => ({
-                          ...prev,
-                          [rec._id]: true,
-                        }));
-                      }}
                     />
                   ) : (
                     <div className="w-full h-32 rounded-lg border mb-2 bg-slate-100 flex items-center justify-center text-slate-400 text-sm">

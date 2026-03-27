@@ -180,32 +180,32 @@ export default function Column({ column, tasks, project }) {
   const isAdmin = userRole === "admin";
 
   return (
-    <div className="min-w-0 rounded-xl flex flex-col">
-      <h3 className="bg-[#eac5b1] p-4 py-2 font-bold rounded-tl-xl rounded-tr-xl">
+    <div className="min-w-0 flex flex-col rounded-[18px] border border-[#e3ddd3] bg-white shadow-[0_24px_60px_-45px_rgba(15,23,42,0.35)]">
+      <h3 className="rounded-tl-[18px] rounded-tr-[18px] border-b border-[#d9e5df] bg-[#eef4f1] px-4 py-3 font-semibold text-[#1d3c34]">
         {column.title}
       </h3>
-      <div className="bg-white shadow-md rounded-bl-xl rounded-br-xl">
+      <div className="rounded-bl-[18px] rounded-br-[18px] bg-white">
         <div ref={setNodeRef} className="flex flex-col gap-4 p-4">
           {!isAdmin && (
             <button
               onClick={handleAddTaskClick}
-              className="border-[1px] border-dashed border-[#145c4b] p-4 py-2 rounded-lg shadow-sm bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-center text-gray-500 font-medium transition"
+              className="flex items-center justify-center rounded-xl border border-dashed border-[#1d3c34]/35 bg-[#f7faf8] px-4 py-3 font-medium text-[#1d3c34] transition hover:border-[#1d3c34]/50 hover:bg-white"
               type="button"
             >
               + Add Task
             </button>
           )}
           {isAdmin && tasks.length === 0 && (
-            <div className="text-center text-gray-500 p-4 border border-dashed border-gray-300 rounded-lg">
+            <div className="rounded-xl border border-dashed border-[#d8deda] bg-[#fafaf8] p-5 text-center text-slate-500">
               <p className="mb-1">No tasks in this column</p>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-slate-400">
                 Only designers can create and manage tasks
               </p>
             </div>
           )}
           {/* Show regular no tasks message if not admin */}
           {!isAdmin && tasks.length === 0 && (
-            <div className="text-center text-gray-500">
+            <div className="rounded-xl border border-dashed border-[#d8deda] bg-[#fafaf8] p-5 text-center text-slate-500">
               No tasks in this column
             </div>
           )}
@@ -230,21 +230,21 @@ export default function Column({ column, tasks, project }) {
       <Modal
         isOpen={modalOpen || closing}
         onRequestClose={closeModal}
-        className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 w-[90%] max-w-[400px] rounded-lg shadow-lg z-50 ${
+        className={`fixed top-1/2 left-1/2 z-50 w-[90%] max-w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-[18px] border border-white/50 bg-[#fcfbf8] p-6 shadow-[0_40px_120px_-45px_rgba(15,23,42,0.55)] ${
           closing ? "opacity-0 transition-opacity duration-300" : "opacity-100"
         }`}
         overlayClassName="fixed top-0 left-0 w-full h-full bg-black/20 z-50 backdrop-blur-xs"
         shouldCloseOnOverlayClick={false}
         ariaHideApp={false}
       >
-        <h2 className="text-lg font-semibold mb-2">Add Task</h2>
+        <h2 className="mb-2 text-lg font-semibold text-slate-900">Add Task</h2>
         {selectedPhase && (
-          <p className="text-xs text-gray-500 mb-4">
+          <p className="mb-4 text-xs text-slate-500">
             Phase window: {phaseStart || "—"} to {phaseEnd || "—"}
           </p>
         )}
         {errorMsg && (
-          <div className="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2">
+          <div className="mb-3 rounded-xl border border-red-200 bg-red-50 p-2 text-sm text-red-600">
             {errorMsg}
           </div>
         )}
@@ -262,7 +262,7 @@ export default function Column({ column, tasks, project }) {
             }));
             if (errorMsg === "Please select a phase first") setErrorMsg("");
           }}
-          className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          className="mb-4 w-full rounded-xl border border-[#d8deda] bg-white p-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         >
           {Array.isArray(project?.timeline) && project.timeline.length > 0 ? (
             project.timeline.map((phase) => (
@@ -282,7 +282,7 @@ export default function Column({ column, tasks, project }) {
           placeholder="Task Title"
           value={newTask.title}
           onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-          className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          className="mb-4 w-full rounded-xl border border-[#d8deda] bg-white p-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
 
         <label className="block mb-2">Task Description:</label>
@@ -292,7 +292,7 @@ export default function Column({ column, tasks, project }) {
           onChange={(e) =>
             setNewTask({ ...newTask, description: e.target.value })
           }
-          className="w-full p-2 mb-4 border resize-none border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          className="mb-4 w-full resize-none rounded-xl border border-[#d8deda] bg-white p-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
 
         <label className="block mb-2">Task Start:</label>
@@ -304,7 +304,7 @@ export default function Column({ column, tasks, project }) {
           onChange={(e) =>
             setNewTask({ ...newTask, startDate: e.target.value })
           }
-          className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          className="mb-4 w-full rounded-xl border border-[#d8deda] bg-white p-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
 
         <label className="block mb-2">Task End:</label>
@@ -314,20 +314,20 @@ export default function Column({ column, tasks, project }) {
           min={phaseStart}
           max={phaseEnd}
           onChange={(e) => setNewTask({ ...newTask, endDate: e.target.value })}
-          className="w-full p-2 mb-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          className="mb-4 w-full rounded-xl border border-[#d8deda] bg-white p-2.5 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
         />
 
         <div className="flex justify-end gap-2">
           <button
             onClick={handleSaveTask}
             disabled={submitting}
-            className={`px-4 py-2 bg-[#1D3C34] text-white rounded-md hover:bg-[#145c4b] transition disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`rounded-full bg-[#1D3C34] px-4 py-2 text-white transition hover:bg-[#145c4b] disabled:cursor-not-allowed disabled:opacity-50`}
           >
             {submitting ? "Saving..." : "Add Task"}
           </button>
           <button
             onClick={closeModal}
-            className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 transition"
+            className="rounded-full bg-slate-200 px-4 py-2 text-slate-800 transition hover:bg-slate-300"
           >
             Cancel
           </button>
