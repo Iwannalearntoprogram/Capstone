@@ -11,8 +11,17 @@ const TimelineTaskRow = ({
   format,
   taskRowColor,
 }) => {
+  const parseTimelineDate = (value) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  };
+
+  const taskStartDate = parseTimelineDate(task.startDate);
+  const taskEndDate = parseTimelineDate(task.endDate) || taskStartDate;
+
   const taskStart = (() => {
-    const d = new Date(task.startDate);
+    if (!taskStartDate) return -1;
+    const d = taskStartDate;
     return (
       d.getFullYear() * 12 +
       d.getMonth() -
@@ -20,7 +29,8 @@ const TimelineTaskRow = ({
     );
   })();
   const taskEnd = (() => {
-    const d = new Date(task.endDate);
+    if (!taskEndDate) return -1;
+    const d = taskEndDate;
     return (
       d.getFullYear() * 12 +
       d.getMonth() -
@@ -38,8 +48,8 @@ const TimelineTaskRow = ({
           type: "task",
           name: task.name || task.title,
           phase: phase.name || phase.title,
-          start: format(new Date(task.startDate), "MMM yyyy"),
-          end: format(new Date(task.endDate), "MMM yyyy"),
+          start: taskStartDate ? format(taskStartDate, "MMM yyyy") : "",
+          end: taskEndDate ? format(taskEndDate, "MMM yyyy") : "",
         })
       }
       onMouseLeave={handleMouseLeave}
@@ -56,7 +66,7 @@ const TimelineTaskRow = ({
         } else if (isEnd) {
           rounded = "rounded-r-full";
         }
-        if (i >= taskStart && i <= taskEnd) {
+        if (taskStart >= 0 && taskEnd >= taskStart && i >= taskStart && i <= taskEnd) {
           const isDone = task.status === "completed" || task.status === "done";
           return (
             <div key={i} className="h-full flex items-center">
