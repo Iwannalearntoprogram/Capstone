@@ -345,6 +345,7 @@ const ProjectCard = ({
   const progressValue = Number.isFinite(Number(project.progress))
     ? Math.min(Math.max(Number(project.progress), 0), 100)
     : 0;
+  const formattedProgressValue = progressValue.toFixed(2);
   const memberCount = Array.isArray(project.members) ? project.members.length : 0;
   const timelineLabel =
     formattedStartDate || formattedEndDate
@@ -772,7 +773,7 @@ const ProjectCard = ({
           <div className="rounded-[10px] border border-stone-200/80 bg-stone-50/90 px-3 py-3">
             <div className="flex items-center justify-between text-[11px] font-medium text-slate-500">
               <span>Progress</span>
-              <span className="text-slate-700">{progressValue}%</span>
+              <span className="text-slate-700">{formattedProgressValue}%</span>
             </div>
             <div className="mt-2.5 h-1.5 overflow-hidden rounded-md bg-stone-200">
               <div
