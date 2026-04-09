@@ -33,9 +33,9 @@ export default function ProjectOverviewTab() {
   const designers = Array.isArray(project.members)
     ? project.members.filter((m) => m.role === "designer")
     : [];
-  const recommendedMaterial = project.recommendedMaterial?.material || null;
-  const recommendationAnalysis = project.recommendedMaterial?.analysis || null;
-  const recommendationScore = project.recommendedMaterial?.score || null;
+  const recommendedMaterials = Array.isArray(project.recommendedMaterials)
+    ? project.recommendedMaterials
+    : [];
 
   const formatCurrency = (value) =>
     typeof value === "number"
@@ -119,144 +119,158 @@ export default function ProjectOverviewTab() {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
-              Recommended Material
+              Recommended Materials
             </h2>
             <p className="text-sm text-gray-500">
-              One automatic recommendation based on priority, preferences,
-              description, and budget.
+              Automatic category-based material recommendations tailored to the priority, preferences, description, and budget.
             </p>
           </div>
         </div>
 
-        {recommendedMaterial ? (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="min-w-0">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                  <h3 className="text-xl font-bold text-gray-900">
-                    {recommendedMaterial.name}
+        {recommendedMaterials.length > 0 ? (
+          <div className="space-y-12">
+            {recommendedMaterials.map((rec, index) => {
+              const recommendedMaterial = rec.material;
+              const recommendationAnalysis = rec.analysis;
+              const recommendationScore = rec.score;
+
+              return (
+                <div key={index} className="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
+                  <h3 className="text-lg font-bold text-emerald-800 mb-4 uppercase tracking-wide">
+                    {recommendedMaterial.category || "General"} Recommendation
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {recommendedMaterial.company || "Unknown supplier"}
-                  </p>
-                </div>
-                <div className="shrink-0 rounded-lg bg-emerald-50 px-3 py-2 text-right">
-                  <div className="text-xs font-medium uppercase tracking-wide text-emerald-700">
-                    Material Price
-                  </div>
-                  <div className="text-lg font-bold text-emerald-900">
-                    {formatCurrency(recommendedMaterial.price) || "N/A"}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                {recommendedMaterial.category && (
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                    {recommendedMaterial.category}
-                  </span>
-                )}
-                {recommendedMaterial.subCategory && (
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                    {recommendedMaterial.subCategory}
-                  </span>
-                )}
-                {recommendationAnalysis?.priority && (
-                  <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                    Priority: {recommendationAnalysis.priority}
-                  </span>
-                )}
-              </div>
-
-              <p className="mt-4 text-sm leading-7 text-gray-700">
-                {recommendedMaterial.description ||
-                  "No material description available."}
-              </p>
-
-              {Array.isArray(recommendationAnalysis?.reasons) &&
-                recommendationAnalysis.reasons.length > 0 && (
-                  <div className="mt-5 space-y-2">
-                    {recommendationAnalysis.reasons.map((reason, index) => (
-                      <div
-                        key={index}
-                        className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
-                      >
-                        {reason}
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+                    <div className="min-w-0">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <h3 className="text-xl font-bold text-gray-900">
+                            {recommendedMaterial.name}
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            {recommendedMaterial.company || "Unknown supplier"}
+                          </p>
+                        </div>
+                        <div className="shrink-0 rounded-lg bg-emerald-50 px-3 py-2 text-right">
+                          <div className="text-xs font-medium uppercase tracking-wide text-emerald-700">
+                            Material Price
+                          </div>
+                          <div className="text-lg font-bold text-emerald-900">
+                            {formatCurrency(recommendedMaterial.price) || "N/A"}
+                          </div>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-            </div>
 
-            <div className="space-y-4">
-              {Array.isArray(recommendedMaterial.image) &&
-              recommendedMaterial.image.length > 0 ? (
-                <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
-                  <img
-                    src={recommendedMaterial.image[0]}
-                    alt={recommendedMaterial.name}
-                    className="h-64 w-full object-cover"
-                  />
-                </div>
-              ) : null}
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {recommendedMaterial.category && (
+                          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                            {recommendedMaterial.category}
+                          </span>
+                        )}
+                        {recommendedMaterial.subCategory && (
+                          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                            {recommendedMaterial.subCategory}
+                          </span>
+                        )}
+                        {recommendationAnalysis?.priority && (
+                          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+                            Priority: {recommendationAnalysis.priority}
+                          </span>
+                        )}
+                      </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                  <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
-                    Style Fit
-                  </div>
-                  <div className="mt-1 text-lg font-bold text-gray-900">
-                    {recommendationScore
-                      ? `${Math.round(recommendationScore.keywordFit * 100)}%`
-                      : "N/A"}
-                  </div>
-                </div>
-                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                  <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
-                    Budget Fit
-                  </div>
-                  <div className="mt-1 text-lg font-bold text-gray-900">
-                    {recommendationScore
-                      ? `${Math.round(recommendationScore.budgetFit * 100)}%`
-                      : "N/A"}
-                  </div>
-                </div>
-                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                  <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
-                    Room Fit
-                  </div>
-                  <div className="mt-1 text-lg font-bold text-gray-900">
-                    {recommendationScore
-                      ? `${Math.round(recommendationScore.roomFit * 100)}%`
-                      : "N/A"}
-                  </div>
-                </div>
-                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                  <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
-                    Overall Match
-                  </div>
-                  <div className="mt-1 text-lg font-bold text-gray-900">
-                    {recommendationScore
-                      ? `${Math.round(recommendationScore.total * 100)}%`
-                      : "N/A"}
-                  </div>
-                </div>
-              </div>
+                      <p className="mt-4 text-sm leading-7 text-gray-700">
+                        {recommendedMaterial.description ||
+                          "No material description available."}
+                      </p>
 
-              {recommendationAnalysis?.estimatedCeiling ? (
-                <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
-                  Recommended ceiling:{" "}
-                  <span className="font-semibold text-gray-900">
-                    {formatCurrency(recommendationAnalysis.estimatedCeiling)}
-                  </span>
+                      {Array.isArray(recommendationAnalysis?.reasons) &&
+                        recommendationAnalysis.reasons.length > 0 && (
+                          <div className="mt-5 space-y-2">
+                            {recommendationAnalysis.reasons.map((reason, reasonIndex) => (
+                              <div
+                                key={reasonIndex}
+                                className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
+                              >
+                                {reason}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                    </div>
+
+                    <div className="space-y-4">
+                      {Array.isArray(recommendedMaterial.image) &&
+                      recommendedMaterial.image.length > 0 ? (
+                        <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+                          <img
+                            src={recommendedMaterial.image[0]}
+                            alt={recommendedMaterial.name}
+                            className="h-64 w-full object-cover"
+                          />
+                        </div>
+                      ) : null}
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                          <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                            Style Fit
+                          </div>
+                          <div className="mt-1 text-lg font-bold text-gray-900">
+                            {recommendationScore
+                              ? `${Math.round(recommendationScore.keywordFit * 100)}%`
+                              : "N/A"}
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                          <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                            Budget Fit
+                          </div>
+                          <div className="mt-1 text-lg font-bold text-gray-900">
+                            {recommendationScore
+                              ? `${Math.round(recommendationScore.budgetFit * 100)}%`
+                              : "N/A"}
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                          <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                            Room Fit
+                          </div>
+                          <div className="mt-1 text-lg font-bold text-gray-900">
+                            {recommendationScore
+                              ? `${Math.round(recommendationScore.roomFit * 100)}%`
+                              : "N/A"}
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                          <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                            Overall Match
+                          </div>
+                          <div className="mt-1 text-lg font-bold text-gray-900">
+                            {recommendationScore
+                              ? `${Math.round(recommendationScore.total * 100)}%`
+                              : "N/A"}
+                          </div>
+                        </div>
+                      </div>
+
+                      {recommendationAnalysis?.estimatedCeiling ? (
+                        <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700">
+                          Recommended ceiling:{" "}
+                          <span className="font-semibold text-gray-900">
+                            {formatCurrency(recommendationAnalysis.estimatedCeiling)}
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
-              ) : null}
-            </div>
+              );
+            })}
           </div>
         ) : (
           <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-sm text-gray-500">
-            No material recommendation is available yet. Add catalog materials or
-            update the project details to generate a better match.
+            No material recommendations are available yet. Add catalog materials or
+            update the project details to generate better matches.
           </div>
         )}
       </div>
@@ -456,7 +470,11 @@ export default function ProjectOverviewTab() {
         <InfoCard
           icon={FaLayerGroup}
           label="Matched Keywords"
-          value={recommendationAnalysis?.matchedKeywords?.slice(0, 3).join(", ")}
+          value={
+            recommendedMaterials.length > 0
+              ? [...new Set(recommendedMaterials.flatMap(rec => rec.analysis?.matchedKeywords || []))].slice(0, 3).join(", ")
+              : null
+          }
         />
       </div>
 

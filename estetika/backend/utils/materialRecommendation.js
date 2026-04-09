@@ -417,7 +417,7 @@ const toPublicMaterial = (material) => ({
   image: material.image,
 });
 
-const getRecommendedMaterialForProject = async (project, materialsOverride) => {
+const getRecommendedMaterialsForProject = async (project, materialsOverride) => {
   const Material = require("../models/Project/Material");
 
   const materials = Array.isArray(materialsOverride)
@@ -523,10 +523,47 @@ const getRecommendedMaterialForProject = async (project, materialsOverride) => {
       return (right.material.sales || 0) - (left.material.sales || 0);
     });
 
-  const topResult = scoredMaterials[0];
-  if (!topResult) return null;
+  if (scoredMaterials.length === 0) return [];
 
-  return {
+  const INVALID_CATEGORIES = new Set([
+    "Bedroom",
+    "Dining Room",
+    "Entryway",
+    "Hallway",
+    "Kitchen",
+    "Living Room",
+    "Office",
+    "Outdoor",
+    "Test",
+    "Other"
+  ]);
+
+  // Group by category to recommend 1 per category
+  const topByCategory = new Map();
+  for (const item of scoredMaterials) {
+    let rawCategory = item.material.category;
+    if (!rawCategory || typeof rawCategory !== "string") continue;
+    
+    // Normalize to prevent duplicates (e.g., "sofa" vs "Sofa", "Storage cabinet" vs "Storage Cabinet")
+    const category = rawCategory
+      .trim()
+      .replace(/\s+/g, " ")
+      .split(" ")
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(" ");
+
+    if (INVALID_CATEGORIES.has(category)) continue;
+
+    // Since scoredMaterials is already sorted highest-to-lowest,
+    // the first one we encounter for a category is the top result.
+    if (!topByCategory.has(category)) {
+      item.material.category = category; // Override the material payload to use clean title casing
+      topByCategory.set(category, item);
+    }
+  }
+
+  // Map the top results into the expected format
+  const recommendations = Array.from(topByCategory.values()).map(topResult => ({
     material: toPublicMaterial(topResult.material),
     score: {
       total: Number(topResult.totalScore.toFixed(3)),
@@ -554,9 +591,11 @@ const getRecommendedMaterialForProject = async (project, materialsOverride) => {
         estimatedCeiling: topResult.estimatedCeiling,
       }),
     },
-  };
+  }));
+
+  return recommendations;
 };
 
 module.exports = {
-  getRecommendedMaterialForProject,
+  getRecommendedMaterialsForProject,
 };

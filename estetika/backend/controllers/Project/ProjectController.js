@@ -7,7 +7,7 @@ const DeletedProject = require("../../models/Project/DeletedProject");
 const Notification = require("../../models/utils/Notification");
 const notifyMany = require("../../utils/notifyMany");
 const {
-  getRecommendedMaterialForProject,
+  getRecommendedMaterialsForProject,
 } = require("../../utils/materialRecommendation");
 require("../../utils/recycleBinCron");
 
@@ -258,8 +258,8 @@ const project_get = catchAsync(async (req, res, next) => {
       project.status = "delayed";
     }
 
-    project.recommendedMaterial =
-      await getRecommendedMaterialForProject(project);
+    project.recommendedMaterials =
+      await getRecommendedMaterialsForProject(project);
   } else {
     project.forEach((proj, idx) => {
       if (proj.toObject) project[idx] = proj = proj.toObject();
