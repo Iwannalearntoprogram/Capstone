@@ -121,7 +121,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       setStatus(newStatus);
@@ -129,7 +129,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
       setActionMessage(
         newStatus === "ongoing"
           ? "Project approved and moved to ongoing."
-          : "Project declined and set to cancelled."
+          : "Project declined and set to cancelled.",
       );
 
       setTimeout(() => {
@@ -163,7 +163,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
       const token = Cookies.get("token");
       const prevMembers = Array.isArray(project.members)
         ? project.members.map((member) =>
-            typeof member === "string" ? member : member._id
+            typeof member === "string" ? member : member._id,
           )
         : [];
       const updatedMembers = prevMembers.includes(selectedDesigner)
@@ -177,7 +177,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       setActionMessageType("success");
@@ -210,8 +210,8 @@ const ProjectDetailsModal = ({ project, onClose }) => {
       !currentDesigners.some(
         (currentDesigner) =>
           currentDesigner._id === designer._id ||
-          currentDesigner.username === designer.username
-      )
+          currentDesigner.username === designer.username,
+      ),
   );
 
   const detailItems = [
@@ -342,7 +342,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                     </p>
                     <span
                       className={`mt-2 inline-flex rounded-lg px-3 py-1 text-xs font-semibold capitalize ${getStatusBadgeClasses(
-                        status
+                        status,
                       )}`}
                     >
                       {status}
@@ -375,8 +375,15 @@ const ProjectDetailsModal = ({ project, onClose }) => {
           </div>
 
           <div className="flex flex-col p-5 sm:p-6 md:p-6">
-            <SectionCard title="Assign Designer" className="flex-1 flex flex-col [&>:last-child]:flex-1" headerRight={<CloseButton />}>
-              <form onSubmit={handleAssignDesigner} className="flex h-full flex-col">
+            <SectionCard
+              title="Assign Designer"
+              className="flex-1 flex flex-col [&>:last-child]:flex-1"
+              headerRight={<CloseButton />}
+            >
+              <form
+                onSubmit={handleAssignDesigner}
+                className="flex h-full flex-col"
+              >
                 <label className="text-sm font-medium text-slate-700">
                   Designer
                 </label>
@@ -386,7 +393,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                   onChange={(e) => {
                     setSelectedDesigner(e.target.value);
                     setAssignError(
-                      e.target.value ? "" : "Please select a designer."
+                      e.target.value ? "" : "Please select a designer.",
                     );
                   }}
                   required
@@ -472,9 +479,10 @@ const ProjectDetailsModal = ({ project, onClose }) => {
             <h2 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
               {project.title}
             </h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Review the project details before approving it for execution or
-              declining the request.
+            <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-600">
+              {project.description?.trim()
+                ? project.description
+                : "Review the project details before approving it for execution or declining the request."}
             </p>
           </div>
         </div>
@@ -488,7 +496,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
               headerRight={
                 <span
                   className={`inline-flex rounded-lg px-3 py-1 text-[10px] font-semibold capitalize sm:text-xs ${getStatusBadgeClasses(
-                    status
+                    status,
                   )}`}
                 >
                   {status}
@@ -519,13 +527,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
               </div>
             </SectionCard>
 
-            <SectionCard title="Description">
-              <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
-                {project.description?.trim()
-                  ? project.description
-                  : "No description provided."}
-              </p>
-            </SectionCard>
+
           </div>
 
           <div className="space-y-4">

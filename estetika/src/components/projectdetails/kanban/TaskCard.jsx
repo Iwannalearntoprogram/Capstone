@@ -31,18 +31,18 @@ export default function TaskCard({ task, userRole }) {
       ref={setNodeRef}
       {...(isAdmin ? {} : attributes)}
       {...(isAdmin ? {} : listeners)}
-      className={`border-[1px] border-gray-300 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 bg-white ${
+      className={`rounded-xl border border-[#d8deda] p-4 shadow-[0_16px_35px_-28px_rgba(15,23,42,0.45)] transition-all duration-200 ${
         isAdmin ? "cursor-default" : "cursor-grab"
-      } ${isDragging ? "opacity-50" : ""} ${
-        isAdmin ? "bg-gray-50" : "bg-white"
+      } ${isDragging ? "opacity-50" : "hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-28px_rgba(15,23,42,0.45)]"} ${
+        isAdmin ? "bg-[#fafaf8]" : "bg-white"
       }`}
       style={style}
     >
-      <h4 className="font-semibold">{task.title}</h4>
-      <p className="text-sm text-gray-600">{task.description}</p>
+      <h4 className="font-semibold text-slate-900">{task.title}</h4>
+      <p className="mt-1 text-sm leading-6 text-slate-600">{task.description}</p>
 
       {isAdmin && (
-        <div className="mt-2 text-xs text-gray-500 italic">
+        <div className="mt-3 text-xs italic text-slate-400">
           View only - Contact designers to modify
         </div>
       )}

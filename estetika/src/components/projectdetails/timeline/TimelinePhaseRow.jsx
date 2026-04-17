@@ -2,6 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
+const toValidDate = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
 const TimelinePhaseRow = ({
   phase,
   phaseTasks,
@@ -41,8 +47,22 @@ const TimelinePhaseRow = ({
     if (phase._id) fetchPhase();
   }, [phase._id]);
 
-  const phaseStartDate = phase.startDate ? new Date(phase.startDate) : null;
-  const phaseEndDate = phase.endDate ? new Date(phase.endDate) : null;
+  const taskDates = phaseTasks.flatMap((task) => [
+    toValidDate(task.startDate),
+    toValidDate(task.endDate),
+  ]).filter(Boolean);
+
+  const derivedTaskStartDate =
+    taskDates.length > 0
+      ? new Date(Math.min(...taskDates.map((date) => date.getTime())))
+      : null;
+  const derivedTaskEndDate =
+    taskDates.length > 0
+      ? new Date(Math.max(...taskDates.map((date) => date.getTime())))
+      : null;
+
+  const phaseStartDate = toValidDate(phase.startDate) || derivedTaskStartDate;
+  const phaseEndDate = toValidDate(phase.endDate) || derivedTaskEndDate;
   const phaseStartMonth = phaseStartDate
     ? phaseStartDate.getFullYear() * 12 +
       phaseStartDate.getMonth() -
@@ -69,17 +89,8 @@ const TimelinePhaseRow = ({
           type: "phase",
           name: phase.name || phase.title,
           label: phase.label,
-          start:
-            phaseTasks.length > 0
-              ? format(new Date(phaseTasks[0].startDate), "MMM yyyy")
-              : "",
-          end:
-            phaseTasks.length > 0
-              ? format(
-                  new Date(phaseTasks[phaseTasks.length - 1].endDate),
-                  "MMM yyyy"
-                )
-              : "",
+          start: phaseStartDate ? format(phaseStartDate, "MMM yyyy") : "",
+          end: phaseEndDate ? format(phaseEndDate, "MMM yyyy") : "",
         })
       }
       onMouseLeave={handleMouseLeave}
@@ -108,7 +119,12 @@ const TimelinePhaseRow = ({
           rounded = "rounded-r-full";
         }
 
-        if (i >= phaseStartMonth && i <= phaseEndMonth) {
+        if (
+          phaseStartMonth >= 0 &&
+          phaseEndMonth >= phaseStartMonth &&
+          i >= phaseStartMonth &&
+          i <= phaseEndMonth
+        ) {
           return (
             <div key={i} className="h-full flex items-center">
               <div

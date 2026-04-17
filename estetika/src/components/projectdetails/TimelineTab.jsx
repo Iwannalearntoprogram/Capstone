@@ -44,31 +44,80 @@ const eachMonthOfInterval = ({ start, end }) => {
 const phaseRowColor = "bg-blue-100";
 const taskRowColor = "bg-gray-50";
 
+const isValidDate = (value) => {
+  if (!value) return false;
+  const date = new Date(value);
+  return !Number.isNaN(date.getTime());
+};
+
 const TimelineTab = () => {
   const { project } = useOutletContext();
   const phases = Array.isArray(project?.timeline) ? project.timeline : [];
   const tasks = Array.isArray(project?.tasks) ? project.tasks : [];
 
-  let allTasks = [];
+  const getPhaseTasks = (phase) => {
+    const embeddedTasks = Array.isArray(phase.tasks) ? phase.tasks : [];
+
+    if (embeddedTasks.length > 0) {
+      return embeddedTasks;
+    }
+
+    if (!phase?._id || !Array.isArray(tasks)) {
+      return [];
+    }
+
+    return tasks.filter((task) => {
+      const phaseId =
+        typeof task.phaseId === "string" ? task.phaseId : task.phaseId?._id;
+      return phaseId === phase._id;
+    });
+  };
+
+  const allScheduledItems = [];
   phases.forEach((phase) => {
-    if (Array.isArray(phase.tasks)) {
-      allTasks = allTasks.concat(phase.tasks);
+    if (isValidDate(phase.startDate)) {
+      allScheduledItems.push(new Date(phase.startDate));
+    }
+    if (isValidDate(phase.endDate)) {
+      allScheduledItems.push(new Date(phase.endDate));
+    }
+
+    getPhaseTasks(phase).forEach((task) => {
+      if (isValidDate(task.startDate)) {
+        allScheduledItems.push(new Date(task.startDate));
+      }
+      if (isValidDate(task.endDate)) {
+        allScheduledItems.push(new Date(task.endDate));
+      }
+    });
+  });
+
+  tasks.forEach((task) => {
+    if (isValidDate(task.startDate)) {
+      allScheduledItems.push(new Date(task.startDate));
+    }
+    if (isValidDate(task.endDate)) {
+      allScheduledItems.push(new Date(task.endDate));
     }
   });
 
-  if (allTasks.length === 0 && tasks.length > 0) {
-    allTasks = tasks;
-  }
-
   let startDate = new Date();
   let endDate = new Date();
-  if (allTasks.length > 0) {
-    const allStartDates = allTasks.map((t) => new Date(t.startDate));
-    const allEndDates = allTasks.map((t) => new Date(t.endDate));
-    startDate = new Date(Math.min(...allStartDates.map((d) => d.getTime())));
-    endDate = new Date(Math.max(...allEndDates.map((d) => d.getTime())));
+  if (allScheduledItems.length > 0) {
+    startDate = new Date(
+      Math.min(...allScheduledItems.map((date) => date.getTime()))
+    );
+    endDate = new Date(
+      Math.max(...allScheduledItems.map((date) => date.getTime()))
+    );
   }
-  const monthsToShow = 12;
+  startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+  endDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+  const monthsDiff =
+    (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+    (endDate.getMonth() - startDate.getMonth()) +
+    1;
+  const monthsToShow = Math.max(12, monthsDiff);
   const months = eachMonthOfInterval({
     start: startDate,
     end: addMonths(startDate, monthsToShow - 1),
@@ -115,7 +164,7 @@ const TimelineTab = () => {
             ))}
           </div>
           {phases.map((phase, phaseIndex) => {
-            const phaseTasks = Array.isArray(phase.tasks) ? phase.tasks : [];
+            const phaseTasks = getPhaseTasks(phase);
             return (
               <React.Fragment key={phaseIndex}>
                 <TimelinePhaseRow

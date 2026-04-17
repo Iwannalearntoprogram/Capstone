@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/AuthStore";
+import { applyImageFallback } from "./utils/imageFallback";
 
 import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
@@ -43,6 +44,15 @@ import ProtectedRoute from "./components/ProtectedRoute";
 function App() {
   useEffect(() => {
     useAuthStore.getState().rehydrate();
+  }, []);
+
+  useEffect(() => {
+    const handleImageError = (event) => {
+      applyImageFallback(event.target);
+    };
+
+    document.addEventListener("error", handleImageError, true);
+    return () => document.removeEventListener("error", handleImageError, true);
   }, []);
 
   return (
@@ -129,6 +139,14 @@ function App() {
               </ProtectedRoute>
             }
           >
+            <Route
+              index
+              element={
+                <ProtectedRoute>
+                  <Navigate to="overview" replace />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="overview"
               element={

@@ -1,5 +1,15 @@
-import { FiEdit, FiX } from "react-icons/fi";
 import React from "react";
+import { FiX } from "react-icons/fi";
+
+const priorityOptions = ["Budget", "Style"];
+
+const fieldClassName =
+  "w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#1d3c34]/35 focus:bg-white focus:ring-4 focus:ring-[#1d3c34]/8";
+
+const labelClassName =
+  "mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-400";
+
+const helperClassName = "mt-2 text-sm text-rose-500";
 
 const EditProjectModal = ({
   isOpen,
@@ -12,143 +22,181 @@ const EditProjectModal = ({
   message = "",
 }) => {
   if (!isOpen) return null;
-  const priorityOptions = ["Budget", "Style"];
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-green-700 to-green-800 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-          <div className="flex items-center gap-3">
-            <div className="bg-white/20 rounded-full p-2">
-              <FiEdit className="text-white" size={20} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.42)] px-4 py-6 backdrop-blur-sm">
+      <div className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-[30px] border border-white/50 bg-[#fcfbf8] shadow-[0_40px_120px_-45px_rgba(15,23,42,0.55)]">
+        <div className="flex items-start justify-between gap-4 border-b border-black/5 px-6 py-5 sm:px-8 sm:py-6">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+              Project
+            </p>
+            <div>
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-slate-900">
+                Edit project details
+              </h2>
+              <p className="mt-1 text-sm leading-7 text-slate-500">
+                Update the project brief, budget, priority, and schedule.
+              </p>
             </div>
-            <h2 className="text-xl font-bold text-white">Edit Project Details</h2>
           </div>
+
           <button
+            type="button"
             onClick={onClose}
             disabled={isSaving}
-            className="text-white hover:bg-white/20 rounded-full p-2 transition-colors disabled:opacity-50"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Close edit project modal"
           >
-            <FiX size={20} />
+            <FiX size={18} />
           </button>
         </div>
 
-        {/* Content */}
-        <form onSubmit={onSubmit} className="p-6 flex flex-col gap-4">
-          {message && <p className="text-red-500 text-sm">{message}</p>}
-          <label>
-            <span className="block text-gray-700 font-medium mb-1">Title</span>
-            <input
-              type="text"
-              name="title"
-              value={editData.title}
-              onChange={onChange}
-              className="border rounded px-2 py-1 w-full"
-              required
-            />
-            {errors.title && (
-              <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-            )}
-          </label>
-          <label>
-            <span className="block text-gray-700 font-medium mb-1">Description</span>
-            <textarea
-              name="description"
-              value={editData.description}
-              onChange={onChange}
-              className="border rounded px-2 py-1 w-full"
-            />
-            {errors.description && (
-              <p className="text-red-500 text-sm mt-1">{errors.description}</p>
-            )}
-          </label>
-          <label>
-            <span className="block text-gray-700 font-medium mb-1">Budget</span>
-            <input
-              type="number"
-              name="budget"
-              value={editData.budget}
-              onChange={onChange}
-              className="border rounded px-2 py-1 w-full"
-            />
-            {errors.budget && (
-              <p className="text-red-500 text-sm mt-1">{errors.budget}</p>
-            )}
-          </label>
-          <label>
-            <span className="block text-gray-700 font-medium mb-1">Priority</span>
-            <select
-              name="priority"
-              value={editData.priority}
-              onChange={onChange}
-              className="border rounded px-2 py-1 w-full bg-white"
-              required
-            >
-              <option value="">Select priority</option>
-              {priorityOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-            {errors.priority && (
-              <p className="text-red-500 text-sm mt-1">{errors.priority}</p>
-            )}
-          </label>
-          <label>
-            <span className="block text-gray-700 font-medium mb-1">
-              Design Preference
-            </span>
-            <textarea
-              name="designPreference"
-              value={editData.designPreference}
-              onChange={onChange}
-              className="border rounded px-2 py-1 w-full"
-              rows={3}
-              placeholder="Modern, warm, minimalist, natural textures..."
-            />
-          </label>
-          <label>
-            <span className="block text-gray-700 font-medium mb-1">Start Date</span>
-            <input
-              type="date"
-              name="startDate"
-              value={editData.startDate}
-              onChange={onChange}
-              className="border rounded px-2 py-1 w-full"
-            />
-          </label>
-          <label>
-            <span className="block text-gray-700 font-medium mb-1">End Date</span>
-            <input
-              type="date"
-              name="endDate"
-              value={editData.endDate}
-              onChange={onChange}
-              className="border rounded px-2 py-1 w-full"
-            />
-            {errors.dates && (
-              <p className="text-red-500 text-sm mt-1">{errors.dates}</p>
-            )}
-          </label>
-          <div className="flex gap-3 mt-4">
+        <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-8 sm:py-8">
+            <div className="space-y-8 pb-2">
+            {message ? (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {message}
+              </div>
+            ) : null}
+
+            <section className="space-y-5">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Overview
+                </p>
+                <h3 className="text-lg font-semibold text-slate-900">Project brief</h3>
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <label className="md:col-span-2">
+                  <span className={labelClassName}>Title</span>
+                  <input
+                    type="text"
+                    name="title"
+                    value={editData.title}
+                    onChange={onChange}
+                    className={fieldClassName}
+                    required
+                  />
+                  {errors.title ? <p className={helperClassName}>{errors.title}</p> : null}
+                </label>
+
+                <label className="md:col-span-2">
+                  <span className={labelClassName}>Description</span>
+                  <textarea
+                    name="description"
+                    value={editData.description}
+                    onChange={onChange}
+                    className={`${fieldClassName} min-h-[120px] resize-none`}
+                  />
+                  {errors.description ? (
+                    <p className={helperClassName}>{errors.description}</p>
+                  ) : null}
+                </label>
+
+                <label>
+                  <span className={labelClassName}>Budget</span>
+                  <input
+                    type="number"
+                    name="budget"
+                    value={editData.budget}
+                    onChange={onChange}
+                    className={fieldClassName}
+                  />
+                  {errors.budget ? <p className={helperClassName}>{errors.budget}</p> : null}
+                </label>
+
+                <label>
+                  <span className={labelClassName}>Priority</span>
+                  <select
+                    name="priority"
+                    value={editData.priority}
+                    onChange={onChange}
+                    className={`${fieldClassName} appearance-auto`}
+                    required
+                  >
+                    <option value="">Select priority</option>
+                    {priorityOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.priority ? (
+                    <p className={helperClassName}>{errors.priority}</p>
+                  ) : null}
+                </label>
+
+                <label className="md:col-span-2">
+                  <span className={labelClassName}>Design preference</span>
+                  <textarea
+                    name="designPreference"
+                    value={editData.designPreference}
+                    onChange={onChange}
+                    className={`${fieldClassName} min-h-[112px] resize-none`}
+                    rows={3}
+                    placeholder="Modern, warm, minimalist, natural textures..."
+                  />
+                </label>
+              </div>
+            </section>
+
+            <section className="space-y-5">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Timeline
+                </p>
+                <h3 className="text-lg font-semibold text-slate-900">Schedule</h3>
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <label>
+                  <span className={labelClassName}>Start date</span>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={editData.startDate}
+                    onChange={onChange}
+                    className={fieldClassName}
+                  />
+                </label>
+
+                <label>
+                  <span className={labelClassName}>End date</span>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={editData.endDate}
+                    onChange={onChange}
+                    className={fieldClassName}
+                  />
+                </label>
+              </div>
+
+              {errors.dates ? <p className={helperClassName}>{errors.dates}</p> : null}
+            </section>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 flex-col-reverse gap-3 border-t border-black/5 bg-white/95 px-6 py-4 sm:flex-row sm:justify-end sm:px-8">
             <button
               type="button"
               onClick={onClose}
               disabled={isSaving}
-              className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50"
+              className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[140px]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-green-700 to-green-800 text-white rounded-lg hover:from-green-800 hover:to-green-900 transition-all font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#1d3c34] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#163029] disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[180px]"
             >
               {isSaving ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   Saving...
                 </>
               ) : (

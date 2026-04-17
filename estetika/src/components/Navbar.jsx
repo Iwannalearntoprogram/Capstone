@@ -5,7 +5,7 @@ import { FiMenu } from "react-icons/fi";
 import axios from "axios";
 import Cookies from "js-cookie";
 import logo from "../assets/images/logo-moss.png";
-import defaultProfile from "../assets/images/user.png";
+import ProfileImage from "./common/ProfileImage";
 import { useAuthStore } from "../store/AuthStore";
 
 const Navbar = ({ toggleSidebar }) => {
@@ -100,8 +100,8 @@ const Navbar = ({ toggleSidebar }) => {
               <div className="text-sm font-semibold">{username}</div>
               <div className="text-xs text-gray-300">{role}</div>
             </div>
-            <img
-              src={user?.profileImage || defaultProfile}
+            <ProfileImage
+              src={user?.profileImage}
               alt="Profile"
               className="h-8 w-8 rounded-full border-2 border-white bg-white"
             />

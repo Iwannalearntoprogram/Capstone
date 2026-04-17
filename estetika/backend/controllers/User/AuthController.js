@@ -8,6 +8,7 @@ const InvalidToken = require("../../models/utils/InvalidToken");
 const { OAuth2Client } = require("google-auth-library");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const normalizeEmail = (email = "") => email.trim().toLowerCase();
 
 // ✅ Register route
 const register = catchAsync(async (req, res, next) => {
@@ -100,8 +101,9 @@ const register = catchAsync(async (req, res, next) => {
 //send OTP
 const verifyEmail = catchAsync(async (req, res, next) => {
   const { email } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) return next(new AppError("User not found", 404));
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -113,15 +115,20 @@ const verifyEmail = catchAsync(async (req, res, next) => {
 
   console.log("Generated OTP:", otp);
 
-  await sendEmail(email, otp);
+  try {
+    await sendEmail(normalizedEmail, otp);
+  } catch (error) {
+    return next(new AppError("Failed to send OTP email. Please try again later.", 502));
+  }
   return res.status(200).send("OTP sent");
 });
 
 // verify otp
 const verifyOTP = catchAsync(async (req, res, next) => {
   const { email, otp } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) return next(new AppError("User not found", 404));
 
   const now = new Date();
@@ -142,8 +149,9 @@ const forgotPasswordInitiate = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password)
     return next(new AppError("Email and password required", 400));
+  const normalizedEmail = normalizeEmail(email);
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) return next(new AppError("User not found", 404));
 
   // Create pending password hash but do not apply yet
@@ -159,7 +167,11 @@ const forgotPasswordInitiate = catchAsync(async (req, res, next) => {
 
   // Send email with OTP
   // console.log("Password reset OTP:", otp);
-  await sendEmail(email, otp);
+  try {
+    await sendEmail(normalizedEmail, otp);
+  } catch (error) {
+    return next(new AppError("Failed to send OTP email. Please try again later.", 502));
+  }
 
   return res
     .status(200)
@@ -170,8 +182,9 @@ const forgotPasswordInitiate = catchAsync(async (req, res, next) => {
 const forgotPasswordConfirm = catchAsync(async (req, res, next) => {
   const { email, otp } = req.body;
   if (!email || !otp) return next(new AppError("Email and OTP required", 400));
+  const normalizedEmail = normalizeEmail(email);
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) return next(new AppError("User not found", 404));
 
   const now = new Date();
@@ -195,8 +208,9 @@ const forgotPasswordConfirm = catchAsync(async (req, res, next) => {
 const forgotPasswordResend = catchAsync(async (req, res, next) => {
   const { email } = req.body;
   if (!email) return next(new AppError("Email is required", 400));
+  const normalizedEmail = normalizeEmail(email);
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) return next(new AppError("User not found", 404));
 
   // Ensure there is a pending password change
@@ -215,16 +229,21 @@ const forgotPasswordResend = catchAsync(async (req, res, next) => {
   user.resetOtpExpiresAt = otpExpiry;
   await user.save();
 
-  await sendEmail(email, otp);
+  try {
+    await sendEmail(normalizedEmail, otp);
+  } catch (error) {
+    return next(new AppError("Failed to send OTP email. Please try again later.", 502));
+  }
 
   return res.status(200).json({ message: "OTP re-sent for password reset" });
 });
 // Login route
 const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
   // Find user by email
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) return next(new AppError("User not found", 404));
 
   // Check if password matches

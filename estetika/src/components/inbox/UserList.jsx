@@ -1,7 +1,7 @@
 import React from "react";
-import defaultProfile from "../../assets/images/user.png";
 import axios from "axios";
 import { FiBell, FiBellOff } from "react-icons/fi";
+import ProfileImage from "../common/ProfileImage";
 
 const Toast = ({ message, type, onClose }) => (
   <div
@@ -94,8 +94,8 @@ const UserList = ({ users, selectedUser, onSelect, userId, token }) => {
             }`}
             onClick={() => onSelect(user)}
           >
-            <img
-              src={user.profileImage || defaultProfile}
+            <ProfileImage
+              src={user.profileImage}
               alt={userName}
               className="w-10 h-10 rounded-full object-cover mr-3"
               style={isMuted ? { filter: "grayscale(1)" } : {}}
