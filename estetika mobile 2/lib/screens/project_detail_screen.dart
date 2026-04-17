@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
   final Map<String, dynamic> project;
@@ -36,6 +37,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   double _overallProgress = 0.0;
   List<Map<String, dynamic>> _timelinePhases = [];
   List<dynamic> _projectUpdates = [];
+  final NumberFormat _currencyFormat = NumberFormat('#,##0.##');
 
   @override
   void initState() {
@@ -159,6 +161,68 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     } catch (e) {
       return dateString; // Return the original string if parsing fails
     }
+  }
+
+  String _formatAmount(dynamic value) {
+    final numericValue = value is num
+        ? value.toDouble()
+        : double.tryParse(value?.toString() ?? '');
+    if (numericValue == null) {
+      return value?.toString() ?? 'N/A';
+    }
+    return _currencyFormat.format(numericValue);
+  }
+
+  TextStyle _pesoTextStyle({
+    double fontSize = 16,
+    FontWeight fontWeight = FontWeight.w500,
+    Color color = Colors.black,
+  }) {
+    return TextStyle(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      fontFamilyFallback: const ['Roboto', 'Arial', 'sans-serif'],
+    );
+  }
+
+  Widget _buildPesoValue(dynamic value) {
+    return RichText(
+      text: TextSpan(
+        style: _pesoTextStyle(),
+        children: [
+          const TextSpan(text: '\u20B1'),
+          TextSpan(text: _formatAmount(value)),
+        ],
+      ),
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _buildPesoRangeValue(
+    dynamic min,
+    dynamic max, {
+    String prefix = '',
+    double fontSize = 14,
+    FontWeight fontWeight = FontWeight.w400,
+    Color color = Colors.grey,
+  }) {
+    return RichText(
+      text: TextSpan(
+        style: _pesoTextStyle(
+          fontSize: fontSize,
+          fontWeight: fontWeight,
+          color: color,
+        ),
+        children: [
+          if (prefix.isNotEmpty) TextSpan(text: prefix),
+          TextSpan(text: '\u20B1${_formatAmount(min)}'),
+          const TextSpan(text: ' - '),
+          TextSpan(text: '\u20B1${_formatAmount(max)}'),
+        ],
+      ),
+      overflow: TextOverflow.ellipsis,
+    );
   }
 
   @override
@@ -290,7 +354,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             _buildDetailRow('Room Type', _projectData['roomType']),
             _buildDetailRow('Project Type', _projectData['projectType']),
             _buildDetailRow('Priority', _projectData['priority']),
-            _buildDetailRow('Budget', '₱${_projectData['budget'] ?? 'N/A'}'),
+            _buildDetailRow('Budget', _buildPesoValue(_projectData['budget'])),
             _buildDetailRow(
                 'Start Date', _formatDate(_projectData['startDate'])),
             _buildDetailRow('End Date', _formatDate(_projectData['endDate'])),
@@ -670,13 +734,15 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             ),
           ),
           Expanded(
-            child: Text(
-              value?.toString() ?? 'N/A', // <-- Fix here
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            child: value is Widget
+                ? value
+                : Text(
+                    value?.toString() ?? 'N/A',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
           ),
         ],
       ),
@@ -1077,9 +1143,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ),
               const SizedBox(height: 8),
               if (recommendation['budgetRange'] != null)
-                Text(
-                  'Budget Range: ₱${recommendation['budgetRange']['min']} - ₱${recommendation['budgetRange']['max']}',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                _buildPesoRangeValue(
+                  recommendation['budgetRange']['min'],
+                  recommendation['budgetRange']['max'],
+                  prefix: 'Budget Range: ',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.grey,
                 ),
               if (recommendation['type'] != null)
                 Text(
@@ -1213,7 +1283,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '+₱${option['addToPrice']?.toStringAsFixed(2) ?? '0.00'}',
+                                        '+\u20B1${option['addToPrice']?.toStringAsFixed(2) ?? '0.00'}',
                                         style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.green,
@@ -1255,7 +1325,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                               ],
                             ),
                             Text(
-                              '₱${totalPrice.toStringAsFixed(2)}',
+                              '\u20B1${totalPrice.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -1290,7 +1360,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       ),
                     ),
                     Text(
-                      '₱${_calculateTotalMaterialsCost(materials).toStringAsFixed(2)}',
+                      '\u20B1${_calculateTotalMaterialsCost(materials).toStringAsFixed(2)}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
