@@ -24,6 +24,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   int _selectedButtonIndex = 1; // 1 for Projects selected
 
   List<Map<String, dynamic>> _projects = [];
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -32,10 +33,24 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   }
 
   Future<void> _fetchProjects() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final userString = prefs.getString('user');
-      if (userString == null) return;
+      if (userString == null) {
+        if (mounted) {
+          setState(() {
+            _projects = [];
+            _isLoading = false;
+          });
+        }
+        return;
+      }
       final user = jsonDecode(userString);
       final userId = user['id'] ?? user['_id'];
       print('User ID: $userId');
@@ -53,13 +68,17 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         final decoded = jsonDecode(response.body);
         print('Projects fetched: ${decoded['project']}');
         final List<dynamic> data = decoded['project'] ?? [];
-        setState(() {
-          _projects = data.cast<Map<String, dynamic>>();
-        });
+        if (mounted) {
+          setState(() {
+            _projects = data.cast<Map<String, dynamic>>();
+          });
+        }
       } else if (response.statusCode == 404) {
-        setState(() {
-          _projects = [];
-        });
+        if (mounted) {
+          setState(() {
+            _projects = [];
+          });
+        }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -78,6 +97,12 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
             backgroundColor: Colors.red,
           ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -111,32 +136,57 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
           // Projects list
           Expanded(
-            child: _projects.isEmpty
-                ? const Center(
-                    child: Text(
-                      'No projects',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    itemCount: _projects.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ProjectDetailScreen(
-                                project: _projects[index],
+            child: RefreshIndicator(
+              onRefresh: _fetchProjects,
+              child: _isLoading && _projects.isEmpty
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(height: 180),
+                        Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF203B32),
+                          ),
+                        ),
+                      ],
+                    )
+                  : _projects.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: const [
+                            SizedBox(height: 180),
+                            Center(
+                              child: Text(
+                                'No projects',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ),
-                          );
-                        },
-                        child: _buildProjectCard(_projects[index]),
-                      );
-                    },
-                  ),
+                          ],
+                        )
+                      : ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          itemCount: _projects.length,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProjectDetailScreen(
+                                      project: _projects[index],
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: _buildProjectCard(_projects[index]),
+                            );
+                          },
+                        ),
+            ),
           ),
 
           // Send Project Proposal button
@@ -146,12 +196,15 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               width: double.infinity,
               height: 60.0,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => const SendProjectScreen()),
                   );
+                  if (result == true) {
+                    await _fetchProjects();
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF203B32),

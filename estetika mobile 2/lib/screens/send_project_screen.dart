@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 import 'package:estetika_ui/utils/toast.dart';
+import 'package:intl/intl.dart';
 
 class SendProjectScreen extends StatefulWidget {
   const SendProjectScreen({super.key});
@@ -77,6 +78,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   int? _selectedRecommendationIndex; // user choice among top 3
   bool _isRecommendationLoading = false;
   bool _hasViewedRecommendation = false;
+  final NumberFormat _currencyFormat = NumberFormat('#,##0');
 
   @override
   void initState() {
@@ -300,6 +302,144 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     }
   }
 
+  String _formatPeso(dynamic value) {
+    final numericValue = value is num
+        ? value.toDouble()
+        : double.tryParse(value?.toString() ?? '');
+    if (numericValue == null) {
+      return '\u20B10';
+    }
+    return '\u20B1${_currencyFormat.format(numericValue)}';
+  }
+
+  String _formatAmount(dynamic value) {
+    final numericValue = value is num
+        ? value.toDouble()
+        : double.tryParse(value?.toString() ?? '');
+    if (numericValue == null) {
+      return '0';
+    }
+    return _currencyFormat.format(numericValue);
+  }
+
+  TextStyle _pesoTextStyle({
+    double fontSize = 12,
+    FontWeight fontWeight = FontWeight.w600,
+    Color color = const Color(0xFF203B32),
+  }) {
+    return TextStyle(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      fontFamilyFallback: const ['Roboto', 'Arial', 'sans-serif'],
+    );
+  }
+
+  Widget _buildBudgetRangeText(
+    dynamic min,
+    dynamic max, {
+    Color color = const Color(0xFF203B32),
+    double fontSize = 12,
+    FontWeight fontWeight = FontWeight.w600,
+  }) {
+    return RichText(
+      text: TextSpan(
+        style: _pesoTextStyle(
+          fontSize: fontSize,
+          fontWeight: fontWeight,
+          color: color,
+        ),
+        children: [
+          TextSpan(text: '\u20B1${_formatAmount(min)}'),
+          const TextSpan(text: ' - '),
+          TextSpan(text: '\u20B1${_formatAmount(max)}'),
+        ],
+      ),
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _buildBudgetMetaPill(Map budgetRange) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F1EB),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFD9D5CB)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.payments_outlined,
+            size: 14,
+            color: Color(0xFF203B32),
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: _buildBudgetRangeText(
+              budgetRange['min'],
+              budgetRange['max'],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecommendationMetaPill({
+    required IconData icon,
+    required String label,
+    Color backgroundColor = const Color(0xFFF3F1EB),
+    Color textColor = const Color(0xFF203B32),
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFD9D5CB)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: textColor),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: textColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecommendationTag(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFD8D8D8)),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          color: Color(0xFF4B4B4B),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
   Widget _buildRecommendationSection() {
     final bool canViewRecommendation = _areAllRequiredFieldsFilled();
 
@@ -396,6 +536,11 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                                         [];
                                 final budgetRange = rec['budgetRange'] as Map?;
                                 final matchScore = rec['matchScore'];
+                                final isSelected =
+                                    _selectedRecommendationIndex == index;
+                                final budgetLabel = budgetRange != null
+                                    ? '${_formatPeso(budgetRange['min'])} - ${_formatPeso(budgetRange['max'])}'
+                                    : null;
 
                                 return InkWell(
                                   onTap: () => setState(() {
@@ -403,167 +548,173 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                                   }),
                                   child: Container(
                                     decoration: BoxDecoration(
+                                      color: Colors.white,
                                       border: Border.all(
-                                        color: _selectedRecommendationIndex ==
-                                                index
+                                        color: isSelected
                                             ? const Color(0xFF203B32)
-                                            : Colors.grey.shade300,
+                                            : const Color(0xFFE2DED6),
+                                        width: isSelected ? 1.6 : 1,
                                       ),
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(18),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.04),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ],
                                     ),
-                                    child: Row(
+                                    child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        // Image
-                                        ClipRRect(
-                                          borderRadius: const BorderRadius.only(
-                                              topLeft: Radius.circular(10),
-                                              bottomLeft: Radius.circular(10)),
-                                          child: imageLink != null
-                                              ? Image.network(
-                                                  getDirectImageLink(imageLink),
-                                                  width: 110,
-                                                  height: 110,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error,
-                                                          stackTrace) =>
-                                                      Container(
-                                                    width: 110,
-                                                    height: 110,
-                                                    color: Colors.grey.shade200,
-                                                    child: const Icon(
-                                                        Icons.broken_image,
-                                                        color: Colors.grey),
-                                                  ),
-                                                )
-                                              : Container(
-                                                  width: 110,
-                                                  height: 110,
-                                                  color: Colors.grey.shade200,
-                                                  child: const Icon(Icons.image,
-                                                      color: Colors.grey),
-                                                ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        // Details
-                                        Expanded(
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 10, horizontal: 4),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Expanded(
-                                                      child: Text(
-                                                        title,
-                                                        style: const TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color:
-                                                              Color(0xFF203B32),
+                                        Stack(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  const BorderRadius.only(
+                                                topLeft: Radius.circular(17),
+                                                topRight: Radius.circular(17),
+                                              ),
+                                              child: imageLink != null
+                                                  ? Image.network(
+                                                      getDirectImageLink(
+                                                          imageLink),
+                                                      width: double.infinity,
+                                                      height: 170,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (context,
+                                                              error,
+                                                              stackTrace) =>
+                                                          Container(
+                                                        width: double.infinity,
+                                                        height: 170,
+                                                        color: Colors
+                                                            .grey.shade200,
+                                                        child: const Icon(
+                                                          Icons.broken_image,
+                                                          color: Colors.grey,
+                                                          size: 28,
                                                         ),
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
+                                                      ),
+                                                    )
+                                                  : Container(
+                                                      width: double.infinity,
+                                                      height: 170,
+                                                      color:
+                                                          Colors.grey.shade200,
+                                                      child: const Icon(
+                                                        Icons.image,
+                                                        color: Colors.grey,
+                                                        size: 28,
                                                       ),
                                                     ),
-                                                    Radio<int>(
-                                                      value: index,
-                                                      groupValue:
-                                                          _selectedRecommendationIndex,
-                                                      onChanged: (val) =>
-                                                          setState(() {
-                                                        _selectedRecommendationIndex =
-                                                            val;
-                                                      }),
-                                                      activeColor: const Color(
-                                                          0xFF203B32),
-                                                    ),
-                                                  ],
-                                                ),
-                                                if (spec.isNotEmpty) ...[
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    spec,
-                                                    style: const TextStyle(
-                                                        fontSize: 13),
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
+                                            ),
+                                            Positioned(
+                                              top: 12,
+                                              right: 12,
+                                              child: Container(
+                                                width: 32,
+                                                height: 32,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: isSelected
+                                                        ? const Color(
+                                                            0xFF203B32)
+                                                        : const Color(
+                                                            0xFF8F8F8F),
+                                                    width: 2,
                                                   ),
+                                                  color: isSelected
+                                                      ? const Color(0xFF203B32)
+                                                      : Colors.white,
+                                                ),
+                                                child: isSelected
+                                                    ? const Icon(
+                                                        Icons.check,
+                                                        size: 18,
+                                                        color: Colors.white,
+                                                      )
+                                                    : null,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              16, 16, 16, 16),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                title,
+                                                style: const TextStyle(
+                                                  fontSize: 20,
+                                                  height: 1.15,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF203B32),
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              if (spec.isNotEmpty) ...[
+                                                const SizedBox(height: 10),
+                                                Text(
+                                                  spec,
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    height: 1.5,
+                                                    color: Colors.grey.shade800,
+                                                  ),
+                                                  maxLines: 3,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                              const SizedBox(height: 14),
+                                              Wrap(
+                                                spacing: 10,
+                                                runSpacing: 10,
+                                                children: [
+                                                  if (budgetLabel != null)
+                                                    _buildBudgetMetaPill(
+                                                      budgetRange!,
+                                                    ),
+                                                  if (type.isNotEmpty)
+                                                    _buildRecommendationMetaPill(
+                                                      icon: Icons
+                                                          .home_work_outlined,
+                                                      label: type,
+                                                    ),
+                                                  if (matchScore != null)
+                                                    _buildRecommendationMetaPill(
+                                                      icon: Icons.auto_awesome,
+                                                      label:
+                                                          'Match ${(matchScore * 100).toStringAsFixed(0)}%',
+                                                      backgroundColor:
+                                                          const Color(
+                                                              0xFFE8F5E9),
+                                                      textColor: const Color(
+                                                          0xFF1B5E20),
+                                                    ),
                                                 ],
-                                                const SizedBox(height: 6),
+                                              ),
+                                              if (tags.isNotEmpty) ...[
+                                                const SizedBox(height: 14),
                                                 Wrap(
                                                   spacing: 8,
-                                                  runSpacing: 4,
-                                                  children: [
-                                                    if (budgetRange != null)
-                                                      Chip(
-                                                        label: Text(
-                                                            '₱${budgetRange['min']} - ₱${budgetRange['max']}'),
-                                                        backgroundColor: Colors
-                                                            .grey.shade100,
-                                                        labelStyle:
-                                                            const TextStyle(
-                                                                fontSize: 12),
-                                                      ),
-                                                    if (type.isNotEmpty)
-                                                      Chip(
-                                                        label: Text(type),
-                                                        backgroundColor: Colors
-                                                            .grey.shade100,
-                                                        labelStyle:
-                                                            const TextStyle(
-                                                                fontSize: 12),
-                                                      ),
-                                                    if (matchScore != null)
-                                                      Chip(
-                                                        label: Text(
-                                                            'Match ${(matchScore * 100).toStringAsFixed(0)}%'),
-                                                        backgroundColor:
-                                                            const Color(
-                                                                0xFFE8F5E9),
-                                                        labelStyle:
-                                                            const TextStyle(
-                                                                fontSize: 12,
-                                                                color: Color(
-                                                                    0xFF1B5E20)),
-                                                      ),
-                                                  ],
+                                                  runSpacing: 8,
+                                                  children: tags
+                                                      .take(6)
+                                                      .map((t) =>
+                                                          _buildRecommendationTag(
+                                                              t.toString()))
+                                                      .toList(),
                                                 ),
-                                                if (tags.isNotEmpty)
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 4.0),
-                                                    child: Wrap(
-                                                      spacing: 6,
-                                                      runSpacing: -6,
-                                                      children: tags
-                                                          .take(6)
-                                                          .map((t) => Chip(
-                                                                label: Text(t
-                                                                    .toString()),
-                                                                backgroundColor:
-                                                                    Colors.grey
-                                                                        .shade100,
-                                                                labelStyle:
-                                                                    const TextStyle(
-                                                                        fontSize:
-                                                                            11),
-                                                              ))
-                                                          .toList(),
-                                                    ),
-                                                  ),
                                               ],
-                                            ),
+                                            ],
                                           ),
                                         ),
                                       ],
@@ -940,7 +1091,23 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      prefixText: '₱ ',
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 12, right: 8),
+                        child: Center(
+                          widthFactor: 1,
+                          child: Text(
+                            '\u20B1',
+                            style: _pesoTextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      prefixIconConstraints: const BoxConstraints(
+                        minWidth: 0,
+                        minHeight: 0,
+                      ),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -1398,40 +1565,10 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       });
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        // Success dialog
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              title: Row(
-                children: [
-                  const Icon(Icons.check_circle,
-                      color: Color(0xFF203B32), size: 24),
-                  const SizedBox(width: 8),
-                  const Text('Submission Successful'),
-                ],
-              ),
-              content: const Text(
-                'Your project has been submitted to Moss Design House for review. Our team will contact you shortly.',
-                style: TextStyle(fontSize: 16),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.pop(context);
-                  },
-                  child: const Text('OK',
-                      style: TextStyle(color: Color(0xFF203B32))),
-                ),
-              ],
-            );
-          },
-        );
+        await showToast('Project submitted successfully.');
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
       } else {
         String msg;
         try {
