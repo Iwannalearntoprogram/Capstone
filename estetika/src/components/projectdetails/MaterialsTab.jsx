@@ -269,7 +269,7 @@ export default function MaterialsTab() {
         return axios
           .get(`${serverUrl}/api/material/match`, {
             headers,
-            params: { query: q },
+            params: { query: q, projectId: project._id },
           })
           .then((res) => ({ need, data: res.data }))
           .catch(() => ({ need, data: null }));

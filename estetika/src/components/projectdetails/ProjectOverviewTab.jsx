@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import ProfileImage from "../common/ProfileImage";
 
@@ -159,6 +160,33 @@ function TeamMemberCard({ designer }) {
 
 export default function ProjectOverviewTab() {
   const { project } = useOutletContext();
+  const [materialsPage, setMaterialsPage] = useState(1);
+
+  const designers = Array.isArray(project?.members)
+    ? project.members.filter((member) => member.role === "designer")
+    : [];
+  const recommendedMaterials = Array.isArray(project?.recommendedMaterials)
+    ? project.recommendedMaterials
+    : [];
+  const materialsPerPage = 4;
+  const totalMaterialPages = Math.max(
+    1,
+    Math.ceil(recommendedMaterials.length / materialsPerPage),
+  );
+  const paginatedMaterials = recommendedMaterials.slice(
+    (materialsPage - 1) * materialsPerPage,
+    materialsPage * materialsPerPage,
+  );
+
+  useEffect(() => {
+    setMaterialsPage(1);
+  }, [project?._id, recommendedMaterials.length]);
+
+  useEffect(() => {
+    if (materialsPage > totalMaterialPages) {
+      setMaterialsPage(totalMaterialPages);
+    }
+  }, [materialsPage, totalMaterialPages]);
 
   if (!project) {
     return (
@@ -177,13 +205,6 @@ export default function ProjectOverviewTab() {
       </div>
     );
   }
-
-  const designers = Array.isArray(project.members)
-    ? project.members.filter((member) => member.role === "designer")
-    : [];
-  const recommendedMaterials = Array.isArray(project.recommendedMaterials)
-    ? project.recommendedMaterials
-    : [];
 
   const projectDetails = [
     { label: "Budget", value: formatCurrency(project.budget) },
@@ -380,13 +401,13 @@ export default function ProjectOverviewTab() {
       >
         {recommendedMaterials.length > 0 ? (
           <div className="flex flex-col gap-4">
-            {recommendedMaterials.map((rec, index) => {
+            {paginatedMaterials.map((rec, index) => {
               const recommendedMaterial = rec.material;
               const recommendationScore = rec.score;
 
               return (
                 <div 
-                  key={index} 
+                  key={`${recommendedMaterial?._id || recommendedMaterial?.name || "material"}-${index}`} 
                   className="group flex flex-col md:flex-row gap-5 rounded-[20px] border border-slate-200/60 bg-white p-4 transition-all hover:shadow-md hover:border-slate-300"
                 >
                   {/* Image Column */}
@@ -424,29 +445,53 @@ export default function ProjectOverviewTab() {
                       </p>
                     </div>
 
-                    {/* Scores row */}
-                    <div className="mt-4 flex flex-wrap gap-4 text-xs font-medium text-slate-500">
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300"></span>
-                        Style: <span className="text-slate-900">{formatPercent(recommendationScore?.keywordFit)}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300"></span>
-                        Budget: <span className="text-slate-900">{formatPercent(recommendationScore?.budgetFit)}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300"></span>
-                        Room: <span className="text-slate-900">{formatPercent(recommendationScore?.roomFit)}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 ml-auto">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                        <span className="font-semibold text-emerald-800">Match: {formatPercent(recommendationScore?.total)}</span>
-                      </div>
-                    </div>
                   </div>
                 </div>
               );
             })}
+
+            {totalMaterialPages > 1 ? (
+              <div className="flex flex-col gap-3 rounded-[20px] border border-slate-200/70 bg-slate-50/70 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm font-medium text-slate-600">
+                  Showing {(materialsPage - 1) * materialsPerPage + 1}-
+                  {Math.min(
+                    materialsPage * materialsPerPage,
+                    recommendedMaterials.length,
+                  )}{" "}
+                  of {recommendedMaterials.length} materials
+                </p>
+
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setMaterialsPage((currentPage) =>
+                        Math.max(1, currentPage - 1),
+                      )
+                    }
+                    disabled={materialsPage === 1}
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="min-w-[88px] text-center text-sm font-semibold text-slate-700">
+                    Page {materialsPage} of {totalMaterialPages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setMaterialsPage((currentPage) =>
+                        Math.min(totalMaterialPages, currentPage + 1),
+                      )
+                    }
+                    disabled={materialsPage === totalMaterialPages}
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : (
           <div className="rounded-[22px] border border-dashed border-slate-300 bg-slate-50/80 px-5 py-10 text-center">

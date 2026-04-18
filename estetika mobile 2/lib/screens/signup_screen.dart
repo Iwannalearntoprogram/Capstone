@@ -1,3 +1,4 @@
+import 'package:estetika_ui/config/api_config.dart';
 import 'package:estetika_ui/screens/signin_screen.dart';
 import 'package:estetika_ui/screens/welcome_screen.dart';
 import 'package:estetika_ui/widgets/custom_scaffold.dart';
@@ -79,7 +80,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _registerUser() async {
-    final url = Uri.parse('https://moss-manila.onrender.com/api/auth/register');
+    final url = Uri.parse('${ApiConfig.authBaseUrl}/register');
     // Normalize phone to E.164 using +63 prefix (Philippines)
     final String localDigits =
         _phoneController.text.replaceAll(RegExp(r'\D'), '');
@@ -95,6 +96,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     };
 
     try {
+      AppLogger.info('Registering via ${ApiConfig.authBaseUrl}');
       final response = await http
           .post(
             url,
@@ -113,12 +115,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
 
       if (response.statusCode == 201) {
-        await showToast('Registration successful! Please sign in.',
-            success: true);
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const SigninScreen()),
+          MaterialPageRoute(
+            builder: (context) => SigninScreen(
+              initialEmail: _emailController.text.trim(),
+              successMessage:
+                  'Registration successful. Sign in with your new account.',
+            ),
+          ),
         );
       } else {
         AppLogger.error('Registration failed', error: response.statusCode);

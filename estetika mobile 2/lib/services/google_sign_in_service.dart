@@ -1,3 +1,4 @@
+import 'package:estetika_ui/config/api_config.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -5,8 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:estetika_ui/utils/logger.dart';
 
 class GoogleSignInService {
-  static const String _baseUrl =
-      'https://moss-manila.onrender.com/api/auth'; // Android emulator localhost
+  static String get _baseUrl => ApiConfig.authBaseUrl;
 
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: [

@@ -1,9 +1,51 @@
 const Material = require("../../models/Project/Material");
+const Project = require("../../models/Project/Project");
 const User = require("../../models/User/User");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
 const { generateEmbedding } = require("../../utils/embed");
 const { openai } = require("../../utils/openaiClient");
+const {
+  rankMaterialsForProjectContext,
+} = require("../../utils/materialRecommendation");
+
+const getProjectSearchContext = (project) => {
+  if (!project || typeof project !== "object") return "";
+
+  const designRecommendation =
+    project.designRecommendation &&
+    typeof project.designRecommendation === "object" &&
+    !Array.isArray(project.designRecommendation)
+      ? project.designRecommendation
+      : null;
+
+  return [
+    project.roomType ? `Room type: ${project.roomType}` : "",
+    project.projectType ? `Project type: ${project.projectType}` : "",
+    project.priority ? `Priority: ${project.priority}` : "",
+    project.designPreference
+      ? `Project preference: ${project.designPreference}`
+      : "",
+    project.description ? `Project brief: ${project.description}` : "",
+    designRecommendation?.title
+      ? `Design recommendation: ${designRecommendation.title}`
+      : "",
+    designRecommendation?.specification
+      ? `Design recommendation details: ${designRecommendation.specification}`
+      : "",
+    Array.isArray(designRecommendation?.designPreferences) &&
+    designRecommendation.designPreferences.length > 0
+      ? `Design recommendation preferences: ${designRecommendation.designPreferences.join(
+          ", "
+        )}`
+      : "",
+    Array.isArray(designRecommendation?.tags) && designRecommendation.tags.length > 0
+      ? `Design recommendation tags: ${designRecommendation.tags.join(", ")}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+};
 
 // Get Material by Id or DesignerId
 const material_get = catchAsync(async (req, res, next) => {
@@ -320,9 +362,19 @@ const vector_search = catchAsync(async (req, res) => {
 });
 
 const material_search = catchAsync(async (req, res) => {
-  const { query } = req.query;
+  const { query, projectId } = req.query;
 
   if (!query) return res.status(400).json({ error: "Query is required." });
+
+  const project = projectId
+    ? await Project.findById(projectId).populate("designRecommendation").lean()
+    : null;
+
+  if (projectId && !project) {
+    return res.status(404).json({ error: "Project not found." });
+  }
+
+  const projectContext = getProjectSearchContext(project);
   const getMinPrice = (item) => {
     if (typeof item.price === "number") {
       // Base price
@@ -344,8 +396,14 @@ const material_search = catchAsync(async (req, res) => {
   const percentDiff = (a, b) =>
     b === 0 ? null : Math.round(((a - b) / b) * 100);
 
+  const isSameMaterial = (left, right) =>
+    String(left?._id || "") === String(right?._id || "");
+
   const searchSingleItem = async (itemQuery) => {
-    const vector = await generateEmbedding(itemQuery);
+    const searchPrompt = projectContext
+      ? `${itemQuery}\n${projectContext}`
+      : itemQuery;
+    const vector = await generateEmbedding(searchPrompt);
 
     const results = await Material.aggregate([
       {
@@ -371,11 +429,15 @@ const material_search = catchAsync(async (req, res) => {
         {
           role: "system",
           content:
-            "You are an AI assistant that filters search results. Only keep items clearly relevant to the query. Remove anything unrelated or weakly related.",
+            "You are an AI assistant that filters search results. Keep items only if they match the requested material and, when project context is provided, the project design direction as well. Return only JSON.",
         },
         {
           role: "user",
-          content: `Query: "${itemQuery}"\n\nResults:\n${JSON.stringify(
+          content: `${
+            projectContext
+              ? `Project context:\n${projectContext}\n\n`
+              : ""
+          }Requested material: "${itemQuery}"\n\nResults:\n${JSON.stringify(
             sanitized,
             null,
             2
@@ -391,19 +453,27 @@ const material_search = catchAsync(async (req, res) => {
       return null;
     }
 
-    const sortedByPrice = [...filteredResults].sort(
+    const rankedResults = project
+      ? rankMaterialsForProjectContext(project, filteredResults, {
+          extraSources: [itemQuery],
+        }).map((entry) => entry.material)
+      : filteredResults;
+
+    const sortedByPrice = [...rankedResults].sort(
       (a, b) => getMinPrice(a) - getMinPrice(b)
     );
 
-    const bestMatch = filteredResults[0];
+    const bestMatch = rankedResults[0];
     const bestMatchPrice = getMinPrice(bestMatch);
 
     let cheaper = sortedByPrice.find(
-      (item) => getMinPrice(item) < bestMatchPrice && item !== bestMatch
+      (item) => getMinPrice(item) < bestMatchPrice && !isSameMaterial(item, bestMatch)
     );
     let moreExpensive = [...sortedByPrice]
       .reverse()
-      .find((item) => getMinPrice(item) > bestMatchPrice && item !== bestMatch);
+      .find(
+        (item) => getMinPrice(item) > bestMatchPrice && !isSameMaterial(item, bestMatch)
+      );
     let optionsComparison = null;
     if (
       !cheaper &&

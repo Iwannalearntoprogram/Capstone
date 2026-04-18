@@ -199,6 +199,12 @@ const ProjectDetailsModal = ({ project, onClose }) => {
   const formattedEndDate = formatProjectDate(project.endDate);
   const formattedBudget = formatBudget(project.budget);
   const clientName = getClientName();
+  const designRecommendation =
+    project?.designRecommendation &&
+    typeof project.designRecommendation === "object" &&
+    !Array.isArray(project.designRecommendation)
+      ? project.designRecommendation
+      : null;
   const isActiveProject = status !== "pending" && status !== "cancelled";
   const currentDesigners =
     Array.isArray(project.members) && project.members.length > 0
@@ -266,6 +272,14 @@ const ProjectDetailsModal = ({ project, onClose }) => {
     actionMessageType === "error"
       ? "text-rose-700 bg-rose-50 border-rose-200"
       : "text-emerald-700 bg-emerald-50 border-emerald-200";
+
+  const formatTagLabel = (value) =>
+    typeof value === "string" && value.trim()
+      ? value
+          .trim()
+          .replace(/[-_]+/g, " ")
+          .replace(/\b\w/g, (letter) => letter.toUpperCase())
+      : "";
 
   const CloseButton = ({ className = "" }) => (
     <button
@@ -526,8 +540,6 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                 })}
               </div>
             </SectionCard>
-
-
           </div>
 
           <div className="space-y-4">
@@ -579,6 +591,73 @@ const ProjectDetailsModal = ({ project, onClose }) => {
             </SectionCard>
           </div>
         </div>
+
+        {designRecommendation ? (
+          <div className="mt-4">
+            <SectionCard title="Design Recommendation">
+              <div
+                className={`grid gap-4 ${
+                  designRecommendation.imageLink
+                    ? "lg:grid-cols-[240px_minmax(0,1fr)]"
+                    : ""
+                }`}
+              >
+                {designRecommendation.imageLink ? (
+                  <div className="overflow-hidden rounded-[12px] border border-slate-200 bg-slate-100">
+                    <img
+                      src={designRecommendation.imageLink}
+                      alt={
+                        designRecommendation.title || "Design recommendation"
+                      }
+                      className="h-40 w-full object-cover"
+                    />
+                  </div>
+                ) : null}
+
+                <div className="min-w-0 space-y-3">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h4 className="text-lg font-semibold text-slate-900">
+                        {designRecommendation.title || "Recommended design"}
+                      </h4>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {designRecommendation.specification?.trim()
+                          ? designRecommendation.specification
+                          : "No design specification has been provided yet."}
+                      </p>
+                    </div>
+                    {designRecommendation.type ? (
+                      <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                        {designRecommendation.type}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  {Array.isArray(designRecommendation.designPreferences) &&
+                  designRecommendation.designPreferences.length > 0 ? (
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
+                        Preferences
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {designRecommendation.designPreferences.map(
+                          (preference, index) => (
+                            <span
+                              key={`${preference}-${index}`}
+                              className="rounded-full bg-[#1D3C34]/10 px-3 py-1 text-xs font-medium text-[#1D3C34]"
+                            >
+                              {formatTagLabel(preference)}
+                            </span>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </SectionCard>
+          </div>
+        ) : null}
       </div>
 
       <div className="shrink-0 flex flex-col gap-4 border-t border-slate-200/80 bg-white px-5 py-4 sm:px-6 sm:py-5 md:px-7">

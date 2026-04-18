@@ -144,6 +144,99 @@ const ROOM_BUDGET_FACTORS = {
   "Commercial Space": 0.14,
 };
 
+const ROOM_CONTEXT_ALIASES = {
+  kitchen: ["kitchen"],
+  bathroom: ["bathroom", "powder", "washroom", "vanity"],
+  bedroom: ["bedroom"],
+  living: ["living", "lounge"],
+  dining: ["dining"],
+  office: ["office", "workspace", "study"],
+  commercial: ["commercial", "retail", "store", "shop"],
+};
+
+const STRICT_ROOM_CONTEXT_RULES = {
+  kitchen: [
+    "kitchen",
+    "cabinet",
+    "countertop",
+    "backsplash",
+    "island",
+    "pendant",
+    "barstool",
+    "stool",
+    "sink",
+    "faucet",
+    "tile",
+    "pantry",
+    "dining",
+  ],
+  bathroom: [
+    "bathroom",
+    "vanity",
+    "mirror",
+    "shower",
+    "bathtub",
+    "toilet",
+    "faucet",
+    "sink",
+    "tile",
+    "soap",
+  ],
+  bedroom: [
+    "bedroom",
+    "bed",
+    "headboard",
+    "mattress",
+    "nightstand",
+    "dresser",
+    "wardrobe",
+    "closet",
+    "bedding",
+  ],
+  living: [
+    "living",
+    "sofa",
+    "sectional",
+    "armchair",
+    "coffee",
+    "console",
+    "tv",
+    "media",
+    "accent",
+    "side",
+  ],
+  dining: [
+    "dining",
+    "table",
+    "chair",
+    "sideboard",
+    "buffet",
+    "barstool",
+    "stool",
+    "pendant",
+  ],
+  office: [
+    "office",
+    "desk",
+    "workspace",
+    "ergonomic",
+    "bookcase",
+    "shelf",
+    "cabinet",
+    "drawer",
+    "task",
+  ],
+  commercial: [
+    "commercial",
+    "retail",
+    "display",
+    "fixture",
+    "shelving",
+    "durable",
+    "traffic",
+  ],
+};
+
 const formatCurrency = (value) =>
   new Intl.NumberFormat("en-PH", {
     style: "currency",
@@ -417,24 +510,83 @@ const toPublicMaterial = (material) => ({
   image: material.image,
 });
 
-const getRecommendedMaterialsForProject = async (project, materialsOverride) => {
-  const Material = require("../models/Project/Material");
+const getProjectDesignRecommendation = (project) =>
+  project?.designRecommendation &&
+  typeof project.designRecommendation === "object" &&
+  !Array.isArray(project.designRecommendation)
+    ? project.designRecommendation
+    : null;
 
-  const materials = Array.isArray(materialsOverride)
-    ? materialsOverride
-    : await Material.find().lean();
+const getStrictProjectContexts = (project) => {
+  const designRecommendation = getProjectDesignRecommendation(project);
+  const sourceTokens = new Set(
+    tokenize(
+      [
+        project?.roomType,
+        project?.projectType,
+        project?.description,
+        designRecommendation?.title,
+        designRecommendation?.specification,
+        ...(Array.isArray(designRecommendation?.designPreferences)
+          ? designRecommendation.designPreferences
+          : []),
+        ...(Array.isArray(designRecommendation?.tags)
+          ? designRecommendation.tags
+          : []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+    )
+  );
 
-  if (!Array.isArray(materials) || materials.length === 0) {
-    return null;
+  return Object.entries(ROOM_CONTEXT_ALIASES)
+    .filter(([, aliases]) =>
+      aliases.some((alias) => sourceTokens.has(normalizeToken(alias)))
+    )
+    .map(([context]) => context);
+};
+
+const getStrictContextKeywordsForProject = (project) => {
+  const activeContexts = getStrictProjectContexts(project);
+
+  if (!activeContexts.length) {
+    return [];
   }
 
-  const designRecommendation =
-    project?.designRecommendation &&
-    typeof project.designRecommendation === "object" &&
-    !Array.isArray(project.designRecommendation)
-      ? project.designRecommendation
-      : null;
+  return [...new Set(
+    activeContexts.flatMap(
+      (context) => STRICT_ROOM_CONTEXT_RULES[context] || []
+    )
+  )].map(normalizeToken);
+};
 
+const getStrictContextMatchCount = (materialTokens, strictContextKeywords) => {
+  if (!strictContextKeywords.length) {
+    return 0;
+  }
+
+  let matches = 0;
+  strictContextKeywords.forEach((keyword) => {
+    if (!keyword) return;
+
+    if (
+      materialTokens.has(keyword) ||
+      [...materialTokens].some(
+        (token) => token.includes(keyword) || keyword.includes(token)
+      )
+    ) {
+      matches += 1;
+    }
+  });
+
+  return matches;
+};
+
+const buildWeightedKeywordsForProject = (
+  project,
+  { extraSources = [] } = {}
+) => {
+  const designRecommendation = getProjectDesignRecommendation(project);
   const weightedKeywords = new Map();
   addWeightedTokens(weightedKeywords, project?.designPreference, 3.8);
   addWeightedTokens(weightedKeywords, project?.description, 2.4);
@@ -453,16 +605,17 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
   addWeightedTokens(weightedKeywords, designRecommendation?.title, 1.2);
   addWeightedTokens(weightedKeywords, designRecommendation?.specification, 1.4);
 
-  const priority = project?.priority === "Budget" ? "Budget" : "Style";
+  extraSources.forEach((source) => addWeightedTokens(weightedKeywords, source, 5));
+
+  return weightedKeywords;
+};
+
+const getBaseWeights = (projectPriority, keywordWeightTotal) => {
+  const priority = projectPriority === "Budget" ? "Budget" : "Style";
   const baseWeights =
     priority === "Budget"
       ? { keyword: 0.28, room: 0.18, budget: 0.42, popularity: 0.12 }
       : { keyword: 0.44, room: 0.22, budget: 0.24, popularity: 0.1 };
-
-  const keywordWeightTotal = [...weightedKeywords.values()].reduce(
-    (sum, weight) => sum + weight,
-    0
-  );
 
   if (!keywordWeightTotal) {
     baseWeights.room += baseWeights.keyword * 0.6;
@@ -470,18 +623,46 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
     baseWeights.keyword = 0;
   }
 
+  return { priority, baseWeights };
+};
+
+const rankMaterialsForProjectContext = (
+  project,
+  materials,
+  { extraSources = [] } = {}
+) => {
+  if (!Array.isArray(materials) || materials.length === 0) {
+    return [];
+  }
+
+  const weightedKeywords = buildWeightedKeywordsForProject(project, {
+    extraSources,
+  });
+  const keywordWeightTotal = [...weightedKeywords.values()].reduce(
+    (sum, weight) => sum + weight,
+    0
+  );
+  const { priority, baseWeights } = getBaseWeights(
+    project?.priority,
+    keywordWeightTotal
+  );
+  const strictContextKeywords = getStrictContextKeywordsForProject(project);
   const maxSales = materials.reduce(
     (max, material) => Math.max(max, Number(material?.sales) || 0),
     0
   );
 
-  const scoredMaterials = materials
+  return materials
     .map((material) => {
       const materialTokens = buildMaterialTokenSet(material);
       const keywordMatch = scoreKeywordMatch(weightedKeywords, materialTokens);
       const roomScore = scoreRoomFit(project?.roomType, materialTokens);
       const budgetMatch = scoreBudgetFit(material, project);
       const popularityScore = scorePopularity(material, maxSales);
+      const strictContextMatchCount = getStrictContextMatchCount(
+        materialTokens,
+        strictContextKeywords
+      );
 
       const totalScore =
         keywordMatch.score * baseWeights.keyword +
@@ -496,12 +677,16 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
         roomScore,
         budgetScore: budgetMatch.score,
         popularityScore,
+        strictContextMatchCount,
         estimatedTarget: budgetMatch.estimatedTarget,
         estimatedCeiling: budgetMatch.estimatedCeiling,
         matchedKeywords: keywordMatch.matchedKeywords,
       };
     })
     .sort((left, right) => {
+      if (right.strictContextMatchCount !== left.strictContextMatchCount) {
+        return right.strictContextMatchCount - left.strictContextMatchCount;
+      }
       if (right.totalScore !== left.totalScore) {
         return right.totalScore - left.totalScore;
       }
@@ -522,8 +707,32 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
       }
       return (right.material.sales || 0) - (left.material.sales || 0);
     });
+};
 
-  if (scoredMaterials.length === 0) return [];
+const getRecommendedMaterialsForProject = async (project, materialsOverride) => {
+  const Material = require("../models/Project/Material");
+
+  const materials = Array.isArray(materialsOverride)
+    ? materialsOverride
+    : await Material.find().lean();
+
+  if (!Array.isArray(materials) || materials.length === 0) {
+    return null;
+  }
+
+  const priority = project?.priority === "Budget" ? "Budget" : "Style";
+  const scoredMaterials = rankMaterialsForProjectContext(project, materials);
+  const strictContextKeywords = getStrictContextKeywordsForProject(project);
+  const contextFilteredMaterials =
+    strictContextKeywords.length > 0
+      ? scoredMaterials.filter((item) => item.strictContextMatchCount > 0)
+      : scoredMaterials;
+  const eligibleMaterials =
+    contextFilteredMaterials.length > 0
+      ? contextFilteredMaterials
+      : scoredMaterials;
+
+  if (eligibleMaterials.length === 0) return [];
 
   const INVALID_CATEGORIES = new Set([
     "Bedroom",
@@ -540,7 +749,7 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
 
   // Group by category to recommend 1 per category
   const topByCategory = new Map();
-  for (const item of scoredMaterials) {
+  for (const item of eligibleMaterials) {
     let rawCategory = item.material.category;
     if (!rawCategory || typeof rawCategory !== "string") continue;
     
@@ -598,4 +807,5 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
 
 module.exports = {
   getRecommendedMaterialsForProject,
+  rankMaterialsForProjectContext,
 };

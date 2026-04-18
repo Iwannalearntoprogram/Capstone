@@ -1,3 +1,4 @@
+import 'package:estetika_ui/config/api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:estetika_ui/widgets/custom_scaffold.dart';
 import 'package:estetika_ui/widgets/custom_text_field.dart';
@@ -87,9 +88,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     try {
       AppLogger.info('Initiating password reset for: ${_emailController.text}');
+      AppLogger.info('Forgot password via ${ApiConfig.authBaseUrl}');
 
       final response = await http.post(
-        Uri.parse('https://moss-manila.onrender.com/api/auth/forgot/initiate'),
+        Uri.parse('${ApiConfig.authBaseUrl}/forgot/initiate'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': _emailController.text.trim(),
@@ -151,7 +153,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       AppLogger.info('Confirming password reset with OTP');
 
       final response = await http.post(
-        Uri.parse('https://moss-manila.onrender.com/api/auth/forgot/confirm'),
+        Uri.parse('${ApiConfig.authBaseUrl}/forgot/confirm'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': _emailController.text.trim(),
@@ -213,7 +215,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       AppLogger.info('Resending OTP for password reset');
 
       final response = await http.post(
-        Uri.parse('https://moss-manila.onrender.com/api/auth/forgot/resend'),
+        Uri.parse('${ApiConfig.authBaseUrl}/forgot/resend'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': _emailController.text.trim(),

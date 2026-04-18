@@ -1,3 +1,4 @@
+import 'package:estetika_ui/config/api_config.dart';
 import 'package:estetika_ui/screens/signup_screen.dart';
 import 'package:estetika_ui/screens/welcome_screen.dart';
 import 'package:estetika_ui/screens/home_screen.dart';
@@ -15,7 +16,14 @@ import 'package:estetika_ui/utils/logger.dart';
 import 'dart:io';
 
 class SigninScreen extends StatefulWidget {
-  const SigninScreen({super.key});
+  const SigninScreen({
+    super.key,
+    this.initialEmail,
+    this.successMessage,
+  });
+
+  final String? initialEmail;
+  final String? successMessage;
 
   @override
   State<SigninScreen> createState() => _SignInScreenState();
@@ -27,6 +35,7 @@ class _SignInScreenState extends State<SigninScreen> {
   bool _rememberMe = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  String? _successMessage;
 
   String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
@@ -66,9 +75,10 @@ class _SignInScreenState extends State<SigninScreen> {
         'password': _passwordController.text,
       };
       AppLogger.info('SignIn request body prepared');
+      AppLogger.info('Signing in via ${ApiConfig.authBaseUrl}');
 
       final response = await http.post(
-        Uri.parse('https://moss-manila.onrender.com/api/auth/login'),
+        Uri.parse('${ApiConfig.authBaseUrl}/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
       );
@@ -164,12 +174,14 @@ class _SignInScreenState extends State<SigninScreen> {
   }
 
   Future<void> _sendOtp(String email) async {
+    AppLogger.info('Requesting OTP via ${ApiConfig.authBaseUrl}');
     final response = await http.post(
-      Uri.parse('https://moss-manila.onrender.com/api/auth/send-otp'),
+      Uri.parse('${ApiConfig.authBaseUrl}/send-otp'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email}),
     );
     AppLogger.info('Send OTP status: ${response.statusCode}');
+    AppLogger.info('Send OTP body: ${response.body}');
     if (response.statusCode != 200) {
       AppLogger.error('Send OTP failed', error: response.statusCode);
       AppLogger.error('Send OTP body: ${response.body}');
@@ -246,7 +258,7 @@ class _SignInScreenState extends State<SigninScreen> {
   Future<bool> _verifyOtp(String email, String otp) async {
     try {
       final response = await http.post(
-        Uri.parse('https://moss-manila.onrender.com/api/auth/verify-otp'),
+        Uri.parse('${ApiConfig.authBaseUrl}/verify-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'otp': otp}),
       );
@@ -318,6 +330,7 @@ class _SignInScreenState extends State<SigninScreen> {
   @override
   void initState() {
     super.initState();
+    _successMessage = widget.successMessage;
     _loadRememberMePreference();
   }
 
@@ -331,6 +344,8 @@ class _SignInScreenState extends State<SigninScreen> {
         _rememberMe = rememberMe;
         if (rememberMe && rememberedEmail.isNotEmpty) {
           _emailController.text = rememberedEmail;
+        } else if ((widget.initialEmail ?? '').trim().isNotEmpty) {
+          _emailController.text = widget.initialEmail!.trim();
         }
       });
     } catch (e) {
@@ -417,6 +432,31 @@ class _SignInScreenState extends State<SigninScreen> {
                           height: 160,
                         ),
                         const SizedBox(height: 24.0),
+                        if (_successMessage != null)
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE8F3EE),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFFB7D2C7),
+                              ),
+                            ),
+                            child: Text(
+                              _successMessage!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Color(0xFF203B32),
+                                fontFamily: 'Figtree',
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         Text(
                           'Welcome Back',
                           style: TextStyle(
