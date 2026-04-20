@@ -5,6 +5,7 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import logo from "../assets/images/logo-moss-2.png";
 import marbleBg from "../assets/images/white-marble-bg.png";
+import { SERVER_URL } from "../config/server";
 import {
   normalizePhone,
   trimValue,
@@ -18,7 +19,7 @@ import {
 
 function SignupPage() {
   const navigate = useNavigate();
-  const serverUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
+  const serverUrl = SERVER_URL;
 
   const [formData, setFormData] = useState({
     firstName: "",

@@ -6,6 +6,7 @@ import { useAuthStore } from "../store/AuthStore";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { SERVER_URL } from "../config/server";
 import {
   trimValue,
   validateEmail,
@@ -13,7 +14,7 @@ import {
   validateOtp,
 } from "../utils/validation";
 
-const URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
+const URL = SERVER_URL;
 
 function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });

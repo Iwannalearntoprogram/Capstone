@@ -10,8 +10,9 @@ import projectElegantWorkspace from "../assets/images/project-elegant-workspace.
 import projectModernOffice from "../assets/images/project-modern-office.webp";
 import projectElegantLiving from "../assets/images/transform-space-image.webp";
 import projectDiningRoom from "../assets/images/about-us-image.webp";
+import { SERVER_URL } from "../config/server";
 
-const URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
+const URL = SERVER_URL;
 
 function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

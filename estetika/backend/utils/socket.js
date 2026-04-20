@@ -3,13 +3,11 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User/User");
 const Message = require("../models/User/Message");
 const Notification = require("../models/utils/Notification");
+const { socketCorsOptions } = require("./cors");
 
 const initSocket = (server) => {
   const io = new Server(server, {
-    cors: {
-      origin: [process.env.CLIENT_URL, "http://localhost:5173"],
-      methods: ["GET", "POST"],
-    },
+    cors: socketCorsOptions,
   });
 
   // Socket.IO auth middleware

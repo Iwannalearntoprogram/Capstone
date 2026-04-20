@@ -33,6 +33,7 @@ const aliveRoute = require("./routes/utils/aliveRoute");
 const mobileHomeContentRoute = require("./routes/utils/mobileHomeContentRoute");
 const AppError = require("./utils/appError");
 const checkAuth = require("./utils/checkAuth");
+const { expressCorsOptions } = require("./utils/cors");
 const globalErrorHandler = require("./controllers/utils/ErrorController");
 const {
   checkEventAlarms,
@@ -68,12 +69,7 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(
-  cors({
-    origin: [process.env.CLIENT_URL, "http://localhost:5173"],
-    credentials: true,
-  })
-); // Cross Origin Resource Sharing
+app.use(cors(expressCorsOptions)); // Cross Origin Resource Sharing
 app.use(express.json());
 app.use(express.urlencoded());
 app.use((req, res, next) => {

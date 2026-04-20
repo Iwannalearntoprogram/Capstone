@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { SERVER_URL } from "../../../config/server";
 
 const toValidDate = (value) => {
   if (!value) return null;
@@ -26,9 +27,7 @@ const TimelinePhaseRow = ({
       try {
         const token = Cookies.get("token");
         const response = await axios.get(
-          `${
-            import.meta.env.VITE_SERVER_URL || "http://localhost:3000"
-          }/api/phase?id=${phase._id}`,
+          `${SERVER_URL}/api/phase?id=${phase._id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
