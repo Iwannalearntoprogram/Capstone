@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
@@ -80,6 +81,10 @@ app.use("/api", limiter); //Protection Against DDOS Attack
 
 // Static file serving for downloads
 app.use("/downloads", express.static("public/downloads"));
+app.use(
+  "/material-images",
+  express.static(path.resolve(__dirname, "..", "..", "Materials"))
+);
 
 // routes
 // user

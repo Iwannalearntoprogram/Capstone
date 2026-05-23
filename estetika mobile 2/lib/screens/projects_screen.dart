@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:estetika_ui/config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
@@ -55,8 +56,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       final userId = user['id'] ?? user['_id'];
       print('User ID: $userId');
       final response = await http.get(
-        Uri.parse(
-            'https://moss-manila.onrender.com/api/project?projectCreator=$userId'),
+        Uri.parse('${ApiConfig.apiBaseUrl}/project?projectCreator=$userId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${prefs.getString('token') ?? ''}',

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:estetika_ui/config/api_config.dart';
 import 'package:estetika_ui/screens/signin_screen.dart';
 import 'package:estetika_ui/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
@@ -98,7 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     final response = await http.put(
-      Uri.parse('https://moss-manila.onrender.com/api/user'),
+      Uri.parse('${ApiConfig.apiBaseUrl}/user'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -186,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   //   });
 
   //   final response = await http.put(
-  //     Uri.parse('https://moss-manila.onrender.com/api/user'),
+  //     Uri.parse('${ApiConfig.apiBaseUrl}/user'),
   //     headers: {
   //       'Content-Type': 'application/json',
   //       'Authorization': 'Bearer $token',
@@ -262,7 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     final response = await http.put(
-      Uri.parse('https://moss-manila.onrender.com/api/user'),
+      Uri.parse('${ApiConfig.apiBaseUrl}/user'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -618,7 +619,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       print('Uploading file: ${imageFile.path}');
       print('File exists: ${imageFile.existsSync()}');
-      var uri = Uri.parse('https://moss-manila.onrender.com/api/upload/image');
+      var uri = Uri.parse('${ApiConfig.apiBaseUrl}/upload/image');
       var request = http.MultipartRequest('POST', uri)
         ..headers['Authorization'] = 'Bearer $token'
         ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
@@ -647,7 +648,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   //     print('Uploading file: ${imageFile.path}');
   //     print('File exists: ${imageFile.existsSync()}');
   //     var uri =
-  //         Uri.parse('https://moss-manila.onrender.com/api/upload/image');
+  //         Uri.parse('${ApiConfig.apiBaseUrl}/upload/image');
   //     var request = http.MultipartRequest('POST', uri)
   //       ..headers['Authorization'] = 'Bearer $token'
   //       ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));

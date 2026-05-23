@@ -23,5 +23,7 @@ class ApiConfig {
     return _localOrigin;
   }
 
+  static String get apiBaseUrl => '$origin/api';
+
   static String get authBaseUrl => '$origin/api/auth';
 }

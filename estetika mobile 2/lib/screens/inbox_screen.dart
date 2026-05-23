@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:estetika_ui/config/api_config.dart';
 import 'package:estetika_ui/widgets/custom_app_bar.dart';
 import 'package:estetika_ui/screens/chat_detail_screen.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -51,7 +52,7 @@ class _InboxScreenState extends State<InboxScreen> {
     print('Initializing socket for user: $_userId');
 
     _socket = IO.io(
-      'https://moss-manila.onrender.com',
+      ApiConfig.origin,
       IO.OptionBuilder()
           .setTransports(['websocket']).setAuth({'token': _userToken}).build(),
     );
@@ -80,6 +81,7 @@ class _InboxScreenState extends State<InboxScreen> {
             : DateTime.now(),
         isFromUser: data['sender'] == _userId,
         isRead: data['isRead'] ?? false,
+        deliveryStatus: data['status']?.toString(),
         fileLink: data['fileLink'],
         fileType: data['fileType'],
         fileName: data['fileName'],
@@ -105,6 +107,7 @@ class _InboxScreenState extends State<InboxScreen> {
             : DateTime.now(),
         isFromUser: data['sender'] == _userId,
         isRead: data['isRead'] ?? false,
+        deliveryStatus: data['status']?.toString(),
         fileLink: data['fileLink'],
         fileType: data['fileType'],
         fileName: data['fileName'],
@@ -134,7 +137,7 @@ class _InboxScreenState extends State<InboxScreen> {
     _userToken = token;
 
     final response = await http.get(
-      Uri.parse('https://moss-manila.onrender.com/api/user?exclude=$_userId'),
+      Uri.parse('${ApiConfig.apiBaseUrl}/user?exclude=$_userId'),
       headers: {'Authorization': 'Bearer $token'},
     );
     if (response.statusCode == 200) {
@@ -161,7 +164,7 @@ class _InboxScreenState extends State<InboxScreen> {
       }
       final response = await http.get(
         Uri.parse(
-            'https://moss-manila.onrender.com/api/message?user1=$_userId&user2=$otherUserId'),
+            '${ApiConfig.apiBaseUrl}/message?user1=$_userId&user2=$otherUserId'),
         headers: {
           'Authorization': 'Bearer $_userToken',
         },
@@ -218,7 +221,9 @@ class _InboxScreenState extends State<InboxScreen> {
                 : DateTime.now(),
             isFromUser: msg['sender'] == _userId,
             profileImage: null,
-            isRead: msg['isRead'] ?? true,
+            isRead: (msg['status']?.toString() == 'read') ||
+                (msg['isRead'] ?? true),
+            deliveryStatus: msg['status']?.toString() ?? 'sent',
             fileLink: fileLink,
             fileType: fileType,
             fileName: fileName,
@@ -345,9 +350,13 @@ class _InboxScreenState extends State<InboxScreen> {
                     print('onSendMessage: $text');
                     if (otherUserId == null || otherUserId.toString().isEmpty) {
                       print('Error: recipientId is null or empty');
-                      return;
+                      return 'not_sent';
                     }
 
+                    final deliveryStatus =
+                        (_socket != null && _socket!.connected)
+                            ? 'sent'
+                            : 'not_sent';
                     final newMessage = MessageItem(
                       sender: _userId ?? "You",
                       recipient: otherUserId,
@@ -355,6 +364,7 @@ class _InboxScreenState extends State<InboxScreen> {
                       timestamp: DateTime.now(),
                       isFromUser: true,
                       isRead: true,
+                      deliveryStatus: deliveryStatus,
                     );
 
                     if (mounted) {
@@ -372,6 +382,8 @@ class _InboxScreenState extends State<InboxScreen> {
                         'content': text,
                       });
                     }
+
+                    return deliveryStatus;
                   },
                   onSendFile: ({
                     required String fileLink,
@@ -380,9 +392,13 @@ class _InboxScreenState extends State<InboxScreen> {
                   }) {
                     if (otherUserId == null || otherUserId.toString().isEmpty) {
                       print('Error: recipientId is null or empty');
-                      return;
+                      return 'not_sent';
                     }
 
+                    final deliveryStatus =
+                        (_socket != null && _socket!.connected)
+                            ? 'sent'
+                            : 'not_sent';
                     final newMessage = MessageItem(
                       sender: _userId ?? "You",
                       recipient: otherUserId,
@@ -390,6 +406,7 @@ class _InboxScreenState extends State<InboxScreen> {
                       timestamp: DateTime.now(),
                       isFromUser: true,
                       isRead: true,
+                      deliveryStatus: deliveryStatus,
                       fileLink: fileLink,
                       fileType: fileType,
                       fileName: fileName,
@@ -413,6 +430,8 @@ class _InboxScreenState extends State<InboxScreen> {
                         'timestamp': DateTime.now().toIso8601String(),
                       });
                     }
+
+                    return deliveryStatus;
                   },
                 ),
               ),
@@ -622,6 +641,7 @@ class MessageItem {
   final bool isFromUser;
   final String? profileImage;
   final bool isRead;
+  final String? deliveryStatus;
   final String? fileLink;
   final String? fileType;
   final String? fileName;
@@ -634,6 +654,7 @@ class MessageItem {
     required this.isFromUser,
     this.profileImage,
     this.isRead = true,
+    this.deliveryStatus,
     this.fileLink,
     this.fileType,
     this.fileName,

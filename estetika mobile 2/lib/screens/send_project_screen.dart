@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:estetika_ui/config/api_config.dart';
 import 'package:estetika_ui/widgets/custom_app_bar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -214,12 +215,10 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         "budget": double.tryParse(_budgetController.text) ?? 0,
         "priority": _priority,
       };
-      // https://moss-manila.onrender.com/api/project/recommendation/match
-      // http://localhost:3000
       print("Recommendation request body: $requestBody");
-      final uri = Uri.parse(
-              'https://moss-manila.onrender.com/api/project/recommendation/match')
-          .replace(queryParameters: {
+      final uri =
+          Uri.parse('${ApiConfig.apiBaseUrl}/project/recommendation/match')
+              .replace(queryParameters: {
         'roomType': _roomType ?? '',
         'designPreferences': _descriptionController.text,
         'budget': _budgetController.text,
@@ -1549,7 +1548,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://moss-manila.onrender.com/api/project'),
+        Uri.parse('${ApiConfig.apiBaseUrl}/project'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

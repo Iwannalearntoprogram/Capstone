@@ -1,0 +1,2601 @@
+{
+  "generatedAt": "2026-05-17T21:21:41.829Z",
+  "dryRun": false,
+  "docxCount": 25,
+  "materialCount": 43,
+  "missingImageCount": 0,
+  "missingImages": [],
+  "importSummary": {
+    "inserted": 43,
+    "updated": 0,
+    "failed": 0,
+    "imageLinks": 165,
+    "imageMode": "static",
+    "noImages": [],
+    "errors": []
+  },
+  "materials": [
+    {
+      "name": "LAUREN QUEEN BED",
+      "company": "BLIMS Fine Furniture",
+      "price": 39950,
+      "description": "A modern contemporary bedroom series featuring a padded headboard and two drawers on tapered wooden legs.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Honey Oak",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Queen Bed",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "202 x 160 x 140 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Honey Oak"
+        },
+        {
+          "key": "Type",
+          "value": "Queen Bed"
+        },
+        {
+          "key": "Size",
+          "value": "202 x 160 x 140 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/sleepshop/products/lauren-queen-bed"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "LAUREN QUEEN BED_1.png, LAUREN QUEEN BED_2.png, LAUREN QUEEN BED_3.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Bed%20Room/Warren/LAUREN%20QUEEN%20BED/LAUREN%20QUEEN%20BED_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/LAUREN%20QUEEN%20BED/LAUREN%20QUEEN%20BED_2.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/LAUREN%20QUEEN%20BED/LAUREN%20QUEEN%20BED_3.png"
+      ],
+      "localImageFiles": [
+        "LAUREN QUEEN BED_1.png",
+        "LAUREN QUEEN BED_2.png",
+        "LAUREN QUEEN BED_3.png"
+      ],
+      "productFolder": "Bed Room/Warren/LAUREN QUEEN BED",
+      "sourceDocument": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+    },
+    {
+      "name": "LYRA KING BED",
+      "company": "BLIMS Fine Furniture",
+      "price": 42950,
+      "description": "A Transitional Series featuring chevron padded fabric headboard on tapered wooden legs.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Belgian Oak",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "King Bed",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L235 x W188 x H140",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Belgian Oak"
+        },
+        {
+          "key": "Type",
+          "value": "King Bed"
+        },
+        {
+          "key": "Size",
+          "value": "L235 x W188 x H140"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/products/lyra-king-bed?pr_prod_strat=e5_desc&pr_rec_id=e39983735&pr_rec_pid=8576946602211&pr_ref_pid=8989971316963&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "LYRA KING BED_1.png, LYRA KING BED_2.png, LYRA KING BED_3.png, LYRA KING BED_4.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Bed%20Room/Warren/LYRA%20KING%20BED/LYRA%20KING%20BED_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/LYRA%20KING%20BED/LYRA%20KING%20BED_2.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/LYRA%20KING%20BED/LYRA%20KING%20BED_3.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/LYRA%20KING%20BED/LYRA%20KING%20BED_4.png"
+      ],
+      "localImageFiles": [
+        "LYRA KING BED_1.png",
+        "LYRA KING BED_2.png",
+        "LYRA KING BED_3.png",
+        "LYRA KING BED_4.png"
+      ],
+      "productFolder": "Bed Room/Warren/LYRA KING BED",
+      "sourceDocument": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+    },
+    {
+      "name": "GUNNAR DOUBLE BED",
+      "company": "BLIMS Fine Furniture",
+      "price": 25950,
+      "description": "Inspired by Retro Scandinavian style, it features simple lines with rounded edges, tapered solid legs, and cut-out finger pulls. The mattress size is 54 x 75 inches.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Pecan",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Double Bed",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L153 x D205",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Pecan"
+        },
+        {
+          "key": "Type",
+          "value": "Double Bed"
+        },
+        {
+          "key": "Size",
+          "value": "L153 x D205"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/sleepshop/products/gunnar-double-bed?_pos=3&_fid=dac12a0de&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "GUNNAR DOUBLE BED_1.png, GUNNAR DOUBLE BED_2.png, GUNNAR DOUBLE BED_3.png, GUNNAR DOUBLE BED_4.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Bed%20Room/Warren/GUNNAR%20DOUBLE%20BED/GUNNAR%20DOUBLE%20BED_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/GUNNAR%20DOUBLE%20BED/GUNNAR%20DOUBLE%20BED_2.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/GUNNAR%20DOUBLE%20BED/GUNNAR%20DOUBLE%20BED_3.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/GUNNAR%20DOUBLE%20BED/GUNNAR%20DOUBLE%20BED_4.png"
+      ],
+      "localImageFiles": [
+        "GUNNAR DOUBLE BED_1.png",
+        "GUNNAR DOUBLE BED_2.png",
+        "GUNNAR DOUBLE BED_3.png",
+        "GUNNAR DOUBLE BED_4.png"
+      ],
+      "productFolder": "Bed Room/Warren/GUNNAR DOUBLE BED",
+      "sourceDocument": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+    },
+    {
+      "name": "DALLAS II QUEEN BED",
+      "company": "BLIMS Fine Furniture",
+      "price": 49950,
+      "description": "Fabric upholstered bedframe w/ tufted headboard and lift top storage base.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Artemis Linen",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Artemis Light Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Artemis Elephant",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Queen Bed",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "205 x 171 x 130 CM",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Artemis Linen, Artemis Light Grey, Artemis Elephant"
+        },
+        {
+          "key": "Type",
+          "value": "Queen Bed"
+        },
+        {
+          "key": "Size",
+          "value": "205 x 171 x 130 CM"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/sleepshop/products/dallas-ii-queen-bed?_pos=6&_fid=25a8db42d&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "DALLAS II QUEEN BED_1.png, DALLAS II QUEEN BED_2.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Bed%20Room/Warren/DALLAS%20II%20QUEEN%20BED/DALLAS%20II%20QUEEN%20BED_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/DALLAS%20II%20QUEEN%20BED/DALLAS%20II%20QUEEN%20BED_2.png"
+      ],
+      "localImageFiles": [
+        "DALLAS II QUEEN BED_1.png",
+        "DALLAS II QUEEN BED_2.png"
+      ],
+      "productFolder": "Bed Room/Warren/DALLAS II QUEEN BED",
+      "sourceDocument": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+    },
+    {
+      "name": "HAVANA KING BED",
+      "company": "BLIMS Fine Furniture",
+      "price": 42950,
+      "description": "A Contemporary fabric upholstered bedframe with graceful curved headboard.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Oslo Taupe",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Oslo Ivory",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "King Bed",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L213 x W197 x H116 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Oslo Taupe, Oslo Ivory"
+        },
+        {
+          "key": "Type",
+          "value": "King Bed"
+        },
+        {
+          "key": "Size",
+          "value": "L213 x W197 x H116 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/sleepshop/products/havana-king-bed?_pos=6&_fid=d29881a18&_ss=c&variant=45731261153507"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "HAVANA KING BED_1.png, HAVANA KING BED_2.png, HAVANA KING BED_3.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Bed%20Room/Warren/HAVANA%20KING%20BED/HAVANA%20KING%20BED_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/HAVANA%20KING%20BED/HAVANA%20KING%20BED_2.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/HAVANA%20KING%20BED/HAVANA%20KING%20BED_3.png"
+      ],
+      "localImageFiles": [
+        "HAVANA KING BED_1.png",
+        "HAVANA KING BED_2.png",
+        "HAVANA KING BED_3.png"
+      ],
+      "productFolder": "Bed Room/Warren/HAVANA KING BED",
+      "sourceDocument": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+    },
+    {
+      "name": "OSKAR II DOUBLE BED",
+      "company": "BLIMS Fine Furniture",
+      "price": 29950,
+      "description": "A Contemporary fabric upholstered bedframe with large front drawer.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Artemis Linen",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Artemis Light Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Artemis Elephant",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Double Bed",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L204 x W143 x H116",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Artemis Linen, Artemis Light Grey, Artemis Elephant"
+        },
+        {
+          "key": "Type",
+          "value": "Double Bed"
+        },
+        {
+          "key": "Size",
+          "value": "L204 x W143 x H116"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/sleepshop/products/oskar-ii-double-bed?_pos=1&_fid=dac12a0de&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "OSKAR II DOUBLE BED_1.png, OSKAR II DOUBLE BED_2.png, OSKAR II DOUBLE BED_3.png, OSKAR II DOUBLE BED_4.png, OSKAR II DOUBLE BED_5.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Bed%20Room/Warren/OSKAR%20II%20DOUBLE%20BED/OSKAR%20II%20DOUBLE%20BED_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/OSKAR%20II%20DOUBLE%20BED/OSKAR%20II%20DOUBLE%20BED_2.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/OSKAR%20II%20DOUBLE%20BED/OSKAR%20II%20DOUBLE%20BED_3.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/OSKAR%20II%20DOUBLE%20BED/OSKAR%20II%20DOUBLE%20BED_4.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/OSKAR%20II%20DOUBLE%20BED/OSKAR%20II%20DOUBLE%20BED_5.png"
+      ],
+      "localImageFiles": [
+        "OSKAR II DOUBLE BED_1.png",
+        "OSKAR II DOUBLE BED_2.png",
+        "OSKAR II DOUBLE BED_3.png",
+        "OSKAR II DOUBLE BED_4.png",
+        "OSKAR II DOUBLE BED_5.png"
+      ],
+      "productFolder": "Bed Room/Warren/OSKAR II DOUBLE BED",
+      "sourceDocument": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+    },
+    {
+      "name": "LAUREN DRESSER",
+      "company": "BLIMS Fine Furniture",
+      "price": 34950,
+      "description": "A modern contemporary bedroom series made of solid rubberwood featuring six drawers on a tapered wooden legs.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Honey Oak",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dresser",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L150 x W45 x H85 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Honey Oak"
+        },
+        {
+          "key": "Type",
+          "value": "Dresser"
+        },
+        {
+          "key": "Size",
+          "value": "L150 x W45 x H85 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/sleepshop/products/lauren-dresser"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "LAUREN DRESSER_1.png, LAUREN DRESSER_2.png, LAUREN DRESSER_3.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Bed%20Room/Warren/LAUREN%20DRESSER/LAUREN%20DRESSER_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/LAUREN%20DRESSER/LAUREN%20DRESSER_2.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/LAUREN%20DRESSER/LAUREN%20DRESSER_3.png"
+      ],
+      "localImageFiles": [
+        "LAUREN DRESSER_1.png",
+        "LAUREN DRESSER_2.png",
+        "LAUREN DRESSER_3.png"
+      ],
+      "productFolder": "Bed Room/Warren/LAUREN DRESSER",
+      "sourceDocument": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+    },
+    {
+      "name": "SEOUL CHEST OF DRAWERS",
+      "company": "BLIMS Fine Furniture",
+      "price": 19950,
+      "description": "A modern chest of drawers featuring six fluted design drawers with gold finish steel legs and handles.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Mint Green",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dresser",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "120 x 39.6 x 81.9 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Grey, Mint Green"
+        },
+        {
+          "key": "Type",
+          "value": "Dresser"
+        },
+        {
+          "key": "Size",
+          "value": "120 x 39.6 x 81.9 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/sleepshop/products/seoul-chest-of-drawers"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "SEOUL CHEST OF DRAWERS_GREY_1.png, SEOUL CHEST OF DRAWERS_GREY_2.png, SEOUL CHEST OF DRAWERS_GREY_3.png, SEOUL CHEST OF DRAWERS_GREY_4.png, SEOUL CHEST OF DRAWERS_GREY_5.png, SEOUL CHEST OF DRAWERS_GREY_6.png, SEOUL CHEST OF DRAWERS_MINT GREEN_1.png, SEOUL CHEST OF DRAWERS_MINT GREEN_2.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_GREY_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_GREY_2.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_GREY_3.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_GREY_4.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_GREY_5.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_GREY_6.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_MINT%20GREEN_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_MINT%20GREEN_2.png"
+      ],
+      "localImageFiles": [
+        "SEOUL CHEST OF DRAWERS_GREY_1.png",
+        "SEOUL CHEST OF DRAWERS_GREY_2.png",
+        "SEOUL CHEST OF DRAWERS_GREY_3.png",
+        "SEOUL CHEST OF DRAWERS_GREY_4.png",
+        "SEOUL CHEST OF DRAWERS_GREY_5.png",
+        "SEOUL CHEST OF DRAWERS_GREY_6.png",
+        "SEOUL CHEST OF DRAWERS_MINT GREEN_1.png",
+        "SEOUL CHEST OF DRAWERS_MINT GREEN_2.png"
+      ],
+      "productFolder": "Bed Room/Warren/SEOUL CHEST OF DRAWERS",
+      "sourceDocument": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+    },
+    {
+      "name": "ANDANTE SINGLE BED",
+      "company": "BLIMS Fine Furniture",
+      "price": 21996,
+      "description": "Fabric upholstered bed with pull out trundle drawer. Tufted headboard.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Pendle Oatmeal",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Alderly Charcoal",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Marbella Dark Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Single Bed",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L208 x W97 x H123 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Pendle Oatmeal, Alderly Charcoal, Marbella Dark Grey"
+        },
+        {
+          "key": "Type",
+          "value": "Single Bed"
+        },
+        {
+          "key": "Size",
+          "value": "L208 x W97 x H123 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/sleepshop/products/andante-single-bed?_pos=4&_fid=dac3514f7&_ss=c&variant=43534713422051"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "ANDANTE SINGLE BED_ALDEARLY_2.png, ANDANTE SINGLE BED_ALDERLY CHARCOAL_1.png, ANDANTE SINGLE BED_MARBELLA DARK GREY_1.png, ANDANTE SINGLE BED_PENDLE OATMEAL_1.png, ANDANTE SINGLE BED_PENDLE OATMEAL_2.png, ANDANTE SINGLE BED_PENDLE OATMEAL_3.png, ANDANTE SINGLE BED_PENDLE OATMEAL_5.png, ANDANTE SINGLE BED_PENDLE OATMEAL_6.png, ANDANTE SINGLE BED_PENDLE_OATMEAL_4.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_ALDEARLY_2.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_ALDERLY%20CHARCOAL_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_MARBELLA%20DARK%20GREY_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_PENDLE%20OATMEAL_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_PENDLE%20OATMEAL_2.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_PENDLE%20OATMEAL_3.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_PENDLE%20OATMEAL_5.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_PENDLE%20OATMEAL_6.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_PENDLE_OATMEAL_4.png"
+      ],
+      "localImageFiles": [
+        "ANDANTE SINGLE BED_ALDEARLY_2.png",
+        "ANDANTE SINGLE BED_ALDERLY CHARCOAL_1.png",
+        "ANDANTE SINGLE BED_MARBELLA DARK GREY_1.png",
+        "ANDANTE SINGLE BED_PENDLE OATMEAL_1.png",
+        "ANDANTE SINGLE BED_PENDLE OATMEAL_2.png",
+        "ANDANTE SINGLE BED_PENDLE OATMEAL_3.png",
+        "ANDANTE SINGLE BED_PENDLE OATMEAL_5.png",
+        "ANDANTE SINGLE BED_PENDLE OATMEAL_6.png",
+        "ANDANTE SINGLE BED_PENDLE_OATMEAL_4.png"
+      ],
+      "productFolder": "Bed Room/Warren/ANDANTE SINGLE BED",
+      "sourceDocument": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+    },
+    {
+      "name": "OLI II SINGLE BED",
+      "company": "BLIMS Fine Furniture",
+      "price": 27495,
+      "description": "Fabric upholstered bed with pull-out trundle drawer and framed headboard.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Artemis Linen",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Artemis Light Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Artemis Elephant",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Single Bed",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L209 x W96 x H121 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Artemis Linen, Artemis Light Grey, Artemis Elephant"
+        },
+        {
+          "key": "Type",
+          "value": "Single Bed"
+        },
+        {
+          "key": "Size",
+          "value": "L209 x W96 x H121 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/sleepshop/products/oli-ii-single-bed?_pos=2&_fid=dac3514f7&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "OLI II SINGLE BED_1.png, OLI II SINGLE BED_2.png, OLI II SINGLE BED_3.png, OLI II SINGLE BED_4.png, OLI II SINGLE BED_5.png, OLI II SINGLE BED_6.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Bed%20Room/Warren/OLI%20II%20SINGLE%20BED/OLI%20II%20SINGLE%20BED_1.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/OLI%20II%20SINGLE%20BED/OLI%20II%20SINGLE%20BED_2.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/OLI%20II%20SINGLE%20BED/OLI%20II%20SINGLE%20BED_3.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/OLI%20II%20SINGLE%20BED/OLI%20II%20SINGLE%20BED_4.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/OLI%20II%20SINGLE%20BED/OLI%20II%20SINGLE%20BED_5.png",
+        "http://localhost:3000/material-images/Bed%20Room/Warren/OLI%20II%20SINGLE%20BED/OLI%20II%20SINGLE%20BED_6.png"
+      ],
+      "localImageFiles": [
+        "OLI II SINGLE BED_1.png",
+        "OLI II SINGLE BED_2.png",
+        "OLI II SINGLE BED_3.png",
+        "OLI II SINGLE BED_4.png",
+        "OLI II SINGLE BED_5.png",
+        "OLI II SINGLE BED_6.png"
+      ],
+      "productFolder": "Bed Room/Warren/OLI II SINGLE BED",
+      "sourceDocument": "Bed Room/Warren/BedroomFurni_05_10_26.docx"
+    },
+    {
+      "name": "Aurora Rattan Chair",
+      "company": "Furniture Source",
+      "price": 4990,
+      "description": "Made from real rubberwood. Features a square backrest crafted from rubberwood with genuine rattan weave. Perfectly paired with the Aurora Dining Table.",
+      "category": "Dining Area",
+      "subCategory": "Chairs",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Kurt_/Chairs/Aurora Rattan Chair/Aurora Rattan Chair.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Kurt_/Chairs/Aurora Rattan Chair"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "IMG_4723.jpg, IMG_7851.jpg, IMG_7852.jpg, Studio-Project-1-21.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Aurora%20Rattan%20Chair/IMG_4723.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Aurora%20Rattan%20Chair/IMG_7851.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Aurora%20Rattan%20Chair/IMG_7852.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Aurora%20Rattan%20Chair/Studio-Project-1-21.png"
+      ],
+      "localImageFiles": [
+        "IMG_4723.jpg",
+        "IMG_7851.jpg",
+        "IMG_7852.jpg",
+        "Studio-Project-1-21.png"
+      ],
+      "productFolder": "Dining Area/Kurt_/Chairs/Aurora Rattan Chair",
+      "sourceDocument": "Dining Area/Kurt_/Chairs/Aurora Rattan Chair/Aurora Rattan Chair.docx"
+    },
+    {
+      "name": "Butter Callstone Wood Chair (Natural-Gray Fabric)",
+      "company": "Furniture Source",
+      "price": 4990,
+      "description": "Made in a rubberwood frame in high-quality foam.",
+      "category": "Dining Area",
+      "subCategory": "Chairs",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown"
+        },
+        {
+          "key": "Document Material Name",
+          "value": "Butter Callstone Wood Chair (Natural/Gray Fabric)"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Kurt_/Chairs/Butter Callstone Wood Chair (Natural-Gray Fabric)/Butter Callstone Wood Chair (Natural_Gray Fabric).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Kurt_/Chairs/Butter Callstone Wood Chair (Natural-Gray Fabric)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Butter-Callstone-Gray-1.jpg, Butter-Callstone-Gray-2.jpg, Butter-Callstone-Gray-4.jpg, Studio-Project-12-4.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Callstone%20Wood%20Chair%20(Natural-Gray%20Fabric)/Butter-Callstone-Gray-1.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Callstone%20Wood%20Chair%20(Natural-Gray%20Fabric)/Butter-Callstone-Gray-2.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Callstone%20Wood%20Chair%20(Natural-Gray%20Fabric)/Butter-Callstone-Gray-4.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Callstone%20Wood%20Chair%20(Natural-Gray%20Fabric)/Studio-Project-12-4.png"
+      ],
+      "localImageFiles": [
+        "Butter-Callstone-Gray-1.jpg",
+        "Butter-Callstone-Gray-2.jpg",
+        "Butter-Callstone-Gray-4.jpg",
+        "Studio-Project-12-4.png"
+      ],
+      "productFolder": "Dining Area/Kurt_/Chairs/Butter Callstone Wood Chair (Natural-Gray Fabric)",
+      "sourceDocument": "Dining Area/Kurt_/Chairs/Butter Callstone Wood Chair (Natural-Gray Fabric)/Butter Callstone Wood Chair (Natural_Gray Fabric).docx"
+    },
+    {
+      "name": "Butter Cruise Wood Chair (Wood)",
+      "company": "Furniture Source",
+      "price": 4990,
+      "description": "Fabric/wood colored frame.",
+      "category": "Dining Area",
+      "subCategory": "Chairs",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Kurt_/Chairs/Butter Cruise Wood Chair (Wood)/Butter Cruise Wood Chair (Wood).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Kurt_/Chairs/Butter Cruise Wood Chair (Wood)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Butter-Cruise-Wood-1.jpg, Butter-Cruise-Wood-2.jpg, Gemini_Generated_Image_cfqz33cfqz33cfqz-1.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Cruise%20Wood%20Chair%20(Wood)/Butter-Cruise-Wood-1.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Cruise%20Wood%20Chair%20(Wood)/Butter-Cruise-Wood-2.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Cruise%20Wood%20Chair%20(Wood)/Gemini_Generated_Image_cfqz33cfqz33cfqz-1.png"
+      ],
+      "localImageFiles": [
+        "Butter-Cruise-Wood-1.jpg",
+        "Butter-Cruise-Wood-2.jpg",
+        "Gemini_Generated_Image_cfqz33cfqz33cfqz-1.png"
+      ],
+      "productFolder": "Dining Area/Kurt_/Chairs/Butter Cruise Wood Chair (Wood)",
+      "sourceDocument": "Dining Area/Kurt_/Chairs/Butter Cruise Wood Chair (Wood)/Butter Cruise Wood Chair (Wood).docx"
+    },
+    {
+      "name": "Butter Donut Chair (Natural-White Boucle)",
+      "company": "Furniture Source",
+      "price": 5990,
+      "description": "Made in a rubberwood frame in high-quality foam",
+      "category": "Dining Area",
+      "subCategory": "Chairs",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown"
+        },
+        {
+          "key": "Document Material Name",
+          "value": "Butter Donut Chair (Natural)"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Kurt_/Chairs/Butter Donut Chair (Natural-White Boucle)/Butter Donut Chair (Natural_White Boucle).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Kurt_/Chairs/Butter Donut Chair (Natural-White Boucle)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Butter-Cuurv-Cream-Wood2Main.jpg, Butter-donut-1.jpg, Butter-donut-4.jpg, Studio-Project-9-6.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Donut%20Chair%20(Natural-White%20Boucle)/Butter-Cuurv-Cream-Wood2Main.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Donut%20Chair%20(Natural-White%20Boucle)/Butter-donut-1.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Donut%20Chair%20(Natural-White%20Boucle)/Butter-donut-4.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Donut%20Chair%20(Natural-White%20Boucle)/Studio-Project-9-6.png"
+      ],
+      "localImageFiles": [
+        "Butter-Cuurv-Cream-Wood2Main.jpg",
+        "Butter-donut-1.jpg",
+        "Butter-donut-4.jpg",
+        "Studio-Project-9-6.png"
+      ],
+      "productFolder": "Dining Area/Kurt_/Chairs/Butter Donut Chair (Natural-White Boucle)",
+      "sourceDocument": "Dining Area/Kurt_/Chairs/Butter Donut Chair (Natural-White Boucle)/Butter Donut Chair (Natural_White Boucle).docx"
+    },
+    {
+      "name": "Butter Olan Chair (Black)",
+      "company": "Furniture Source",
+      "price": 4990,
+      "description": "Made with an iron frame and boucle fabric.",
+      "category": "Dining Area",
+      "subCategory": "Chairs",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown"
+        },
+        {
+          "key": "Document Material Name",
+          "value": "ButterOlan Chair (Black)"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Kurt_/Chairs/Butter Olan Chair (Black)/Untitled document.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Kurt_/Chairs/Butter Olan Chair (Black)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Butter-curvv-black-1.jpg, Butter-curvv-black-2.jpg, Butter-curvv-black-3.jpg, BUTTER-OLAN-CHAIR-BLACK-2-scaled.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Olan%20Chair%20(Black)/Butter-curvv-black-1.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Olan%20Chair%20(Black)/Butter-curvv-black-2.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Olan%20Chair%20(Black)/Butter-curvv-black-3.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Olan%20Chair%20(Black)/BUTTER-OLAN-CHAIR-BLACK-2-scaled.jpg"
+      ],
+      "localImageFiles": [
+        "Butter-curvv-black-1.jpg",
+        "Butter-curvv-black-2.jpg",
+        "Butter-curvv-black-3.jpg",
+        "BUTTER-OLAN-CHAIR-BLACK-2-scaled.jpg"
+      ],
+      "productFolder": "Dining Area/Kurt_/Chairs/Butter Olan Chair (Black)",
+      "sourceDocument": "Dining Area/Kurt_/Chairs/Butter Olan Chair (Black)/Untitled document.docx"
+    },
+    {
+      "name": "Alleso Dining Table 200cm",
+      "company": "Furniture Source",
+      "price": 23990,
+      "description": "Made with ceramic and glass table top or base. Legs are made of stainless steel shining gold.",
+      "category": "Dining Area",
+      "subCategory": "Tables",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Kurt_/Tables/Alleso Dining Table 200cm/Alleso Dining Table 200cm.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Kurt_/Tables/Alleso Dining Table 200cm"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Alleso-big.jpg, Studio-Project-15-3.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Alleso%20Dining%20Table%20200cm/Alleso-big.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Alleso%20Dining%20Table%20200cm/Studio-Project-15-3.png"
+      ],
+      "localImageFiles": [
+        "Alleso-big.jpg",
+        "Studio-Project-15-3.png"
+      ],
+      "productFolder": "Dining Area/Kurt_/Tables/Alleso Dining Table 200cm",
+      "sourceDocument": "Dining Area/Kurt_/Tables/Alleso Dining Table 200cm/Alleso Dining Table 200cm.docx"
+    },
+    {
+      "name": "Aurora Dining Table 180 cm (Natural)",
+      "company": "Furniture Source",
+      "price": 14990,
+      "description": "Rubberwood dining table. The tabletop is resistant to liquids, food stains, oil, heat, scratches, and bumps. Built to withstand daily use with durability in mind. Solid rubberwood legs for sturdy support. Recommended for indoor use only, comfortably seating 6-8 people.",
+      "category": "Dining Area",
+      "subCategory": "Tables",
+      "options": [
+        {
+          "type": "color",
+          "option": "Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Gold",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Grey, Gold"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Kurt_/Tables/Aurora Dining Table 180 cm (Natural)/Aurora Dining Table 180 cm (Natural).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Kurt_/Tables/Aurora Dining Table 180 cm (Natural)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Edited-2-min.jpg, Edited-min.jpg, FIT-EDITED-2-min.jpg, Studio-Project-1-21.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Aurora%20Dining%20Table%20180%20cm%20(Natural)/Edited-2-min.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Aurora%20Dining%20Table%20180%20cm%20(Natural)/Edited-min.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Aurora%20Dining%20Table%20180%20cm%20(Natural)/FIT-EDITED-2-min.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Aurora%20Dining%20Table%20180%20cm%20(Natural)/Studio-Project-1-21.png"
+      ],
+      "localImageFiles": [
+        "Edited-2-min.jpg",
+        "Edited-min.jpg",
+        "FIT-EDITED-2-min.jpg",
+        "Studio-Project-1-21.png"
+      ],
+      "productFolder": "Dining Area/Kurt_/Tables/Aurora Dining Table 180 cm (Natural)",
+      "sourceDocument": "Dining Area/Kurt_/Tables/Aurora Dining Table 180 cm (Natural)/Aurora Dining Table 180 cm (Natural).docx"
+    },
+    {
+      "name": "Danee Dining Set",
+      "company": "Furniture Source",
+      "price": 18990,
+      "description": "The table is beautifully made with a 6mm gloss sintered stone top and treated wood and rubber wood legs. The chair is made with rubber wood legs and a treated wood and foam with leather seat. The stool is made with treated wood and foam with cotton and linen rubber wood legs.",
+      "category": "Dining Area",
+      "subCategory": "Tables",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "White",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown, White"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Kurt_/Tables/Danee Dining Set/Danee Dining Set.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Kurt_/Tables/Danee Dining Set"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Danee-Dining-Final.jpg, LS357R1-A-dining-set-4.jpg, LS357R1-AT¦-¦¦¦¦-LS628S3-A¦-5.jpg, LS357R1-AT¦-3D-o¦v-¦¦¦¦-LS628S3-A¦-LS068S5-A¦-¦-2.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Danee%20Dining%20Set/Danee-Dining-Final.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Danee%20Dining%20Set/LS357R1-A-dining-set-4.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Danee%20Dining%20Set/LS357R1-AT%C2%A6-%C2%A6%C2%A6%C2%A6%C2%A6-LS628S3-A%C2%A6-5.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Danee%20Dining%20Set/LS357R1-AT%C2%A6-3D-o%C2%A6v-%C2%A6%C2%A6%C2%A6%C2%A6-LS628S3-A%C2%A6-LS068S5-A%C2%A6-%C2%A6-2.jpg"
+      ],
+      "localImageFiles": [
+        "Danee-Dining-Final.jpg",
+        "LS357R1-A-dining-set-4.jpg",
+        "LS357R1-AT¦-¦¦¦¦-LS628S3-A¦-5.jpg",
+        "LS357R1-AT¦-3D-o¦v-¦¦¦¦-LS628S3-A¦-LS068S5-A¦-¦-2.jpg"
+      ],
+      "productFolder": "Dining Area/Kurt_/Tables/Danee Dining Set",
+      "sourceDocument": "Dining Area/Kurt_/Tables/Danee Dining Set/Danee Dining Set.docx"
+    },
+    {
+      "name": "Fjallman Table 120 cm",
+      "company": "Furniture Source",
+      "price": 13990,
+      "description": "Top: MDF covered paper Leg: white powder coated",
+      "category": "Dining Area",
+      "subCategory": "Tables",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "White",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown, White"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Kurt_/Tables/Fjallman Table 120 cm/Fjallman Table 120 cm.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Kurt_/Tables/Fjallman Table 120 cm"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "FJALLMAN-TABLE-120CM-2-2.jpg, FJALLMAN-TABLE-120CM-3-1.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Fjallman%20Table%20120%20cm/FJALLMAN-TABLE-120CM-2-2.jpg",
+        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Fjallman%20Table%20120%20cm/FJALLMAN-TABLE-120CM-3-1.jpg"
+      ],
+      "localImageFiles": [
+        "FJALLMAN-TABLE-120CM-2-2.jpg",
+        "FJALLMAN-TABLE-120CM-3-1.jpg"
+      ],
+      "productFolder": "Dining Area/Kurt_/Tables/Fjallman Table 120 cm",
+      "sourceDocument": "Dining Area/Kurt_/Tables/Fjallman Table 120 cm/Fjallman Table 120 cm.docx"
+    },
+    {
+      "name": "RUNA DINING SET FOR 4",
+      "company": "BLIMS Fine Furniture",
+      "price": 27950,
+      "description": "A round dining set featuring a Smart Top table that is shock and scratch-resistant in a rough marble finish paired with elegant walnut stained beech wood legs. Bentwood chair with fabric cushion.",
+      "category": "Dining Area",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Walnut + Lava grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Walnut + Baby Blue",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Walnut + Smoke Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Set",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "90 Dia x 75 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Walnut + Lava grey, Walnut + Baby Blue, Walnut + Smoke Grey"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Set"
+        },
+        {
+          "key": "Size",
+          "value": "90 Dia x 75 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/all-dining/products/runa-dining-set-for-4"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "RUNA DINING SET FOR 4_1.png, RUNA DINING SET FOR 4_2.png, RUNA DINING SET FOR 4_3.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Warren/RUNA%20DINING%20SET%20FOR%204/RUNA%20DINING%20SET%20FOR%204_1.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/RUNA%20DINING%20SET%20FOR%204/RUNA%20DINING%20SET%20FOR%204_2.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/RUNA%20DINING%20SET%20FOR%204/RUNA%20DINING%20SET%20FOR%204_3.png"
+      ],
+      "localImageFiles": [
+        "RUNA DINING SET FOR 4_1.png",
+        "RUNA DINING SET FOR 4_2.png",
+        "RUNA DINING SET FOR 4_3.png"
+      ],
+      "productFolder": "Dining Area/Warren/RUNA DINING SET FOR 4",
+      "sourceDocument": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+    },
+    {
+      "name": "VERONA DINING SET FOR 6",
+      "company": "BLIMS Fine Furniture",
+      "price": 69950,
+      "description": "A modern luxe rectangular dining table with a white sintered top and bentwood dining chairs upholstered in fabric.",
+      "category": "Dining Area",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Walnut/ + Charcoal Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Set",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "180 x 90 x 76 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Walnut/ + Charcoal Grey"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Set"
+        },
+        {
+          "key": "Size",
+          "value": "180 x 90 x 76 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/products/verona-dining-set-for-6?pr_prod_strat=e5_desc&pr_rec_id=693f56df9&pr_rec_pid=8769256030435&pr_ref_pid=8264280768739&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "VERONA DINING SET FOR 6_1.png, VERONA DINING SET FOR 6_2.png, VERONA DINING SET FOR 6_3.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Warren/VERONA%20DINING%20SET%20FOR%206/VERONA%20DINING%20SET%20FOR%206_1.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/VERONA%20DINING%20SET%20FOR%206/VERONA%20DINING%20SET%20FOR%206_2.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/VERONA%20DINING%20SET%20FOR%206/VERONA%20DINING%20SET%20FOR%206_3.png"
+      ],
+      "localImageFiles": [
+        "VERONA DINING SET FOR 6_1.png",
+        "VERONA DINING SET FOR 6_2.png",
+        "VERONA DINING SET FOR 6_3.png"
+      ],
+      "productFolder": "Dining Area/Warren/VERONA DINING SET FOR 6",
+      "sourceDocument": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+    },
+    {
+      "name": "CARSON DINING SET FOR 8",
+      "company": "BLIMS Fine Furniture",
+      "price": 69950,
+      "description": "A mid-century modern inspired dining set with a rectangular extending dining table and unique curved back design chairs upholstered in fabric.",
+      "category": "Dining Area",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Walnut + grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Set",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "160-200 x 70 x 75.5 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Walnut + grey"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Set"
+        },
+        {
+          "key": "Size",
+          "value": "160-200 x 70 x 75.5 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/products/carson-dining-set-for-6?pr_prod_strat=e5_desc&pr_rec_id=5a77da898&pr_rec_pid=8966111264995&pr_ref_pid=8769256030435&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "CARSON DINING SET FOR 8_1.png, CARSON DINING SET FOR 8_2.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Warren/CARSON%20DINING%20SET%20FOR%208/CARSON%20DINING%20SET%20FOR%208_1.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/CARSON%20DINING%20SET%20FOR%208/CARSON%20DINING%20SET%20FOR%208_2.png"
+      ],
+      "localImageFiles": [
+        "CARSON DINING SET FOR 8_1.png",
+        "CARSON DINING SET FOR 8_2.png"
+      ],
+      "productFolder": "Dining Area/Warren/CARSON DINING SET FOR 8",
+      "sourceDocument": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+    },
+    {
+      "name": "BYRON EXT DINING SET FOR 6",
+      "company": "BLIMS Fine Furniture",
+      "price": 39950,
+      "description": "A mid-century inspired dining set with a rectangular butterfly extending dining table, Four bentwood chairs, and one fabric bench.",
+      "category": "Dining Area",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Walnut + Chino Ash Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Set",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "120(30) x 75 x 75 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Walnut + Chino Ash Grey"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Set"
+        },
+        {
+          "key": "Size",
+          "value": "120(30) x 75 x 75 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/products/byron-ext-dining-set-for-6?pr_prod_strat=e5_desc&pr_rec_id=6fdfceff0&pr_rec_pid=8264302624995&pr_ref_pid=8966111264995&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "BYRON EXT DINING SET FOR 6_1.png, BYRON EXT DINING SET FOR 6_2.png, BYRON EXT DINING SET FOR 6_3.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Warren/BYRON%20EXT%20DINING%20SET%20FOR%206/BYRON%20EXT%20DINING%20SET%20FOR%206_1.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/BYRON%20EXT%20DINING%20SET%20FOR%206/BYRON%20EXT%20DINING%20SET%20FOR%206_2.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/BYRON%20EXT%20DINING%20SET%20FOR%206/BYRON%20EXT%20DINING%20SET%20FOR%206_3.png"
+      ],
+      "localImageFiles": [
+        "BYRON EXT DINING SET FOR 6_1.png",
+        "BYRON EXT DINING SET FOR 6_2.png",
+        "BYRON EXT DINING SET FOR 6_3.png"
+      ],
+      "productFolder": "Dining Area/Warren/BYRON EXT DINING SET FOR 6",
+      "sourceDocument": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+    },
+    {
+      "name": "ALCOT EXT DINING SET FOR 6",
+      "company": "BLIMS Fine Furniture",
+      "price": 29962,
+      "description": "A rectangular dining set featuring a butterfly extending dining table and solid wood chairs with fabric cushions.",
+      "category": "Dining Area",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Baby White Espresso + Baby White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Set",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "150(40) x 90 x 75 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Baby White Espresso + Baby White"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Set"
+        },
+        {
+          "key": "Size",
+          "value": "150(40) x 90 x 75 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/products/alcot-ext-dining-set-for-6?pr_prod_strat=e5_desc&pr_rec_id=e88dfbe14&pr_rec_pid=8264300331235&pr_ref_pid=8264302624995&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "ALCOT EXT DINING SET FOR 6_1.png, ALCOT EXT DINING SET FOR 6_2.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Warren/ALCOT%20EXT%20DINING%20SET%20FOR%206/ALCOT%20EXT%20DINING%20SET%20FOR%206_1.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/ALCOT%20EXT%20DINING%20SET%20FOR%206/ALCOT%20EXT%20DINING%20SET%20FOR%206_2.png"
+      ],
+      "localImageFiles": [
+        "ALCOT EXT DINING SET FOR 6_1.png",
+        "ALCOT EXT DINING SET FOR 6_2.png"
+      ],
+      "productFolder": "Dining Area/Warren/ALCOT EXT DINING SET FOR 6",
+      "sourceDocument": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+    },
+    {
+      "name": "FEMMIE DINING TABLE",
+      "company": "BLIMS Fine Furniture",
+      "price": 8360,
+      "description": "A rectangular dining table with slightly rounded corner.",
+      "category": "Dining Area",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Table",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "120 x 80 x 75 CM",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Table"
+        },
+        {
+          "key": "Size",
+          "value": "120 x 80 x 75 CM"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/all-dining/products/femmie-dining-table"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "FEMMIE DINING TABLE_1.png, FEMMIE DINING TABLE_2.png, FEMMIE DINING TABLE_3.png, FEMMIE DINING TABLE_4.png, FEMMIE DINING TABLE_5.png, FEMMIE DINING TABLE_6.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Warren/FEMMIE%20DINING%20TABLE/FEMMIE%20DINING%20TABLE_1.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/FEMMIE%20DINING%20TABLE/FEMMIE%20DINING%20TABLE_2.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/FEMMIE%20DINING%20TABLE/FEMMIE%20DINING%20TABLE_3.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/FEMMIE%20DINING%20TABLE/FEMMIE%20DINING%20TABLE_4.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/FEMMIE%20DINING%20TABLE/FEMMIE%20DINING%20TABLE_5.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/FEMMIE%20DINING%20TABLE/FEMMIE%20DINING%20TABLE_6.png"
+      ],
+      "localImageFiles": [
+        "FEMMIE DINING TABLE_1.png",
+        "FEMMIE DINING TABLE_2.png",
+        "FEMMIE DINING TABLE_3.png",
+        "FEMMIE DINING TABLE_4.png",
+        "FEMMIE DINING TABLE_5.png",
+        "FEMMIE DINING TABLE_6.png"
+      ],
+      "productFolder": "Dining Area/Warren/FEMMIE DINING TABLE",
+      "sourceDocument": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+    },
+    {
+      "name": "MACE DINING TABLE",
+      "company": "BLIMS Fine Furniture",
+      "price": 35100,
+      "description": "Rectangular white matte ceramic dining table in black powder coating steel frame and base.",
+      "category": "Dining Area",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "White Matte + Black",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Table",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "180 x 90 x 75 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "White Matte + Black"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Table"
+        },
+        {
+          "key": "Size",
+          "value": "180 x 90 x 75 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/products/mace-dining-table?pr_prod_strat=e5_desc&pr_rec_id=38c3a4e11&pr_rec_pid=8613876859107&pr_ref_pid=8155064402147&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "MACE DINING TABLE_1.png, MACE DINING TABLE_2.png, MACE DINING TABLE_3.png, MACE DINING TABLE_4.png, MACE DINING TABLE_5.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Warren/MACE%20DINING%20TABLE/MACE%20DINING%20TABLE_1.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/MACE%20DINING%20TABLE/MACE%20DINING%20TABLE_2.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/MACE%20DINING%20TABLE/MACE%20DINING%20TABLE_3.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/MACE%20DINING%20TABLE/MACE%20DINING%20TABLE_4.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/MACE%20DINING%20TABLE/MACE%20DINING%20TABLE_5.png"
+      ],
+      "localImageFiles": [
+        "MACE DINING TABLE_1.png",
+        "MACE DINING TABLE_2.png",
+        "MACE DINING TABLE_3.png",
+        "MACE DINING TABLE_4.png",
+        "MACE DINING TABLE_5.png"
+      ],
+      "productFolder": "Dining Area/Warren/MACE DINING TABLE",
+      "sourceDocument": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+    },
+    {
+      "name": "BROOKLYN CHAIR",
+      "company": "BLIMS Fine Furniture",
+      "price": 1420,
+      "description": "Designed to be light but durable, this Uratex lifestyle chair without armrest is reinforced with fiberglass. It is coated with a UV stabilizer to protect the product from deterioration and minimize color fading and has non-slip furniture pads to keep the chair in place.",
+      "category": "Dining Area",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Blue",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Red",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Beige",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Black",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Chair",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "47.5 x 43 x 42 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Blue, Red, Beige, Black, White"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Chair"
+        },
+        {
+          "key": "Size",
+          "value": "47.5 x 43 x 42 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/all-dining/products/brooklyn-chair"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "BROOKLYN CHAIR_BEIGE_1.png, BROOKLYN CHAIR_BEIGE_2.png, BROOKLYN CHAIR_BLACK_1.png, BROOKLYN CHAIR_BLACK_2.png, BROOKLYN CHAIR_BLACK_3.png, BROOKLYN CHAIR_BROWN_1.png, BROOKLYN CHAIR_WHITE_1.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_BEIGE_1.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_BEIGE_2.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_BLACK_1.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_BLACK_2.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_BLACK_3.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_BROWN_1.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_WHITE_1.png"
+      ],
+      "localImageFiles": [
+        "BROOKLYN CHAIR_BEIGE_1.png",
+        "BROOKLYN CHAIR_BEIGE_2.png",
+        "BROOKLYN CHAIR_BLACK_1.png",
+        "BROOKLYN CHAIR_BLACK_2.png",
+        "BROOKLYN CHAIR_BLACK_3.png",
+        "BROOKLYN CHAIR_BROWN_1.png",
+        "BROOKLYN CHAIR_WHITE_1.png"
+      ],
+      "productFolder": "Dining Area/Warren/BROOKLYN CHAIR",
+      "sourceDocument": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+    },
+    {
+      "name": "SABRINA DINING CHAIR",
+      "company": "BLIMS Fine Furniture",
+      "price": 9855,
+      "description": "Elegant upholstered dining chair with button tufted backrest. Solid wood frame.",
+      "category": "Dining Area",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Cream",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Chair",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "50 x 57.9 x 89.6 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Cream"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Chair"
+        },
+        {
+          "key": "Size",
+          "value": "50 x 57.9 x 89.6 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/all-dining/products/sabrina-dining-chair?_pos=9&_fid=b93cc3ff2&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "SABRINA DINING CHAIR_1.png, SABRINA DINING CHAIR_2.png, SABRINA DINING CHAIR_3.png, SABRINA DINING CHAIR_4.png, SABRINA DINING CHAIR_5.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Warren/SABRINA%20DINING%20CHAIR/SABRINA%20DINING%20CHAIR_1.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/SABRINA%20DINING%20CHAIR/SABRINA%20DINING%20CHAIR_2.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/SABRINA%20DINING%20CHAIR/SABRINA%20DINING%20CHAIR_3.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/SABRINA%20DINING%20CHAIR/SABRINA%20DINING%20CHAIR_4.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/SABRINA%20DINING%20CHAIR/SABRINA%20DINING%20CHAIR_5.png"
+      ],
+      "localImageFiles": [
+        "SABRINA DINING CHAIR_1.png",
+        "SABRINA DINING CHAIR_2.png",
+        "SABRINA DINING CHAIR_3.png",
+        "SABRINA DINING CHAIR_4.png",
+        "SABRINA DINING CHAIR_5.png"
+      ],
+      "productFolder": "Dining Area/Warren/SABRINA DINING CHAIR",
+      "sourceDocument": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+    },
+    {
+      "name": "COUPE DRINKS CABINET",
+      "company": "BLIMS Fine Furniture",
+      "price": 9855,
+      "description": "A two door bar cabinet with nine bottle wine rack & hanging racks for glassware. One fixed shelf with metal handle.",
+      "category": "Dining Area",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Scarlet cherry",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Drinking Cabinet",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L115 x W48 x H107 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Scarlet cherry"
+        },
+        {
+          "key": "Type",
+          "value": "Drinking Cabinet"
+        },
+        {
+          "key": "Size",
+          "value": "L115 x W48 x H107 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/all-dining/products/coupe-drinks-cabinet?_pos=1&_fid=2a40f1152&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "COUPE DRINK CABINET_1.png, COUPE DRINK CABINET_2.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Dining%20Area/Warren/COUPE%20DRINKS%20CABINET/COUPE%20DRINK%20CABINET_1.png",
+        "http://localhost:3000/material-images/Dining%20Area/Warren/COUPE%20DRINKS%20CABINET/COUPE%20DRINK%20CABINET_2.png"
+      ],
+      "localImageFiles": [
+        "COUPE DRINK CABINET_1.png",
+        "COUPE DRINK CABINET_2.png"
+      ],
+      "productFolder": "Dining Area/Warren/COUPE DRINKS CABINET",
+      "sourceDocument": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+    },
+    {
+      "name": "Accre Round Table 120 cm",
+      "company": "Furniture Source",
+      "price": 9990,
+      "description": "Sintered stone and acrylic legs.",
+      "category": "Living Room",
+      "subCategory": "Side Table & Center Table",
+      "options": [
+        {
+          "type": "color",
+          "option": "Clear",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "White",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Clear, White"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/Center Table & Side Table/Accre Round Table 120 cm/Accre Round Table 120 cm.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/Center Table & Side Table/Accre Round Table 120 cm"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "DT-1.jpg, Gemini_Generated_Image_ku5fxeku5fxeku5f.png, Gemini_Generated_Image_nswzvmnswzvmnswz.png, Studio-Project-2-15.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Round%20Table%20120%20cm/DT-1.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Round%20Table%20120%20cm/Gemini_Generated_Image_ku5fxeku5fxeku5f.png",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Round%20Table%20120%20cm/Gemini_Generated_Image_nswzvmnswzvmnswz.png",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Round%20Table%20120%20cm/Studio-Project-2-15.png"
+      ],
+      "localImageFiles": [
+        "DT-1.jpg",
+        "Gemini_Generated_Image_ku5fxeku5fxeku5f.png",
+        "Gemini_Generated_Image_nswzvmnswzvmnswz.png",
+        "Studio-Project-2-15.png"
+      ],
+      "productFolder": "Living Room/Kurt_/Center Table & Side Table/Accre Round Table 120 cm",
+      "sourceDocument": "Living Room/Kurt_/Center Table & Side Table/Accre Round Table 120 cm/Accre Round Table 120 cm.docx"
+    },
+    {
+      "name": "Accre Stone Dining Table 160cm",
+      "company": "Furniture Source",
+      "price": 17990,
+      "description": "Made of acrylic and slate table top",
+      "category": "Living Room",
+      "subCategory": "Side Table & Center Table",
+      "options": [
+        {
+          "type": "color",
+          "option": "Clear",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "White",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Clear, White"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/Center Table & Side Table/Accre Stone Dining Table 160cm/Accre Stone Dining Table 160cm.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/Center Table & Side Table/Accre Stone Dining Table 160cm"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Accre-Stone-Dining-Table-2.jpg, Accre-Stone-Dining-Table-4.jpg, Accre-Stone-Dining-Table-8.jpg, Accre-Stone-Dining-Table.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Stone%20Dining%20Table%20160cm/Accre-Stone-Dining-Table-2.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Stone%20Dining%20Table%20160cm/Accre-Stone-Dining-Table-4.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Stone%20Dining%20Table%20160cm/Accre-Stone-Dining-Table-8.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Stone%20Dining%20Table%20160cm/Accre-Stone-Dining-Table.jpg"
+      ],
+      "localImageFiles": [
+        "Accre-Stone-Dining-Table-2.jpg",
+        "Accre-Stone-Dining-Table-4.jpg",
+        "Accre-Stone-Dining-Table-8.jpg",
+        "Accre-Stone-Dining-Table.jpg"
+      ],
+      "productFolder": "Living Room/Kurt_/Center Table & Side Table/Accre Stone Dining Table 160cm",
+      "sourceDocument": "Living Room/Kurt_/Center Table & Side Table/Accre Stone Dining Table 160cm/Accre Stone Dining Table 160cm.docx"
+    },
+    {
+      "name": "Barnes Bar Table 70 cm (White)",
+      "company": "Furniture Source",
+      "price": 3990,
+      "description": "N/A",
+      "category": "Living Room",
+      "subCategory": "Side Table & Center Table",
+      "options": [
+        {
+          "type": "color",
+          "option": "White",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "White"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/Center Table & Side Table/Barnes Bar Table 70 cm (White)/Barnes Bar Table 70 cm (White).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/Center Table & Side Table/Barnes Bar Table 70 cm (White)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "BARNES-BAR-TABLE-WHITE.jpg, Barnes-Doily-Bar-Table.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Barnes%20Bar%20Table%2070%20cm%20(White)/BARNES-BAR-TABLE-WHITE.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Barnes%20Bar%20Table%2070%20cm%20(White)/Barnes-Doily-Bar-Table.jpg"
+      ],
+      "localImageFiles": [
+        "BARNES-BAR-TABLE-WHITE.jpg",
+        "Barnes-Doily-Bar-Table.jpg"
+      ],
+      "productFolder": "Living Room/Kurt_/Center Table & Side Table/Barnes Bar Table 70 cm (White)",
+      "sourceDocument": "Living Room/Kurt_/Center Table & Side Table/Barnes Bar Table 70 cm (White)/Barnes Bar Table 70 cm (White).docx"
+    },
+    {
+      "name": "Challis Plastic Side Table 42 cm (Black)",
+      "company": "Furniture Source",
+      "price": 1990,
+      "description": "Polypropylene plastic with iron.",
+      "category": "Living Room",
+      "subCategory": "Side Table & Center Table",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/Center Table & Side Table/Challis Plastic Side Table 42 cm (Black)/Challis Plastic Side Table 42 cm (Black).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/Center Table & Side Table/Challis Plastic Side Table 42 cm (Black)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Black-2.jpg, Gallery-1-2.jpg, Gallery-2-2.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Challis%20Plastic%20Side%20Table%2042%20cm%20(Black)/Black-2.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Challis%20Plastic%20Side%20Table%2042%20cm%20(Black)/Gallery-1-2.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Challis%20Plastic%20Side%20Table%2042%20cm%20(Black)/Gallery-2-2.jpg"
+      ],
+      "localImageFiles": [
+        "Black-2.jpg",
+        "Gallery-1-2.jpg",
+        "Gallery-2-2.jpg"
+      ],
+      "productFolder": "Living Room/Kurt_/Center Table & Side Table/Challis Plastic Side Table 42 cm (Black)",
+      "sourceDocument": "Living Room/Kurt_/Center Table & Side Table/Challis Plastic Side Table 42 cm (Black)/Challis Plastic Side Table 42 cm (Black).docx"
+    },
+    {
+      "name": "Barron 2 Seater Sofabed",
+      "company": "Furniture Source",
+      "price": 19950,
+      "description": "A limited edition sofabed in a modern chic checkered fabric with matching pillow. Made with fabric cover, polyurethane foam and wooden frame and legs.",
+      "category": "Living Room",
+      "subCategory": "Sofa",
+      "options": [
+        {
+          "type": "color",
+          "option": "Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Grey, Brown"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/Sofa/Barron 2 Seater Sofabed/Barron 2 Seater Sofabed.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/Sofa/Barron 2 Seater Sofabed"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "barron-gallery-2.jpg, barron-gallery-3.jpg, barron-gallery-4.jpg, barron-gallery-7.jpg, barron-main-photo.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barron%202%20Seater%20Sofabed/barron-gallery-2.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barron%202%20Seater%20Sofabed/barron-gallery-3.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barron%202%20Seater%20Sofabed/barron-gallery-4.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barron%202%20Seater%20Sofabed/barron-gallery-7.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barron%202%20Seater%20Sofabed/barron-main-photo.jpg"
+      ],
+      "localImageFiles": [
+        "barron-gallery-2.jpg",
+        "barron-gallery-3.jpg",
+        "barron-gallery-4.jpg",
+        "barron-gallery-7.jpg",
+        "barron-main-photo.jpg"
+      ],
+      "productFolder": "Living Room/Kurt_/Sofa/Barron 2 Seater Sofabed",
+      "sourceDocument": "Living Room/Kurt_/Sofa/Barron 2 Seater Sofabed/Barron 2 Seater Sofabed.docx"
+    },
+    {
+      "name": "Barsten 5-in-1 Sofabed Leatheric (Beige)",
+      "company": "Furniture Source",
+      "price": 16990,
+      "description": "Made of our signature Leatheric material – a leather material that looks and feels like fabric, allowing for easy maintenance while enjoying the same benefit and aesthetic of a fabric sofa. Comes with a shelf, drinks table, and storage. Easily converted into a queen sized bed.",
+      "category": "Living Room",
+      "subCategory": "Sofa",
+      "options": [
+        {
+          "type": "color",
+          "option": "Beige",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Beige"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/Sofa/Barsten 5-in-1 Sofabed Leatheric (Beige)/Barsten 5-in-1 Sofabed Leatheric (Beige).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/Sofa/Barsten 5-in-1 Sofabed Leatheric (Beige)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "barron-main-photo-alter.jpg, IMG_2809.jpg, IMG_2810.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barsten%205-in-1%20Sofabed%20Leatheric%20(Beige)/barron-main-photo-alter.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barsten%205-in-1%20Sofabed%20Leatheric%20(Beige)/IMG_2809.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barsten%205-in-1%20Sofabed%20Leatheric%20(Beige)/IMG_2810.jpg"
+      ],
+      "localImageFiles": [
+        "barron-main-photo-alter.jpg",
+        "IMG_2809.jpg",
+        "IMG_2810.jpg"
+      ],
+      "productFolder": "Living Room/Kurt_/Sofa/Barsten 5-in-1 Sofabed Leatheric (Beige)",
+      "sourceDocument": "Living Room/Kurt_/Sofa/Barsten 5-in-1 Sofabed Leatheric (Beige)/Barsten 5-in-1 Sofabed Leatheric (Beige).docx"
+    },
+    {
+      "name": "Barsten 5-in-1 Sofabed Leatheric (Light Gray)",
+      "company": "Furniture Source",
+      "price": 19990,
+      "description": "Made of our signature Leatheric material – a leather material that looks and feels like fabric, allowing for easy maintenance while enjoying the same benefit and aesthetic of a fabric sofa. Comes with a shelf, drinks table, and storage. Easily converted into a queen sized bed.",
+      "category": "Living Room",
+      "subCategory": "Sofa",
+      "options": [
+        {
+          "type": "color",
+          "option": "Green",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Green"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/Sofa/Barsten 5-in-1 Sofabed Leatheric (Light Gray)/Barsten 5-in-1 Sofabed Leatheric (Light Gray).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/Sofa/Barsten 5-in-1 Sofabed Leatheric (Light Gray)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "barron-main-gray-photo-alter.jpg, IMG_2829.jpg, IMG_2830.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barsten%205-in-1%20Sofabed%20Leatheric%20(Light%20Gray)/barron-main-gray-photo-alter.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barsten%205-in-1%20Sofabed%20Leatheric%20(Light%20Gray)/IMG_2829.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barsten%205-in-1%20Sofabed%20Leatheric%20(Light%20Gray)/IMG_2830.jpg"
+      ],
+      "localImageFiles": [
+        "barron-main-gray-photo-alter.jpg",
+        "IMG_2829.jpg",
+        "IMG_2830.jpg"
+      ],
+      "productFolder": "Living Room/Kurt_/Sofa/Barsten 5-in-1 Sofabed Leatheric (Light Gray)",
+      "sourceDocument": "Living Room/Kurt_/Sofa/Barsten 5-in-1 Sofabed Leatheric (Light Gray)/Barsten 5-in-1 Sofabed Leatheric (Light Gray).docx"
+    },
+    {
+      "name": "Berkshire 2 Seater Sofabed (Blue)",
+      "company": "Furniture Source",
+      "price": 19990,
+      "description": "Made of fabric and high quality resilient polyurethane foam",
+      "category": "Living Room",
+      "subCategory": "Sofa",
+      "options": [
+        {
+          "type": "color",
+          "option": "Blue",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Blue"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/Sofa/Berkshire 2 Seater Sofabed (Blue)/Berkshire 2 Seater Sofabed (Blue).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/Sofa/Berkshire 2 Seater Sofabed (Blue)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Berkshire-1-Blue.jpg, Berkshire-2-Blue.jpg, Berkshire-3-Blue.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Berkshire%202%20Seater%20Sofabed%20(Blue)/Berkshire-1-Blue.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Berkshire%202%20Seater%20Sofabed%20(Blue)/Berkshire-2-Blue.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Berkshire%202%20Seater%20Sofabed%20(Blue)/Berkshire-3-Blue.jpg"
+      ],
+      "localImageFiles": [
+        "Berkshire-1-Blue.jpg",
+        "Berkshire-2-Blue.jpg",
+        "Berkshire-3-Blue.jpg"
+      ],
+      "productFolder": "Living Room/Kurt_/Sofa/Berkshire 2 Seater Sofabed (Blue)",
+      "sourceDocument": "Living Room/Kurt_/Sofa/Berkshire 2 Seater Sofabed (Blue)/Berkshire 2 Seater Sofabed (Blue).docx"
+    },
+    {
+      "name": "Berkshire 2 Seater Sofabed (Sage Green)",
+      "company": "Furniture Source",
+      "price": 16990,
+      "description": "Made of fabric and high quality resilient polyurethane foam",
+      "category": "Living Room",
+      "subCategory": "Sofa",
+      "options": [
+        {
+          "type": "color",
+          "option": "Gray",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Gray"
+        },
+        {
+          "key": "Document Material Name",
+          "value": "Berkshire 2 Seater Sofabed"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/Sofa/Berkshire 2 Seater Sofabed (Sage Green)/Berkshire 2 Seater Sofabed (Sage Green).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/Sofa/Berkshire 2 Seater Sofabed (Sage Green)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Berkshire-1-Sage-Green.jpg, Berkshire-2-Green.jpg, Berkshire-3-Green.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Berkshire%202%20Seater%20Sofabed%20(Sage%20Green)/Berkshire-1-Sage-Green.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Berkshire%202%20Seater%20Sofabed%20(Sage%20Green)/Berkshire-2-Green.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Berkshire%202%20Seater%20Sofabed%20(Sage%20Green)/Berkshire-3-Green.jpg"
+      ],
+      "localImageFiles": [
+        "Berkshire-1-Sage-Green.jpg",
+        "Berkshire-2-Green.jpg",
+        "Berkshire-3-Green.jpg"
+      ],
+      "productFolder": "Living Room/Kurt_/Sofa/Berkshire 2 Seater Sofabed (Sage Green)",
+      "sourceDocument": "Living Room/Kurt_/Sofa/Berkshire 2 Seater Sofabed (Sage Green)/Berkshire 2 Seater Sofabed (Sage Green).docx"
+    },
+    {
+      "name": "Midst TV Cabinet 150cm (White)",
+      "company": "Furniture Source",
+      "price": 7990,
+      "description": "Made from high-grade treated wood with melamine or foil, excellent heat and moisture resistance. Utility areas and two large drawers with roller drawer slides smooth and durability. It can be used for both living room and bedroom perfectly.",
+      "category": "Living Room",
+      "subCategory": "TV Stand",
+      "options": [
+        {
+          "type": "color",
+          "option": "White",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "White"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/TV Stand/Midst TV Cabinet 150cm (White)/Midst TV Cabinet 150cm (White).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/TV Stand/Midst TV Cabinet 150cm (White)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Midst-TV-Cabinet-180cm-White-3.jpg, Midst-TV-Cabinet-180cm-White.jpg, Studio-Project-4-17.png"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Midst%20TV%20Cabinet%20150cm%20(White)/Midst-TV-Cabinet-180cm-White-3.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Midst%20TV%20Cabinet%20150cm%20(White)/Midst-TV-Cabinet-180cm-White.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Midst%20TV%20Cabinet%20150cm%20(White)/Studio-Project-4-17.png"
+      ],
+      "localImageFiles": [
+        "Midst-TV-Cabinet-180cm-White-3.jpg",
+        "Midst-TV-Cabinet-180cm-White.jpg",
+        "Studio-Project-4-17.png"
+      ],
+      "productFolder": "Living Room/Kurt_/TV Stand/Midst TV Cabinet 150cm (White)",
+      "sourceDocument": "Living Room/Kurt_/TV Stand/Midst TV Cabinet 150cm (White)/Midst TV Cabinet 150cm (White).docx"
+    },
+    {
+      "name": "Milinion TV Cabinet 180 cm",
+      "company": "Furniture Source",
+      "price": 12990,
+      "description": "Made from treated wood to ensure a safe and durable build. Finished with melamine for excellent heat and moisture resistance. Features 2 smooth-running drawers for organized storage. Includes 2 open cabinets for concealed storage and an open shelf for easy access. Supported by coated steel legs for stability and style. Ideal for use in bedrooms or living spaces.",
+      "category": "Living Room",
+      "subCategory": "TV Stand",
+      "options": [
+        {
+          "type": "color",
+          "option": "Grey",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Grey"
+        },
+        {
+          "key": "Document Material Name",
+          "value": "Midst TV Cabinet 150cm (White)"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/TV Stand/Milinion TV Cabinet 180 cm/Milinion TV Cabinet 180 cm.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/TV Stand/Milinion TV Cabinet 180 cm"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "120026374_c_Milnion_180cm_GY.jpg, 120026374_f_Milnion_180cm_GY.jpg, 120026374_op2_Milnion_180cm_GY.jpg, 120026374_pf_Milnion_180cm_GY.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Milinion%20TV%20Cabinet%20180%20cm/120026374_c_Milnion_180cm_GY.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Milinion%20TV%20Cabinet%20180%20cm/120026374_f_Milnion_180cm_GY.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Milinion%20TV%20Cabinet%20180%20cm/120026374_op2_Milnion_180cm_GY.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Milinion%20TV%20Cabinet%20180%20cm/120026374_pf_Milnion_180cm_GY.jpg"
+      ],
+      "localImageFiles": [
+        "120026374_c_Milnion_180cm_GY.jpg",
+        "120026374_f_Milnion_180cm_GY.jpg",
+        "120026374_op2_Milnion_180cm_GY.jpg",
+        "120026374_pf_Milnion_180cm_GY.jpg"
+      ],
+      "productFolder": "Living Room/Kurt_/TV Stand/Milinion TV Cabinet 180 cm",
+      "sourceDocument": "Living Room/Kurt_/TV Stand/Milinion TV Cabinet 180 cm/Milinion TV Cabinet 180 cm.docx"
+    },
+    {
+      "name": "Picasso TV Cabinet 180cm (Ivory)",
+      "company": "Furniture Source",
+      "price": 18990,
+      "description": "Sleek TV cabinet design. The grooved leg details add a modern touch with gold aluminium trim. Can easily mix and match a room in a variety of styles. The Picasso series is designed to be placed together with sideboard cabinets. Showcase in the same series or mix and match with other furniture models. 18 mm frame with ivory melamine finish cross metal. 18 mm open door with ivory melamine finish cross metal. Interior layer made of 18 mm treated wood with ivory melamine finish. Left leg made of 18 mm MDF corrugation in ivory paint. Right leg made of 18 mm MDF in ivory paint. Decorated with gold aluminum strands. 3 openings with soft close hinges and 1 wooden adjustable layer.",
+      "category": "Living Room",
+      "subCategory": "TV Stand",
+      "options": [
+        {
+          "type": "color",
+          "option": "Ivory",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "White",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Ivory, White"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/TV Stand/Picasso TV Cabinet 180cm (Ivory)/Picasso TV Cabinet 180cm (Ivory).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/TV Stand/Picasso TV Cabinet 180cm (Ivory)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "110041005_c_Picasso_180cm_IV.jpg, 110041005_f_Picasso_180cm_IV.jpg, 110041005_op2_Picasso_180cm_IV.jpg, 110041005_op4_Picasso_180cm_IV.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Picasso%20TV%20Cabinet%20180cm%20(Ivory)/110041005_c_Picasso_180cm_IV.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Picasso%20TV%20Cabinet%20180cm%20(Ivory)/110041005_f_Picasso_180cm_IV.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Picasso%20TV%20Cabinet%20180cm%20(Ivory)/110041005_op2_Picasso_180cm_IV.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Picasso%20TV%20Cabinet%20180cm%20(Ivory)/110041005_op4_Picasso_180cm_IV.jpg"
+      ],
+      "localImageFiles": [
+        "110041005_c_Picasso_180cm_IV.jpg",
+        "110041005_f_Picasso_180cm_IV.jpg",
+        "110041005_op2_Picasso_180cm_IV.jpg",
+        "110041005_op4_Picasso_180cm_IV.jpg"
+      ],
+      "productFolder": "Living Room/Kurt_/TV Stand/Picasso TV Cabinet 180cm (Ivory)",
+      "sourceDocument": "Living Room/Kurt_/TV Stand/Picasso TV Cabinet 180cm (Ivory)/Picasso TV Cabinet 180cm (Ivory).docx"
+    },
+    {
+      "name": "Takayama Solid Wood TV Cabinet 150cm (Light Teak)",
+      "company": "Furniture Source",
+      "price": 18990,
+      "description": "Made from real rubber wood, woven with natural rattan, beautiful and unique. The wood grain is eye-catching, with stylish storage, ultra-clean lines, and natural elements. Rubber wood is painted with teak wood to look natural and add durability to the furniture as well. Adjustable shelves and soft-close hinges. Black plastic handles and rubber wood legs. Real rattan hand-woven coated with moisture repellent and insect. It is perfectly combined with other furniture in the Takayama series. As it is made of natural wood, resulting in different colors and patterns in each piece. Furniture for indoor use only",
+      "category": "Living Room",
+      "subCategory": "TV Stand",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/TV Stand/Takayama Solid Wood TV Cabinet 150cm (Light Teak)/Takayama Solid Wood TV Cabinet 150cm (Light Teak).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/TV Stand/Takayama Solid Wood TV Cabinet 150cm (Light Teak)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "120024993_c_Takayama_150cm_LTK.jpg, 120024993_f_Takayama_150cm_LTK.jpg, 120024993_op8_Takayama_150cm_LTK.jpg, 120024993_pc_Takayama_150cm_LTK.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Takayama%20Solid%20Wood%20TV%20Cabinet%20150cm%20(Light%20Teak)/120024993_c_Takayama_150cm_LTK.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Takayama%20Solid%20Wood%20TV%20Cabinet%20150cm%20(Light%20Teak)/120024993_f_Takayama_150cm_LTK.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Takayama%20Solid%20Wood%20TV%20Cabinet%20150cm%20(Light%20Teak)/120024993_op8_Takayama_150cm_LTK.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Takayama%20Solid%20Wood%20TV%20Cabinet%20150cm%20(Light%20Teak)/120024993_pc_Takayama_150cm_LTK.jpg"
+      ],
+      "localImageFiles": [
+        "120024993_c_Takayama_150cm_LTK.jpg",
+        "120024993_f_Takayama_150cm_LTK.jpg",
+        "120024993_op8_Takayama_150cm_LTK.jpg",
+        "120024993_pc_Takayama_150cm_LTK.jpg"
+      ],
+      "productFolder": "Living Room/Kurt_/TV Stand/Takayama Solid Wood TV Cabinet 150cm (Light Teak)",
+      "sourceDocument": "Living Room/Kurt_/TV Stand/Takayama Solid Wood TV Cabinet 150cm (Light Teak)/Takayama Solid Wood TV Cabinet 150cm (Light Teak).docx"
+    },
+    {
+      "name": "Wasabi Solid Wood TV Cabinet 200CM (Natural)",
+      "company": "Furniture Source",
+      "price": 17990,
+      "description": "Enhance your living area with this large TV cabinet. Suitable for any room, this is the ideal solution for neatly arranging all of your media essentials. Made with a combination of real solid rubberwood, protective paper foil and treated wood, this attractive cabinet is built to last. There are 2 doors, left and right, 2 drawers in the middle, able to store a variety of things. and dust-free as well. Solid rubberwood exterior with solid wood adjustable shelving. Solid rubberwood legs with middle leg for better support. Soft close hinges for silent closing. Suitable for TV screens up to 75 inch with a center stand. Clear coating retains a natural look with added durability. Natural wood displays different color and patterns in each piece.",
+      "category": "Living Room",
+      "subCategory": "TV Stand",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Kurt_/TV Stand/Wasabi Solid Wood TV Cabinet 200CM (Natural)/Wasabi Solid Wood TV Cabinet 200CM (Natural).docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Kurt_/TV Stand/Wasabi Solid Wood TV Cabinet 200CM (Natural)"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "120025475_2.jpg, 120025475_3.jpg, 120025475_7.jpg, 120025475.jpg"
+        }
+      ],
+      "image": [
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Wasabi%20Solid%20Wood%20TV%20Cabinet%20200CM%20(Natural)/120025475_2.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Wasabi%20Solid%20Wood%20TV%20Cabinet%20200CM%20(Natural)/120025475_3.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Wasabi%20Solid%20Wood%20TV%20Cabinet%20200CM%20(Natural)/120025475_7.jpg",
+        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Wasabi%20Solid%20Wood%20TV%20Cabinet%20200CM%20(Natural)/120025475.jpg"
+      ],
+      "localImageFiles": [
+        "120025475_2.jpg",
+        "120025475_3.jpg",
+        "120025475_7.jpg",
+        "120025475.jpg"
+      ],
+      "productFolder": "Living Room/Kurt_/TV Stand/Wasabi Solid Wood TV Cabinet 200CM (Natural)",
+      "sourceDocument": "Living Room/Kurt_/TV Stand/Wasabi Solid Wood TV Cabinet 200CM (Natural)/Wasabi Solid Wood TV Cabinet 200CM (Natural).docx"
+    }
+  ]
+}

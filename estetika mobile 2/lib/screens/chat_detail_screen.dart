@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:estetika_ui/config/api_config.dart';
 import 'package:estetika_ui/screens/inbox_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
@@ -13,8 +14,8 @@ class ChatDetailScreen extends StatefulWidget {
   final List<MessageItem> messages;
   final bool isOnline;
   final String recipientId;
-  final Function(String) onSendMessage;
-  final Function({
+  final String Function(String) onSendMessage;
+  final String Function({
     required String fileLink,
     required String fileType,
     required String fileName,
@@ -95,7 +96,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   void _sendMessage() {
     if (_messageController.text.trim().isNotEmpty) {
-      widget.onSendMessage(_messageController.text.trim());
+      final deliveryStatus =
+          widget.onSendMessage(_messageController.text.trim());
 
       setState(() {
         _localMessages.add(
@@ -106,6 +108,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             timestamp: DateTime.now(),
             isFromUser: true,
             isRead: true,
+            deliveryStatus: deliveryStatus,
           ),
         );
         _isTyping = false;
@@ -530,17 +533,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       ),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: isFromUser
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
                 children: [
                   contentWidget,
                   const SizedBox(height: 4),
-                  Text(
-                    _formatTimestamp(message.timestamp),
-                    style: TextStyle(
-                      color: isFromUser ? Colors.white70 : Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                  ),
+                  _buildMessageMeta(message),
                 ],
               ),
             ),
@@ -556,6 +555,83 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     return '$hour:$minute';
   }
 
+  Widget _buildMessageMeta(MessageItem message) {
+    final isFromUser = message.isFromUser;
+    final metaColor = isFromUser ? Colors.white70 : Colors.grey[600]!;
+
+    if (!isFromUser) {
+      return Text(
+        _formatTimestamp(message.timestamp),
+        style: TextStyle(
+          color: metaColor,
+          fontSize: 12,
+        ),
+      );
+    }
+
+    final status = message.deliveryStatus ?? (message.isRead ? 'read' : 'sent');
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          _formatTimestamp(message.timestamp),
+          style: TextStyle(
+            color: metaColor,
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Icon(
+          _deliveryStatusIcon(status),
+          size: 14,
+          color: metaColor,
+        ),
+        const SizedBox(width: 3),
+        Text(
+          _deliveryStatusLabel(status),
+          style: TextStyle(
+            color: metaColor,
+            fontSize: 11,
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData _deliveryStatusIcon(String status) {
+    switch (status) {
+      case 'read':
+      case 'delivered':
+        return Icons.done_all;
+      case 'not_sent':
+      case 'failed':
+        return Icons.error_outline;
+      case 'sending':
+        return Icons.schedule;
+      case 'sent':
+      default:
+        return Icons.done;
+    }
+  }
+
+  String _deliveryStatusLabel(String status) {
+    switch (status) {
+      case 'read':
+        return 'Read';
+      case 'delivered':
+        return 'Delivered';
+      case 'not_sent':
+      case 'failed':
+        return 'Not sent';
+      case 'sending':
+        return 'Sending';
+      case 'sent':
+      default:
+        return 'Sent';
+    }
+  }
+
   Future<void> _pickAndSendImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -568,7 +644,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final token = prefs.getString('token');
     if (token == null) return;
 
-    final uri = Uri.parse('http://10.0.2.2:3000/api/upload/message');
+    final uri = Uri.parse('${ApiConfig.apiBaseUrl}/upload/message');
     final request = http.MultipartRequest('POST', uri)
       ..headers['Authorization'] = 'Bearer $token'
       ..files.add(await http.MultipartFile.fromPath('file', file.path));
@@ -581,7 +657,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       final fileLink = data['fileLink'];
       final fileName = file.path.split('/').last;
 
-      widget.onSendFile(
+      final deliveryStatus = widget.onSendFile(
         fileLink: fileLink,
         fileType: isImage ? 'Image' : 'File',
         fileName: fileName,
@@ -597,6 +673,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             timestamp: DateTime.now(),
             isFromUser: true,
             isRead: true,
+            deliveryStatus: deliveryStatus,
             fileLink: fileLink,
             fileType: isImage ? 'Image' : 'File',
             fileName: fileName,

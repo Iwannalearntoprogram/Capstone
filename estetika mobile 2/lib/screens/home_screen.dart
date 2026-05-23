@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:estetika_ui/config/api_config.dart';
 import 'package:flutter_carousel_slider/carousel_slider.dart';
 import 'package:estetika_ui/widgets/custom_app_bar.dart';
 import 'package:estetika_ui/screens/projects_screen.dart';
@@ -31,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       final response = await http.get(
-        Uri.parse('https://moss-manila.onrender.com/api/project?index=true'),
+        Uri.parse('${ApiConfig.apiBaseUrl}/project?index=true'),
         headers: {
           if (token != null) 'Authorization': 'Bearer $token',
         },
@@ -61,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       final response = await http.get(
-        Uri.parse('https://moss-manila.onrender.com/api/user'),
+        Uri.parse('${ApiConfig.apiBaseUrl}/user'),
         headers: {
           if (token != null) 'Authorization': 'Bearer $token',
         },

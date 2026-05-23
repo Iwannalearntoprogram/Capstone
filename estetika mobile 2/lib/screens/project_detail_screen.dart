@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:estetika_ui/config/api_config.dart';
 import 'package:estetika_ui/widgets/custom_app_bar.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -83,8 +84,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       final token = prefs.getString('token');
       final projectId = _projectData['_id'];
       final response = await http.get(
-        Uri.parse(
-            'https://moss-manila.onrender.com/api/phase?projectId=$projectId'),
+        Uri.parse('${ApiConfig.apiBaseUrl}/phase?projectId=$projectId'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
@@ -130,7 +130,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         final phaseId =
             id is Map && id.containsKey('_id') ? id['_id'] : id.toString();
         final response = await http.get(
-          Uri.parse('https://moss-manila.onrender.com/api/phase?id=$phaseId'),
+          Uri.parse('${ApiConfig.apiBaseUrl}/phase?id=$phaseId'),
           headers: {
             'Content-Type': 'application/json',
             if (token != null) 'Authorization': 'Bearer $token',
@@ -243,7 +243,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     try {
       final response = await http.get(
         Uri.parse(
-            'https://moss-manila.onrender.com/api/project/update?projectId=$projectId'),
+            '${ApiConfig.apiBaseUrl}/project/update?projectId=$projectId'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
