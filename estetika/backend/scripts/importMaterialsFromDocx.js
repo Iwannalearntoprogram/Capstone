@@ -12,9 +12,17 @@ const {
   uploadBytes,
   getDownloadURL,
 } = require("firebase/storage");
+const { v2: cloudinary } = require("cloudinary");
 
 dotenv.config({ path: path.resolve(__dirname, "..", ".env") });
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
 
 const Material = require("../models/Project/Material");
 const { generateEmbedding } = require("../utils/embed");
@@ -56,6 +64,7 @@ function parseArgs(argv) {
     dryRun: false,
     skipEmbeddings: false,
     skipImages: false,
+    updateImagesOnly: false,
     imageMode: process.env.MATERIAL_IMAGE_MODE || "static",
     materialsRoot: DEFAULT_MATERIALS_ROOT,
     jsonOutput: DEFAULT_JSON_OUTPUT,
@@ -66,6 +75,7 @@ function parseArgs(argv) {
     if (arg === "--dry-run") args.dryRun = true;
     else if (arg === "--no-embed") args.skipEmbeddings = true;
     else if (arg === "--skip-images") args.skipImages = true;
+    else if (arg === "--update-images-only") args.updateImagesOnly = true;
     else if (arg === "--image-mode") args.imageMode = argv[++i];
     else if (arg === "--materials-root") args.materialsRoot = path.resolve(argv[++i]);
     else if (arg === "--json-output") args.jsonOutput = path.resolve(argv[++i]);
@@ -76,7 +86,8 @@ Options:
   --dry-run             Parse, validate, match images, and save JSON only
   --no-embed            Skip OpenAI embedding generation
   --skip-images         Do not upload or update material images
-  --image-mode MODE     static (default) or firebase
+  --update-images-only  Only update images on existing MongoDB materials
+  --image-mode MODE     static (default), firebase, or cloudinary
   --materials-root DIR  Override the source Materials directory
   --json-output FILE    Override the JSON export file path
 `);
@@ -84,8 +95,12 @@ Options:
     }
   }
 
-  if (!["static", "firebase"].includes(args.imageMode)) {
-    throw new Error("--image-mode must be either static or firebase");
+  if (!["static", "firebase", "cloudinary"].includes(args.imageMode)) {
+    throw new Error("--image-mode must be static, firebase, or cloudinary");
+  }
+
+  if (args.updateImagesOnly) {
+    args.skipEmbeddings = true;
   }
 
   return args;
@@ -368,7 +383,43 @@ function getFirebaseStorage() {
   return getStorage();
 }
 
-async function uploadMaterialImages(record, storage) {
+function assertCloudinaryConfig() {
+  if (
+    !process.env.CLOUDINARY_CLOUD_NAME ||
+    !process.env.CLOUDINARY_API_KEY ||
+    !process.env.CLOUDINARY_API_SECRET
+  ) {
+    throw new Error(
+      "Missing Cloudinary env vars: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET"
+    );
+  }
+}
+
+async function uploadBufferToCloudinary(buffer, options) {
+  assertCloudinaryConfig();
+
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: "image",
+        overwrite: true,
+        invalidate: true,
+        ...options,
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        if (!result?.secure_url) {
+          return reject(new Error("Cloudinary upload did not return a URL"));
+        }
+        resolve(result.secure_url);
+      }
+    );
+
+    uploadStream.end(buffer);
+  });
+}
+
+async function uploadMaterialImagesToFirebase(record, storage) {
   const urls = [];
   const materialSlug = slugify(record.name);
 
@@ -387,6 +438,39 @@ async function uploadMaterialImages(record, storage) {
   }
 
   return urls;
+}
+
+async function uploadMaterialImagesToCloudinary(record) {
+  const urls = [];
+  const materialSlug = slugify(record.name);
+
+  for (const imageFile of record.localImageFiles) {
+    const buffer = await fsp.readFile(imageFile);
+    const fileName = slugify(path.basename(imageFile, path.extname(imageFile)));
+    const url = await uploadBufferToCloudinary(buffer, {
+      folder: `materials/imported/${materialSlug}`,
+      public_id: fileName,
+    });
+    urls.push(url);
+  }
+
+  return urls;
+}
+
+async function buildImageUrls(record, args, storage) {
+  if (record.localImageFiles.length === 0) return [];
+
+  if (args.imageMode === "firebase") {
+    return uploadMaterialImagesToFirebase(record, storage);
+  }
+
+  if (args.imageMode === "cloudinary") {
+    return uploadMaterialImagesToCloudinary(record);
+  }
+
+  return record.localImageFiles.map((file) =>
+    toStaticImageUrl(args.materialsRoot, file)
+  );
 }
 
 async function buildEmbedding(record, existing) {
@@ -474,18 +558,24 @@ async function importRecords(records, args) {
     throw new Error("Missing MONGO_URI in backend/.env");
   }
 
-  await mongoose.connect(process.env.MONGO_URI);
+  await mongoose.connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 20000,
+  });
   const storage =
     !args.skipImages && args.imageMode === "firebase"
       ? getFirebaseStorage()
       : null;
   const summary = {
+    dryRun: args.dryRun,
+    updateImagesOnly: args.updateImagesOnly,
     inserted: 0,
     updated: 0,
+    matched: 0,
     failed: 0,
     imageLinks: 0,
     imageMode: args.skipImages ? "skipped" : args.imageMode,
     noImages: [],
+    missingMongoMatches: [],
     errors: [],
   };
 
@@ -498,14 +588,45 @@ async function importRecords(records, args) {
           category: record.category,
         });
 
+        if (args.updateImagesOnly) {
+          if (!existing) {
+            summary.missingMongoMatches.push({
+              name: record.name,
+              company: record.company,
+              category: record.category,
+              sourceDocument: record.sourceDocument,
+            });
+            continue;
+          }
+
+          summary.matched += 1;
+
+          if (record.localImageFiles.length === 0) {
+            summary.noImages.push(record.name);
+            continue;
+          }
+
+          let imageUrls = existing.image || [];
+          if (!args.skipImages && !args.dryRun) {
+            imageUrls = await buildImageUrls(record, args, storage);
+            await Material.findByIdAndUpdate(
+              existing._id,
+              { $set: { image: imageUrls } },
+              { new: true, runValidators: true }
+            );
+            record.image = imageUrls;
+            summary.updated += 1;
+          } else {
+            record.image = imageUrls;
+          }
+
+          summary.imageLinks += record.localImageFiles.length;
+          continue;
+        }
+
         let imageUrls = existing?.image || [];
-        if (!args.skipImages && record.localImageFiles.length > 0 && args.imageMode === "firebase") {
-          imageUrls = await uploadMaterialImages(record, storage);
-          summary.imageLinks += imageUrls.length;
-        } else if (!args.skipImages && record.localImageFiles.length > 0) {
-          imageUrls = record.localImageFiles.map((file) =>
-            toStaticImageUrl(args.materialsRoot, file)
-          );
+        if (!args.skipImages && record.localImageFiles.length > 0) {
+          imageUrls = await buildImageUrls(record, args, storage);
           summary.imageLinks += imageUrls.length;
         } else if (record.localImageFiles.length === 0) {
           summary.noImages.push(record.name);
@@ -570,7 +691,7 @@ async function main() {
   }
 
   let importSummary = null;
-  if (!args.dryRun) {
+  if (!args.dryRun || args.updateImagesOnly) {
     importSummary = await importRecords(records, args);
   }
 

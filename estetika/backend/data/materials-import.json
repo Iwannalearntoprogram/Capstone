@@ -1,17 +1,21 @@
 {
-  "generatedAt": "2026-05-17T21:21:41.829Z",
+  "generatedAt": "2026-05-23T19:53:18.771Z",
   "dryRun": false,
   "docxCount": 25,
   "materialCount": 43,
   "missingImageCount": 0,
   "missingImages": [],
   "importSummary": {
-    "inserted": 43,
-    "updated": 0,
+    "dryRun": false,
+    "updateImagesOnly": true,
+    "inserted": 0,
+    "updated": 43,
+    "matched": 43,
     "failed": 0,
     "imageLinks": 165,
-    "imageMode": "static",
+    "imageMode": "cloudinary",
     "noImages": [],
+    "missingMongoMatches": [],
     "errors": []
   },
   "materials": [
@@ -70,9 +74,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Bed%20Room/Warren/LAUREN%20QUEEN%20BED/LAUREN%20QUEEN%20BED_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/LAUREN%20QUEEN%20BED/LAUREN%20QUEEN%20BED_2.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/LAUREN%20QUEEN%20BED/LAUREN%20QUEEN%20BED_3.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565826/materials/imported/lauren-queen-bed/lauren-queen-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565828/materials/imported/lauren-queen-bed/lauren-queen-bed-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565830/materials/imported/lauren-queen-bed/lauren-queen-bed-3.png"
       ],
       "localImageFiles": [
         "LAUREN QUEEN BED_1.png",
@@ -137,10 +141,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Bed%20Room/Warren/LYRA%20KING%20BED/LYRA%20KING%20BED_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/LYRA%20KING%20BED/LYRA%20KING%20BED_2.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/LYRA%20KING%20BED/LYRA%20KING%20BED_3.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/LYRA%20KING%20BED/LYRA%20KING%20BED_4.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565833/materials/imported/lyra-king-bed/lyra-king-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565834/materials/imported/lyra-king-bed/lyra-king-bed-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565837/materials/imported/lyra-king-bed/lyra-king-bed-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565839/materials/imported/lyra-king-bed/lyra-king-bed-4.png"
       ],
       "localImageFiles": [
         "LYRA KING BED_1.png",
@@ -206,10 +210,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Bed%20Room/Warren/GUNNAR%20DOUBLE%20BED/GUNNAR%20DOUBLE%20BED_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/GUNNAR%20DOUBLE%20BED/GUNNAR%20DOUBLE%20BED_2.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/GUNNAR%20DOUBLE%20BED/GUNNAR%20DOUBLE%20BED_3.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/GUNNAR%20DOUBLE%20BED/GUNNAR%20DOUBLE%20BED_4.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565840/materials/imported/gunnar-double-bed/gunnar-double-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565841/materials/imported/gunnar-double-bed/gunnar-double-bed-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565842/materials/imported/gunnar-double-bed/gunnar-double-bed-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565844/materials/imported/gunnar-double-bed/gunnar-double-bed-4.png"
       ],
       "localImageFiles": [
         "GUNNAR DOUBLE BED_1.png",
@@ -285,8 +289,8 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Bed%20Room/Warren/DALLAS%20II%20QUEEN%20BED/DALLAS%20II%20QUEEN%20BED_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/DALLAS%20II%20QUEEN%20BED/DALLAS%20II%20QUEEN%20BED_2.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565845/materials/imported/dallas-ii-queen-bed/dallas-ii-queen-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565847/materials/imported/dallas-ii-queen-bed/dallas-ii-queen-bed-2.png"
       ],
       "localImageFiles": [
         "DALLAS II QUEEN BED_1.png",
@@ -355,9 +359,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Bed%20Room/Warren/HAVANA%20KING%20BED/HAVANA%20KING%20BED_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/HAVANA%20KING%20BED/HAVANA%20KING%20BED_2.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/HAVANA%20KING%20BED/HAVANA%20KING%20BED_3.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565848/materials/imported/havana-king-bed/havana-king-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565848/materials/imported/havana-king-bed/havana-king-bed-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565849/materials/imported/havana-king-bed/havana-king-bed-3.png"
       ],
       "localImageFiles": [
         "HAVANA KING BED_1.png",
@@ -432,11 +436,11 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Bed%20Room/Warren/OSKAR%20II%20DOUBLE%20BED/OSKAR%20II%20DOUBLE%20BED_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/OSKAR%20II%20DOUBLE%20BED/OSKAR%20II%20DOUBLE%20BED_2.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/OSKAR%20II%20DOUBLE%20BED/OSKAR%20II%20DOUBLE%20BED_3.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/OSKAR%20II%20DOUBLE%20BED/OSKAR%20II%20DOUBLE%20BED_4.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/OSKAR%20II%20DOUBLE%20BED/OSKAR%20II%20DOUBLE%20BED_5.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565850/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565851/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565852/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565853/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565854/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-5.png"
       ],
       "localImageFiles": [
         "OSKAR II DOUBLE BED_1.png",
@@ -503,9 +507,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Bed%20Room/Warren/LAUREN%20DRESSER/LAUREN%20DRESSER_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/LAUREN%20DRESSER/LAUREN%20DRESSER_2.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/LAUREN%20DRESSER/LAUREN%20DRESSER_3.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565855/materials/imported/lauren-dresser/lauren-dresser-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565856/materials/imported/lauren-dresser/lauren-dresser-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565858/materials/imported/lauren-dresser/lauren-dresser-3.png"
       ],
       "localImageFiles": [
         "LAUREN DRESSER_1.png",
@@ -575,14 +579,14 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_GREY_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_GREY_2.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_GREY_3.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_GREY_4.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_GREY_5.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_GREY_6.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_MINT%20GREEN_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/SEOUL%20CHEST%20OF%20DRAWERS/SEOUL%20CHEST%20OF%20DRAWERS_MINT%20GREEN_2.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565859/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565859/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565860/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565861/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565862/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565863/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565863/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-mint-green-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565865/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-mint-green-2.png"
       ],
       "localImageFiles": [
         "SEOUL CHEST OF DRAWERS_GREY_1.png",
@@ -662,15 +666,15 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_ALDEARLY_2.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_ALDERLY%20CHARCOAL_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_MARBELLA%20DARK%20GREY_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_PENDLE%20OATMEAL_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_PENDLE%20OATMEAL_2.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_PENDLE%20OATMEAL_3.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_PENDLE%20OATMEAL_5.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_PENDLE%20OATMEAL_6.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/ANDANTE%20SINGLE%20BED/ANDANTE%20SINGLE%20BED_PENDLE_OATMEAL_4.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565866/materials/imported/andante-single-bed/andante-single-bed-aldearly-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565866/materials/imported/andante-single-bed/andante-single-bed-alderly-charcoal-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565867/materials/imported/andante-single-bed/andante-single-bed-marbella-dark-grey-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565868/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565869/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565870/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565870/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565872/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565872/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-4.png"
       ],
       "localImageFiles": [
         "ANDANTE SINGLE BED_ALDEARLY_2.png",
@@ -751,12 +755,12 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Bed%20Room/Warren/OLI%20II%20SINGLE%20BED/OLI%20II%20SINGLE%20BED_1.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/OLI%20II%20SINGLE%20BED/OLI%20II%20SINGLE%20BED_2.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/OLI%20II%20SINGLE%20BED/OLI%20II%20SINGLE%20BED_3.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/OLI%20II%20SINGLE%20BED/OLI%20II%20SINGLE%20BED_4.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/OLI%20II%20SINGLE%20BED/OLI%20II%20SINGLE%20BED_5.png",
-        "http://localhost:3000/material-images/Bed%20Room/Warren/OLI%20II%20SINGLE%20BED/OLI%20II%20SINGLE%20BED_6.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565873/materials/imported/oli-ii-single-bed/oli-ii-single-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565876/materials/imported/oli-ii-single-bed/oli-ii-single-bed-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565876/materials/imported/oli-ii-single-bed/oli-ii-single-bed-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565877/materials/imported/oli-ii-single-bed/oli-ii-single-bed-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565878/materials/imported/oli-ii-single-bed/oli-ii-single-bed-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565879/materials/imported/oli-ii-single-bed/oli-ii-single-bed-6.png"
       ],
       "localImageFiles": [
         "OLI II SINGLE BED_1.png",
@@ -802,10 +806,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Aurora%20Rattan%20Chair/IMG_4723.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Aurora%20Rattan%20Chair/IMG_7851.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Aurora%20Rattan%20Chair/IMG_7852.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Aurora%20Rattan%20Chair/Studio-Project-1-21.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565880/materials/imported/aurora-rattan-chair/img-4723.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565881/materials/imported/aurora-rattan-chair/img-7851.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565882/materials/imported/aurora-rattan-chair/img-7852.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565884/materials/imported/aurora-rattan-chair/studio-project-1-21.png"
       ],
       "localImageFiles": [
         "IMG_4723.jpg",
@@ -853,10 +857,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Callstone%20Wood%20Chair%20(Natural-Gray%20Fabric)/Butter-Callstone-Gray-1.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Callstone%20Wood%20Chair%20(Natural-Gray%20Fabric)/Butter-Callstone-Gray-2.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Callstone%20Wood%20Chair%20(Natural-Gray%20Fabric)/Butter-Callstone-Gray-4.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Callstone%20Wood%20Chair%20(Natural-Gray%20Fabric)/Studio-Project-12-4.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565885/materials/imported/butter-callstone-wood-chair-natural-gray-fabric/butter-callstone-gray-1.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565885/materials/imported/butter-callstone-wood-chair-natural-gray-fabric/butter-callstone-gray-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565886/materials/imported/butter-callstone-wood-chair-natural-gray-fabric/butter-callstone-gray-4.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565888/materials/imported/butter-callstone-wood-chair-natural-gray-fabric/studio-project-12-4.png"
       ],
       "localImageFiles": [
         "Butter-Callstone-Gray-1.jpg",
@@ -900,9 +904,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Cruise%20Wood%20Chair%20(Wood)/Butter-Cruise-Wood-1.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Cruise%20Wood%20Chair%20(Wood)/Butter-Cruise-Wood-2.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Cruise%20Wood%20Chair%20(Wood)/Gemini_Generated_Image_cfqz33cfqz33cfqz-1.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565889/materials/imported/butter-cruise-wood-chair-wood/butter-cruise-wood-1.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565889/materials/imported/butter-cruise-wood-chair-wood/butter-cruise-wood-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565891/materials/imported/butter-cruise-wood-chair-wood/gemini-generated-image-cfqz33cfqz33cfqz-1.png"
       ],
       "localImageFiles": [
         "Butter-Cruise-Wood-1.jpg",
@@ -949,10 +953,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Donut%20Chair%20(Natural-White%20Boucle)/Butter-Cuurv-Cream-Wood2Main.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Donut%20Chair%20(Natural-White%20Boucle)/Butter-donut-1.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Donut%20Chair%20(Natural-White%20Boucle)/Butter-donut-4.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Donut%20Chair%20(Natural-White%20Boucle)/Studio-Project-9-6.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565892/materials/imported/butter-donut-chair-natural-white-boucle/butter-cuurv-cream-wood2main.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565893/materials/imported/butter-donut-chair-natural-white-boucle/butter-donut-1.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565893/materials/imported/butter-donut-chair-natural-white-boucle/butter-donut-4.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565895/materials/imported/butter-donut-chair-natural-white-boucle/studio-project-9-6.png"
       ],
       "localImageFiles": [
         "Butter-Cuurv-Cream-Wood2Main.jpg",
@@ -1000,10 +1004,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Olan%20Chair%20(Black)/Butter-curvv-black-1.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Olan%20Chair%20(Black)/Butter-curvv-black-2.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Olan%20Chair%20(Black)/Butter-curvv-black-3.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Chairs/Butter%20Olan%20Chair%20(Black)/BUTTER-OLAN-CHAIR-BLACK-2-scaled.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565896/materials/imported/butter-olan-chair-black/butter-curvv-black-1.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565897/materials/imported/butter-olan-chair-black/butter-curvv-black-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565898/materials/imported/butter-olan-chair-black/butter-curvv-black-3.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565899/materials/imported/butter-olan-chair-black/butter-olan-chair-black-2-scaled.jpg"
       ],
       "localImageFiles": [
         "Butter-curvv-black-1.jpg",
@@ -1047,8 +1051,8 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Alleso%20Dining%20Table%20200cm/Alleso-big.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Alleso%20Dining%20Table%20200cm/Studio-Project-15-3.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565900/materials/imported/alleso-dining-table-200cm/alleso-big.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565902/materials/imported/alleso-dining-table-200cm/studio-project-15-3.png"
       ],
       "localImageFiles": [
         "Alleso-big.jpg",
@@ -1095,10 +1099,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Aurora%20Dining%20Table%20180%20cm%20(Natural)/Edited-2-min.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Aurora%20Dining%20Table%20180%20cm%20(Natural)/Edited-min.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Aurora%20Dining%20Table%20180%20cm%20(Natural)/FIT-EDITED-2-min.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Aurora%20Dining%20Table%20180%20cm%20(Natural)/Studio-Project-1-21.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565903/materials/imported/aurora-dining-table-180-cm-natural/edited-2-min.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565904/materials/imported/aurora-dining-table-180-cm-natural/edited-min.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565905/materials/imported/aurora-dining-table-180-cm-natural/fit-edited-2-min.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565906/materials/imported/aurora-dining-table-180-cm-natural/studio-project-1-21.png"
       ],
       "localImageFiles": [
         "Edited-2-min.jpg",
@@ -1147,10 +1151,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Danee%20Dining%20Set/Danee-Dining-Final.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Danee%20Dining%20Set/LS357R1-A-dining-set-4.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Danee%20Dining%20Set/LS357R1-AT%C2%A6-%C2%A6%C2%A6%C2%A6%C2%A6-LS628S3-A%C2%A6-5.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Danee%20Dining%20Set/LS357R1-AT%C2%A6-3D-o%C2%A6v-%C2%A6%C2%A6%C2%A6%C2%A6-LS628S3-A%C2%A6-LS068S5-A%C2%A6-%C2%A6-2.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565907/materials/imported/danee-dining-set/danee-dining-final.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565908/materials/imported/danee-dining-set/ls357r1-a-dining-set-4.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565909/materials/imported/danee-dining-set/ls357r1-at-ls628s3-a-5.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565910/materials/imported/danee-dining-set/ls357r1-at-3d-o-v-ls628s3-a-ls068s5-a-2.jpg"
       ],
       "localImageFiles": [
         "Danee-Dining-Final.jpg",
@@ -1199,8 +1203,8 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Fjallman%20Table%20120%20cm/FJALLMAN-TABLE-120CM-2-2.jpg",
-        "http://localhost:3000/material-images/Dining%20Area/Kurt_/Tables/Fjallman%20Table%20120%20cm/FJALLMAN-TABLE-120CM-3-1.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565912/materials/imported/fjallman-table-120-cm/fjallman-table-120cm-2-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565913/materials/imported/fjallman-table-120-cm/fjallman-table-120cm-3-1.jpg"
       ],
       "localImageFiles": [
         "FJALLMAN-TABLE-120CM-2-2.jpg",
@@ -1274,9 +1278,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Warren/RUNA%20DINING%20SET%20FOR%204/RUNA%20DINING%20SET%20FOR%204_1.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/RUNA%20DINING%20SET%20FOR%204/RUNA%20DINING%20SET%20FOR%204_2.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/RUNA%20DINING%20SET%20FOR%204/RUNA%20DINING%20SET%20FOR%204_3.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565914/materials/imported/runa-dining-set-for-4/runa-dining-set-for-4-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565915/materials/imported/runa-dining-set-for-4/runa-dining-set-for-4-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565917/materials/imported/runa-dining-set-for-4/runa-dining-set-for-4-3.png"
       ],
       "localImageFiles": [
         "RUNA DINING SET FOR 4_1.png",
@@ -1341,9 +1345,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Warren/VERONA%20DINING%20SET%20FOR%206/VERONA%20DINING%20SET%20FOR%206_1.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/VERONA%20DINING%20SET%20FOR%206/VERONA%20DINING%20SET%20FOR%206_2.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/VERONA%20DINING%20SET%20FOR%206/VERONA%20DINING%20SET%20FOR%206_3.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565917/materials/imported/verona-dining-set-for-6/verona-dining-set-for-6-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565918/materials/imported/verona-dining-set-for-6/verona-dining-set-for-6-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565919/materials/imported/verona-dining-set-for-6/verona-dining-set-for-6-3.png"
       ],
       "localImageFiles": [
         "VERONA DINING SET FOR 6_1.png",
@@ -1408,8 +1412,8 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Warren/CARSON%20DINING%20SET%20FOR%208/CARSON%20DINING%20SET%20FOR%208_1.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/CARSON%20DINING%20SET%20FOR%208/CARSON%20DINING%20SET%20FOR%208_2.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565920/materials/imported/carson-dining-set-for-8/carson-dining-set-for-8-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565922/materials/imported/carson-dining-set-for-8/carson-dining-set-for-8-2.png"
       ],
       "localImageFiles": [
         "CARSON DINING SET FOR 8_1.png",
@@ -1473,9 +1477,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Warren/BYRON%20EXT%20DINING%20SET%20FOR%206/BYRON%20EXT%20DINING%20SET%20FOR%206_1.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/BYRON%20EXT%20DINING%20SET%20FOR%206/BYRON%20EXT%20DINING%20SET%20FOR%206_2.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/BYRON%20EXT%20DINING%20SET%20FOR%206/BYRON%20EXT%20DINING%20SET%20FOR%206_3.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565923/materials/imported/byron-ext-dining-set-for-6/byron-ext-dining-set-for-6-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565925/materials/imported/byron-ext-dining-set-for-6/byron-ext-dining-set-for-6-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565927/materials/imported/byron-ext-dining-set-for-6/byron-ext-dining-set-for-6-3.png"
       ],
       "localImageFiles": [
         "BYRON EXT DINING SET FOR 6_1.png",
@@ -1540,8 +1544,8 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Warren/ALCOT%20EXT%20DINING%20SET%20FOR%206/ALCOT%20EXT%20DINING%20SET%20FOR%206_1.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/ALCOT%20EXT%20DINING%20SET%20FOR%206/ALCOT%20EXT%20DINING%20SET%20FOR%206_2.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565927/materials/imported/alcot-ext-dining-set-for-6/alcot-ext-dining-set-for-6-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565928/materials/imported/alcot-ext-dining-set-for-6/alcot-ext-dining-set-for-6-2.png"
       ],
       "localImageFiles": [
         "ALCOT EXT DINING SET FOR 6_1.png",
@@ -1605,12 +1609,12 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Warren/FEMMIE%20DINING%20TABLE/FEMMIE%20DINING%20TABLE_1.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/FEMMIE%20DINING%20TABLE/FEMMIE%20DINING%20TABLE_2.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/FEMMIE%20DINING%20TABLE/FEMMIE%20DINING%20TABLE_3.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/FEMMIE%20DINING%20TABLE/FEMMIE%20DINING%20TABLE_4.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/FEMMIE%20DINING%20TABLE/FEMMIE%20DINING%20TABLE_5.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/FEMMIE%20DINING%20TABLE/FEMMIE%20DINING%20TABLE_6.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565929/materials/imported/femmie-dining-table/femmie-dining-table-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565930/materials/imported/femmie-dining-table/femmie-dining-table-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565931/materials/imported/femmie-dining-table/femmie-dining-table-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565932/materials/imported/femmie-dining-table/femmie-dining-table-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565933/materials/imported/femmie-dining-table/femmie-dining-table-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565934/materials/imported/femmie-dining-table/femmie-dining-table-6.png"
       ],
       "localImageFiles": [
         "FEMMIE DINING TABLE_1.png",
@@ -1678,11 +1682,11 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Warren/MACE%20DINING%20TABLE/MACE%20DINING%20TABLE_1.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/MACE%20DINING%20TABLE/MACE%20DINING%20TABLE_2.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/MACE%20DINING%20TABLE/MACE%20DINING%20TABLE_3.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/MACE%20DINING%20TABLE/MACE%20DINING%20TABLE_4.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/MACE%20DINING%20TABLE/MACE%20DINING%20TABLE_5.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565936/materials/imported/mace-dining-table/mace-dining-table-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565937/materials/imported/mace-dining-table/mace-dining-table-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565938/materials/imported/mace-dining-table/mace-dining-table-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565939/materials/imported/mace-dining-table/mace-dining-table-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565940/materials/imported/mace-dining-table/mace-dining-table-5.png"
       ],
       "localImageFiles": [
         "MACE DINING TABLE_1.png",
@@ -1769,13 +1773,13 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_BEIGE_1.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_BEIGE_2.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_BLACK_1.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_BLACK_2.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_BLACK_3.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_BROWN_1.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/BROOKLYN%20CHAIR/BROOKLYN%20CHAIR_WHITE_1.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565940/materials/imported/brooklyn-chair/brooklyn-chair-beige-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565941/materials/imported/brooklyn-chair/brooklyn-chair-beige-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565942/materials/imported/brooklyn-chair/brooklyn-chair-black-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565943/materials/imported/brooklyn-chair/brooklyn-chair-black-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565944/materials/imported/brooklyn-chair/brooklyn-chair-black-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565945/materials/imported/brooklyn-chair/brooklyn-chair-brown-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565946/materials/imported/brooklyn-chair/brooklyn-chair-white-1.png"
       ],
       "localImageFiles": [
         "BROOKLYN CHAIR_BEIGE_1.png",
@@ -1844,11 +1848,11 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Warren/SABRINA%20DINING%20CHAIR/SABRINA%20DINING%20CHAIR_1.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/SABRINA%20DINING%20CHAIR/SABRINA%20DINING%20CHAIR_2.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/SABRINA%20DINING%20CHAIR/SABRINA%20DINING%20CHAIR_3.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/SABRINA%20DINING%20CHAIR/SABRINA%20DINING%20CHAIR_4.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/SABRINA%20DINING%20CHAIR/SABRINA%20DINING%20CHAIR_5.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565947/materials/imported/sabrina-dining-chair/sabrina-dining-chair-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565948/materials/imported/sabrina-dining-chair/sabrina-dining-chair-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565949/materials/imported/sabrina-dining-chair/sabrina-dining-chair-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565950/materials/imported/sabrina-dining-chair/sabrina-dining-chair-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565951/materials/imported/sabrina-dining-chair/sabrina-dining-chair-5.png"
       ],
       "localImageFiles": [
         "SABRINA DINING CHAIR_1.png",
@@ -1915,8 +1919,8 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Dining%20Area/Warren/COUPE%20DRINKS%20CABINET/COUPE%20DRINK%20CABINET_1.png",
-        "http://localhost:3000/material-images/Dining%20Area/Warren/COUPE%20DRINKS%20CABINET/COUPE%20DRINK%20CABINET_2.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565952/materials/imported/coupe-drinks-cabinet/coupe-drink-cabinet-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565953/materials/imported/coupe-drinks-cabinet/coupe-drink-cabinet-2.png"
       ],
       "localImageFiles": [
         "COUPE DRINK CABINET_1.png",
@@ -1963,10 +1967,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Round%20Table%20120%20cm/DT-1.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Round%20Table%20120%20cm/Gemini_Generated_Image_ku5fxeku5fxeku5f.png",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Round%20Table%20120%20cm/Gemini_Generated_Image_nswzvmnswzvmnswz.png",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Round%20Table%20120%20cm/Studio-Project-2-15.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565954/materials/imported/accre-round-table-120-cm/dt-1.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565955/materials/imported/accre-round-table-120-cm/gemini-generated-image-ku5fxeku5fxeku5f.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565958/materials/imported/accre-round-table-120-cm/gemini-generated-image-nswzvmnswzvmnswz.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565960/materials/imported/accre-round-table-120-cm/studio-project-2-15.png"
       ],
       "localImageFiles": [
         "DT-1.jpg",
@@ -2015,10 +2019,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Stone%20Dining%20Table%20160cm/Accre-Stone-Dining-Table-2.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Stone%20Dining%20Table%20160cm/Accre-Stone-Dining-Table-4.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Stone%20Dining%20Table%20160cm/Accre-Stone-Dining-Table-8.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Accre%20Stone%20Dining%20Table%20160cm/Accre-Stone-Dining-Table.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565961/materials/imported/accre-stone-dining-table-160cm/accre-stone-dining-table-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565962/materials/imported/accre-stone-dining-table-160cm/accre-stone-dining-table-4.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565963/materials/imported/accre-stone-dining-table-160cm/accre-stone-dining-table-8.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565964/materials/imported/accre-stone-dining-table-160cm/accre-stone-dining-table.jpg"
       ],
       "localImageFiles": [
         "Accre-Stone-Dining-Table-2.jpg",
@@ -2062,8 +2066,8 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Barnes%20Bar%20Table%2070%20cm%20(White)/BARNES-BAR-TABLE-WHITE.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Barnes%20Bar%20Table%2070%20cm%20(White)/Barnes-Doily-Bar-Table.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565965/materials/imported/barnes-bar-table-70-cm-white/barnes-bar-table-white.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565966/materials/imported/barnes-bar-table-70-cm-white/barnes-doily-bar-table.jpg"
       ],
       "localImageFiles": [
         "BARNES-BAR-TABLE-WHITE.jpg",
@@ -2105,9 +2109,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Challis%20Plastic%20Side%20Table%2042%20cm%20(Black)/Black-2.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Challis%20Plastic%20Side%20Table%2042%20cm%20(Black)/Gallery-1-2.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Center%20Table%20%26%20Side%20Table/Challis%20Plastic%20Side%20Table%2042%20cm%20(Black)/Gallery-2-2.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565966/materials/imported/challis-plastic-side-table-42-cm-black/black-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565967/materials/imported/challis-plastic-side-table-42-cm-black/gallery-1-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565968/materials/imported/challis-plastic-side-table-42-cm-black/gallery-2-2.jpg"
       ],
       "localImageFiles": [
         "Black-2.jpg",
@@ -2155,11 +2159,11 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barron%202%20Seater%20Sofabed/barron-gallery-2.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barron%202%20Seater%20Sofabed/barron-gallery-3.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barron%202%20Seater%20Sofabed/barron-gallery-4.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barron%202%20Seater%20Sofabed/barron-gallery-7.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barron%202%20Seater%20Sofabed/barron-main-photo.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565968/materials/imported/barron-2-seater-sofabed/barron-gallery-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565969/materials/imported/barron-2-seater-sofabed/barron-gallery-3.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565970/materials/imported/barron-2-seater-sofabed/barron-gallery-4.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565971/materials/imported/barron-2-seater-sofabed/barron-gallery-7.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565971/materials/imported/barron-2-seater-sofabed/barron-main-photo.jpg"
       ],
       "localImageFiles": [
         "barron-gallery-2.jpg",
@@ -2204,9 +2208,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barsten%205-in-1%20Sofabed%20Leatheric%20(Beige)/barron-main-photo-alter.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barsten%205-in-1%20Sofabed%20Leatheric%20(Beige)/IMG_2809.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barsten%205-in-1%20Sofabed%20Leatheric%20(Beige)/IMG_2810.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565972/materials/imported/barsten-5-in-1-sofabed-leatheric-beige/barron-main-photo-alter.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565973/materials/imported/barsten-5-in-1-sofabed-leatheric-beige/img-2809.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565973/materials/imported/barsten-5-in-1-sofabed-leatheric-beige/img-2810.jpg"
       ],
       "localImageFiles": [
         "barron-main-photo-alter.jpg",
@@ -2249,9 +2253,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barsten%205-in-1%20Sofabed%20Leatheric%20(Light%20Gray)/barron-main-gray-photo-alter.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barsten%205-in-1%20Sofabed%20Leatheric%20(Light%20Gray)/IMG_2829.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Barsten%205-in-1%20Sofabed%20Leatheric%20(Light%20Gray)/IMG_2830.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565974/materials/imported/barsten-5-in-1-sofabed-leatheric-light-gray/barron-main-gray-photo-alter.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565975/materials/imported/barsten-5-in-1-sofabed-leatheric-light-gray/img-2829.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565976/materials/imported/barsten-5-in-1-sofabed-leatheric-light-gray/img-2830.jpg"
       ],
       "localImageFiles": [
         "barron-main-gray-photo-alter.jpg",
@@ -2294,9 +2298,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Berkshire%202%20Seater%20Sofabed%20(Blue)/Berkshire-1-Blue.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Berkshire%202%20Seater%20Sofabed%20(Blue)/Berkshire-2-Blue.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Berkshire%202%20Seater%20Sofabed%20(Blue)/Berkshire-3-Blue.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565977/materials/imported/berkshire-2-seater-sofabed-blue/berkshire-1-blue.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565977/materials/imported/berkshire-2-seater-sofabed-blue/berkshire-2-blue.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565978/materials/imported/berkshire-2-seater-sofabed-blue/berkshire-3-blue.jpg"
       ],
       "localImageFiles": [
         "Berkshire-1-Blue.jpg",
@@ -2343,9 +2347,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Berkshire%202%20Seater%20Sofabed%20(Sage%20Green)/Berkshire-1-Sage-Green.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Berkshire%202%20Seater%20Sofabed%20(Sage%20Green)/Berkshire-2-Green.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/Sofa/Berkshire%202%20Seater%20Sofabed%20(Sage%20Green)/Berkshire-3-Green.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565979/materials/imported/berkshire-2-seater-sofabed-sage-green/berkshire-1-sage-green.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565980/materials/imported/berkshire-2-seater-sofabed-sage-green/berkshire-2-green.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565981/materials/imported/berkshire-2-seater-sofabed-sage-green/berkshire-3-green.jpg"
       ],
       "localImageFiles": [
         "Berkshire-1-Sage-Green.jpg",
@@ -2388,9 +2392,9 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Midst%20TV%20Cabinet%20150cm%20(White)/Midst-TV-Cabinet-180cm-White-3.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Midst%20TV%20Cabinet%20150cm%20(White)/Midst-TV-Cabinet-180cm-White.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Midst%20TV%20Cabinet%20150cm%20(White)/Studio-Project-4-17.png"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565982/materials/imported/midst-tv-cabinet-150cm-white/midst-tv-cabinet-180cm-white-3.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565983/materials/imported/midst-tv-cabinet-150cm-white/midst-tv-cabinet-180cm-white.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565984/materials/imported/midst-tv-cabinet-150cm-white/studio-project-4-17.png"
       ],
       "localImageFiles": [
         "Midst-TV-Cabinet-180cm-White-3.jpg",
@@ -2437,10 +2441,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Milinion%20TV%20Cabinet%20180%20cm/120026374_c_Milnion_180cm_GY.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Milinion%20TV%20Cabinet%20180%20cm/120026374_f_Milnion_180cm_GY.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Milinion%20TV%20Cabinet%20180%20cm/120026374_op2_Milnion_180cm_GY.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Milinion%20TV%20Cabinet%20180%20cm/120026374_pf_Milnion_180cm_GY.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565985/materials/imported/milinion-tv-cabinet-180-cm/120026374-c-milnion-180cm-gy.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565986/materials/imported/milinion-tv-cabinet-180-cm/120026374-f-milnion-180cm-gy.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565987/materials/imported/milinion-tv-cabinet-180-cm/120026374-op2-milnion-180cm-gy.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565988/materials/imported/milinion-tv-cabinet-180-cm/120026374-pf-milnion-180cm-gy.jpg"
       ],
       "localImageFiles": [
         "120026374_c_Milnion_180cm_GY.jpg",
@@ -2489,10 +2493,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Picasso%20TV%20Cabinet%20180cm%20(Ivory)/110041005_c_Picasso_180cm_IV.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Picasso%20TV%20Cabinet%20180cm%20(Ivory)/110041005_f_Picasso_180cm_IV.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Picasso%20TV%20Cabinet%20180cm%20(Ivory)/110041005_op2_Picasso_180cm_IV.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Picasso%20TV%20Cabinet%20180cm%20(Ivory)/110041005_op4_Picasso_180cm_IV.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565989/materials/imported/picasso-tv-cabinet-180cm-ivory/110041005-c-picasso-180cm-iv.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565990/materials/imported/picasso-tv-cabinet-180cm-ivory/110041005-f-picasso-180cm-iv.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565990/materials/imported/picasso-tv-cabinet-180cm-ivory/110041005-op2-picasso-180cm-iv.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565991/materials/imported/picasso-tv-cabinet-180cm-ivory/110041005-op4-picasso-180cm-iv.jpg"
       ],
       "localImageFiles": [
         "110041005_c_Picasso_180cm_IV.jpg",
@@ -2536,10 +2540,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Takayama%20Solid%20Wood%20TV%20Cabinet%20150cm%20(Light%20Teak)/120024993_c_Takayama_150cm_LTK.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Takayama%20Solid%20Wood%20TV%20Cabinet%20150cm%20(Light%20Teak)/120024993_f_Takayama_150cm_LTK.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Takayama%20Solid%20Wood%20TV%20Cabinet%20150cm%20(Light%20Teak)/120024993_op8_Takayama_150cm_LTK.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Takayama%20Solid%20Wood%20TV%20Cabinet%20150cm%20(Light%20Teak)/120024993_pc_Takayama_150cm_LTK.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565992/materials/imported/takayama-solid-wood-tv-cabinet-150cm-light-teak/120024993-c-takayama-150cm-ltk.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565993/materials/imported/takayama-solid-wood-tv-cabinet-150cm-light-teak/120024993-f-takayama-150cm-ltk.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565995/materials/imported/takayama-solid-wood-tv-cabinet-150cm-light-teak/120024993-op8-takayama-150cm-ltk.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565995/materials/imported/takayama-solid-wood-tv-cabinet-150cm-light-teak/120024993-pc-takayama-150cm-ltk.jpg"
       ],
       "localImageFiles": [
         "120024993_c_Takayama_150cm_LTK.jpg",
@@ -2583,10 +2587,10 @@
         }
       ],
       "image": [
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Wasabi%20Solid%20Wood%20TV%20Cabinet%20200CM%20(Natural)/120025475_2.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Wasabi%20Solid%20Wood%20TV%20Cabinet%20200CM%20(Natural)/120025475_3.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Wasabi%20Solid%20Wood%20TV%20Cabinet%20200CM%20(Natural)/120025475_7.jpg",
-        "http://localhost:3000/material-images/Living%20Room/Kurt_/TV%20Stand/Wasabi%20Solid%20Wood%20TV%20Cabinet%20200CM%20(Natural)/120025475.jpg"
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565996/materials/imported/wasabi-solid-wood-tv-cabinet-200cm-natural/120025475-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565997/materials/imported/wasabi-solid-wood-tv-cabinet-200cm-natural/120025475-3.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565998/materials/imported/wasabi-solid-wood-tv-cabinet-200cm-natural/120025475-7.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565999/materials/imported/wasabi-solid-wood-tv-cabinet-200cm-natural/120025475.jpg"
       ],
       "localImageFiles": [
         "120025475_2.jpg",
