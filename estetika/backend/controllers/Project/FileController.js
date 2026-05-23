@@ -1,11 +1,7 @@
-const { initializeApp } = require("firebase/app");
-const {
-  getStorage,
-  ref,
-  getDownloadURL,
-  uploadBytesResumable,
-  deleteObject,
-} = require("firebase/storage");
+const { initializeApp, getApps } = require("firebase/app");
+const { getStorage, ref, deleteObject } = require("firebase/storage");
+const { v2: cloudinary } = require("cloudinary");
+const path = require("path");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
 const Project = require("../../models/Project/Project");
@@ -43,6 +39,134 @@ const firebaseConfig = {
   storageBucket: process.env.FIREBASE_STORAGEBUCKET,
 };
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
+
+const assertCloudinaryConfig = () => {
+  if (
+    !process.env.CLOUDINARY_CLOUD_NAME ||
+    !process.env.CLOUDINARY_API_KEY ||
+    !process.env.CLOUDINARY_API_SECRET
+  ) {
+    throw new AppError(
+      "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.",
+      500
+    );
+  }
+};
+
+const getFirebaseStorage = () => {
+  if (!process.env.FIREBASE_STORAGEBUCKET) {
+    throw new AppError("Firebase storage bucket is not configured.", 500);
+  }
+
+  if (!getApps().length) {
+    initializeApp(firebaseConfig);
+  }
+
+  return getStorage();
+};
+
+const sanitizePublicIdPart = (value) =>
+  path
+    .parse(value || "upload")
+    .name.replace(/[^a-zA-Z0-9-_]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase() || "upload";
+
+const getCloudinaryResourceType = (file, fallback = "auto") => {
+  if (file.mimetype?.startsWith("image/")) return "image";
+  if (fallback !== "auto") return fallback;
+  return "raw";
+};
+
+const uploadToCloudinary = async (file, folder, options = {}) => {
+  assertCloudinaryConfig();
+
+  const resourceType = getCloudinaryResourceType(
+    file,
+    options.resourceType || "auto"
+  );
+  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+  const extension = path.extname(file.originalname || "");
+  const baseName = sanitizePublicIdPart(file.originalname);
+  const publicId =
+    resourceType === "raw"
+      ? `${baseName}-${uniqueSuffix}${extension}`
+      : `${baseName}-${uniqueSuffix}`;
+
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        public_id: publicId,
+        resource_type: resourceType,
+        overwrite: false,
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        if (!result?.secure_url) {
+          return reject(new AppError("Failed to upload file", 500));
+        }
+        resolve(result.secure_url);
+      }
+    );
+
+    uploadStream.end(file.buffer);
+  });
+};
+
+const parseCloudinaryUrl = (fileUrl) => {
+  const parsedUrl = new URL(fileUrl);
+  if (!parsedUrl.hostname.includes("res.cloudinary.com")) return null;
+
+  const parts = parsedUrl.pathname.split("/").filter(Boolean);
+  const resourceType = parts[1];
+  const uploadIndex = parts.indexOf("upload");
+  if (!resourceType || uploadIndex === -1) return null;
+
+  const publicPathParts = parts.slice(uploadIndex + 1);
+  if (publicPathParts[0] && /^v\d+$/.test(publicPathParts[0])) {
+    publicPathParts.shift();
+  }
+
+  let publicId = decodeURIComponent(publicPathParts.join("/"));
+  if (resourceType !== "raw") {
+    publicId = publicId.replace(/\.[^/.]+$/, "");
+  }
+
+  return { publicId, resourceType };
+};
+
+const deleteFromStorage = async (fileUrl) => {
+  const cloudinaryFile = parseCloudinaryUrl(fileUrl);
+
+  if (cloudinaryFile) {
+    assertCloudinaryConfig();
+    await cloudinary.uploader.destroy(cloudinaryFile.publicId, {
+      resource_type: cloudinaryFile.resourceType,
+    });
+    return;
+  }
+
+  const storage = getFirebaseStorage();
+  const url = new URL(fileUrl);
+  const pathMatch = url.pathname.match(/\/o\/(.+?)(\?|$)/);
+
+  if (!pathMatch) {
+    throw new AppError("Unsupported storage URL format", 400);
+  }
+
+  const filePath = decodeURIComponent(pathMatch[1]);
+  const fileRef = ref(storage, filePath);
+  await deleteObject(fileRef);
+};
+
 // Upload Profile Picture
 const image_post = catchAsync(async (req, res, next) => {
   if (!req.file) {
@@ -53,26 +177,9 @@ const image_post = catchAsync(async (req, res, next) => {
   //   return next(new AppError("File is not an image.", 400));
   // }
 
-  initializeApp(firebaseConfig);
-  const storage = getStorage();
-
-  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-  const storageRef = ref(
-    storage,
-    `picture/${req.id}/${req.file.originalname}-${uniqueSuffix}`
-  );
-
-  const metadata = {
-    contentType: req.file.mimetype,
-  };
-
-  const snapshot = await uploadBytesResumable(
-    storageRef,
-    req.file.buffer,
-    metadata
-  );
-
-  const downloadURL = await getDownloadURL(snapshot.ref);
+  const downloadURL = await uploadToCloudinary(req.file, `picture/${req.id}`, {
+    resourceType: "image",
+  });
 
   if (!downloadURL) {
     return next(new AppError("Failed to upload image", 500));
@@ -125,27 +232,11 @@ const document_post = catchAsync(async (req, res, next) => {
 
   const userId = req.id;
 
-  initializeApp(firebaseConfig);
-  const storage = getStorage();
-
-  const storageRef = ref(
-    storage,
-    `document/${projectId ? projectId : eventId}/${userId}/${
-      req.file.originalname
-    }`
+  const downloadURL = await uploadToCloudinary(
+    req.file,
+    `document/${projectId ? projectId : eventId}/${userId}`,
+    { resourceType: "raw" }
   );
-
-  const metadata = {
-    contentType: req.file.mimetype,
-  };
-
-  const snapshot = await uploadBytesResumable(
-    storageRef,
-    req.file.buffer,
-    metadata
-  );
-
-  const downloadURL = await getDownloadURL(snapshot.ref);
 
   if (projectId) {
     const addProjectFile = await Project.findByIdAndUpdate(
@@ -214,26 +305,10 @@ const message_file_post = catchAsync(async (req, res, next) => {
   }
 
   const userId = req.id;
-  initializeApp(firebaseConfig);
-  const storage = getStorage();
-
-  // Always upload to "message-files" folder regardless of type
-  const storageRef = ref(
-    storage,
-    `message-files/${userId}/${req.file.originalname}`
+  const downloadURL = await uploadToCloudinary(
+    req.file,
+    `message-files/${userId}`
   );
-
-  const metadata = {
-    contentType: req.file.mimetype,
-  };
-
-  const snapshot = await uploadBytesResumable(
-    storageRef,
-    req.file.buffer,
-    metadata
-  );
-
-  const downloadURL = await getDownloadURL(snapshot.ref);
 
   if (!downloadURL) {
     return next(new AppError("Failed to upload file", 500));
@@ -269,26 +344,11 @@ const update_image_post = catchAsync(async (req, res, next) => {
 
   const userId = req.id;
 
-  initializeApp(firebaseConfig);
-  const storage = getStorage();
-
-  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-  const storageRef = ref(
-    storage,
-    `projects/${projectId}/updates/${userId}/${req.file.originalname}-${uniqueSuffix}`
+  const downloadURL = await uploadToCloudinary(
+    req.file,
+    `projects/${projectId}/updates/${userId}`,
+    { resourceType: "image" }
   );
-
-  const metadata = {
-    contentType: req.file.mimetype,
-  };
-
-  const snapshot = await uploadBytesResumable(
-    storageRef,
-    req.file.buffer,
-    metadata
-  );
-
-  const downloadURL = await getDownloadURL(snapshot.ref);
 
   if (!downloadURL) {
     return next(new AppError("Failed to upload image", 500));
@@ -308,31 +368,14 @@ const material_image_post = catchAsync(async (req, res, next) => {
 
   const userId = req.id;
 
-  initializeApp(firebaseConfig);
-  const storage = getStorage();
-
   const uploadPromises = req.files.map(async (file) => {
     if (!file.mimetype.startsWith("image/")) {
       throw new AppError("One or more files are not images.", 400);
     }
 
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const storageRef = ref(
-      storage,
-      `materials/${userId}/${file.originalname}-${uniqueSuffix}`
-    );
-
-    const metadata = {
-      contentType: file.mimetype,
-    };
-
-    const snapshot = await uploadBytesResumable(
-      storageRef,
-      file.buffer,
-      metadata
-    );
-
-    const downloadURL = await getDownloadURL(snapshot.ref);
+    const downloadURL = await uploadToCloudinary(file, `materials/${userId}`, {
+      resourceType: "image",
+    });
 
     if (!downloadURL) {
       throw new AppError("Failed to upload one of the material images", 500);
@@ -367,26 +410,9 @@ const design_image_post = catchAsync(async (req, res, next) => {
     return next(new AppError("File is not an image.", 400));
   }
 
-  initializeApp(firebaseConfig);
-  const storage = getStorage();
-
-  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-  const storageRef = ref(
-    storage,
-    `design/${id}/${req.file.originalname}-${uniqueSuffix}`
-  );
-
-  const metadata = {
-    contentType: req.file.mimetype,
-  };
-
-  const snapshot = await uploadBytesResumable(
-    storageRef,
-    req.file.buffer,
-    metadata
-  );
-
-  const downloadURL = await getDownloadURL(snapshot.ref);
+  const downloadURL = await uploadToCloudinary(req.file, `design/${id}`, {
+    resourceType: "image",
+  });
 
   if (!downloadURL) {
     return next(new AppError("Failed to upload image", 500));
@@ -409,26 +435,11 @@ const carousel_image_post = catchAsync(async (req, res, next) => {
 
   const userId = req.id;
 
-  initializeApp(firebaseConfig);
-  const storage = getStorage();
-
-  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-  const storageRef = ref(
-    storage,
-    `mobile-carousel/${userId}/${uniqueSuffix}-${req.file.originalname}`
+  const downloadURL = await uploadToCloudinary(
+    req.file,
+    `mobile-carousel/${userId}`,
+    { resourceType: "image" }
   );
-
-  const metadata = {
-    contentType: req.file.mimetype,
-  };
-
-  const snapshot = await uploadBytesResumable(
-    storageRef,
-    req.file.buffer,
-    metadata
-  );
-
-  const downloadURL = await getDownloadURL(snapshot.ref);
 
   if (!downloadURL) {
     return next(new AppError("Failed to upload image", 500));
@@ -488,21 +499,7 @@ const file_delete = catchAsync(async (req, res, next) => {
     return next(new AppError("File not found in project", 404));
   }
 
-  initializeApp(firebaseConfig);
-  const storage = getStorage();
-
-  const url = new URL(fileUrl);
-  const pathMatch = url.pathname.match(/\/o\/(.+?)(\?|$)/);
-
-  if (!pathMatch) {
-    return next(new AppError("Invalid Firebase URL format", 400));
-  }
-
-  const filePath = decodeURIComponent(pathMatch[1]);
-  const fileRef = ref(storage, filePath);
-
-  // Delete file from Firebase Storage
-  await deleteObject(fileRef);
+  await deleteFromStorage(fileUrl);
 
   // Remove file URL from project's files array
   const updatedProject = await Project.findByIdAndUpdate(
