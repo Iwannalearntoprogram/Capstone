@@ -52,9 +52,154 @@ const normalizeAndExpandKeywords = (keywords) => {
         }
       });
     }
+
+    normalizedKeyword.split(/\s+/).forEach((word) => {
+      const cleanedWord = word.replace(/[^a-z0-9-]/g, "");
+      if (cleanedWord.length < 2) return;
+      normalized.push(cleanedWord);
+      if (expansions[cleanedWord]) {
+        normalized.push(...expansions[cleanedWord]);
+      }
+    });
   });
 
   return [...new Set(normalized)];
+};
+
+const ROOM_TYPE_OPTIONS =
+  DesignRecommendation.schema.path("type")?.enumValues || [];
+const PRIORITY_OPTIONS = ["Budget", "Style"];
+const VALID_DESIGN_TERMS = new Set([
+  "aesthetic",
+  "area",
+  "bathroom",
+  "bed",
+  "bedroom",
+  "beige",
+  "black",
+  "cabinet",
+  "chair",
+  "classic",
+  "clean",
+  "color",
+  "colors",
+  "commercial",
+  "contemporary",
+  "cozy",
+  "dining",
+  "elegant",
+  "furniture",
+  "gray",
+  "grey",
+  "home",
+  "industrial",
+  "interior",
+  "kitchen",
+  "layout",
+  "light",
+  "lighting",
+  "living",
+  "luxury",
+  "material",
+  "materials",
+  "minimal",
+  "minimalist",
+  "modern",
+  "neutral",
+  "office",
+  "palette",
+  "room",
+  "rustic",
+  "scandinavian",
+  "shelf",
+  "sofa",
+  "space",
+  "style",
+  "table",
+  "texture",
+  "tiles",
+  "warm",
+  "white",
+  "wood",
+  "wooden",
+]);
+const GENERIC_ROOM_TERMS = new Set([
+  "area",
+  "commercial",
+  "home",
+  "room",
+  "space",
+]);
+
+const getTextTokens = (value) =>
+  String(value || "")
+    .toLowerCase()
+    .match(/[a-z]{2,}/g) || [];
+
+const hasRepeatedJunkPattern = (value) => {
+  const cleaned = String(value || "")
+    .toLowerCase()
+    .replace(/\s+/g, "");
+  return (
+    cleaned.length >= 6 &&
+    (/^(.)\1+$/.test(cleaned) || /^(.{1,3})\1+$/.test(cleaned))
+  );
+};
+
+const validatePreferenceText = (value) => {
+  const text = typeof value === "string" ? value.trim() : "";
+  if (!text) {
+    return "Enter design preferences before requesting recommendations.";
+  }
+  if (text.length < 4) {
+    return "Design preferences must be at least 4 characters.";
+  }
+  if (text.length > 2000) {
+    return "Design preferences must be 2000 characters or fewer.";
+  }
+  if (/^\d+$/.test(text) || !/[a-z]/i.test(text)) {
+    return "Enter valid design preferences such as style, colors, materials, or room requirements.";
+  }
+
+  const tokens = getTextTokens(text);
+  if (tokens.length < 2 || hasRepeatedJunkPattern(text)) {
+    return "Describe preferences using valid design-related words.";
+  }
+  if (!tokens.some((token) => VALID_DESIGN_TERMS.has(token))) {
+    return "Include style, colors, materials, room, or furniture details in your preferences.";
+  }
+  return null;
+};
+
+const escapeRegex = (value) =>
+  String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const hasDatasetPreferenceMatch = async (roomType, normalizedPreferences) => {
+  const recommendations = await DesignRecommendation.find({ type: roomType })
+    .select("designPreferences tags")
+    .lean();
+
+  const datasetTerms = new Set();
+  recommendations.forEach((recommendation) => {
+    [...(recommendation.designPreferences || []), ...(recommendation.tags || [])]
+      .flatMap((term) => normalizeAndExpandKeywords(String(term)))
+      .forEach((term) => datasetTerms.add(term));
+  });
+
+  if (datasetTerms.size === 0 || normalizedPreferences.length === 0) {
+    return false;
+  }
+
+  return normalizedPreferences.some((preference) => {
+    if (preference.length < 3) return false;
+    if (GENERIC_ROOM_TERMS.has(preference)) return false;
+    if (datasetTerms.has(preference)) return true;
+    return [...datasetTerms].some(
+      (term) =>
+        term.length >= 3 &&
+        (term.includes(preference) || preference.includes(term))
+    );
+  });
 };
 
 const design_recommendation_get = catchAsync(async (req, res, next) => {
@@ -242,15 +387,57 @@ const design_recommendation_get = catchAsync(async (req, res, next) => {
 const design_recommendation_match = catchAsync(async (req, res, next) => {
   const { roomType, designPreferences, budget, priority } = req.query;
 
-  if (!roomType || !budget) {
+  if (!roomType || !budget || !designPreferences || !priority) {
     return next(
-      new AppError("Room type and budget are required for matching", 400)
+      new AppError(
+        "Room type, budget, priority, and design preferences are required for matching",
+        400
+      )
     );
   }
 
+  if (!ROOM_TYPE_OPTIONS.includes(roomType)) {
+    return next(new AppError("Room type is invalid.", 400));
+  }
+
   const budgetNum = Number(budget);
+  if (!Number.isFinite(budgetNum) || budgetNum <= 0) {
+    return next(new AppError("Budget must be greater than 0.", 400));
+  }
+
+  if (!PRIORITY_OPTIONS.includes(priority)) {
+    return next(new AppError("Priority is invalid.", 400));
+  }
+
+  const preferenceError = validatePreferenceText(designPreferences);
+  if (preferenceError) {
+    return next(new AppError(preferenceError, 400));
+  }
+
   const normalizedPreferences = normalizeAndExpandKeywords(designPreferences);
-  const normalizedPriority = priority === "Budget" ? "Budget" : "Style";
+  const hasPreferenceMatch = await hasDatasetPreferenceMatch(
+    roomType,
+    normalizedPreferences
+  );
+  if (!hasPreferenceMatch) {
+    return res.status(200).json({
+      message:
+        "No matching design recommendations found. Please revise your preferences.",
+      recommendations: [],
+      hasMatch: false,
+      isCheaperAlternative: false,
+      criteria: {
+        roomType,
+        designPreferences,
+        normalizedPreferences,
+        budget: budgetNum,
+        priority,
+      },
+    });
+  }
+
+  const normalizedRegexPreferences = normalizedPreferences.map(escapeRegex);
+  const normalizedPriority = priority;
   const scoreWeights =
     normalizedPriority === "Budget"
       ? {
@@ -287,7 +474,7 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
                 cond: {
                   $anyElementTrue: {
                     $map: {
-                      input: normalizedPreferences,
+                      input: normalizedRegexPreferences,
                       as: "pref",
                       in: {
                         $or: [
@@ -323,7 +510,7 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
                     cond: {
                       $anyElementTrue: {
                         $map: {
-                          input: normalizedPreferences,
+                          input: normalizedRegexPreferences,
                           as: "pref",
                           in: {
                             $or: [

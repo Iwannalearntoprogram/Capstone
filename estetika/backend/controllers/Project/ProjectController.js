@@ -18,6 +18,21 @@ const ROOM_TYPE_OPTIONS = Project.schema.path("roomType")?.enumValues || [];
 const PROJECT_TYPE_OPTIONS = Project.schema.path("projectType")?.enumValues || [];
 const PRIORITY_OPTIONS = Project.schema.path("priority")?.enumValues || [];
 
+const getTextTokens = (value) =>
+  String(value || "")
+    .toLowerCase()
+    .match(/[a-z]{2,}/g) || [];
+
+const hasRepeatedJunkPattern = (value) => {
+  const cleaned = String(value || "")
+    .toLowerCase()
+    .replace(/\s+/g, "");
+  return (
+    cleaned.length >= 6 &&
+    (/^(.)\1+$/.test(cleaned) || /^(.{1,3})\1+$/.test(cleaned))
+  );
+};
+
 const parseDateValue = (value) => {
   if (!value) return null;
   const parsed = value instanceof Date ? value : new Date(value);
@@ -31,7 +46,11 @@ const validateProjectPayload = (
   const errors = [];
   const normalized = {};
 
-  const validateTextField = (key, label, { minLength = 1, maxLength } = {}) => {
+  const validateTextField = (
+    key,
+    label,
+    { minLength = 1, maxLength, minWords = 1 } = {}
+  ) => {
     if (!requireAll && !hasOwn(payload, key)) return;
 
     const rawValue = payload[key];
@@ -50,6 +69,17 @@ const validateProjectPayload = (
 
     if (maxLength && trimmed.length > maxLength) {
       errors.push(`${label} must be ${maxLength} characters or fewer.`);
+      return;
+    }
+
+    const tokens = getTextTokens(trimmed);
+    if (
+      /^\d+$/.test(trimmed) ||
+      !/[a-z]/i.test(trimmed) ||
+      tokens.length < minWords ||
+      hasRepeatedJunkPattern(trimmed)
+    ) {
+      errors.push(`${label} must contain valid text.`);
       return;
     }
 
@@ -125,6 +155,7 @@ const validateProjectPayload = (
   validateTextField("description", "Description", {
     minLength: 10,
     maxLength: 2000,
+    minWords: 3,
   });
   validatePositiveNumberField("budget", "Budget");
   validateEnumField("roomType", "Room type", ROOM_TYPE_OPTIONS);
@@ -134,6 +165,7 @@ const validateProjectPayload = (
   validateTextField("projectLocation", "Project location", {
     minLength: 2,
     maxLength: 120,
+    minWords: 1,
   });
 
   if (hasOwn(payload, "designInspiration")) {

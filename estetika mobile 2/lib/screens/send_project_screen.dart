@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:estetika_ui/config/api_config.dart';
 import 'package:estetika_ui/widgets/custom_app_bar.dart';
 import 'package:image_picker/image_picker.dart';
@@ -47,7 +48,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     'Dining Room',
     'Whole House',
     'Commercial Space',
-    'Other'
   ];
   final List<String> _projectTypes = [
     'Residential',
@@ -80,6 +80,62 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   bool _isRecommendationLoading = false;
   bool _hasViewedRecommendation = false;
   final NumberFormat _currencyFormat = NumberFormat('#,##0');
+  final TextInputFormatter _positiveDecimalInputFormatter =
+      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'));
+  static const Set<String> _designVocabulary = {
+    'aesthetic',
+    'area',
+    'bathroom',
+    'bed',
+    'bedroom',
+    'beige',
+    'black',
+    'cabinet',
+    'chair',
+    'classic',
+    'clean',
+    'color',
+    'colors',
+    'commercial',
+    'contemporary',
+    'cozy',
+    'dining',
+    'elegant',
+    'furniture',
+    'gray',
+    'grey',
+    'home',
+    'industrial',
+    'interior',
+    'kitchen',
+    'layout',
+    'light',
+    'lighting',
+    'living',
+    'luxury',
+    'material',
+    'materials',
+    'minimal',
+    'minimalist',
+    'modern',
+    'neutral',
+    'office',
+    'palette',
+    'room',
+    'rustic',
+    'scandinavian',
+    'shelf',
+    'sofa',
+    'space',
+    'style',
+    'table',
+    'texture',
+    'tiles',
+    'warm',
+    'white',
+    'wood',
+    'wooden',
+  };
 
   @override
   void initState() {
@@ -96,8 +152,10 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       setState(() {
         _clientNameController.text = user['fullName'] ?? '';
         _emailController.text = user['email'] ?? '';
-        _contactNumberController.text =
-            user['phoneNumber']?.replaceFirst('+63', '') ?? '';
+        final phoneNumber = user['phoneNumber']?.toString() ?? '';
+        _contactNumberController.text = phoneNumber.startsWith('+63')
+            ? '0${phoneNumber.substring(3)}'
+            : phoneNumber;
       });
       print('Loaded user: $user');
     }
@@ -160,6 +218,163 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     super.dispose();
   }
 
+  String _trimmed(String? value) => value?.trim() ?? '';
+
+  int _alphabeticWordCount(String value) {
+    return RegExp(r'[A-Za-z]{2,}')
+        .allMatches(value)
+        .map((match) => match.group(0)!.toLowerCase())
+        .length;
+  }
+
+  bool _hasMeaningfulLetters(String value) {
+    final letters = RegExp(r'[A-Za-z]').allMatches(value).length;
+    return letters >= 2 && !RegExp(r'^\d+$').hasMatch(value.trim());
+  }
+
+  bool _hasRepeatedJunkPattern(String value) {
+    final cleaned = value.toLowerCase().replaceAll(RegExp(r'\s+'), '');
+    if (cleaned.length < 6) return false;
+    return RegExp(r'^(.)\1+$').hasMatch(cleaned) ||
+        RegExp(r'^(.{1,3})\1+$').hasMatch(cleaned);
+  }
+
+  Set<String> _textTokens(String value) {
+    return RegExp(r'[A-Za-z]{2,}')
+        .allMatches(value.toLowerCase())
+        .map((match) => match.group(0)!)
+        .toSet();
+  }
+
+  bool _containsDesignVocabulary(String value) {
+    final tokens = _textTokens(value);
+    return tokens.any(_designVocabulary.contains);
+  }
+
+  String? _validateMeaningfulText(
+    String? value,
+    String label, {
+    int minLength = 2,
+    int maxLength = 120,
+  }) {
+    final text = _trimmed(value);
+    if (text.isEmpty) return 'Please enter $label';
+    if (text.length < minLength) {
+      return '$label must be at least $minLength characters';
+    }
+    if (text.length > maxLength) {
+      return '$label must be $maxLength characters or fewer';
+    }
+    if (!_hasMeaningfulLetters(text)) {
+      return '$label must contain valid text';
+    }
+    if (_hasRepeatedJunkPattern(text)) {
+      return '$label appears invalid';
+    }
+    return null;
+  }
+
+  String? _validateRequiredDropdown(
+      String? value, String label, List<String> options) {
+    if (value == null || value.trim().isEmpty) return 'Please select $label';
+    if (!options.contains(value)) return 'Please select a valid $label';
+    return null;
+  }
+
+  String? _validatePositiveNumber(
+    String? value,
+    String label, {
+    String? invalidMessage,
+  }) {
+    final text = _trimmed(value);
+    if (text.isEmpty) return 'Please enter $label';
+    final number = double.tryParse(text);
+    if (number == null || !number.isFinite) {
+      return invalidMessage ?? 'Please enter a valid $label';
+    }
+    if (number <= 0) return '$label must be greater than 0';
+    return null;
+  }
+
+  String? _validateContactNumber(String? value) {
+    final digits = _trimmed(value).replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty) return 'Please enter contact number';
+    if (digits.length != 11 || !digits.startsWith('09')) {
+      return 'Enter a valid Philippine mobile number';
+    }
+    return null;
+  }
+
+  String? _validateEmailAddress(String? value) {
+    final email = _trimmed(value);
+    if (email.isEmpty) return 'Please enter email address';
+    final bool emailValid = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    ).hasMatch(email);
+    if (!emailValid) return 'Please enter a valid email address';
+    return null;
+  }
+
+  String? _validateDesignPreferences(String? value) {
+    final text = _trimmed(value);
+    if (text.isEmpty) {
+      return 'Please enter design preferences and requirements';
+    }
+    if (text.length < 4) {
+      return 'Design preferences must be at least 4 characters';
+    }
+    if (text.length > 2000) {
+      return 'Design preferences must be 2000 characters or fewer';
+    }
+    if (!_hasMeaningfulLetters(text) || _alphabeticWordCount(text) < 2) {
+      return 'Describe preferences using valid design-related words';
+    }
+    if (_hasRepeatedJunkPattern(text)) {
+      return 'Design preferences appear invalid';
+    }
+    if (!_containsDesignVocabulary(text)) {
+      return 'Include style, colors, materials, room, or furniture details';
+    }
+    return null;
+  }
+
+  String? _validateDateSelection() {
+    if (_startDate == null) return 'Please select start date';
+    if (_endDate == null) return 'Please select end date';
+    if (_endDate!.isBefore(_startDate!)) {
+      return 'End date cannot be before start date';
+    }
+    return null;
+  }
+
+  String? _validateRecommendationInputs() {
+    return _validateRequiredDropdown(_roomType, 'room type', _roomTypes) ??
+        _validateRequiredDropdown(
+            _projectType, 'project type', _projectTypes) ??
+        _validateRequiredDropdown(_priority, 'priority', _priorityOptions) ??
+        _validatePositiveNumber(_projectSizeController.text, 'project size') ??
+        _validatePositiveNumber(_budgetController.text, 'budget') ??
+        _validateDesignPreferences(_descriptionController.text) ??
+        _validateDateSelection();
+  }
+
+  Future<bool> _validateBeforeSubmit() async {
+    final formValid = _formKey.currentState?.validate() ?? false;
+    final dateError = _validateDateSelection();
+    if (!formValid || dateError != null) {
+      await showToast(dateError ?? 'Please correct the highlighted fields.');
+      return false;
+    }
+    return true;
+  }
+
+  bool _isValidHttpUrl(String value) {
+    final uri = Uri.tryParse(value);
+    return uri != null &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.host.isNotEmpty;
+  }
+
   Future<void> _pickImage() async {
     try {
       final List<XFile> images = await _picker.pickMultiImage();
@@ -175,12 +390,16 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     }
   }
 
-  void _addInspirationLink() {
-    if (_inspirationLinkController.text.isNotEmpty) {
-      String link = _inspirationLinkController.text;
-      // Add http:// if missing
+  Future<void> _addInspirationLink() async {
+    if (_inspirationLinkController.text.trim().isNotEmpty) {
+      String link = _inspirationLinkController.text.trim();
       if (!link.startsWith('http://') && !link.startsWith('https://')) {
         link = 'https://$link';
+      }
+
+      if (!_isValidHttpUrl(link)) {
+        await showToast('Please enter a valid inspiration link.');
+        return;
       }
 
       setState(() {
@@ -203,6 +422,20 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   }
 
   Future<void> _fetchRecommendation() async {
+    final validationMessage = _validateRecommendationInputs();
+    if (validationMessage != null) {
+      await showToast(validationMessage);
+      setState(() {
+        _recommendations = [];
+        _statusMessage = validationMessage;
+        _hasMatchFlag = null;
+        _isCheaperAlternativeFlag = null;
+        _hasViewedRecommendation = true;
+        _selectedRecommendationIndex = null;
+      });
+      return;
+    }
+
     setState(() {
       _isRecommendationLoading = true;
     });
@@ -280,7 +513,14 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       } else {
         setState(() {
           _recommendations = [];
-          _statusMessage = 'No design recommendation available.';
+          String message = 'No design recommendation available.';
+          try {
+            final decoded = jsonDecode(response.body);
+            if (decoded is Map && decoded['message'] is String) {
+              message = decoded['message'] as String;
+            }
+          } catch (_) {}
+          _statusMessage = message;
           _hasMatchFlag = null;
           _isCheaperAlternativeFlag = null;
           _isRecommendationLoading = false;
@@ -440,7 +680,8 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   }
 
   Widget _buildRecommendationSection() {
-    final bool canViewRecommendation = _areAllRequiredFieldsFilled();
+    final recommendationValidationMessage = _validateRecommendationInputs();
+    final bool canViewRecommendation = recommendationValidationMessage == null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -780,7 +1021,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                         if (!canViewRecommendation) ...[
                           const SizedBox(height: 8),
                           Text(
-                            'Please fill all required fields to view recommendation',
+                            recommendationValidationMessage,
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -870,10 +1111,12 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       ),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter client name';
-                      }
-                      return null;
+                      return _validateMeaningfulText(
+                        value,
+                        'client name',
+                        minLength: 2,
+                        maxLength: 80,
+                      );
                     },
                   ),
                   const SizedBox(height: 16),
@@ -888,18 +1131,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter email address';
-                      }
-                      final bool emailValid = RegExp(
-                        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                      ).hasMatch(value);
-                      if (!emailValid) {
-                        return 'Please enter a valid email address';
-                      }
-                      return null;
-                    },
+                    validator: _validateEmailAddress,
                   ),
                   const SizedBox(height: 16),
 
@@ -907,22 +1139,17 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                   TextFormField(
                     controller: _contactNumberController,
                     keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(11),
+                    ],
                     decoration: InputDecoration(
                       labelText: 'Contact Number',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      prefixText: '+63 ',
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter contact number';
-                      }
-                      if (value.length < 10) {
-                        return 'Please enter valid number';
-                      }
-                      return null;
-                    },
+                    validator: _validateContactNumber,
                   ),
                   const SizedBox(height: 24),
 
@@ -940,10 +1167,12 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       ),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter project name';
-                      }
-                      return null;
+                      return _validateMeaningfulText(
+                        value,
+                        'project name',
+                        minLength: 3,
+                        maxLength: 120,
+                      );
                     },
                   ),
                   const SizedBox(height: 16),
@@ -970,12 +1199,8 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       _resetRecommendationState();
                       _updateFormProgress();
                     },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select room type';
-                      }
-                      return null;
-                    },
+                    validator: (value) => _validateRequiredDropdown(
+                        value, 'room type', _roomTypes),
                   ),
                   const SizedBox(height: 16),
 
@@ -999,12 +1224,8 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       });
                       _updateFormProgress();
                     },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select project type';
-                      }
-                      return null;
-                    },
+                    validator: (value) => _validateRequiredDropdown(
+                        value, 'project type', _projectTypes),
                   ),
                   const SizedBox(height: 16),
 
@@ -1029,19 +1250,17 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       _resetRecommendationState();
                       _updateFormProgress();
                     },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select priority';
-                      }
-                      return null;
-                    },
+                    validator: (value) => _validateRequiredDropdown(
+                        value, 'priority', _priorityOptions),
                   ),
                   const SizedBox(height: 16),
 
                   // Project Size
                   TextFormField(
                     controller: _projectSizeController,
-                    keyboardType: TextInputType.number,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [_positiveDecimalInputFormatter],
                     decoration: InputDecoration(
                       labelText: 'Project Size (sqm)',
                       border: OutlineInputBorder(
@@ -1050,13 +1269,11 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       suffixText: 'sqm',
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter project size';
-                      }
-                      if (double.tryParse(value) == null) {
-                        return 'Please enter valid size';
-                      }
-                      return null;
+                      return _validatePositiveNumber(
+                        value,
+                        'project size',
+                        invalidMessage: 'Please enter valid size',
+                      );
                     },
                   ),
                   const SizedBox(height: 16),
@@ -1072,10 +1289,12 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       ),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter location';
-                      }
-                      return null;
+                      return _validateMeaningfulText(
+                        value,
+                        'location',
+                        minLength: 2,
+                        maxLength: 120,
+                      );
                     },
                   ),
                   const SizedBox(height: 16),
@@ -1084,7 +1303,9 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                   TextFormField(
                     controller: _budgetController,
                     onChanged: (_) => _resetRecommendationState(),
-                    keyboardType: TextInputType.number,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [_positiveDecimalInputFormatter],
                     decoration: InputDecoration(
                       labelText: 'Estimated Budget',
                       border: OutlineInputBorder(
@@ -1109,13 +1330,11 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       ),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter budget';
-                      }
-                      if (double.tryParse(value) == null) {
-                        return 'Please enter valid amount';
-                      }
-                      return null;
+                      return _validatePositiveNumber(
+                        value,
+                        'budget',
+                        invalidMessage: 'Please enter valid amount',
+                      );
                     },
                   ),
                   const SizedBox(height: 8),
@@ -1216,6 +1435,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       hintText:
                           'Describe your preferred style, colors, must-have elements, etc.',
                     ),
+                    validator: _validateDesignPreferences,
                   ),
                   const SizedBox(height: 24),
 
@@ -1420,9 +1640,9 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                     child: ElevatedButton(
                       onPressed: _isSubmitting
                           ? null
-                          : () {
-                              if (_formKey.currentState!.validate()) {
-                                _submitProjectProposal();
+                          : () async {
+                              if (await _validateBeforeSubmit()) {
+                                await _submitProjectProposal();
                               }
                             },
                       style: ElevatedButton.styleFrom(
@@ -1489,22 +1709,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         ],
       ),
     );
-  }
-
-  bool _areAllRequiredFieldsFilled() {
-    return _clientNameController.text.isNotEmpty &&
-        _emailController.text.isNotEmpty &&
-        _contactNumberController.text.isNotEmpty &&
-        _projectNameController.text.isNotEmpty &&
-        _roomType != null &&
-        _projectType != null &&
-        _priority != null &&
-        _projectSizeController.text.isNotEmpty &&
-        _locationController.text.isNotEmpty &&
-        _budgetController.text.isNotEmpty &&
-        _descriptionController.text.isNotEmpty &&
-        _startDate != null &&
-        _endDate != null;
   }
 
   Future<void> _submitProjectProposal() async {
