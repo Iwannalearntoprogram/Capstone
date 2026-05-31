@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:estetika_ui/config/api_config.dart';
+import 'package:estetika_ui/screens/call_screen.dart';
 import 'package:estetika_ui/widgets/custom_app_bar.dart';
 import 'package:estetika_ui/screens/chat_detail_screen.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:estetika_ui/screens/incoming_call_screen.dart';
+import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -16,7 +18,7 @@ class InboxScreen extends StatefulWidget {
 }
 
 class _InboxScreenState extends State<InboxScreen> {
-  IO.Socket? _socket;
+  socket_io.Socket? _socket;
   final List<MessageItem> _messages = [];
   final TextEditingController _searchController = TextEditingController();
   String? _userId;
@@ -26,6 +28,8 @@ class _InboxScreenState extends State<InboxScreen> {
 
   Function(dynamic)? _onReceivePrivateMessage;
   Function(dynamic)? _onReceivePrivateFile;
+  Function(dynamic)? _onCallIncoming;
+  String? _activeIncomingCallId;
 
   // Add StreamController
   StreamController<List<MessageItem>>? _messageStreamController;
@@ -51,9 +55,9 @@ class _InboxScreenState extends State<InboxScreen> {
 
     print('Initializing socket for user: $_userId');
 
-    _socket = IO.io(
+    _socket = socket_io.io(
       ApiConfig.origin,
-      IO.OptionBuilder()
+      socket_io.OptionBuilder()
           .setTransports(['websocket']).setAuth({'token': _userToken}).build(),
     );
 
@@ -67,6 +71,37 @@ class _InboxScreenState extends State<InboxScreen> {
     _socket!.on('connect_error', (error) {
       print('Socket connection error: $error');
     });
+
+    _onCallIncoming = (data) {
+      if (!mounted || _userId == null || data is! Map) return;
+
+      final callId = data['callId']?.toString();
+      final callerId = data['callerId']?.toString();
+      if (callId == null || callerId == null) return;
+      if (_activeIncomingCallId == callId) return;
+
+      _activeIncomingCallId = callId;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => IncomingCallScreen(
+            socket: _socket!,
+            currentUserId: _userId!,
+            callerId: callerId,
+            callerName: data['callerName']?.toString() ?? 'Unknown',
+            callerProfileImage: data['callerProfileImage']?.toString(),
+            callId: callId,
+            isVideo: data['type'] == 'video',
+          ),
+        ),
+      ).then((_) {
+        if (mounted && _activeIncomingCallId == callId) {
+          setState(() {
+            _activeIncomingCallId = null;
+          });
+        }
+      });
+    };
 
     _onReceivePrivateMessage = (data) {
       print('Received message: $data');
@@ -123,6 +158,7 @@ class _InboxScreenState extends State<InboxScreen> {
 
     _socket!.on('receive_private_message', _onReceivePrivateMessage!);
     _socket!.on('receive_private_file', _onReceivePrivateFile!);
+    _socket!.on('call_incoming', _onCallIncoming!);
 
     _socket!.connect();
   }
@@ -254,6 +290,48 @@ class _InboxScreenState extends State<InboxScreen> {
     return conv;
   }
 
+  String _getDisplayName(Map<String, dynamic> user) {
+    return user['firstName'] ??
+        user['fullName'] ??
+        user['username'] ??
+        'Unknown';
+  }
+
+  void _startCall(Map<String, dynamic> user, {required bool isVideo}) {
+    final otherUserId = user['id'] ?? user['_id'];
+    if (_socket == null || !_socket!.connected || _userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Connect to chat before starting a call')),
+      );
+      return;
+    }
+
+    if (otherUserId == null || otherUserId.toString().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to start call')),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CallScreen(
+          socket: _socket!,
+          currentUserId: _userId!,
+          peerId: otherUserId.toString(),
+          peerName: _getDisplayName(user),
+          peerProfileImage: user['profileImage'] != null &&
+                  user['profileImage'].toString().isNotEmpty
+              ? user['profileImage'].toString()
+              : null,
+          isVideo: isVideo,
+          isIncoming: false,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -320,10 +398,7 @@ class _InboxScreenState extends State<InboxScreen> {
       itemBuilder: (context, index) {
         final user = sortedUsers[index];
         final otherUserId = user['id'] ?? user['_id'];
-        final displayName = user['firstName'] ??
-            user['fullName'] ??
-            user['username'] ??
-            'Unknown';
+        final displayName = _getDisplayName(user);
 
         final conversationMessages = _getConversationMessages(otherUserId);
         final latestMessage =
@@ -332,6 +407,8 @@ class _InboxScreenState extends State<InboxScreen> {
         return InkWell(
           onTap: () async {
             await _fetchMessagesForUser(user);
+            if (!mounted) return;
+            if (!context.mounted) return;
 
             Navigator.push(
               context,
@@ -433,6 +510,8 @@ class _InboxScreenState extends State<InboxScreen> {
 
                     return deliveryStatus;
                   },
+                  onStartVoiceCall: () => _startCall(user, isVideo: false),
+                  onStartVideoCall: () => _startCall(user, isVideo: true),
                 ),
               ),
             ).then((_) {
@@ -619,6 +698,9 @@ class _InboxScreenState extends State<InboxScreen> {
       if (_onReceivePrivateFile != null) {
         _socket!.off('receive_private_file', _onReceivePrivateFile!);
       }
+      if (_onCallIncoming != null) {
+        _socket!.off('call_incoming', _onCallIncoming!);
+      }
       _socket!.disconnect();
       _socket!.dispose();
       _socket = null;
@@ -627,6 +709,7 @@ class _InboxScreenState extends State<InboxScreen> {
     // Clear the callback references
     _onReceivePrivateMessage = null;
     _onReceivePrivateFile = null;
+    _onCallIncoming = null;
 
     _searchController.dispose();
     super.dispose();

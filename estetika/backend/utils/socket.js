@@ -9,6 +9,41 @@ const initSocket = (server) => {
   const io = new Server(server, {
     cors: socketCorsOptions,
   });
+  const activeCallsByUser = new Map();
+  const callMembers = new Map();
+
+  const userIdOf = (user) => user?._id?.toString();
+
+  const getDisplayName = (user) =>
+    user.fullName ||
+    [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+    user.username ||
+    "Unknown";
+
+  const setCallMembers = (callId, members) => {
+    const ids = members.filter(Boolean).map((id) => id.toString());
+    callMembers.set(callId, new Set(ids));
+    ids.forEach((id) => activeCallsByUser.set(id, callId));
+  };
+
+  const clearCall = (callId) => {
+    const members = callMembers.get(callId);
+    if (members) {
+      members.forEach((memberId) => {
+        if (activeCallsByUser.get(memberId) === callId) {
+          activeCallsByUser.delete(memberId);
+        }
+      });
+    }
+    callMembers.delete(callId);
+  };
+
+  const emitToUser = async (recipientId, event, payload) => {
+    const recipient = await User.findById(recipientId);
+    if (!recipient || !recipient.socketId) return false;
+    io.to(recipient.socketId).emit(event, payload);
+    return true;
+  };
 
   // Socket.IO auth middleware
   io.use(async (socket, next) => {
@@ -154,8 +189,112 @@ const initSocket = (server) => {
       }
     });
 
+    socket.on("call_invite", async ({ recipientId, callId, type }) => {
+      try {
+        const caller = socket.user;
+        const callerId = userIdOf(caller);
+        const recipientUser = await User.findById(recipientId);
+        const currentCallId = callId || `${socket.id}-${Date.now()}`;
+
+        if (!recipientUser || !recipientUser.socketId) {
+          socket.emit("call_unavailable", { callId: currentCallId });
+          return;
+        }
+
+        const recipientUserId = recipientUser._id.toString();
+        if (
+          activeCallsByUser.has(callerId) ||
+          activeCallsByUser.has(recipientUserId)
+        ) {
+          socket.emit("call_busy", { callId: currentCallId });
+          return;
+        }
+
+        setCallMembers(currentCallId, [callerId, recipientUserId]);
+        io.to(recipientUser.socketId).emit("call_incoming", {
+          callId: currentCallId,
+          type: type === "video" ? "video" : "voice",
+          callerId,
+          callerName: getDisplayName(caller),
+          callerProfileImage: caller.profileImage,
+        });
+      } catch (err) {
+        console.error("Error in call_invite:", err.message);
+      }
+    });
+
+    socket.on("call_accept", async ({ recipientId, callId, type }) => {
+      try {
+        const accepter = socket.user;
+        const accepterId = userIdOf(accepter);
+        setCallMembers(callId, [accepterId, recipientId]);
+        await emitToUser(recipientId, "call_accepted", {
+          callId,
+          type: type === "video" ? "video" : "voice",
+          accepterId,
+          accepterName: getDisplayName(accepter),
+        });
+      } catch (err) {
+        console.error("Error in call_accept:", err.message);
+      }
+    });
+
+    socket.on("call_reject", async ({ recipientId, callId }) => {
+      try {
+        clearCall(callId);
+        await emitToUser(recipientId, "call_rejected", {
+          callId,
+          rejectedBy: userIdOf(socket.user),
+        });
+      } catch (err) {
+        console.error("Error in call_reject:", err.message);
+      }
+    });
+
+    socket.on("call_signal", async ({ recipientId, callId, signal }) => {
+      try {
+        await emitToUser(recipientId, "call_signal", {
+          callId,
+          senderId: userIdOf(socket.user),
+          signal,
+        });
+      } catch (err) {
+        console.error("Error in call_signal:", err.message);
+      }
+    });
+
+    socket.on("call_end", async ({ recipientId, callId }) => {
+      try {
+        clearCall(callId);
+        await emitToUser(recipientId, "call_ended", {
+          callId,
+          endedBy: userIdOf(socket.user),
+        });
+      } catch (err) {
+        console.error("Error in call_end:", err.message);
+      }
+    });
+
     socket.on("disconnect", async () => {
       try {
+        const disconnectedUserId = userIdOf(socket.user);
+        const callId = activeCallsByUser.get(disconnectedUserId);
+        const members = callMembers.get(callId);
+
+        if (callId && members) {
+          clearCall(callId);
+          await Promise.all(
+            Array.from(members)
+              .filter((memberId) => memberId !== disconnectedUserId)
+              .map((memberId) =>
+                emitToUser(memberId, "call_ended", {
+                  callId,
+                  endedBy: disconnectedUserId,
+                })
+              )
+          );
+        }
+
         await User.findByIdAndUpdate(socket.user._id, { socketId: null });
         const users = await User.find({});
         io.emit("update_user_list", users);

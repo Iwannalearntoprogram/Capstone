@@ -20,6 +20,8 @@ class ChatDetailScreen extends StatefulWidget {
     required String fileType,
     required String fileName,
   }) onSendFile;
+  final VoidCallback? onStartVoiceCall;
+  final VoidCallback? onStartVideoCall;
   final Stream<List<MessageItem>>? messageStream; // Add this
 
   const ChatDetailScreen({
@@ -31,6 +33,8 @@ class ChatDetailScreen extends StatefulWidget {
     required this.recipientId,
     required this.onSendMessage,
     required this.onSendFile,
+    this.onStartVoiceCall,
+    this.onStartVideoCall,
     this.messageStream, // Add this
   });
 
@@ -295,15 +299,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.videocam, color: Colors.black),
-            onPressed: () {
-              // Implement video call
-            },
+            onPressed: widget.onStartVideoCall,
           ),
           IconButton(
             icon: const Icon(Icons.call, color: Colors.black),
-            onPressed: () {
-              // Implement voice call
-            },
+            onPressed: widget.onStartVoiceCall,
           ),
         ],
       ),
