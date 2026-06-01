@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:estetika_ui/config/api_config.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:socket_io_client/socket_io_client.dart' as socket_io;
@@ -155,14 +156,7 @@ class CallService {
 
   Future<void> _createPeerConnection() async {
     final configuration = {
-      'iceServers': [
-        {
-          'urls': [
-            'stun:stun.l.google.com:19302',
-            'stun:stun1.l.google.com:19302',
-          ],
-        },
-      ],
+      'iceServers': ApiConfig.iceServers,
     };
 
     _peerConnection = await createPeerConnection(configuration);
