@@ -3,6 +3,12 @@ const AppError = require("../../utils/appError");
 const User = require("../../models/User/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const {
+  normalizePhilippinePhone,
+  trimValue,
+  validateName,
+  validatePhilippinePhone,
+} = require("../../utils/userValidation");
 
 const users_index = catchAsync(async (req, res, next) => {
   const { exclude, excludeRole } = req.query;
@@ -88,10 +94,43 @@ const user_update = catchAsync(async (req, res, next) => {
     }
   });
 
+  if (updateData.firstName !== undefined) {
+    const firstNameError = validateName(updateData.firstName, "First name");
+    if (firstNameError) {
+      return next(new AppError(firstNameError, 400));
+    }
+    updateData.firstName = trimValue(updateData.firstName);
+  }
+
+  if (updateData.lastName !== undefined) {
+    const lastNameError = validateName(updateData.lastName, "Last name");
+    if (lastNameError) {
+      return next(new AppError(lastNameError, 400));
+    }
+    updateData.lastName = trimValue(updateData.lastName);
+  }
+
+  if (updateData.phoneNumber !== undefined) {
+    const normalizedPhoneNumber = normalizePhilippinePhone(updateData.phoneNumber);
+    const phoneError = validatePhilippinePhone(normalizedPhoneNumber);
+    if (phoneError) {
+      return next(new AppError(phoneError, 400));
+    }
+    updateData.phoneNumber = normalizedPhoneNumber;
+  }
+
+  if (updateData.firstName !== undefined || updateData.lastName !== undefined) {
+    const nextFirst =
+      updateData.firstName !== undefined ? updateData.firstName : user.firstName;
+    const nextLast =
+      updateData.lastName !== undefined ? updateData.lastName : user.lastName;
+    updateData.fullName = `${nextFirst} ${nextLast}`.trim();
+  }
+
   const updatedUser = await User.findByIdAndUpdate(
     id,
     { $set: updateData },
-    { new: true }
+    { new: true, runValidators: true }
   );
 
   if (!updatedUser) return next(new AppError("User not Found.", 404));

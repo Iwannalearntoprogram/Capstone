@@ -526,7 +526,7 @@ const CalendarPage = () => {
     <div className="min-h-screen rounded-[15px] bg-white p-4 shadow-[0_2px_8px_0_rgba(99,99,99,0.2)] sm:p-6 lg:p-8">
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-2xl font-semibold text-[#1D3C34] font-avenir">
-          Project Calendar
+          Calendar
         </h2>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <button

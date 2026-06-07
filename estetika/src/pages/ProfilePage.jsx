@@ -5,10 +5,11 @@ import api from "../services/api";
 import { useToast } from "../components/ToastProvider";
 import {
   normalizePhone,
+  sanitizeNameInput,
   trimValue,
   validateEmail,
   validatePhilippinePhone,
-  validateRequiredText,
+  validateNameWithoutNumbers,
   validateUrl,
 } from "../utils/validation";
 
@@ -180,9 +181,9 @@ function ProfilePage() {
   const validateProfileField = (field, value) => {
     switch (field) {
       case "firstName":
-        return validateRequiredText(value, "First name");
+        return validateNameWithoutNumbers(value, "First name");
       case "lastName":
-        return validateRequiredText(value, "Last name");
+        return validateNameWithoutNumbers(value, "Last name");
       case "email":
         return validateEmail(value);
       case "phoneNumber": {
@@ -216,11 +217,15 @@ function ProfilePage() {
   };
 
   const handleFieldChange = (field, value) => {
-    setEditFields((prev) => ({ ...prev, [field]: value }));
+    const normalizedValue =
+      field === "firstName" || field === "lastName"
+        ? sanitizeNameInput(value)
+        : value;
+    setEditFields((prev) => ({ ...prev, [field]: normalizedValue }));
     setSaveError("");
     setEditErrors((prev) => ({
       ...prev,
-      [field]: validateProfileField(field, value),
+      [field]: validateProfileField(field, normalizedValue),
     }));
   };
 
@@ -433,6 +438,12 @@ function ProfilePage() {
     return <p className="text-sm font-medium text-[#1f2937]">{value}</p>;
   };
 
+  const blockDigitKeys = (event) => {
+    if (/^\d$/.test(event.key)) {
+      event.preventDefault();
+    }
+  };
+
   const renderField = ({ label, key, fullWidth }) => {
     const isEditable = editMode && editableFields.includes(key);
     const inputType =
@@ -467,6 +478,14 @@ function ProfilePage() {
                 type={inputType}
                 value={inputValue}
                 onChange={(event) => handleFieldChange(key, event.target.value)}
+                onKeyDown={
+                  key === "firstName" || key === "lastName"
+                    ? blockDigitKeys
+                    : undefined
+                }
+                inputMode={
+                  key === "firstName" || key === "lastName" ? "text" : undefined
+                }
                 className="w-full rounded-2xl border border-[#d9d2c8] bg-white px-4 py-3 text-sm text-[#1f2937] outline-none transition focus:border-[#1d3c34] focus:ring-2 focus:ring-[#d5e0db]"
               />
             )}

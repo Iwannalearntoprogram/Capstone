@@ -6,6 +6,12 @@ const catchAsync = require("../../utils/catchAsync");
 const AppError = require("../../utils/appError");
 const InvalidToken = require("../../models/utils/InvalidToken");
 const { OAuth2Client } = require("google-auth-library");
+const {
+  normalizePhilippinePhone,
+  trimValue,
+  validateName,
+  validatePhilippinePhone,
+} = require("../../utils/userValidation");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const normalizeEmail = (email = "") => email.trim().toLowerCase();
@@ -24,6 +30,22 @@ const register = catchAsync(async (req, res, next) => {
     !phoneNumber
   ) {
     return next(new AppError("Please provide all required fields", 400));
+  }
+
+  const firstNameError = validateName(firstName, "First name");
+  if (firstNameError) {
+    return next(new AppError(firstNameError, 400));
+  }
+
+  const lastNameError = validateName(lastName, "Last name");
+  if (lastNameError) {
+    return next(new AppError(lastNameError, 400));
+  }
+
+  const normalizedPhoneNumber = normalizePhilippinePhone(phoneNumber);
+  const phoneError = validatePhilippinePhone(normalizedPhoneNumber);
+  if (phoneError) {
+    return next(new AppError(phoneError, 400));
   }
 
   // Check if email already exists
@@ -57,13 +79,13 @@ const register = catchAsync(async (req, res, next) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const newUser = new User({
-    fullName: `${firstName} ${lastName}`,
-    firstName,
-    lastName,
+    fullName: `${trimValue(firstName)} ${trimValue(lastName)}`.trim(),
+    firstName: trimValue(firstName),
+    lastName: trimValue(lastName),
     username: normalizedUsername,
     email: normalizedEmail,
     password: hashedPassword,
-    phoneNumber,
+    phoneNumber: normalizedPhoneNumber,
     role: role || "client",
   });
 

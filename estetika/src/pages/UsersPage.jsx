@@ -21,8 +21,9 @@ import {
 import ProfileImage from "../components/common/ProfileImage";
 import {
   trimValue,
+  sanitizeNameInput,
   validateEmail,
-  validateRequiredText,
+  validateNameWithoutNumbers,
   validateStrongPassword,
   validateUsername,
 } from "../utils/validation";
@@ -67,17 +68,40 @@ const userCounts = (users, role) =>
 const sanitizePhoneInput = (value = "") =>
   String(value).replace(/\D/g, "").slice(0, PHONE_MAX_LENGTH);
 
+const normalizePhilippinePhoneDigits = (value = "") => {
+  const digits = sanitizePhoneInput(value);
+  if (!digits) return "";
+  if (digits.startsWith("63") && digits.length >= 12) {
+    return digits.slice(2, 12);
+  }
+  if (digits.startsWith("09") && digits.length >= 11) {
+    return digits.slice(1, 11);
+  }
+  return digits.slice(0, 10);
+};
+
+const formatPhilippinePhoneNumber = (value = "") => {
+  const localDigits = normalizePhilippinePhoneDigits(value);
+  return localDigits ? `+63${localDigits}` : "";
+};
+
 const validateUserPhone = (value) => {
-  const digitsOnly = sanitizePhoneInput(value);
+  const digitsOnly = normalizePhilippinePhoneDigits(value);
   if (!digitsOnly) return "Phone number is required.";
-  if (digitsOnly.length < 10) {
-    return "Phone number must contain at least 10 digits.";
+  if (digitsOnly.length !== 10) {
+    return "Phone number must contain 10 digits after +63.";
+  }
+  if (!digitsOnly.startsWith("9")) {
+    return "PH mobile numbers start with 9.";
   }
   return "";
 };
 
-const validateName = (value, label) =>
-  validateRequiredText(value, label, { maxLength: NAME_MAX_LENGTH });
+const preventDigitInput = (event) => {
+  if (/^\d$/.test(event.key)) {
+    event.preventDefault();
+  }
+};
 
 const getPasswordStrength = (value) => {
   if (!value) return null;
@@ -101,8 +125,12 @@ const getPasswordStrength = (value) => {
 
 const formErrors = (data, requirePassword = false) => ({
   username: validateUsername(data.username),
-  firstName: validateName(data.firstName, "First name"),
-  lastName: validateName(data.lastName, "Last name"),
+  firstName: validateNameWithoutNumbers(data.firstName, "First name", {
+    maxLength: NAME_MAX_LENGTH,
+  }),
+  lastName: validateNameWithoutNumbers(data.lastName, "Last name", {
+    maxLength: NAME_MAX_LENGTH,
+  }),
   email: validateEmail(data.email),
   phoneNumber: validateUserPhone(data.phoneNumber),
   role: trimValue(data.role) ? "" : "Role is required.",
@@ -115,7 +143,7 @@ const normalizeUser = (data, includePassword = false) => {
     firstName: trimValue(data.firstName),
     lastName: trimValue(data.lastName),
     email: trimValue(data.email).toLowerCase(),
-    phoneNumber: sanitizePhoneInput(data.phoneNumber),
+    phoneNumber: formatPhilippinePhoneNumber(data.phoneNumber),
     role: data.role,
   };
   if (includePassword) payload.password = data.password;
@@ -174,23 +202,14 @@ export default function UsersPage() {
     ["archived", "Archived", FaUserSlash],
   ];
 
-  const handleField = (setter, errorSetter, requirePassword = false) => (e) => {
-    const { name, value } = e.target;
-    setter((prev) => ({ ...prev, [name]: value }));
-    errorSetter((prev) => ({
-      ...prev,
-      [name]: formErrors({ ...(name ? { [name]: value } : {}), ...{} }, requirePassword)[name],
-    }));
-  };
-
   const openEdit = (user) => {
     setEditUser(user);
     setEditData({
       username: user.username || "",
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
+      firstName: sanitizeNameInput(user.firstName || ""),
+      lastName: sanitizeNameInput(user.lastName || ""),
       email: user.email || "",
-      phoneNumber: sanitizePhoneInput(user.phoneNumber || ""),
+      phoneNumber: normalizePhilippinePhoneDigits(user.phoneNumber || ""),
       role: user.role || "designer",
     });
     setEditErrors({});
@@ -301,10 +320,10 @@ export default function UsersPage() {
     </div>
   );
 
-  const field = (label, Icon, name, value, onChange, error, extra = {}) => (
+  const field = (label, FieldIcon, name, value, onChange, error, extra = {}) => (
     <div className="space-y-2">
       <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-        <Icon className="h-4 w-4" style={{ color: "#1D3C34" }} />
+        <FieldIcon className="h-4 w-4" style={{ color: "#1D3C34" }} />
         {label}
       </label>
       <input
@@ -349,7 +368,7 @@ export default function UsersPage() {
         <div className="mb-3 overflow-hidden rounded-2xl bg-white shadow-xl sm:mb-6">
           <div className="border-b border-gray-200">
             <nav className="grid grid-cols-1 gap-2 p-2.5 min-[360px]:grid-cols-2 sm:flex sm:space-x-4 sm:overflow-x-auto sm:whitespace-nowrap sm:px-6 sm:py-0">
-              {tabs.map(([id, label, Icon]) => (
+              {tabs.map(([id, label, TabIcon]) => (
                 <button
                   key={id}
                   onClick={() => setActiveTab(id)}
@@ -359,7 +378,9 @@ export default function UsersPage() {
                       : "border-gray-200 text-gray-500"
                   }`}
                 >
-                  <Icon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+                  {React.createElement(TabIcon, {
+                    className: "h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4",
+                  })}
                   <span className="truncate text-center">{label}</span>
                   <span className={`rounded-lg px-2 py-0.5 text-[11px] sm:px-2.5 sm:text-xs ${
                     activeTab === id ? "bg-[#1D3C34] text-white" : "bg-gray-100 text-gray-600"
@@ -504,32 +525,50 @@ export default function UsersPage() {
                 }, editErrors.username, { placeholder: "Enter username", maxLength: USERNAME_MAX_LENGTH })}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {field("First Name", FaUser, "firstName", editData.firstName, (e) => {
-                    const value = e.target.value;
+                    const value = sanitizeNameInput(e.target.value);
                     setEditData((prev) => ({ ...prev, firstName: value }));
-                    setEditErrors((prev) => ({ ...prev, firstName: validateName(value, "First name") }));
-                  }, editErrors.firstName, { placeholder: "Enter first name", maxLength: NAME_MAX_LENGTH })}
+                    setEditErrors((prev) => ({ ...prev, firstName: validateNameWithoutNumbers(value, "First name", { maxLength: NAME_MAX_LENGTH }) }));
+                  }, editErrors.firstName, { placeholder: "Enter first name", maxLength: NAME_MAX_LENGTH, onKeyDown: preventDigitInput, inputMode: "text", autoComplete: "given-name" })}
                   {field("Last Name", FaUser, "lastName", editData.lastName, (e) => {
-                    const value = e.target.value;
+                    const value = sanitizeNameInput(e.target.value);
                     setEditData((prev) => ({ ...prev, lastName: value }));
-                    setEditErrors((prev) => ({ ...prev, lastName: validateName(value, "Last name") }));
-                  }, editErrors.lastName, { placeholder: "Enter last name", maxLength: NAME_MAX_LENGTH })}
+                    setEditErrors((prev) => ({ ...prev, lastName: validateNameWithoutNumbers(value, "Last name", { maxLength: NAME_MAX_LENGTH }) }));
+                  }, editErrors.lastName, { placeholder: "Enter last name", maxLength: NAME_MAX_LENGTH, onKeyDown: preventDigitInput, inputMode: "text", autoComplete: "family-name" })}
                 </div>
                 {field("Email", FaEnvelope, "email", editData.email, (e) => {
                   const value = e.target.value;
                   setEditData((prev) => ({ ...prev, email: value }));
                   setEditErrors((prev) => ({ ...prev, email: validateEmail(value) }));
                 }, editErrors.email, { placeholder: "Enter email address", type: "email" })}
-                {field("Phone Number", FaPhone, "phoneNumber", editData.phoneNumber, (e) => {
-                  const value = sanitizePhoneInput(e.target.value);
-                  setEditData((prev) => ({ ...prev, phoneNumber: value }));
-                  setEditErrors((prev) => ({ ...prev, phoneNumber: validateUserPhone(value) }));
-                }, editErrors.phoneNumber, {
-                  placeholder: "Enter phone number",
-                  type: "tel",
-                  inputMode: "numeric",
-                  pattern: "[0-9]*",
-                  maxLength: PHONE_MAX_LENGTH,
-                })}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <FaPhone className="h-4 w-4" style={{ color: "#1D3C34" }} />
+                    Phone Number
+                  </label>
+                  <div className="flex overflow-hidden rounded-lg border border-gray-200 bg-gray-50 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#1D3C34]">
+                    <span className="flex items-center border-r border-gray-200 bg-gray-100 px-3 text-sm font-semibold text-gray-600">
+                      +63
+                    </span>
+                    <input
+                      name="phoneNumber"
+                      value={editData.phoneNumber}
+                      onChange={(e) => {
+                        const value = normalizePhilippinePhoneDigits(e.target.value);
+                        setEditData((prev) => ({ ...prev, phoneNumber: value }));
+                        setEditErrors((prev) => ({ ...prev, phoneNumber: validateUserPhone(value) }));
+                      }}
+                      placeholder="9123456789"
+                      type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={10}
+                      className="w-full bg-transparent px-4 py-3 focus:outline-none"
+                    />
+                  </div>
+                  {editErrors.phoneNumber && (
+                    <p className="text-sm text-red-500">{editErrors.phoneNumber}</p>
+                  )}
+                </div>
                 {field("Role", FaBriefcase, "role", editData.role, () => {}, "", { readOnly: true })}
               </div>
               <div className="mt-8 flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row">
@@ -567,15 +606,15 @@ export default function UsersPage() {
                 }, errors.username, { placeholder: "Enter username", maxLength: USERNAME_MAX_LENGTH })}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {field("First Name", FaUser, "firstName", formData.firstName, (e) => {
-                    const value = e.target.value;
+                    const value = sanitizeNameInput(e.target.value);
                     setFormData((prev) => ({ ...prev, firstName: value }));
-                    setErrors((prev) => ({ ...prev, firstName: validateName(value, "First name") }));
-                  }, errors.firstName, { placeholder: "Enter first name", maxLength: NAME_MAX_LENGTH })}
+                    setErrors((prev) => ({ ...prev, firstName: validateNameWithoutNumbers(value, "First name", { maxLength: NAME_MAX_LENGTH }) }));
+                  }, errors.firstName, { placeholder: "Enter first name", maxLength: NAME_MAX_LENGTH, onKeyDown: preventDigitInput, inputMode: "text", autoComplete: "given-name" })}
                   {field("Last Name", FaUser, "lastName", formData.lastName, (e) => {
-                    const value = e.target.value;
+                    const value = sanitizeNameInput(e.target.value);
                     setFormData((prev) => ({ ...prev, lastName: value }));
-                    setErrors((prev) => ({ ...prev, lastName: validateName(value, "Last name") }));
-                  }, errors.lastName, { placeholder: "Enter last name", maxLength: NAME_MAX_LENGTH })}
+                    setErrors((prev) => ({ ...prev, lastName: validateNameWithoutNumbers(value, "Last name", { maxLength: NAME_MAX_LENGTH }) }));
+                  }, errors.lastName, { placeholder: "Enter last name", maxLength: NAME_MAX_LENGTH, onKeyDown: preventDigitInput, inputMode: "text", autoComplete: "family-name" })}
                 </div>
                 {field("Email", FaEnvelope, "email", formData.email, (e) => {
                   const value = e.target.value;
@@ -610,17 +649,33 @@ export default function UsersPage() {
                     </p>
                   )}
                 </div>
-                {field("Phone Number", FaPhone, "phoneNumber", formData.phoneNumber, (e) => {
-                  const value = sanitizePhoneInput(e.target.value);
-                  setFormData((prev) => ({ ...prev, phoneNumber: value }));
-                  setErrors((prev) => ({ ...prev, phoneNumber: validateUserPhone(value) }));
-                }, errors.phoneNumber, {
-                  placeholder: "Enter phone number",
-                  type: "tel",
-                  inputMode: "numeric",
-                  pattern: "[0-9]*",
-                  maxLength: PHONE_MAX_LENGTH,
-                })}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <FaPhone className="h-4 w-4" style={{ color: "#1D3C34" }} />
+                    Phone Number
+                  </label>
+                  <div className="flex overflow-hidden rounded-lg border border-gray-200 bg-gray-50 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#1D3C34]">
+                    <span className="flex items-center border-r border-gray-200 bg-gray-100 px-3 text-sm font-semibold text-gray-600">
+                      +63
+                    </span>
+                    <input
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={(e) => {
+                        const value = normalizePhilippinePhoneDigits(e.target.value);
+                        setFormData((prev) => ({ ...prev, phoneNumber: value }));
+                        setErrors((prev) => ({ ...prev, phoneNumber: validateUserPhone(value) }));
+                      }}
+                      placeholder="9123456789"
+                      type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={10}
+                      className="w-full bg-transparent px-4 py-3 focus:outline-none"
+                    />
+                  </div>
+                  {errors.phoneNumber && <p className="text-sm text-red-500">{errors.phoneNumber}</p>}
+                </div>
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                     <FaBriefcase className="h-4 w-4" style={{ color: "#1D3C34" }} />

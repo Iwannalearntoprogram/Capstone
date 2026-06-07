@@ -6,11 +6,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "First name is required"],
       trim: true,
+      validate: {
+        validator: (value) => !/\d/.test(String(value ?? "")),
+        message: "First name cannot contain numbers.",
+      },
     },
     lastName: {
       type: String,
       required: [true, "Last name is required"],
       trim: true,
+      validate: {
+        validator: (value) => !/\d/.test(String(value ?? "")),
+        message: "Last name cannot contain numbers.",
+      },
     },
     fullName: {
       type: String,
@@ -55,7 +63,14 @@ const userSchema = new mongoose.Schema(
         return !this.googleId;
       },
     },
-    phoneNumber: String,
+    phoneNumber: {
+      type: String,
+      validate: {
+        validator: (value) =>
+          !value || /^\+63\d{10}$/.test(String(value).replace(/\s+/g, "")),
+        message: "Phone number must start with +63 and include 10 digits after it.",
+      },
+    },
     profileImage: String,
     googleId: { type: String, unique: true, sparse: true },
     avatar: String,

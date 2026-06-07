@@ -8,11 +8,12 @@ import marbleBg from "../assets/images/white-marble-bg.png";
 import { SERVER_URL } from "../config/server";
 import {
   normalizePhone,
+  sanitizeNameInput,
   trimValue,
   validateEmail,
   validatePasswordConfirmation,
   validatePhilippinePhone,
-  validateRequiredText,
+  validateNameWithoutNumbers,
   validateStrongPassword,
   validateUsername,
 } from "../utils/validation";
@@ -39,10 +40,16 @@ function SignupPage() {
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handleNameKeyDown = (event) => {
+    if (/^\d$/.test(event.key)) {
+      event.preventDefault();
+    }
+  };
+
   const validateForm = (nextFormData = formData, nextAcceptedTerms = acceptedTerms) => {
     const nextErrors = {
-      firstName: validateRequiredText(nextFormData.firstName, "First name"),
-      lastName: validateRequiredText(nextFormData.lastName, "Last name"),
+      firstName: validateNameWithoutNumbers(nextFormData.firstName, "First name"),
+      lastName: validateNameWithoutNumbers(nextFormData.lastName, "Last name"),
       email: validateEmail(nextFormData.email),
       username: validateUsername(nextFormData.username),
       password: validateStrongPassword(nextFormData.password),
@@ -70,9 +77,13 @@ function SignupPage() {
         terms: checked ? "" : "You must accept the Terms and Conditions.",
       }));
     } else {
+      const normalizedValue =
+        name === "firstName" || name === "lastName"
+          ? sanitizeNameInput(value)
+          : value;
       const nextFormData = {
         ...formData,
-        [name]: value,
+        [name]: normalizedValue,
       };
       setFormData(nextFormData);
       setSubmitError("");
@@ -80,9 +91,9 @@ function SignupPage() {
         ...prev,
         [name]:
           name === "firstName"
-            ? validateRequiredText(value, "First name")
+            ? validateNameWithoutNumbers(normalizedValue, "First name")
             : name === "lastName"
-            ? validateRequiredText(value, "Last name")
+            ? validateNameWithoutNumbers(normalizedValue, "Last name")
             : name === "email"
             ? validateEmail(value)
             : name === "username"
@@ -134,7 +145,8 @@ function SignupPage() {
       return;
     }
 
-    const { confirmPassword, ...rawData } = formData;
+    const rawData = { ...formData };
+    delete rawData.confirmPassword;
     const cleanedPhoneNumber = normalizePhone(rawData.phoneNumber);
 
     const dataToSend = {
@@ -201,6 +213,9 @@ function SignupPage() {
               className="w-full p-2 mb-4 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#1D3C34]  placeholder-gray-500"
               value={formData.firstName}
               onChange={handleChange}
+              onKeyDown={handleNameKeyDown}
+              inputMode="text"
+              autoComplete="given-name"
               required
             />
             {formErrors.firstName && (
@@ -215,6 +230,9 @@ function SignupPage() {
               className="w-full p-2 mb-4 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#1D3C34]  placeholder-gray-500"
               value={formData.lastName}
               onChange={handleChange}
+              onKeyDown={handleNameKeyDown}
+              inputMode="text"
+              autoComplete="family-name"
               required
             />
             {formErrors.lastName && (
