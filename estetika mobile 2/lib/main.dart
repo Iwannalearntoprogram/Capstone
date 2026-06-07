@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Estetika',
+      title: 'Moss',
       theme: lightMode,
       home: const WelcomeScreen(),
       routes: {

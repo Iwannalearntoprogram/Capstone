@@ -19,12 +19,12 @@ function LandingPage() {
 
   const handleDownloadApp = () => {
     // Download APK from backend server
-    const downloadUrl = `${URL}/downloads/Moss Manila.apk`;
+    const downloadUrl = `${URL}/downloads/Moss.apk`;
 
     // Create a temporary link element and trigger download
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = "Estetika-App.apk";
+    link.download = "Moss.apk";
     link.target = "_blank"; // Open in new tab as fallback
     document.body.appendChild(link);
     link.click();
@@ -55,7 +55,7 @@ function LandingPage() {
             <div className="flex items-center">
               <img
                 src={logo}
-                alt="Moss Manila"
+                alt="Moss"
                 className="h-8 w-auto"
                 fetchpriority="high"
                 loading="eager"
