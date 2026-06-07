@@ -3,6 +3,7 @@ const dns = require("dns");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const initSocket = require("./utils/socket");
+const fixNotificationIndexes = require("./utils/fixNotificationIndexes");
 
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
@@ -40,6 +41,9 @@ async function startServer() {
   try {
     await mongoose.connect(mongoUri);
     console.log("MongoDB connected");
+
+    // Repair stale notification indexes that silently dropped notifications as duplicates.
+    await fixNotificationIndexes();
 
     server = app.listen(PORT, () => {
       console.log("Server Started " + PORT);

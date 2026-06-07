@@ -341,19 +341,57 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Icons.notifications;
   }
 
-  void _markAsRead(String id) {
+  Future<void> _markAsRead(String id) async {
+    if (id.isEmpty) return;
+
+    // Optimistically update the UI first.
     setState(() {
       final index = _notifications.indexWhere((n) => n.id == id);
       if (index != -1) {
         _notifications[index] = _notifications[index].copyWith(isRead: true);
       }
     });
+
+    // Persist to the backend so it stays read after a refresh.
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return;
+
+    try {
+      await http.put(
+        Uri.parse('${ApiConfig.apiBaseUrl}/user/notification?id=$id'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'read': true}),
+      );
+    } catch (_) {
+      // Network error: the local state still reflects the change; it will reconcile on refresh.
+    }
   }
 
-  void _removeNotification(String id) {
+  Future<void> _removeNotification(String id) async {
+    if (id.isEmpty) return;
+
+    // Optimistically remove from the UI first.
     setState(() {
       _notifications.removeWhere((n) => n.id == id);
     });
+
+    // Persist the deletion to the backend so it doesn't reappear on refresh.
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return;
+
+    try {
+      await http.delete(
+        Uri.parse('${ApiConfig.apiBaseUrl}/user/notification?id=$id'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+    } catch (_) {
+      // Network error: keep the optimistic removal; it will reconcile on next refresh.
+    }
   }
 }
 

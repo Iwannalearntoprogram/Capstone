@@ -38,6 +38,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
+  String? validateName(String? value, String fieldLabel) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Enter $fieldLabel';
+    }
+    if (RegExp(r'[0-9]').hasMatch(value)) {
+      return '$fieldLabel cannot contain numbers';
+    }
+    return null;
+  }
+
   String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter your email';
@@ -277,10 +287,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     Expanded(
                                       child: TextFormField(
                                         controller: _firstNameController,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.deny(
+                                              RegExp(r'[0-9]')),
+                                        ],
                                         validator: (value) =>
-                                            value == null || value.isEmpty
-                                                ? 'Enter first name'
-                                                : null,
+                                            validateName(value, 'first name'),
                                         decoration: InputDecoration(
                                           label: const Text('First Name'),
                                           hintText: 'First Name',
@@ -295,10 +307,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     Expanded(
                                       child: TextFormField(
                                         controller: _lastNameController,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.deny(
+                                              RegExp(r'[0-9]')),
+                                        ],
                                         validator: (value) =>
-                                            value == null || value.isEmpty
-                                                ? 'Enter last name'
-                                                : null,
+                                            validateName(value, 'last name'),
                                         decoration: InputDecoration(
                                           label: const Text('Last Name'),
                                           hintText: 'Last Name',

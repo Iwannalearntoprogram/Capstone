@@ -90,6 +90,87 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Static images shown when no project images are available yet.
+  static const List<String> _fallbackCarouselAssets = [
+    'assets/images/interior1.jpg',
+    'assets/images/interior2.jpg',
+    'assets/images/interior3.jpg',
+  ];
+
+  // Collect image URLs from the fetched projects' files (deduped, capped).
+  List<String> _projectImageUrls() {
+    final seen = <String>{};
+    final urls = <String>[];
+    for (final project in _projectsData) {
+      if (project is! Map) continue;
+      final files = project['files'];
+      if (files is! List) continue;
+      for (final file in files) {
+        if (file is! String || !_isImageUrl(file)) continue;
+        final url = _getDirectImageLink(file);
+        if (seen.add(url)) urls.add(url);
+        if (urls.length >= 8) return urls;
+      }
+    }
+    return urls;
+  }
+
+  bool _isImageUrl(String url) {
+    final path = url.split('?').first.toLowerCase();
+    return path.endsWith('.jpg') ||
+        path.endsWith('.jpeg') ||
+        path.endsWith('.png') ||
+        path.endsWith('.gif') ||
+        path.endsWith('.bmp') ||
+        path.endsWith('.webp');
+  }
+
+  // Convert Google Drive share links to a direct-view URL (mirrors project_detail_screen).
+  String _getDirectImageLink(String url) {
+    final match =
+        RegExp(r'drive\.google\.com\/file\/d\/([^\/]+)').firstMatch(url);
+    if (match != null && match.groupCount >= 1) {
+      return 'https://drive.google.com/uc?export=view&id=${match.group(1)}';
+    }
+    return url;
+  }
+
+  Widget _buildCarouselSlide(
+    BuildContext context, {
+    required String path,
+    required bool isNetwork,
+  }) {
+    final Widget image = isNetwork
+        ? Image.network(
+            path,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, progress) => progress == null
+                ? child
+                : Container(
+                    color: Colors.grey.shade200,
+                    child: const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+            errorBuilder: (context, error, stackTrace) => Image.asset(
+              _fallbackCarouselAssets.first,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          )
+        : Image.asset(path, width: double.infinity, fit: BoxFit.cover);
+
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      margin: const EdgeInsets.symmetric(horizontal: 5.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10.0),
+        child: image,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,7 +178,8 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: const CustomAppBar(actions: [], title: ''),
       body: _isLoading || _isDesignersLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
+          : SingleChildScrollView(
+              child: Column(
               children: [
                 // Navigation buttons row
                 Padding(
@@ -164,64 +246,58 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 16.0),
 
-                // Carousel slider for project images
-                SizedBox(
-                  height: 200.0,
-                  child: CarouselSlider(
-                    slideTransform: const CubeTransform(),
-                    slideIndicator: CircularSlideIndicator(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      currentIndicatorColor: const Color(0xff0a4b39),
-                    ),
-                    autoSliderDelay: const Duration(seconds: 10),
-                    enableAutoSlider: true,
-                    unlimitedMode: true,
-                    viewportFraction: 0.9,
-                    children: [
-                      'assets/images/interior1.jpg',
-                      'assets/images/interior2.jpg',
-                      'assets/images/interior3.jpg',
-                    ].map((imagePath) {
-                      return Builder(
-                        builder: (BuildContext context) {
-                          return Container(
-                            width: MediaQuery.of(context).size.width,
-                            margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10.0),
-                              image: DecorationImage(
-                                image: AssetImage(imagePath),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    }).toList(),
-                  ),
+                // Carousel slider for project images (falls back to static
+                // interior photos when no project images are available).
+                Builder(
+                  builder: (context) {
+                    final projectImages = _projectImageUrls();
+                    final useNetwork = projectImages.isNotEmpty;
+                    final slides =
+                        useNetwork ? projectImages : _fallbackCarouselAssets;
+                    return SizedBox(
+                      height: 200.0,
+                      child: CarouselSlider(
+                        slideTransform: const CubeTransform(),
+                        slideIndicator: CircularSlideIndicator(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          currentIndicatorColor: const Color(0xff0a4b39),
+                        ),
+                        autoSliderDelay: const Duration(seconds: 10),
+                        enableAutoSlider: true,
+                        unlimitedMode: true,
+                        viewportFraction: 0.9,
+                        children: slides
+                            .map((path) => _buildCarouselSlide(
+                                  context,
+                                  path: path,
+                                  isNetwork: useNetwork,
+                                ))
+                            .toList(),
+                      ),
+                    );
+                  },
                 ),
                 // About Us section
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'About us :',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'Welcome to our Interior Design Studio in Quezon City, where creativity meets functionality. We specialize in creating standout interiors that perfectly capture those special moments that call for exceptional design.\n\nOur team combines innovative thinking with timeless elegance, ensuring every space we touch becomes a reflection of our clients\' unique vision and lifestyle. From residential sanctuaries to commercial marvels, we bring dreams to life.',
-                          style: TextStyle(fontSize: 14),
-                        ),
-                      ],
-                    ),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 32.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'About us :',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Welcome to our Interior Design Studio in Quezon City, where creativity meets functionality. We specialize in creating standout interiors that perfectly capture those special moments that call for exceptional design.\n\nOur team combines innovative thinking with timeless elegance, ensuring every space we touch becomes a reflection of our clients\' unique vision and lifestyle. From residential sanctuaries to commercial marvels, we bring dreams to life.',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ],
                   ),
                 ),
               ],
+            ),
             ),
     );
   }

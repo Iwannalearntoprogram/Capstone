@@ -108,8 +108,13 @@ class _SignInScreenState extends State<SigninScreen> {
         }
 
         if (mounted) {
-          // Check if we should skip OTP for this account based on per-account 24h validity
-          if (await _shouldSkipOtp(email)) {
+          // Skip OTP when "Remember me" is checked, or when this account was already
+          // OTP-verified within the last 24h (per-account remember).
+          if (_rememberMe || await _shouldSkipOtp(email)) {
+            // Persist the remember state so auto-login and later sign-ins also skip OTP.
+            if (_rememberMe) {
+              await _markOtpVerified(email);
+            }
             // Skip OTP and go directly to home
             Navigator.pushReplacement(
               context,

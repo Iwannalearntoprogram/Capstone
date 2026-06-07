@@ -7,6 +7,7 @@ import Cookies from "js-cookie";
 import logo from "../assets/images/logo-moss.png";
 import ProfileImage from "./common/ProfileImage";
 import { useAuthStore } from "../store/AuthStore";
+import { titleFor } from "../utils/notifications";
 
 const Navbar = ({ toggleSidebar }) => {
   const [showNotifications, setShowNotifications] = useState(false);
@@ -140,7 +141,7 @@ const Navbar = ({ toggleSidebar }) => {
                   >
                     <span className="text-xl">{notif.icon || "!"}</span>
                     <div className="flex-1">
-                      <p className="font-semibold">{notif.title || "Notification"}</p>
+                      <p className="font-semibold">{titleFor(notif)}</p>
                       <p className="text-sm text-gray-600">{notif.message}</p>
                       <p className="text-xs text-gray-400">
                         {notif.time || notif.createdAt
@@ -152,6 +153,16 @@ const Navbar = ({ toggleSidebar }) => {
                 );
               })}
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowNotifications(false);
+                navigate("/dashboard/notification");
+              }}
+              className="mt-3 w-full rounded-md border-t pt-3 text-center text-sm font-semibold text-[#1D3C34] hover:underline"
+            >
+              View all notifications
+            </button>
           </div>
         )}
       </div>

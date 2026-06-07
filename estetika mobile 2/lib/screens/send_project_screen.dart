@@ -10,6 +10,35 @@ import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 import 'package:estetika_ui/utils/toast.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+/// Restricts input to a positive decimal with a bounded number of integer
+/// digits and at most [maxDecimalDigits] fractional digits. Also blocks any
+/// non-numeric characters and more than one decimal point.
+class _BoundedDecimalInputFormatter extends TextInputFormatter {
+  _BoundedDecimalInputFormatter({required this.maxIntegerDigits});
+
+  final int maxIntegerDigits;
+  static const int maxDecimalDigits = 2;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+    if (text.isEmpty) return newValue;
+    // Digits with at most one optional decimal point.
+    if (!RegExp(r'^\d*\.?\d*$').hasMatch(text)) return oldValue;
+    final parts = text.split('.');
+    if (parts.length > 2) return oldValue;
+    if (parts[0].length > maxIntegerDigits) return oldValue;
+    if (parts.length == 2 && parts[1].length > maxDecimalDigits) {
+      return oldValue;
+    }
+    return newValue;
+  }
+}
 
 class SendProjectScreen extends StatefulWidget {
   const SendProjectScreen({super.key});
@@ -80,8 +109,12 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   bool _isRecommendationLoading = false;
   bool _hasViewedRecommendation = false;
   final NumberFormat _currencyFormat = NumberFormat('#,##0');
-  final TextInputFormatter _positiveDecimalInputFormatter =
-      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'));
+  // Budget: up to 7 integer digits + 2 decimals => max 9,999,999.99 (< P10M).
+  final TextInputFormatter _budgetInputFormatter =
+      _BoundedDecimalInputFormatter(maxIntegerDigits: 7);
+  // Project size: up to 4 integer digits + 2 decimals => max 9,999.99 (< 10,000 sqm).
+  final TextInputFormatter _projectSizeInputFormatter =
+      _BoundedDecimalInputFormatter(maxIntegerDigits: 4);
   static const Set<String> _designVocabulary = {
     'aesthetic',
     'area',
@@ -296,6 +329,23 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     return null;
   }
 
+  String? _validateBoundedPositiveNumber(
+    String? value,
+    String label, {
+    required num max,
+    String? invalidMessage,
+    String? tooLargeMessage,
+  }) {
+    final base = _validatePositiveNumber(value, label,
+        invalidMessage: invalidMessage);
+    if (base != null) return base;
+    final number = double.parse(_trimmed(value));
+    if (number >= max) {
+      return tooLargeMessage ?? '$label must be less than $max';
+    }
+    return null;
+  }
+
   String? _validateContactNumber(String? value) {
     final digits = _trimmed(value).replaceAll(RegExp(r'\D'), '');
     if (digits.isEmpty) return 'Please enter contact number';
@@ -341,8 +391,8 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   String? _validateDateSelection() {
     if (_startDate == null) return 'Please select start date';
     if (_endDate == null) return 'Please select end date';
-    if (_endDate!.isBefore(_startDate!)) {
-      return 'End date cannot be before start date';
+    if (!_endDate!.isAfter(_startDate!)) {
+      return 'End date must be after the start date';
     }
     return null;
   }
@@ -390,22 +440,39 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     }
   }
 
+  /// Trims, prefixes https:// when missing, and returns the link only if it is
+  /// a valid http(s) URL; otherwise returns null.
+  String? _normalizeInspirationLink(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return null;
+    final link =
+        (trimmed.startsWith('http://') || trimmed.startsWith('https://'))
+            ? trimmed
+            : 'https://$trimmed';
+    return _isValidHttpUrl(link) ? link : null;
+  }
+
   Future<void> _addInspirationLink() async {
-    if (_inspirationLinkController.text.trim().isNotEmpty) {
-      String link = _inspirationLinkController.text.trim();
-      if (!link.startsWith('http://') && !link.startsWith('https://')) {
-        link = 'https://$link';
-      }
+    if (_inspirationLinkController.text.trim().isEmpty) return;
 
-      if (!_isValidHttpUrl(link)) {
-        await showToast('Please enter a valid inspiration link.');
-        return;
-      }
+    final link = _normalizeInspirationLink(_inspirationLinkController.text);
+    if (link == null) {
+      await showToast('Please enter a valid inspiration link.');
+      return;
+    }
 
-      setState(() {
-        _inspirationLinks.add(link);
-        _inspirationLinkController.clear();
-      });
+    setState(() {
+      _inspirationLinks.add(link);
+      _inspirationLinkController.clear();
+    });
+    await showToast('Inspiration link added.');
+  }
+
+  Future<void> _openInspirationLink(String link) async {
+    final uri = Uri.tryParse(link);
+    if (uri == null ||
+        !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      await showToast('Could not open link.');
     }
   }
 
@@ -1260,7 +1327,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                     controller: _projectSizeController,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [_positiveDecimalInputFormatter],
+                    inputFormatters: [_projectSizeInputFormatter],
                     decoration: InputDecoration(
                       labelText: 'Project Size (sqm)',
                       border: OutlineInputBorder(
@@ -1269,10 +1336,13 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       suffixText: 'sqm',
                     ),
                     validator: (value) {
-                      return _validatePositiveNumber(
+                      return _validateBoundedPositiveNumber(
                         value,
                         'project size',
+                        max: 10000,
                         invalidMessage: 'Please enter valid size',
+                        tooLargeMessage:
+                            'Project size must be less than 10,000 sqm',
                       );
                     },
                   ),
@@ -1305,7 +1375,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                     onChanged: (_) => _resetRecommendationState(),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [_positiveDecimalInputFormatter],
+                    inputFormatters: [_budgetInputFormatter],
                     decoration: InputDecoration(
                       labelText: 'Estimated Budget',
                       border: OutlineInputBorder(
@@ -1330,10 +1400,13 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       ),
                     ),
                     validator: (value) {
-                      return _validatePositiveNumber(
+                      return _validateBoundedPositiveNumber(
                         value,
                         'budget',
+                        max: 10000000,
                         invalidMessage: 'Please enter valid amount',
+                        tooLargeMessage:
+                            'Budget must be less than ₱10,000,000',
                       );
                     },
                   ),
@@ -1351,6 +1424,11 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       if (picked != null) {
                         setState(() {
                           _startDate = picked;
+                          // Clear a now-invalid end date (must stay after start).
+                          if (_endDate != null &&
+                              !_endDate!.isAfter(_startDate!)) {
+                            _endDate = null;
+                          }
                         });
                       }
                     },
@@ -1386,8 +1464,13 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                     onTap: () async {
                       final picked = await showDatePicker(
                         context: context,
-                        initialDate: _endDate ?? (_startDate ?? DateTime.now()),
-                        firstDate: _startDate ?? DateTime.now(),
+                        initialDate: _endDate ??
+                            (_startDate != null
+                                ? _startDate!.add(const Duration(days: 1))
+                                : DateTime.now()),
+                        firstDate: _startDate != null
+                            ? _startDate!.add(const Duration(days: 1))
+                            : DateTime.now(),
                         lastDate: DateTime(2100),
                       );
                       if (picked != null) {
@@ -1426,6 +1509,9 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                     controller: _descriptionController,
                     onChanged: (_) => _resetRecommendationState(),
                     maxLines: 5,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(RegExp(r'[0-9]')),
+                    ],
                     decoration: InputDecoration(
                       labelText: 'Design Preferences & Requirements',
                       alignLabelWithHint: true,
@@ -1546,6 +1632,9 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: _inspirationLinkController,
+                          keyboardType: TextInputType.url,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _addInspirationLink(),
                           decoration: InputDecoration(
                             labelText: 'Inspiration Link',
                             hintText: 'Enter URL of inspiration design',
@@ -1609,11 +1698,17 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: ListTile(
+                            onTap: () =>
+                                _openInspirationLink(_inspirationLinks[index]),
                             leading: const Icon(Icons.link,
                                 color: Color(0xFF203B32)),
                             title: Text(
                               _inspirationLinks[index],
-                              style: const TextStyle(fontSize: 14),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF203B32),
+                                decoration: TextDecoration.underline,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1728,6 +1823,23 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     }
     final user = jsonDecode(userString);
 
+    // Resolve the inspiration link: prefer an added link, otherwise use the
+    // text still sitting in the field (so a typed-but-not-added link isn't lost).
+    String? inspirationLink =
+        _inspirationLinks.isNotEmpty ? _inspirationLinks.first : null;
+    if (inspirationLink == null &&
+        _inspirationLinkController.text.trim().isNotEmpty) {
+      inspirationLink =
+          _normalizeInspirationLink(_inspirationLinkController.text);
+      if (inspirationLink == null) {
+        await showToast('Please enter a valid inspiration link.');
+        setState(() {
+          _isSubmitting = false;
+        });
+        return;
+      }
+    }
+
     final Map<String, dynamic> body = {
       "title": _projectNameController.text,
       "description": _descriptionController.text,
@@ -1740,8 +1852,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       "priority": _priority,
       "projectSize": double.tryParse(_projectSizeController.text) ?? 0,
       "projectLocation": _locationController.text,
-      "designInspiration":
-          _inspirationLinks.isNotEmpty ? _inspirationLinks.first : null,
+      "designInspiration": inspirationLink,
       "designRecommendation": (_selectedRecommendationIndex != null &&
               _selectedRecommendationIndex! < _recommendations.length)
           ? ((_recommendations[_selectedRecommendationIndex!] as Map)['_id'])

@@ -11,6 +11,15 @@ async function notifyMany(list = []) {
   if (!Array.isArray(list) || list.length === 0) return;
 
   const ops = list.map((n) => {
+    // Only set task/phase/project/event when they actually have a value. Writing an explicit
+    // `null` would make the field "exist" and pull the doc under the partial unique index
+    // (see Notification.js), silently dropping legitimate notifications as duplicates.
+    const fields = {};
+    if (n.task) fields.task = n.task;
+    if (n.phase) fields.phase = n.phase;
+    if (n.project) fields.project = n.project;
+    if (n.event) fields.event = n.event;
+
     // For task and phase notifications, use upsert to prevent duplicates
     if (n.task || n.phase) {
       return {
@@ -24,11 +33,8 @@ async function notifyMany(list = []) {
           update: {
             $setOnInsert: {
               message: n.message,
-              project: n.project || null,
-              task: n.task || null,
-              phase: n.phase || null,
-              event: n.event || null,
               read: false,
+              ...fields,
             },
           },
           upsert: true,
@@ -42,11 +48,8 @@ async function notifyMany(list = []) {
             recipient: n.recipient,
             type: n.type,
             message: n.message,
-            project: n.project || null,
-            task: n.task || null,
-            phase: n.phase || null,
-            event: n.event || null,
             read: false,
+            ...fields,
           },
         },
       };

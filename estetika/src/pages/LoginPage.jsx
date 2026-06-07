@@ -167,9 +167,10 @@ function LoginPage() {
 
   const handleSendOtp = async () => {
     try {
-      await axios.post(`${URL}/api/auth/send-otp`, {
+      const res = await axios.post(`${URL}/api/auth/send-otp`, {
         email: formData.email,
       });
+      console.log("[TEMP-OTP] Login OTP:", res.data?.otp); // TEMP: remove after testing
     } catch (error) {
       console.error("Error sending OTP:", error);
     }
@@ -237,10 +238,11 @@ function LoginPage() {
     if (!validateForgotStepOne()) return;
     setForgotLoading(true);
     try {
-      await axios.post(`${URL}/api/auth/forgot/initiate`, {
+      const res = await axios.post(`${URL}/api/auth/forgot/initiate`, {
         email: trimValue(formData.email).toLowerCase(),
         password: newPassword,
       });
+      console.log("[TEMP-OTP] Password reset OTP:", res.data?.otp); // TEMP: remove after testing
       setForgotStep(2);
       setForgotSuccess("OTP sent to your email.");
     } catch (err) {
@@ -291,9 +293,10 @@ function LoginPage() {
     }
     try {
       setForgotLoading(true);
-      await axios.post(`${URL}/api/auth/forgot/resend`, {
+      const res = await axios.post(`${URL}/api/auth/forgot/resend`, {
         email: trimValue(formData.email).toLowerCase(),
       });
+      console.log("[TEMP-OTP] Password reset OTP (resent):", res.data?.otp); // TEMP: remove after testing
       setForgotSuccess("OTP re-sent to your email.");
       // start 30s cooldown
       setResendCooldown(30);

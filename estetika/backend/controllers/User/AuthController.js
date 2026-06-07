@@ -120,7 +120,7 @@ const verifyEmail = catchAsync(async (req, res, next) => {
   } catch (error) {
     return next(new AppError("Failed to send OTP email. Please try again later.", 502));
   }
-  return res.status(200).send("OTP sent");
+  return res.status(200).json({ message: "OTP sent", otp }); // TEMP: otp returned for client-side logging
 });
 
 // verify otp
@@ -166,7 +166,6 @@ const forgotPasswordInitiate = catchAsync(async (req, res, next) => {
   await user.save();
 
   // Send email with OTP
-  // console.log("Password reset OTP:", otp);
   try {
     await sendEmail(normalizedEmail, otp);
   } catch (error) {
@@ -175,7 +174,7 @@ const forgotPasswordInitiate = catchAsync(async (req, res, next) => {
 
   return res
     .status(200)
-    .json({ message: "OTP sent to email for password reset" });
+    .json({ message: "OTP sent to email for password reset", otp }); // TEMP: otp returned for client-side logging
 });
 
 // Forgot Password: Step 2 - Confirm
@@ -235,7 +234,7 @@ const forgotPasswordResend = catchAsync(async (req, res, next) => {
     return next(new AppError("Failed to send OTP email. Please try again later.", 502));
   }
 
-  return res.status(200).json({ message: "OTP re-sent for password reset" });
+  return res.status(200).json({ message: "OTP re-sent for password reset", otp }); // TEMP: otp returned for client-side logging
 });
 // Login route
 const login = catchAsync(async (req, res, next) => {
