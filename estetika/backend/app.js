@@ -46,6 +46,7 @@ const {
 // initializations
 const app = express();
 app.set("trust proxy", 1);
+const downloadsDir = path.resolve(__dirname, "public", "downloads");
 
 const limiter = rateLimit({
   max: 1000,
@@ -80,7 +81,17 @@ app.use((req, res, next) => {
 app.use("/api", limiter); //Protection Against DDOS Attack
 
 // Static file serving for downloads
-app.use("/downloads", express.static("public/downloads"));
+app.use(
+  "/downloads",
+  express.static(downloadsDir, {
+    setHeaders(res, filePath) {
+      if (path.extname(filePath).toLowerCase() === ".apk") {
+        res.setHeader("Content-Type", "application/vnd.android.package-archive");
+        res.setHeader("Content-Disposition", "attachment");
+      }
+    },
+  })
+);
 app.use(
   "/material-images",
   express.static(path.resolve(__dirname, "..", "..", "Materials"))
