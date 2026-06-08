@@ -89,8 +89,11 @@ const APK_DOWNLOAD_URL =
   process.env.APK_DOWNLOAD_URL ||
   "https://github.com/Iwannalearntoprogram/Capstone/releases/latest/download/Moss.apk";
 
-app.get("/downloads/Moss.apk", (req, res) => {
-  return res.redirect(302, APK_DOWNLOAD_URL);
+app.use("/downloads", (req, res, next) => {
+  if (req.path === "/Moss.apk") {
+    return res.redirect(302, APK_DOWNLOAD_URL);
+  }
+  next();
 });
 
 // Static file serving for any other downloads
