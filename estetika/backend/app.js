@@ -80,7 +80,20 @@ app.use((req, res, next) => {
 });
 app.use("/api", limiter); //Protection Against DDOS Attack
 
-// Static file serving for downloads
+// APK download — redirect to the GitHub Releases-hosted binary.
+// The APK (~106MB) is too large to ship in the repo. It was previously Git LFS,
+// which Render does not fetch on deploy, so /downloads/Moss.apk returned 404.
+// We now attach Moss.apk to a GitHub Release; the "latest" URL below always
+// resolves to the most recent release's asset. Override with APK_DOWNLOAD_URL.
+const APK_DOWNLOAD_URL =
+  process.env.APK_DOWNLOAD_URL ||
+  "https://github.com/Iwannalearntoprogram/Capstone/releases/latest/download/Moss.apk";
+
+app.get("/downloads/Moss.apk", (req, res) => {
+  return res.redirect(302, APK_DOWNLOAD_URL);
+});
+
+// Static file serving for any other downloads
 app.use(
   "/downloads",
   express.static(downloadsDir, {
