@@ -18,17 +18,11 @@ function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleDownloadApp = () => {
-    // Download APK from backend server
-    const downloadUrl = `${URL}/downloads/Moss.apk`;
-
-    // Create a temporary link element and trigger download
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.download = "Moss.apk";
-    link.target = "_blank"; // Open in new tab as fallback
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    window.open(
+      "https://github.com/Iwannalearntoprogram/Capstone/releases/latest/download/Moss.apk",
+      "_blank",
+      "noopener,noreferrer"
+    );
   };
 
   const handleSmoothScroll = (e, targetId) => {

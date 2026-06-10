@@ -96,4 +96,14 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+userSchema.pre("validate", function (next) {
+  if (this.phoneNumber) {
+    const trimmed = String(this.phoneNumber).trim().replace(/\s+/g, "");
+    if (/^09\d{9}$/.test(trimmed)) {
+      this.phoneNumber = `+63${trimmed.slice(1)}`;
+    }
+  }
+  next();
+});
+
 module.exports = mongoose.model("User", userSchema);

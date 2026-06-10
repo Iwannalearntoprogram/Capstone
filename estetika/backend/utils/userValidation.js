@@ -10,7 +10,12 @@ const validateName = (value, label) => {
   return "";
 };
 
-const normalizePhilippinePhone = (value) => trimValue(value).replace(/\s+/g, "");
+const normalizePhilippinePhone = (value) => {
+  const trimmed = trimValue(value).replace(/\s+/g, "");
+  // Convert 09XXXXXXXXX → +63XXXXXXXXX
+  if (/^09\d{9}$/.test(trimmed)) return `+63${trimmed.slice(1)}`;
+  return trimmed;
+};
 
 const validatePhilippinePhone = (value) => {
   const normalized = normalizePhilippinePhone(value);
