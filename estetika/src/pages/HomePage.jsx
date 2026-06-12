@@ -99,6 +99,7 @@ const HomePage = () => {
   const [projectStates, setProjectStates] = useState({});
   const [materials, setMaterials] = useState([]);
   const [topMaterialCategories, setTopMaterialCategories] = useState([]);
+  const [satisfactionData, setSatisfactionData] = useState(null);
   const [designers, setDesigners] = useState([]);
   const [designRecommendations, setDesignRecommendations] = useState([]);
   const [drLoading, setDrLoading] = useState(false);
@@ -1367,7 +1368,92 @@ const HomePage = () => {
     fetchDesignRecommendations();
   }, []);
 
-  // removed debug summary effect
+  // Fetch dashboard summary data: project status counts, top materials, and
+  // customer satisfaction stats. Mirrors the fetchDesigners effect above.
+  useEffect(() => {
+    const fetchProjectsOverview = async () => {
+      setOverviewLoading(true);
+      try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${serverUrl}/api/project?index=true`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const projects = response.data.project || [];
+        setProjectsData(projects);
+
+        const states = { active: 0, completed: 0, delayed: 0, cancelled: 0 };
+        projects.forEach((proj) => {
+          switch (proj.status) {
+            case "ongoing":
+            case "pending":
+              states.active += 1;
+              break;
+            case "completed":
+              states.completed += 1;
+              break;
+            case "delayed":
+              states.delayed += 1;
+              break;
+            case "cancelled":
+              states.cancelled += 1;
+              break;
+            default:
+              break;
+          }
+        });
+        setProjectStates(states);
+      } catch (err) {
+        console.error("Error fetching projects overview:", err);
+        setProjectStates({ active: 0, completed: 0, delayed: 0, cancelled: 0 });
+      } finally {
+        setOverviewLoading(false);
+      }
+    };
+
+    const fetchMaterials = async () => {
+      setMaterialsLoading(true);
+      try {
+        const token = Cookies.get("token");
+        const response = await axios.get(`${serverUrl}/api/material`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const materialsList = response.data.material || [];
+        setMaterials(materialsList);
+        setTopMaterialCategories(calculateCategorySales(materialsList));
+      } catch (err) {
+        console.error("Error fetching materials:", err);
+        setMaterials([]);
+        setTopMaterialCategories([]);
+      } finally {
+        setMaterialsLoading(false);
+      }
+    };
+
+    const fetchSatisfaction = async () => {
+      try {
+        const response = await axios.get(`${serverUrl}/api/rating/stats/all`);
+        const stats = response.data.statistics || [];
+        setSatisfactionData(
+          stats.map((s) => ({
+            year: String(s.year),
+            customerSatisfaction: Math.round((s.averageRating || 0) * 20),
+            totalRatings: s.totalRatings || 0,
+          }))
+        );
+      } catch (err) {
+        console.error("Error fetching satisfaction stats:", err);
+        setSatisfactionData(null);
+      }
+    };
+
+    fetchProjectsOverview();
+    fetchMaterials();
+    fetchSatisfaction();
+  }, [serverUrl]);
 
   const handleDrSubmit = async (e) => {
     e?.preventDefault?.();
@@ -1555,7 +1641,7 @@ const HomePage = () => {
       <div className="min-h-[300px] min-w-0 overflow-hidden rounded-xl bg-white p-3 shadow-md sm:p-4 lg:col-span-2 xl:col-span-3">
         <h2 className="font-bold mb-4">Customer Satisfaction</h2>
         <div className="h-48 w-full sm:h-52">
-          <CustomerSatisfactionChart />
+          <CustomerSatisfactionChart data={satisfactionData} />
         </div>
       </div>{" "}
       {/* project states distribution */}
