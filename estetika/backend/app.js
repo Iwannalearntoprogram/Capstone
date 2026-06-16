@@ -42,6 +42,7 @@ const {
   checkPhaseStart,
   checkPhaseCompletion,
 } = require("./utils/cronJobNotification");
+const { pingSelf, resolveBaseUrl } = require("./utils/keepAlive");
 
 // initializations
 const app = express();
@@ -152,5 +153,12 @@ cron.schedule("0 * * * *", () => {
   checkPhaseStart();
   checkPhaseCompletion();
 });
+
+// Keep-alive: ping ourselves every 14 minutes so Render's free tier never hits
+// its ~15 minute idle timeout and spins the instance down. Only runs when a
+// public URL is available (RENDER_EXTERNAL_URL on Render, or SELF_PING_URL).
+if (resolveBaseUrl()) {
+  cron.schedule("*/14 * * * *", pingSelf);
+}
 
 module.exports = app;
