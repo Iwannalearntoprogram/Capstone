@@ -39,6 +39,7 @@ const buildBriefFields = (project) => ({
   priority: project?.priority ?? "",
   designPreference: project?.designPreference ?? "",
   startDate: toDateInputValue(project?.startDate),
+  endDate: toDateInputValue(project?.endDate),
 });
 
 const ProjectDetailsModal = ({ project, onClose }) => {
@@ -276,6 +277,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
           priority: editFields.priority,
           designPreference: editFields.designPreference,
           startDate: editFields.startDate || undefined,
+          endDate: editFields.endDate || undefined,
         },
         {
           headers: {
@@ -518,6 +520,19 @@ const ProjectDetailsModal = ({ project, onClose }) => {
             type="date"
             name="startDate"
             value={editFields.startDate}
+            onChange={handleBriefFieldChange}
+            className="w-full rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
+          />
+        </label>
+
+        <label>
+          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
+            End Date
+          </span>
+          <input
+            type="date"
+            name="endDate"
+            value={editFields.endDate}
             onChange={handleBriefFieldChange}
             className="w-full rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
           />
