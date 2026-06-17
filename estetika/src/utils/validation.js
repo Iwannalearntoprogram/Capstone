@@ -11,6 +11,38 @@ export const trimValue = (value) =>
 
 export const isBlank = (value) => trimValue(value) === "";
 
+export const validateProjectTitle = (value) => {
+  const trimmed = trimValue(value);
+  if (!trimmed) return "Project title is required.";
+  if (trimmed.length < 3) return "Project title must be at least 3 characters.";
+
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (words.length > 5) return "Project title must be 5 words or fewer.";
+
+  for (const word of words) {
+    const letters = word.replace(/[^a-zA-Z]/g, "");
+    if (letters.length < 5) continue;
+
+    const vowelCount = (letters.match(/[aeiouAEIOUyY]/g) || []).length;
+    if (vowelCount / letters.length < 0.1) {
+      return "Project title contains unrecognizable words.";
+    }
+
+    const maxConsonantRun = Math.max(
+      0,
+      ...letters
+        .replace(/[aeiouAEIOUyY]/g, " ")
+        .split(/\s+/)
+        .map((r) => r.length)
+    );
+    if (maxConsonantRun >= 5) {
+      return "Project title contains unrecognizable words.";
+    }
+  }
+
+  return "";
+};
+
 export const validateRequiredText = (
   value,
   label,

@@ -2,7 +2,7 @@ class ApiConfig {
   // All builds (debug and release) talk to the production server so the app is
   // ready for use without per-environment setup. To run against a local backend
   // during development, temporarily return one of the commented origins below.
-  static const String _productionOrigin = 'https://moss-manila.onrender.com';
+  static const String _productionOrigin = 'https://capstone-moss.onrender.com';
   // static const String _localOrigin = 'http://localhost:3000';
   // static const String _androidEmulatorOrigin = 'http://10.0.2.2:3000';
 

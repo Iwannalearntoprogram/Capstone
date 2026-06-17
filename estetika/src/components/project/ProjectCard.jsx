@@ -17,6 +17,7 @@ import {
   trimValue,
   validateDateOrder,
   validatePositiveNumber,
+  validateProjectTitle,
   validateRequiredText,
   validateUrl,
 } from "../../utils/validation";
@@ -225,10 +226,7 @@ const ProjectCard = ({
     e.preventDefault();
 
     const nextErrors = {
-      title: validateRequiredText(pendingProjectForm.title, "Project title", {
-        minLength: 3,
-        maxLength: 120,
-      }),
+      title: validateProjectTitle(pendingProjectForm.title),
       description: validateRequiredText(
         pendingProjectForm.description,
         "Description",
@@ -693,7 +691,7 @@ const ProjectCard = ({
               )}
             </div>
 
-            <h3 className="mt-2.5 text-base font-semibold tracking-tight text-slate-900">
+            <h3 className="mt-2.5 break-words text-base font-semibold tracking-tight text-slate-900">
               {project.title || "Untitled project"}
             </h3>
             <p className="mt-1 line-clamp-3 text-[13px] leading-5 text-slate-600">
@@ -734,7 +732,7 @@ const ProjectCard = ({
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-stone-400">
             Budget
           </p>
-          <p className="mt-1 text-[1.65rem] font-semibold tracking-tight text-emerald-700">
+          <p className="mt-1 truncate text-[1.65rem] font-semibold tracking-tight text-emerald-700">
             {project.budget ? formatBudget(project.budget) : "Not set"}
           </p>
 

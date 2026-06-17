@@ -173,9 +173,9 @@ const image_post = catchAsync(async (req, res, next) => {
     return next(new AppError("No image uploaded", 400));
   }
 
-  // if (!req.file.mimetype.startsWith("image/")) {
-  //   return next(new AppError("File is not an image.", 400));
-  // }
+  if (!req.file.mimetype.startsWith("image/")) {
+    return next(new AppError("File is not an image.", 400));
+  }
 
   const downloadURL = await uploadToCloudinary(req.file, `picture/${req.id}`, {
     resourceType: "image",
@@ -402,6 +402,10 @@ const material_image_post = catchAsync(async (req, res, next) => {
 const design_image_post = catchAsync(async (req, res, next) => {
   const { id } = req.query;
 
+  if (!id) {
+    return next(new AppError("Design ID not provided", 400));
+  }
+
   if (!req.file) {
     return next(new AppError("No image uploaded", 400));
   }
@@ -452,7 +456,7 @@ const carousel_image_post = catchAsync(async (req, res, next) => {
 });
 
 // In fetch_csv, use dynamic import if fetch is not defined
-const fetch_csv = catchAsync(async (req, res) => {
+const fetch_csv = catchAsync(async (req, res, next) => {
   const { url } = req.query;
   if (!url) return next(new AppError("URL not provided", 400));
   if (!fetch) fetch = (await import("node-fetch")).default;

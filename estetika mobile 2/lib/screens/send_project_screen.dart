@@ -269,6 +269,39 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   }
 
 
+  String? _validateProjectName(String? value) {
+    final text = _trimmed(value);
+    if (text.isEmpty) return 'Please enter project name';
+    if (text.length < 3) return 'Project name must be at least 3 characters';
+
+    final words =
+        text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    if (words.length > 5) return 'Project name must be 5 words or fewer';
+
+    for (final word in words) {
+      final letters = word.replaceAll(RegExp(r'[^a-zA-Z]'), '');
+      if (letters.length < 5) continue;
+
+      final vowelCount =
+          RegExp(r'[aeiouAEIOUyY]').allMatches(letters).length;
+      if (vowelCount / letters.length < 0.1) {
+        return 'Project name contains unrecognizable words';
+      }
+
+      final consonantRuns = letters
+          .replaceAll(RegExp(r'[aeiouAEIOUyY]'), ' ')
+          .split(RegExp(r'\s+'))
+          .where((r) => r.isNotEmpty)
+          .toList();
+      final maxRun = consonantRuns.isEmpty
+          ? 0
+          : consonantRuns.map((r) => r.length).reduce((a, b) => a > b ? a : b);
+      if (maxRun >= 5) return 'Project name contains unrecognizable words';
+    }
+
+    return null;
+  }
+
   String? _validateMeaningfulText(
     String? value,
     String label, {
@@ -1308,14 +1341,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    validator: (value) {
-                      return _validateMeaningfulText(
-                        value,
-                        'project name',
-                        minLength: 3,
-                        maxLength: 120,
-                      );
-                    },
+                    validator: _validateProjectName,
                   ),
                   const SizedBox(height: 16),
 

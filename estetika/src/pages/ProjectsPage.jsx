@@ -10,6 +10,7 @@ import {
   trimValue,
   validateDateOrder,
   validatePositiveNumber,
+  validateProjectTitle,
   validateRequiredText,
 } from "../utils/validation";
 
@@ -246,7 +247,7 @@ const ProjectsPage = () => {
   const handleAddProject = async (e) => {
     e.preventDefault();
     const nextErrors = {
-      title: validateRequiredText(newProject.title, "Project title"),
+      title: validateProjectTitle(newProject.title),
       description: validateRequiredText(newProject.description, "Description"),
       budget: validatePositiveNumber(newProject.budget, "Budget"),
       dates: validateDateOrder(newProject.startDate, newProject.endDate),
