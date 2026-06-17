@@ -8,6 +8,7 @@ const InvalidToken = require("../../models/utils/InvalidToken");
 const { OAuth2Client } = require("google-auth-library");
 const {
   normalizePhilippinePhone,
+  sanitizeNameLettersOnly,
   trimValue,
   validateName,
   validatePhilippinePhone,
@@ -366,13 +367,25 @@ const googleAuth = catchAsync(async (req, res, next) => {
         await user.save();
       } else {
         console.log("🆕 Creating new user from Google data");
-        // Create new user
+        // Create new user. Names from Google may contain spaces/accents/etc.,
+        // so strip them to the letters-only format the User model requires
+        // (with safe fallbacks so sign-in never fails on an empty name).
+        const googleFirstName =
+          sanitizeNameLettersOnly(googleUser.given_name) ||
+          sanitizeNameLettersOnly(googleUser.name?.split(" ")[0]) ||
+          sanitizeNameLettersOnly(googleUser.email?.split("@")[0]) ||
+          "User";
+        const googleLastName =
+          sanitizeNameLettersOnly(googleUser.family_name) ||
+          sanitizeNameLettersOnly(
+            googleUser.name?.split(" ").slice(1).join("")
+          ) ||
+          "User";
+
         user = new User({
           googleId: googleUser.id,
-          firstName: googleUser.given_name || googleUser.name.split(" ")[0],
-          lastName:
-            googleUser.family_name ||
-            googleUser.name.split(" ").slice(1).join(" "),
+          firstName: googleFirstName,
+          lastName: googleLastName,
           username: googleUser.email.split("@")[0],
           email: googleUser.email,
           avatar: googleUser.picture,

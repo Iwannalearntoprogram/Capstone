@@ -7,8 +7,8 @@ const userSchema = new mongoose.Schema(
       required: [true, "First name is required"],
       trim: true,
       validate: {
-        validator: (value) => !/\d/.test(String(value ?? "")),
-        message: "First name cannot contain numbers.",
+        validator: (value) => /^[A-Za-z]+$/.test(String(value ?? "").trim()),
+        message: "First name can only contain letters.",
       },
     },
     lastName: {
@@ -16,8 +16,8 @@ const userSchema = new mongoose.Schema(
       required: [true, "Last name is required"],
       trim: true,
       validate: {
-        validator: (value) => !/\d/.test(String(value ?? "")),
-        message: "Last name cannot contain numbers.",
+        validator: (value) => /^[A-Za-z]+$/.test(String(value ?? "").trim()),
+        message: "Last name can only contain letters.",
       },
     },
     fullName: {

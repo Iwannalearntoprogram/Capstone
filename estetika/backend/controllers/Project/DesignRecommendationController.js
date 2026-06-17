@@ -69,60 +69,14 @@ const normalizeAndExpandKeywords = (keywords) => {
 const ROOM_TYPE_OPTIONS =
   DesignRecommendation.schema.path("type")?.enumValues || [];
 const PRIORITY_OPTIONS = ["Budget", "Style"];
-const VALID_DESIGN_TERMS = new Set([
-  "aesthetic",
-  "area",
-  "bathroom",
-  "bed",
-  "bedroom",
-  "beige",
-  "black",
-  "cabinet",
-  "chair",
-  "classic",
-  "clean",
-  "color",
-  "colors",
-  "commercial",
-  "contemporary",
-  "cozy",
-  "dining",
-  "elegant",
-  "furniture",
-  "gray",
-  "grey",
-  "home",
-  "industrial",
-  "interior",
-  "kitchen",
-  "layout",
-  "light",
-  "lighting",
-  "living",
-  "luxury",
-  "material",
-  "materials",
-  "minimal",
-  "minimalist",
-  "modern",
-  "neutral",
-  "office",
-  "palette",
-  "room",
-  "rustic",
-  "scandinavian",
-  "shelf",
-  "sofa",
-  "space",
-  "style",
-  "table",
-  "texture",
-  "tiles",
-  "warm",
-  "white",
-  "wood",
-  "wooden",
-]);
+const WHOLE_HOUSE_ROOMS = [
+  "Living Room",
+  "Bedroom",
+  "Kitchen",
+  "Bathroom",
+  "Home Office",
+  "Dining Room",
+];
 const GENERIC_ROOM_TERMS = new Set([
   "area",
   "commercial",
@@ -165,9 +119,11 @@ const validatePreferenceText = (value) => {
   if (tokens.length < 2 || hasRepeatedJunkPattern(text)) {
     return "Describe preferences using valid design-related words.";
   }
-  if (!tokens.some((token) => VALID_DESIGN_TERMS.has(token))) {
-    return "Include style, colors, materials, room, or furniture details in your preferences.";
-  }
+  // Note: we intentionally do NOT require the text to contain a word from a
+  // fixed vocabulary. Whether the preferences are meaningful is decided by
+  // matching against the actual tags/preferences stored on the design
+  // recommendations (see hasDatasetPreferenceMatch). This lets clients match
+  // on any custom tag defined in the Design Recommendation Manager.
   return null;
 };
 
@@ -201,6 +157,32 @@ const hasDatasetPreferenceMatch = async (roomType, normalizedPreferences) => {
     );
   });
 };
+
+// Returns the distinct set of tags/preferences across ALL design
+// recommendations. Used by clients to validate that a typed design preference
+// contains at least one known tag before allowing a recommendation request.
+const design_recommendation_tags = catchAsync(async (req, res) => {
+  const recommendations = await DesignRecommendation.find({})
+    .select("tags designPreferences")
+    .lean();
+
+  const tagSet = new Set();
+  recommendations.forEach((recommendation) => {
+    [
+      ...(recommendation.tags || []),
+      ...(recommendation.designPreferences || []),
+    ].forEach((term) => {
+      if (typeof term === "string" && term.trim()) {
+        tagSet.add(term.trim().toLowerCase());
+      }
+    });
+  });
+
+  return res.status(200).json({
+    message: "Design recommendation tags fetched successfully",
+    tags: [...tagSet],
+  });
+});
 
 const design_recommendation_get = catchAsync(async (req, res, next) => {
   const {
@@ -415,25 +397,53 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
   }
 
   const normalizedPreferences = normalizeAndExpandKeywords(designPreferences);
-  const hasPreferenceMatch = await hasDatasetPreferenceMatch(
-    roomType,
-    normalizedPreferences
-  );
+  let hasPreferenceMatch;
+  if (roomType === "Whole House") {
+    const roomMatchChecks = await Promise.all(
+      WHOLE_HOUSE_ROOMS.map((room) =>
+        hasDatasetPreferenceMatch(room, normalizedPreferences)
+      )
+    );
+    hasPreferenceMatch = roomMatchChecks.some(Boolean);
+  } else {
+    hasPreferenceMatch = await hasDatasetPreferenceMatch(
+      roomType,
+      normalizedPreferences
+    );
+  }
+
   if (!hasPreferenceMatch) {
-    return res.status(200).json({
-      message:
-        "No matching design recommendations found. Please revise your preferences.",
-      recommendations: [],
-      hasMatch: false,
-      isCheaperAlternative: false,
-      criteria: {
-        roomType,
-        designPreferences,
-        normalizedPreferences,
-        budget: budgetNum,
-        priority,
-      },
-    });
+    return res.status(200).json(
+      roomType === "Whole House"
+        ? {
+            message:
+              "No matching design recommendations found. Please revise your preferences.",
+            grouped: true,
+            groups: [],
+            criteria: {
+              roomType,
+              designPreferences,
+              normalizedPreferences,
+              budget: budgetNum,
+              priority,
+            },
+          }
+        : {
+            message:
+              "No matching design recommendations found. Please revise your preferences.",
+            grouped: false,
+            recommendations: [],
+            hasMatch: false,
+            isCheaperAlternative: false,
+            criteria: {
+              roomType,
+              designPreferences,
+              normalizedPreferences,
+              budget: budgetNum,
+              priority,
+            },
+          }
+    );
   }
 
   const normalizedRegexPreferences = normalizedPreferences.map(escapeRegex);
@@ -605,121 +615,151 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
     },
   });
 
-  const topMatchesPipeline = [
-    {
-      $match: {
-        type: roomType,
-        $and: [
-          { "budgetRange.min": { $lte: budgetNum } },
-          { "budgetRange.max": { $gte: budgetNum } },
-        ],
-      },
-    },
-    buildScoringStage("budgetFitScore", {
-      $cond: {
-        if: {
+  const matchForRoomType = async (targetRoomType, limit) => {
+    const topPipeline = [
+      {
+        $match: {
+          type: targetRoomType,
           $and: [
-            { $gte: [budgetNum, "$budgetRange.min"] },
-            { $lte: [budgetNum, "$budgetRange.max"] },
+            { "budgetRange.min": { $lte: budgetNum } },
+            { "budgetRange.max": { $gte: budgetNum } },
           ],
         },
-        then: {
-          $subtract: [
-            1,
-            {
-              $abs: {
-                $divide: [
-                  {
-                    $subtract: [
-                      budgetNum,
-                      { $avg: ["$budgetRange.min", "$budgetRange.max"] },
-                    ],
-                  },
-                  { $subtract: ["$budgetRange.max", "$budgetRange.min"] },
-                ],
-              },
-            },
-          ],
-        },
-        else: 0,
       },
-    }),
-    buildSortStage("budgetFitScore"),
-    { $limit: 3 },
-    buildProjectionStage("budgetFitScore"),
-  ];
-
-  const buildCheaperPipeline = (excludeIds, remaining) => [
-    {
-      $match: {
-        type: roomType,
-        "budgetRange.max": { $lt: budgetNum },
-        _id: { $nin: excludeIds },
-      },
-    },
-    buildScoringStage("budgetClosenessScore", {
-      $subtract: [
-        1,
-        {
-          $divide: [
-            { $subtract: [budgetNum, "$budgetRange.max"] },
-            { $max: [budgetNum, 1] },
-          ],
-        },
-      ],
-    }),
-    buildSortStage("budgetClosenessScore", { includeBudgetMax: true }),
-    { $limit: remaining },
-    buildProjectionStage("budgetClosenessScore"),
-  ];
-
-  const buildRelaxedPipeline = (excludeIds, remaining) => [
-    {
-      $match: {
-        type: roomType,
-        _id: { $nin: excludeIds },
-      },
-    },
-    buildScoringStage("budgetClosenessScore", {
-      $subtract: [
-        1,
-        {
-          $abs: {
-            $divide: [
+      buildScoringStage("budgetFitScore", {
+        $cond: {
+          if: {
+            $and: [
+              { $gte: [budgetNum, "$budgetRange.min"] },
+              { $lte: [budgetNum, "$budgetRange.max"] },
+            ],
+          },
+          then: {
+            $subtract: [
+              1,
               {
-                $subtract: [
-                  budgetNum,
-                  { $avg: ["$budgetRange.min", "$budgetRange.max"] },
-                ],
+                $abs: {
+                  $divide: [
+                    {
+                      $subtract: [
+                        budgetNum,
+                        { $avg: ["$budgetRange.min", "$budgetRange.max"] },
+                      ],
+                    },
+                    { $subtract: ["$budgetRange.max", "$budgetRange.min"] },
+                  ],
+                },
               },
+            ],
+          },
+          else: 0,
+        },
+      }),
+      buildSortStage("budgetFitScore"),
+      { $limit: limit },
+      buildProjectionStage("budgetFitScore"),
+    ];
+
+    const cheaperPipeline = (excludeIds, remaining) => [
+      {
+        $match: {
+          type: targetRoomType,
+          "budgetRange.max": { $lt: budgetNum },
+          _id: { $nin: excludeIds },
+        },
+      },
+      buildScoringStage("budgetClosenessScore", {
+        $subtract: [
+          1,
+          {
+            $divide: [
+              { $subtract: [budgetNum, "$budgetRange.max"] },
               { $max: [budgetNum, 1] },
             ],
           },
+        ],
+      }),
+      buildSortStage("budgetClosenessScore", { includeBudgetMax: true }),
+      { $limit: remaining },
+      buildProjectionStage("budgetClosenessScore"),
+    ];
+
+    const relaxedPipeline = (excludeIds, remaining) => [
+      {
+        $match: {
+          type: targetRoomType,
+          _id: { $nin: excludeIds },
         },
-      ],
-    }),
-    buildSortStage("budgetClosenessScore"),
-    { $limit: remaining },
-    buildProjectionStage("budgetClosenessScore"),
-  ];
+      },
+      buildScoringStage("budgetClosenessScore", {
+        $subtract: [
+          1,
+          {
+            $abs: {
+              $divide: [
+                {
+                  $subtract: [
+                    budgetNum,
+                    { $avg: ["$budgetRange.min", "$budgetRange.max"] },
+                  ],
+                },
+                { $max: [budgetNum, 1] },
+              ],
+            },
+          },
+        ],
+      }),
+      buildSortStage("budgetClosenessScore"),
+      { $limit: remaining },
+      buildProjectionStage("budgetClosenessScore"),
+    ];
 
-  let topMatches = await DesignRecommendation.aggregate(topMatchesPipeline);
+    let matches = await DesignRecommendation.aggregate(topPipeline);
 
-  const fillStageFactories =
-    normalizedPriority === "Budget"
-      ? [buildCheaperPipeline, buildRelaxedPipeline]
-      : [buildRelaxedPipeline, buildCheaperPipeline];
+    const fillStages =
+      normalizedPriority === "Budget"
+        ? [cheaperPipeline, relaxedPipeline]
+        : [relaxedPipeline, cheaperPipeline];
 
-  for (const buildPipeline of fillStageFactories) {
-    const remaining = 3 - topMatches.length;
-    if (remaining <= 0) break;
+    for (const buildPipeline of fillStages) {
+      const remaining = limit - matches.length;
+      if (remaining <= 0) break;
+      const excludeIds = matches.map((item) => item._id);
+      matches = matches.concat(
+        await DesignRecommendation.aggregate(buildPipeline(excludeIds, remaining))
+      );
+    }
 
-    const excludeIds = topMatches.map((item) => item._id);
-    const additions = await DesignRecommendation.aggregate(
-      buildPipeline(excludeIds, remaining)
+    return matches.slice(0, limit);
+  };
+
+  if (roomType === "Whole House") {
+    const groupResults = await Promise.all(
+      WHOLE_HOUSE_ROOMS.map(async (room) => {
+        const recs = await matchForRoomType(room, 2);
+        return recs.length > 0 ? { roomType: room, recommendations: recs } : null;
+      })
     );
-    topMatches = topMatches.concat(additions);
+    const groups = groupResults.filter(Boolean);
+
+    return res.status(200).json({
+      message:
+        groups.length > 0
+          ? "Best design recommendations matched successfully"
+          : "No matching design recommendations found",
+      grouped: true,
+      groups,
+      criteria: {
+        roomType,
+        designPreferences,
+        normalizedPreferences,
+        budget: budgetNum,
+        priority: normalizedPriority,
+      },
+    });
   }
+
+  const topMatches = await matchForRoomType(roomType, 3);
 
   return res.status(200).json({
     message:
@@ -728,7 +768,8 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
           ? "Best cheaper design recommendations matched successfully"
           : "Best design recommendations matched successfully"
         : "No matching design recommendations found",
-    recommendations: topMatches.slice(0, 3),
+    grouped: false,
+    recommendations: topMatches,
     hasMatch: topMatches.length > 0,
     isCheaperAlternative:
       topMatches.length > 0 && topMatches[0].budgetRange
@@ -860,6 +901,7 @@ const design_recommendation_delete = catchAsync(async (req, res, next) => {
 
 module.exports = {
   design_recommendation_get,
+  design_recommendation_tags,
   design_recommendation_match,
   design_recommendation_post,
   design_recommendation_put,

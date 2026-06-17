@@ -4,11 +4,16 @@ const trimValue = (value) =>
 const validateName = (value, label) => {
   const trimmed = trimValue(value);
   if (!trimmed) return `${label} is required.`;
-  if (/\d/.test(trimmed)) {
-    return `${label} cannot contain numbers.`;
+  if (!/^[A-Za-z]+$/.test(trimmed)) {
+    return `${label} can only contain letters.`;
   }
   return "";
 };
+
+// Strip everything except letters. Used to coerce externally-sourced names
+// (e.g. Google OAuth) into the letters-only format the User model requires.
+const sanitizeNameLettersOnly = (value) =>
+  typeof value === "string" ? value.replace(/[^A-Za-z]/g, "") : "";
 
 const normalizePhilippinePhone = (value) => {
   const trimmed = trimValue(value).replace(/\s+/g, "");
@@ -28,6 +33,7 @@ const validatePhilippinePhone = (value) => {
 
 module.exports = {
   normalizePhilippinePhone,
+  sanitizeNameLettersOnly,
   trimValue,
   validateName,
   validatePhilippinePhone,

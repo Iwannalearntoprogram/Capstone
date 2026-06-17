@@ -108,6 +108,14 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   int? _selectedRecommendationIndex; // user choice among top 3
   bool _isRecommendationLoading = false;
   bool _hasViewedRecommendation = false;
+  // Grouped recommendation state (Whole House)
+  bool _isGroupedRecommendation = false;
+  List<Map<String, dynamic>> _recommendationGroups = [];
+  Map<String, String?> _selectedRecByRoom = {};
+  // Distinct word-tokens from every design recommendation's tags/preferences.
+  // A typed design preference is considered valid (and "View Recommendation"
+  // becomes available) when it contains at least one of these tags.
+  Set<String> _knownDesignTagTokens = {};
   final NumberFormat _currencyFormat = NumberFormat('#,##0');
   // Budget: up to 7 integer digits + 2 decimals => max 9,999,999.99 (< P10M).
   final TextInputFormatter _budgetInputFormatter =
@@ -115,66 +123,58 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   // Project size: up to 4 integer digits + 2 decimals => max 9,999.99 (< 10,000 sqm).
   final TextInputFormatter _projectSizeInputFormatter =
       _BoundedDecimalInputFormatter(maxIntegerDigits: 4);
-  static const Set<String> _designVocabulary = {
-    'aesthetic',
-    'area',
-    'bathroom',
-    'bed',
-    'bedroom',
-    'beige',
-    'black',
-    'cabinet',
-    'chair',
-    'classic',
-    'clean',
-    'color',
-    'colors',
-    'commercial',
-    'contemporary',
-    'cozy',
-    'dining',
-    'elegant',
-    'furniture',
-    'gray',
-    'grey',
-    'home',
-    'industrial',
-    'interior',
-    'kitchen',
-    'layout',
-    'light',
-    'lighting',
-    'living',
-    'luxury',
-    'material',
-    'materials',
-    'minimal',
-    'minimalist',
-    'modern',
-    'neutral',
-    'office',
-    'palette',
-    'room',
-    'rustic',
-    'scandinavian',
-    'shelf',
-    'sofa',
-    'space',
-    'style',
-    'table',
-    'texture',
-    'tiles',
-    'warm',
-    'white',
-    'wood',
-    'wooden',
-  };
-
   @override
   void initState() {
     super.initState();
     _setupTextControllerListeners();
     _loadUserData();
+    _loadDesignTags();
+  }
+
+  Future<void> _loadDesignTags() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final uri = Uri.parse(
+          '${ApiConfig.apiBaseUrl}/project/recommendation/tags');
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final rawTags = (decoded is Map && decoded['tags'] is List)
+            ? decoded['tags'] as List
+            : const [];
+        final tokens = <String>{};
+        for (final tag in rawTags) {
+          for (final match
+              in RegExp(r'[a-z]{2,}').allMatches(tag.toString().toLowerCase())) {
+            tokens.add(match.group(0)!);
+          }
+        }
+        if (mounted) {
+          setState(() {
+            _knownDesignTagTokens = tokens;
+          });
+        }
+      }
+    } catch (_) {
+      // If tags can't be loaded we leave the set empty; validation then falls
+      // back to allowing the request and lets the server decide.
+    }
+  }
+
+  bool _containsKnownDesignTag(String value) {
+    // Until tags load (or if the fetch failed) don't block the user.
+    if (_knownDesignTagTokens.isEmpty) return true;
+    final typedTokens = RegExp(r'[a-z]{2,}')
+        .allMatches(value.toLowerCase())
+        .map((match) => match.group(0)!);
+    return typedTokens.any(_knownDesignTagTokens.contains);
   }
 
   Future<void> _loadUserData() async {
@@ -223,6 +223,9 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       _selectedRecommendationIndex = null;
       _isRecommendationLoading = false;
       _hasViewedRecommendation = false;
+      _isGroupedRecommendation = false;
+      _recommendationGroups = [];
+      _selectedRecByRoom = {};
     });
   }
 
@@ -253,13 +256,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
 
   String _trimmed(String? value) => value?.trim() ?? '';
 
-  int _alphabeticWordCount(String value) {
-    return RegExp(r'[A-Za-z]{2,}')
-        .allMatches(value)
-        .map((match) => match.group(0)!.toLowerCase())
-        .length;
-  }
-
   bool _hasMeaningfulLetters(String value) {
     final letters = RegExp(r'[A-Za-z]').allMatches(value).length;
     return letters >= 2 && !RegExp(r'^\d+$').hasMatch(value.trim());
@@ -272,17 +268,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         RegExp(r'^(.{1,3})\1+$').hasMatch(cleaned);
   }
 
-  Set<String> _textTokens(String value) {
-    return RegExp(r'[A-Za-z]{2,}')
-        .allMatches(value.toLowerCase())
-        .map((match) => match.group(0)!)
-        .toSet();
-  }
-
-  bool _containsDesignVocabulary(String value) {
-    final tokens = _textTokens(value);
-    return tokens.any(_designVocabulary.contains);
-  }
 
   String? _validateMeaningfulText(
     String? value,
@@ -365,25 +350,23 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     return null;
   }
 
+  String _sampleTagHint() {
+    if (_knownDesignTagTokens.isEmpty) return 'modern, minimalist';
+    return _knownDesignTagTokens.take(3).join(', ');
+  }
+
   String? _validateDesignPreferences(String? value) {
     final text = _trimmed(value);
     if (text.isEmpty) {
       return 'Please enter design preferences and requirements';
     }
-    if (text.length < 4) {
-      return 'Design preferences must be at least 4 characters';
-    }
     if (text.length > 2000) {
       return 'Design preferences must be 2000 characters or fewer';
     }
-    if (!_hasMeaningfulLetters(text) || _alphabeticWordCount(text) < 2) {
-      return 'Describe preferences using valid design-related words';
-    }
-    if (_hasRepeatedJunkPattern(text)) {
-      return 'Design preferences appear invalid';
-    }
-    if (!_containsDesignVocabulary(text)) {
-      return 'Include style, colors, materials, room, or furniture details';
+    // The preferences are valid as long as they include at least one tag that
+    // exists on a design recommendation in the Design Recommendation Manager.
+    if (!_containsKnownDesignTag(text)) {
+      return 'Include at least one design tag (e.g. ${_sampleTagHint()})';
     }
     return null;
   }
@@ -398,14 +381,13 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   }
 
   String? _validateRecommendationInputs() {
+    // Only require the fields the matching actually uses: room type, budget,
+    // priority, and design preferences. Project type, project size, and the
+    // schedule are irrelevant to recommendations and shouldn't block viewing.
     return _validateRequiredDropdown(_roomType, 'room type', _roomTypes) ??
-        _validateRequiredDropdown(
-            _projectType, 'project type', _projectTypes) ??
         _validateRequiredDropdown(_priority, 'priority', _priorityOptions) ??
-        _validatePositiveNumber(_projectSizeController.text, 'project size') ??
         _validatePositiveNumber(_budgetController.text, 'budget') ??
-        _validateDesignPreferences(_descriptionController.text) ??
-        _validateDateSelection();
+        _validateDesignPreferences(_descriptionController.text);
   }
 
   Future<bool> _validateBeforeSubmit() async {
@@ -540,46 +522,82 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         final Map<String, dynamic> data =
             decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
 
-        // Accept either a list under `recommendations` or a single object under `recommendation`
-        List<dynamic> recs = [];
-        if (data['recommendations'] is List) {
-          recs = data['recommendations'] as List<dynamic>;
-        } else if (data['recommendation'] is Map) {
-          recs = [data['recommendation'] as Map<String, dynamic>];
-        } else if (data['data'] is Map) {
-          final inner = data['data'] as Map;
-          if (inner['recommendations'] is List) {
-            recs = inner['recommendations'] as List<dynamic>;
-          } else if (inner['recommendation'] is Map) {
-            recs = [inner['recommendation'] as Map<String, dynamic>];
+        final bool isGrouped = data['grouped'] == true;
+
+        if (isGrouped) {
+          final rawGroups = data['groups'];
+          final List<Map<String, dynamic>> groups = [];
+          if (rawGroups is List) {
+            for (final g in rawGroups) {
+              if (g is Map) {
+                groups.add({
+                  'roomType': g['roomType']?.toString() ?? '',
+                  'recommendations': (g['recommendations'] is List)
+                      ? g['recommendations'] as List<dynamic>
+                      : <dynamic>[],
+                });
+              }
+            }
           }
+          setState(() {
+            _statusMessage = data['message'] as String?;
+            _isGroupedRecommendation = true;
+            _recommendationGroups = groups;
+            _recommendations = [];
+            _hasMatchFlag = groups.isNotEmpty;
+            _isCheaperAlternativeFlag = null;
+            _isRecommendationLoading = false;
+            _hasViewedRecommendation = true;
+            _selectedRecommendationIndex = null;
+            _selectedRecByRoom = {};
+          });
+        } else {
+          // Accept either a list under `recommendations` or a single object under `recommendation`
+          List<dynamic> recs = [];
+          if (data['recommendations'] is List) {
+            recs = data['recommendations'] as List<dynamic>;
+          } else if (data['recommendation'] is Map) {
+            recs = [data['recommendation'] as Map<String, dynamic>];
+          } else if (data['data'] is Map) {
+            final inner = data['data'] as Map;
+            if (inner['recommendations'] is List) {
+              recs = inner['recommendations'] as List<dynamic>;
+            } else if (inner['recommendation'] is Map) {
+              recs = [inner['recommendation'] as Map<String, dynamic>];
+            }
+          }
+
+          // Debug: log how many recommendations we parsed
+          try {
+            final previewTitles = recs
+                .take(3)
+                .map((e) => (e is Map && e['title'] != null)
+                    ? e['title'].toString()
+                    : e.toString())
+                .toList();
+            print('Recommendations count: ${recs.length}');
+            print('Recommendation titles (up to 3): $previewTitles');
+          } catch (_) {}
+
+          setState(() {
+            _statusMessage = data['message'] as String?;
+            _recommendations = recs;
+            _isGroupedRecommendation = false;
+            _recommendationGroups = [];
+            _hasMatchFlag = data['hasMatch'] as bool?;
+            _isCheaperAlternativeFlag = data['isCheaperAlternative'] as bool?;
+            _isRecommendationLoading = false;
+            _hasViewedRecommendation = true;
+            _selectedRecommendationIndex = null;
+            _selectedRecByRoom = {};
+          });
         }
-
-        // Debug: log how many recommendations we parsed
-        try {
-          final previewTitles = recs
-              .take(3)
-              .map((e) => (e is Map && e['title'] != null)
-                  ? e['title'].toString()
-                  : e.toString())
-              .toList();
-          print('Recommendations count: ${recs.length}');
-          print('Recommendation titles (up to 3): $previewTitles');
-        } catch (_) {}
-
-        setState(() {
-          _statusMessage = data['message'] as String?;
-          _recommendations = recs;
-          _hasMatchFlag = data['hasMatch'] as bool?;
-          _isCheaperAlternativeFlag = data['isCheaperAlternative'] as bool?;
-          _isRecommendationLoading = false;
-          _hasViewedRecommendation = true;
-          // reset selection if list changed
-          _selectedRecommendationIndex = null;
-        });
       } else {
         setState(() {
           _recommendations = [];
+          _isGroupedRecommendation = false;
+          _recommendationGroups = [];
+          _selectedRecByRoom = {};
           String message = 'No design recommendation available.';
           try {
             final decoded = jsonDecode(response.body);
@@ -598,6 +616,9 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     } catch (e) {
       setState(() {
         _recommendations = [];
+        _isGroupedRecommendation = false;
+        _recommendationGroups = [];
+        _selectedRecByRoom = {};
         _statusMessage = 'Failed to load recommendations.';
         _hasMatchFlag = null;
         _isCheaperAlternativeFlag = null;
@@ -606,16 +627,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         _selectedRecommendationIndex = null;
       });
     }
-  }
-
-  String _formatPeso(dynamic value) {
-    final numericValue = value is num
-        ? value.toDouble()
-        : double.tryParse(value?.toString() ?? '');
-    if (numericValue == null) {
-      return '\u20B10';
-    }
-    return '\u20B1${_currencyFormat.format(numericValue)}';
   }
 
   String _formatAmount(dynamic value) {
@@ -766,7 +777,9 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
               ? const Center(
                   child: CircularProgressIndicator(color: Color(0xFF203B32)))
               : _hasViewedRecommendation
-                  ? (_recommendations.isNotEmpty
+                  ? (_recommendations.isNotEmpty ||
+                          (_isGroupedRecommendation &&
+                              _recommendationGroups.isNotEmpty)
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -824,214 +837,109 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                               ],
                             ),
                             const SizedBox(height: 8),
-                            ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: math.min(3, _recommendations.length),
-                              separatorBuilder: (_, __) =>
-                                  const SizedBox(height: 12),
-                              itemBuilder: (context, index) {
-                                final rec = _recommendations[index] as Map;
-                                final imageLink = rec['imageLink'] as String?;
-                                final title =
-                                    (rec['title'] ?? 'Untitled').toString();
-                                final spec =
-                                    (rec['specification'] ?? '').toString();
-                                final type = (rec['type'] ?? '').toString();
-                                final tags =
-                                    (rec['tags'] as List?)?.cast<dynamic>() ??
-                                        [];
-                                final budgetRange = rec['budgetRange'] as Map?;
-                                final matchScore = rec['matchScore'];
-                                final isSelected =
-                                    _selectedRecommendationIndex == index;
-                                final budgetLabel = budgetRange != null
-                                    ? '${_formatPeso(budgetRange['min'])} - ${_formatPeso(budgetRange['max'])}'
-                                    : null;
-
-                                return InkWell(
-                                  onTap: () => setState(() {
-                                    _selectedRecommendationIndex = index;
-                                  }),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? const Color(0xFF203B32)
-                                            : const Color(0xFFE2DED6),
-                                        width: isSelected ? 1.6 : 1,
+                            if (_isGroupedRecommendation)
+                              ..._recommendationGroups.map((group) {
+                                final roomType =
+                                    group['roomType'] as String? ?? '';
+                                final recs =
+                                    (group['recommendations'] as List?) ?? [];
+                                return Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          top: 12, bottom: 8),
+                                      child: Text(
+                                        roomType,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF203B32),
+                                          letterSpacing: 0.2,
+                                        ),
                                       ),
-                                      borderRadius: BorderRadius.circular(18),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.04),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 6),
-                                        ),
-                                      ],
                                     ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Stack(
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius:
-                                                  const BorderRadius.only(
-                                                topLeft: Radius.circular(17),
-                                                topRight: Radius.circular(17),
-                                              ),
-                                              child: imageLink != null
-                                                  ? Image.network(
-                                                      getDirectImageLink(
-                                                          imageLink),
-                                                      width: double.infinity,
-                                                      height: 170,
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder: (context,
-                                                              error,
-                                                              stackTrace) =>
-                                                          Container(
-                                                        width: double.infinity,
-                                                        height: 170,
-                                                        color: Colors
-                                                            .grey.shade200,
-                                                        child: const Icon(
-                                                          Icons.broken_image,
-                                                          color: Colors.grey,
-                                                          size: 28,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  : Container(
-                                                      width: double.infinity,
-                                                      height: 170,
-                                                      color:
-                                                          Colors.grey.shade200,
-                                                      child: const Icon(
-                                                        Icons.image,
-                                                        color: Colors.grey,
-                                                        size: 28,
-                                                      ),
-                                                    ),
-                                            ),
-                                            Positioned(
-                                              top: 12,
-                                              right: 12,
-                                              child: Container(
-                                                width: 32,
-                                                height: 32,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  border: Border.all(
-                                                    color: isSelected
-                                                        ? const Color(
-                                                            0xFF203B32)
-                                                        : const Color(
-                                                            0xFF8F8F8F),
-                                                    width: 2,
-                                                  ),
-                                                  color: isSelected
-                                                      ? const Color(0xFF203B32)
-                                                      : Colors.white,
-                                                ),
-                                                child: isSelected
-                                                    ? const Icon(
-                                                        Icons.check,
-                                                        size: 18,
-                                                        color: Colors.white,
-                                                      )
-                                                    : null,
-                                              ),
-                                            ),
-                                          ],
+                                    ...recs.take(2).map((r) {
+                                      final rec = r as Map;
+                                      final recId =
+                                          rec['_id']?.toString();
+                                      final isSelected =
+                                          _selectedRecByRoom[roomType] ==
+                                              recId;
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                            bottom: 12),
+                                        child: _buildRecCard(
+                                          rec: rec,
+                                          isSelected: isSelected,
+                                          onTap: () => setState(() {
+                                            _selectedRecByRoom[roomType] =
+                                                isSelected ? null : recId;
+                                          }),
                                         ),
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              16, 16, 16, 16),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                title,
-                                                style: const TextStyle(
-                                                  fontSize: 20,
-                                                  height: 1.15,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Color(0xFF203B32),
-                                                ),
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              if (spec.isNotEmpty) ...[
-                                                const SizedBox(height: 10),
-                                                Text(
-                                                  spec,
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    height: 1.5,
-                                                    color: Colors.grey.shade800,
-                                                  ),
-                                                  maxLines: 3,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              ],
-                                              const SizedBox(height: 14),
-                                              Wrap(
-                                                spacing: 10,
-                                                runSpacing: 10,
-                                                children: [
-                                                  if (budgetLabel != null)
-                                                    _buildBudgetMetaPill(
-                                                      budgetRange!,
-                                                    ),
-                                                  if (type.isNotEmpty)
-                                                    _buildRecommendationMetaPill(
-                                                      icon: Icons
-                                                          .home_work_outlined,
-                                                      label: type,
-                                                    ),
-                                                  if (matchScore != null)
-                                                    _buildRecommendationMetaPill(
-                                                      icon: Icons.auto_awesome,
-                                                      label:
-                                                          'Match ${(matchScore * 100).toStringAsFixed(0)}%',
-                                                      backgroundColor:
-                                                          const Color(
-                                                              0xFFE8F5E9),
-                                                      textColor: const Color(
-                                                          0xFF1B5E20),
-                                                    ),
-                                                ],
-                                              ),
-                                              if (tags.isNotEmpty) ...[
-                                                const SizedBox(height: 14),
-                                                Wrap(
-                                                  spacing: 8,
-                                                  runSpacing: 8,
-                                                  children: tags
-                                                      .take(6)
-                                                      .map((t) =>
-                                                          _buildRecommendationTag(
-                                                              t.toString()))
-                                                      .toList(),
-                                                ),
-                                              ],
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                      );
+                                    }),
+                                  ],
+                                );
+                              })
+                            else
+                              ListView.separated(
+                                shrinkWrap: true,
+                                physics:
+                                    const NeverScrollableScrollPhysics(),
+                                itemCount: math.min(
+                                    3, _recommendations.length),
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 12),
+                                itemBuilder: (context, index) {
+                                  final rec =
+                                      _recommendations[index] as Map;
+                                  final isSelected =
+                                      _selectedRecommendationIndex ==
+                                          index;
+                                  return _buildRecCard(
+                                    rec: rec,
+                                    isSelected: isSelected,
+                                    onTap: () => setState(() {
+                                      _selectedRecommendationIndex = index;
+                                    }),
+                                  );
+                                },
+                              ),
+                            const SizedBox(height: 8),
+                            if (_isGroupedRecommendation &&
+                                _selectedRecByRoom.values
+                                    .any((v) => v != null))
+                              ..._selectedRecByRoom.entries
+                                  .where((e) => e.value != null)
+                                  .map((e) {
+                                final group =
+                                    _recommendationGroups.firstWhere(
+                                  (g) => g['roomType'] == e.key,
+                                  orElse: () => {},
+                                );
+                                final recs =
+                                    (group['recommendations'] as List?) ??
+                                        [];
+                                final rec = recs.cast<Map>().firstWhere(
+                                      (r) =>
+                                          r['_id']?.toString() == e.value,
+                                      orElse: () => {},
+                                    );
+                                final title = rec['title']?.toString() ??
+                                    'Untitled';
+                                return Text(
+                                  '${e.key}: $title',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF203B32),
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 );
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            if (_selectedRecommendationIndex != null)
+                              })
+                            else if (!_isGroupedRecommendation &&
+                                _selectedRecommendationIndex != null)
                               Text(
                                 'Selected: ${(_recommendations[_selectedRecommendationIndex!] as Map)['title'] ?? 'Untitled'}',
                                 style: const TextStyle(
@@ -1102,6 +1010,173 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         ),
         const SizedBox(height: 24),
       ],
+    );
+  }
+
+  Widget _buildRecCard({
+    required Map rec,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final imageLink = rec['imageLink'] as String?;
+    final title = (rec['title'] ?? 'Untitled').toString();
+    final spec = (rec['specification'] ?? '').toString();
+    final type = (rec['type'] ?? '').toString();
+    final tags = (rec['tags'] as List?)?.cast<dynamic>() ?? [];
+    final budgetRange = rec['budgetRange'] as Map?;
+    final matchScore = rec['matchScore'];
+
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF203B32)
+                : const Color(0xFFE2DED6),
+            width: isSelected ? 1.6 : 1,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(17),
+                    topRight: Radius.circular(17),
+                  ),
+                  child: imageLink != null
+                      ? Image.network(
+                          getDirectImageLink(imageLink),
+                          width: double.infinity,
+                          height: 170,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            width: double.infinity,
+                            height: 170,
+                            color: Colors.grey.shade200,
+                            child: const Icon(
+                              Icons.broken_image,
+                              color: Colors.grey,
+                              size: 28,
+                            ),
+                          ),
+                        )
+                      : Container(
+                          width: double.infinity,
+                          height: 170,
+                          color: Colors.grey.shade200,
+                          child: const Icon(
+                            Icons.image,
+                            color: Colors.grey,
+                            size: 28,
+                          ),
+                        ),
+                ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected
+                            ? const Color(0xFF203B32)
+                            : const Color(0xFF8F8F8F),
+                        width: 2,
+                      ),
+                      color:
+                          isSelected ? const Color(0xFF203B32) : Colors.white,
+                    ),
+                    child: isSelected
+                        ? const Icon(Icons.check, size: 18, color: Colors.white)
+                        : null,
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      height: 1.15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF203B32),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (spec.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      spec,
+                      style: TextStyle(
+                        fontSize: 14,
+                        height: 1.5,
+                        color: Colors.grey.shade800,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      if (budgetRange != null)
+                        _buildBudgetMetaPill(budgetRange),
+                      if (type.isNotEmpty)
+                        _buildRecommendationMetaPill(
+                          icon: Icons.home_work_outlined,
+                          label: type,
+                        ),
+                      if (matchScore != null)
+                        _buildRecommendationMetaPill(
+                          icon: Icons.auto_awesome,
+                          label:
+                              'Match ${(matchScore * 100).toStringAsFixed(0)}%',
+                          backgroundColor: const Color(0xFFE8F5E9),
+                          textColor: const Color(0xFF1B5E20),
+                        ),
+                    ],
+                  ),
+                  if (tags.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: tags
+                          .take(6)
+                          .map((t) => _buildRecommendationTag(t.toString()))
+                          .toList(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1853,13 +1928,26 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       "projectSize": double.tryParse(_projectSizeController.text) ?? 0,
       "projectLocation": _locationController.text,
       "designInspiration": inspirationLink,
-      "designRecommendation": (_selectedRecommendationIndex != null &&
-              _selectedRecommendationIndex! < _recommendations.length)
-          ? ((_recommendations[_selectedRecommendationIndex!] as Map)['_id'])
-          : null,
+      if (_isGroupedRecommendation) ...{
+        "designRecommendations": _selectedRecByRoom.values
+            .where((v) => v != null)
+            .toList(),
+      } else ...{
+        "designRecommendation":
+            (_selectedRecommendationIndex != null &&
+                    _selectedRecommendationIndex! < _recommendations.length)
+                ? ((_recommendations[_selectedRecommendationIndex!]
+                    as Map)['_id'])
+                : null,
+      },
     };
 
     body.removeWhere((key, value) => value == null);
+    // Remove empty designRecommendations list so backend treats it as unset
+    if (body['designRecommendations'] is List &&
+        (body['designRecommendations'] as List).isEmpty) {
+      body.remove('designRecommendations');
+    }
 
     try {
       final response = await http.post(

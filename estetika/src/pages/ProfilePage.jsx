@@ -439,7 +439,12 @@ function ProfilePage() {
   };
 
   const blockDigitKeys = (event) => {
-    if (/^\d$/.test(event.key)) {
+    if (
+      event.key.length === 1 &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !/[A-Za-z]/.test(event.key)
+    ) {
       event.preventDefault();
     }
   };

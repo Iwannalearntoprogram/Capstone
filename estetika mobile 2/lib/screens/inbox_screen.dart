@@ -29,6 +29,7 @@ class _InboxScreenState extends State<InboxScreen> {
   Function(dynamic)? _onReceivePrivateMessage;
   Function(dynamic)? _onReceivePrivateFile;
   Function(dynamic)? _onCallIncoming;
+  Function(dynamic)? _onUpdateUserList;
   String? _activeIncomingCallId;
 
   // Add StreamController
@@ -156,9 +157,40 @@ class _InboxScreenState extends State<InboxScreen> {
       _messageStreamController?.add(List.from(_messages));
     };
 
+    // Keep the user list (and their online status) in sync. The backend
+    // broadcasts the full user list whenever anyone connects/disconnects, so
+    // socketId reflects who is currently online. Without this the mobile list
+    // only ever shows the snapshot fetched at startup.
+    _onUpdateUserList = (data) {
+      if (!mounted || data is! List) return;
+
+      final updated = data
+          .whereType<Map>()
+          .map((u) => Map<String, dynamic>.from(u))
+          .where((u) => (u['_id'] ?? u['id'])?.toString() != _userId)
+          .toList();
+
+      final query = _searchController.text.toLowerCase();
+      setState(() {
+        _users = updated;
+        _filteredUsers = query.isEmpty
+            ? List.from(updated)
+            : updated
+                .where((user) => (user['firstName'] ??
+                        user['fullName'] ??
+                        user['username'] ??
+                        '')
+                    .toString()
+                    .toLowerCase()
+                    .contains(query))
+                .toList();
+      });
+    };
+
     _socket!.on('receive_private_message', _onReceivePrivateMessage!);
     _socket!.on('receive_private_file', _onReceivePrivateFile!);
     _socket!.on('call_incoming', _onCallIncoming!);
+    _socket!.on('update_user_list', _onUpdateUserList!);
 
     _socket!.connect();
   }
@@ -422,6 +454,7 @@ class _InboxScreenState extends State<InboxScreen> {
                   messages: _getConversationMessages(otherUserId),
                   isOnline: user['socketId'] != null,
                   recipientId: otherUserId,
+                  socket: _socket,
                   messageStream: _messageStream, // Add this line
                   onSendMessage: (text) {
                     print('onSendMessage: $text');
@@ -701,6 +734,9 @@ class _InboxScreenState extends State<InboxScreen> {
       if (_onCallIncoming != null) {
         _socket!.off('call_incoming', _onCallIncoming!);
       }
+      if (_onUpdateUserList != null) {
+        _socket!.off('update_user_list', _onUpdateUserList!);
+      }
       _socket!.disconnect();
       _socket!.dispose();
       _socket = null;
@@ -710,6 +746,7 @@ class _InboxScreenState extends State<InboxScreen> {
     _onReceivePrivateMessage = null;
     _onReceivePrivateFile = null;
     _onCallIncoming = null;
+    _onUpdateUserList = null;
 
     _searchController.dispose();
     super.dispose();

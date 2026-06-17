@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Estetika Call Tester</title>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 0; background: #0f1513; color: #e8eee9; }
+      header { padding: 12px 16px; background: #16241e; font-weight: 700; }
+      main { padding: 16px; max-width: 980px; margin: 0 auto; }
+      .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+      input, select, button { padding: 8px 10px; border-radius: 8px; border: 1px solid #2c3b34; background: #1c2a24; color: #e8eee9; font-size: 14px; }
+      button { cursor: pointer; background: #203b32; border-color: #2f5446; }
+      button.primary { background: #2563eb; border-color: #2563eb; }
+      button.danger { background: #b91c1c; border-color: #b91c1c; }
+      button:disabled { opacity: 0.4; cursor: not-allowed; }
+      label { font-size: 12px; opacity: 0.8; }
+      .videos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+      video { width: 100%; background: #000; border-radius: 12px; aspect-ratio: 3/4; object-fit: cover; }
+      .pill { padding: 2px 10px; border-radius: 999px; font-size: 12px; background: #2c3b34; }
+      #status { font-weight: 700; }
+      #log { margin-top: 12px; background: #0a0f0d; border: 1px solid #1c2a24; border-radius: 8px; padding: 10px; height: 180px; overflow: auto; font-family: ui-monospace, monospace; font-size: 12px; white-space: pre-wrap; }
+      .ok { color: #4ade80; } .err { color: #f87171; } .dim { opacity: 0.65; }
+    </style>
+  </head>
+  <body>
+    <header>📞 Estetika Call Tester <span class="dim">— second peer for testing video/voice with one phone</span></header>
+    <main>
+      <div class="row">
+        <label>Backend</label>
+        <input id="backend" size="42" value="https://moss-manila.onrender.com" />
+      </div>
+      <div class="row">
+        <label>Email</label><input id="email" placeholder="you@example.com" />
+        <label>Password</label><input id="password" type="password" />
+        <button class="primary" id="loginBtn">Log in &amp; connect</button>
+        <span id="me" class="pill">not connected</span>
+      </div>
+
+      <div class="row">
+        <label>Call</label>
+        <select id="peer"><option value="">— pick a user —</option></select>
+        <button id="videoCallBtn" disabled>🎥 Video call</button>
+        <button id="voiceCallBtn" disabled>🎙️ Voice call</button>
+        <button class="primary" id="acceptBtn" disabled>✅ Accept</button>
+        <button class="danger" id="hangupBtn" disabled>🔴 End / Reject</button>
+      </div>
+
+      <div class="row">Status: <span id="status">idle</span></div>
+
+      <div class="videos">
+        <div><div class="pill">Remote</div><video id="remote" autoplay playsinline></video></div>
+        <div><div class="pill">You (local)</div><video id="local" autoplay playsinline muted></video></div>
+      </div>
+
+      <div id="log"></div>
+    </main>
+
+    <script>
+      // Same ICE config as the Flutter app (Google STUN + Metered OpenRelay TURN).
+      const ICE = {
+        iceServers: [
+          { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+          { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+          { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+          { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" },
+        ],
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const logEl = $("log");
+      const log = (msg, cls = "") => {
+        const t = new Date().toLocaleTimeString();
+        logEl.innerHTML += `<div class="${cls}">[${t}] ${msg}</div>`;
+        logEl.scrollTop = logEl.scrollHeight;
+      };
+      const setStatus = (s) => ($("status").textContent = s);
+
+      let socket = null;
+      let token = null;
+      let myId = null;
+      let backend = null;
+
+      // current call state
+      let pc = null;
+      let localStream = null;
+      let callId = null;
+      let peerId = null;
+      let isVideo = true;
+      let isCaller = false;
+      let haveRemoteDesc = false;
+      const pendingCandidates = [];
+
+      $("loginBtn").onclick = async () => {
+        backend = $("backend").value.trim().replace(/\/+$/, "");
+        try {
+          setStatus("logging in...");
+          const res = await fetch(backend + "/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: $("email").value.trim(), password: $("password").value }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || ("HTTP " + res.status));
+          token = data.token;
+          myId = (data.user && (data.user.id || data.user._id)) + "";
+          $("me").textContent = "me: " + (data.user.fullName || data.user.username || myId);
+          log("Logged in as " + myId, "ok");
+          await loadUsers();
+          connectSocket();
+        } catch (e) {
+          log("Login failed: " + e.message, "err");
+          setStatus("login failed");
+        }
+      };
+
+      async function loadUsers() {
+        const res = await fetch(backend + "/api/user?exclude=" + myId, {
+          headers: { Authorization: "Bearer " + token },
+        });
+        const users = await res.json();
+        const sel = $("peer");
+        sel.innerHTML = '<option value="">— pick a user —</option>';
+        (users || []).forEach((u) => {
+          const id = (u._id || u.id) + "";
+          const name = u.fullName || u.username || u.firstName || id;
+          const online = u.socketId ? " 🟢" : "";
+          const o = document.createElement("option");
+          o.value = id;
+          o.textContent = name + online;
+          sel.appendChild(o);
+        });
+        log("Loaded " + (users ? users.length : 0) + " users", "dim");
+      }
+
+      function connectSocket() {
+        socket = io(backend, { auth: { token }, transports: ["websocket"] });
+
+        socket.on("connect", () => {
+          log("Socket connected: " + socket.id, "ok");
+          socket.emit("online", myId);
+          $("videoCallBtn").disabled = false;
+          $("voiceCallBtn").disabled = false;
+          setStatus("connected — ready");
+        });
+        socket.on("connect_error", (e) => log("connect_error: " + e.message, "err"));
+        socket.on("update_user_list", () => loadUsers());
+
+        socket.on("call_incoming", (d) => {
+          callId = d.callId;
+          peerId = d.callerId;
+          isVideo = d.type === "video";
+          isCaller = false;
+          setStatus("INCOMING " + d.type + " call from " + (d.callerName || peerId));
+          log("📲 call_incoming (" + d.type + ") from " + (d.callerName || peerId), "ok");
+          $("acceptBtn").disabled = false;
+          $("hangupBtn").disabled = false;
+        });
+
+        socket.on("call_accepted", async (d) => {
+          if (d.callId !== callId) return;
+          log("call_accepted by " + (d.accepterName || d.accepterId) + " — creating offer", "ok");
+          setStatus("connecting...");
+          await createOffer();
+        });
+
+        socket.on("call_signal", async (d) => {
+          if (d.callId !== callId) return;
+          await handleSignal(d.signal);
+        });
+
+        socket.on("call_rejected", () => { log("call_rejected", "err"); endCall(false); });
+        socket.on("call_busy", () => { log("call_busy — peer already in a call", "err"); endCall(false); });
+        socket.on("call_unavailable", () => { log("call_unavailable — peer offline", "err"); endCall(false); });
+        socket.on("call_ended", () => { log("call_ended by peer", "dim"); endCall(false); });
+      }
+
+      $("videoCallBtn").onclick = () => startOutgoing(true);
+      $("voiceCallBtn").onclick = () => startOutgoing(false);
+
+      async function startOutgoing(video) {
+        peerId = $("peer").value;
+        if (!peerId) return log("Pick a user to call first", "err");
+        isVideo = video;
+        isCaller = true;
+        callId = myId + "-" + peerId + "-" + Date.now();
+        try {
+          await setupMedia();
+          $("hangupBtn").disabled = false;
+          socket.emit("call_invite", { recipientId: peerId, callId, type: video ? "video" : "voice" });
+          setStatus("ringing...");
+          log("📞 call_invite (" + (video ? "video" : "voice") + ") -> " + peerId, "ok");
+        } catch (e) { log("Media error: " + e.message, "err"); }
+      }
+
+      $("acceptBtn").onclick = async () => {
+        $("acceptBtn").disabled = true;
+        try {
+          await setupMedia();
+          socket.emit("call_accept", { recipientId: peerId, callId, type: isVideo ? "video" : "voice" });
+          setStatus("connecting...");
+          log("✅ call_accept -> " + peerId, "ok");
+        } catch (e) { log("Media error: " + e.message, "err"); }
+      };
+
+      $("hangupBtn").onclick = () => {
+        if (callId && peerId) {
+          // reject if we never accepted, else end
+          socket.emit("call_end", { recipientId: peerId, callId });
+          socket.emit("call_reject", { recipientId: peerId, callId });
+        }
+        endCall(false);
+      };
+
+      async function setupMedia() {
+        localStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: isVideo ? { facingMode: "user" } : false,
+        });
+        $("local").srcObject = localStream;
+
+        pc = new RTCPeerConnection(ICE);
+        localStream.getTracks().forEach((t) => pc.addTrack(t, localStream));
+
+        pc.onicecandidate = (e) => {
+          if (!e.candidate) return;
+          socket.emit("call_signal", {
+            recipientId: peerId,
+            callId,
+            signal: {
+              type: "candidate",
+              candidate: {
+                candidate: e.candidate.candidate,
+                sdpMid: e.candidate.sdpMid,
+                sdpMLineIndex: e.candidate.sdpMLineIndex,
+              },
+            },
+          });
+        };
+        pc.ontrack = (e) => { $("remote").srcObject = e.streams[0]; log("📺 remote track received", "ok"); };
+        pc.onconnectionstatechange = () => {
+          log("connection state: " + pc.connectionState, pc.connectionState === "connected" ? "ok" : "dim");
+          if (pc.connectionState === "connected") setStatus("✅ CONNECTED");
+          if (pc.connectionState === "failed") setStatus("❌ connection failed (likely TURN/NAT)");
+        };
+        pc.oniceconnectionstatechange = () => log("ICE state: " + pc.iceConnectionState, "dim");
+      }
+
+      async function createOffer() {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        socket.emit("call_signal", {
+          recipientId: peerId, callId,
+          signal: { type: "offer", sdp: { type: offer.type, sdp: offer.sdp } },
+        });
+        log("-> sent offer", "dim");
+      }
+
+      async function createAnswer() {
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.emit("call_signal", {
+          recipientId: peerId, callId,
+          signal: { type: "answer", sdp: { type: answer.type, sdp: answer.sdp } },
+        });
+        log("-> sent answer", "dim");
+      }
+
+      async function handleSignal(signal) {
+        if (!pc) return;
+        if (signal.type === "offer") {
+          log("<- got offer", "dim");
+          await pc.setRemoteDescription({ type: signal.sdp.type, sdp: signal.sdp.sdp });
+          haveRemoteDesc = true;
+          await flushCandidates();
+          await createAnswer();
+        } else if (signal.type === "answer") {
+          log("<- got answer", "dim");
+          await pc.setRemoteDescription({ type: signal.sdp.type, sdp: signal.sdp.sdp });
+          haveRemoteDesc = true;
+          await flushCandidates();
+        } else if (signal.type === "candidate") {
+          const c = signal.candidate;
+          const cand = { candidate: c.candidate, sdpMid: c.sdpMid, sdpMLineIndex: c.sdpMLineIndex };
+          if (haveRemoteDesc) await pc.addIceCandidate(cand);
+          else pendingCandidates.push(cand);
+        }
+      }
+
+      async function flushCandidates() {
+        while (pendingCandidates.length) await pc.addIceCandidate(pendingCandidates.shift());
+      }
+
+      function endCall(notify) {
+        try { if (pc) pc.close(); } catch (_) {}
+        if (localStream) localStream.getTracks().forEach((t) => t.stop());
+        pc = null; localStream = null; haveRemoteDesc = false; pendingCandidates.length = 0;
+        $("local").srcObject = null; $("remote").srcObject = null;
+        $("acceptBtn").disabled = true; $("hangupBtn").disabled = true;
+        callId = null; peerId = null; isCaller = false;
+        setStatus("idle");
+      }
+    </script>
+  </body>
+</html>
