@@ -1,27 +1,12 @@
-import 'dart:io' show Platform;
-
-import 'package:flutter/foundation.dart';
-
 class ApiConfig {
+  // All builds (debug and release) talk to the production server so the app is
+  // ready for use without per-environment setup. To run against a local backend
+  // during development, temporarily return one of the commented origins below.
   static const String _productionOrigin = 'https://moss-manila.onrender.com';
-  static const String _localOrigin = 'http://localhost:3000';
-  static const String _androidEmulatorOrigin = 'http://10.0.2.2:3000';
+  // static const String _localOrigin = 'http://localhost:3000';
+  // static const String _androidEmulatorOrigin = 'http://10.0.2.2:3000';
 
-  static String get origin {
-    if (!kDebugMode) {
-      return _productionOrigin;
-    }
-
-    if (kIsWeb) {
-      return _localOrigin;
-    }
-
-    if (Platform.isAndroid) {
-      return _androidEmulatorOrigin;
-    }
-
-    return _localOrigin;
-  }
+  static String get origin => _productionOrigin;
 
   static String get apiBaseUrl => '$origin/api';
 
