@@ -81,12 +81,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
   final List<String> _projectTypes = [
     'Residential',
     'Commercial',
-    'Hospitality',
-    'Retail',
-    'Healthcare',
-    'Educational',
-    'Institutional',
-    'Event Spaces',
     'Renovation',
   ];
   final List<String> _priorityOptions = ['Budget', 'Style'];

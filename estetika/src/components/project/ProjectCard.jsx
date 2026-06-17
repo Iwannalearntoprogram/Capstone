@@ -45,17 +45,7 @@ const ProjectCard = ({
     "Whole House",
     "Commercial Space",
   ];
-  const projectTypeOptions = [
-    "Residential",
-    "Commercial",
-    "Hospitality",
-    "Retail",
-    "Healthcare",
-    "Educational",
-    "Institutional",
-    "Event Spaces",
-    "Renovation",
-  ];
+  const projectTypeOptions = ["Residential", "Commercial", "Renovation"];
   const priorityOptions = ["Budget", "Style"];
   const formatDateInputValue = (value) => {
     if (!value) return "";

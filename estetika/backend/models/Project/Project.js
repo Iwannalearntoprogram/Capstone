@@ -39,12 +39,6 @@ const projectSchema = new mongoose.Schema(
       enum: [
         "Residential",
         "Commercial",
-        "Hospitality",
-        "Retail",
-        "Healthcare",
-        "Educational",
-        "Institutional",
-        "Event Spaces",
         "Renovation",
       ],
     },
