@@ -29,6 +29,19 @@ const toDateInputValue = (value) => {
   return `${year}-${month}-${day}`;
 };
 
+const roomTypeOptions = [
+  "Living Room",
+  "Bedroom",
+  "Kitchen",
+  "Bathroom",
+  "Home Office",
+  "Dining Room",
+  "Whole House",
+  "Commercial Space",
+];
+
+const projectTypeOptions = ["Residential", "Commercial", "Renovation"];
+
 const buildBriefFields = (project) => ({
   title: project?.title ?? "",
   description: project?.description ?? "",
@@ -37,12 +50,14 @@ const buildBriefFields = (project) => ({
       ? ""
       : String(project.budget),
   priority: project?.priority ?? "",
+  roomType: project?.roomType ?? "",
+  projectType: project?.projectType ?? "",
   designPreference: project?.designPreference ?? "",
   startDate: toDateInputValue(project?.startDate),
   endDate: toDateInputValue(project?.endDate),
 });
 
-const ProjectDetailsModal = ({ project, onClose }) => {
+const ProjectDetailsModal = ({ project, onClose, onProjectUpdated }) => {
   const [loading, setLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
   const [actionMessageType, setActionMessageType] = useState("success");
@@ -171,10 +186,8 @@ const ProjectDetailsModal = ({ project, onClose }) => {
 
       setTimeout(() => {
         setActionMessage("");
-        if (newStatus === "cancelled") {
-          onClose();
-          window.location.reload();
-        }
+        onClose();
+        window.location.reload();
       }, 1200);
     } catch (err) {
       setActionMessageType("error");
@@ -267,7 +280,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
 
     try {
       const token = Cookies.get("token");
-      await axios.put(
+      const response = await axios.put(
         `${serverUrl}/api/project?id=${project._id}`,
         {
           title: editFields.title,
@@ -275,7 +288,8 @@ const ProjectDetailsModal = ({ project, onClose }) => {
           budget:
             editFields.budget === "" ? undefined : Number(editFields.budget),
           priority: editFields.priority,
-          designPreference: editFields.designPreference,
+          roomType: editFields.roomType || undefined,
+          projectType: editFields.projectType || undefined,
           startDate: editFields.startDate || undefined,
           endDate: editFields.endDate || undefined,
         },
@@ -288,6 +302,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
 
       setBriefMessageType("success");
       setBriefMessage("Project brief saved.");
+      onProjectUpdated?.(response.data.updatedProject);
     } catch (err) {
       setBriefMessageType("error");
       setBriefMessage(
@@ -514,6 +529,44 @@ const ProjectDetailsModal = ({ project, onClose }) => {
 
         <label>
           <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
+            Room / Area Type
+          </span>
+          <select
+            name="roomType"
+            value={editFields.roomType}
+            onChange={handleBriefFieldChange}
+            className="w-full rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
+          >
+            <option value="">Select room type</option>
+            {roomTypeOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
+            Project Type
+          </span>
+          <select
+            name="projectType"
+            value={editFields.projectType}
+            onChange={handleBriefFieldChange}
+            className="w-full rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
+          >
+            <option value="">Select project type</option>
+            {projectTypeOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
             Start Date
           </span>
           <input
@@ -535,20 +588,6 @@ const ProjectDetailsModal = ({ project, onClose }) => {
             value={editFields.endDate}
             onChange={handleBriefFieldChange}
             className="w-full rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
-          />
-        </label>
-
-        <label className="sm:col-span-2">
-          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
-            Design Preference
-          </span>
-          <textarea
-            name="designPreference"
-            value={editFields.designPreference}
-            onChange={handleBriefFieldChange}
-            rows={3}
-            placeholder="Modern, warm, minimalist, natural textures..."
-            className="min-h-[88px] w-full resize-none rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
           />
         </label>
 

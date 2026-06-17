@@ -764,6 +764,7 @@ const ProjectsPage = () => {
           <ProjectDetailsModal
             project={selectedProject}
             onClose={() => setShowDetailsModal(false)}
+            onProjectUpdated={handleProjectUpdated}
           />
         )}
 

@@ -674,6 +674,11 @@ const ProjectCard = ({
                   {project.projectType}
                 </span>
               )}
+              {project.priority && (
+                <span className="rounded-lg bg-amber-50 px-2.5 py-1 text-[10px] font-medium text-amber-700">
+                  {project.priority}
+                </span>
+              )}
               {isDesigner && isProjectMember && (
                 <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-[10px] font-medium text-emerald-700">
                   Member
