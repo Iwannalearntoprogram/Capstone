@@ -9,56 +9,58 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
+const fallbackData = [
   {
     year: "2021",
     customerSatisfaction: 85,
-    supportTicketsResolved: 110,
+    totalRatings: 110,
   },
   {
     year: "2022",
     customerSatisfaction: 82,
-    supportTicketsResolved: 140,
+    totalRatings: 140,
   },
   {
     year: "2023",
     customerSatisfaction: 88,
-    supportTicketsResolved: 160,
+    totalRatings: 160,
   },
   {
     year: "2024",
     customerSatisfaction: 91,
-    supportTicketsResolved: 190,
+    totalRatings: 190,
   },
   {
     year: "2025",
     customerSatisfaction: 87,
-    supportTicketsResolved: 180,
+    totalRatings: 180,
   },
   {
     year: "2026",
     customerSatisfaction: 89,
-    supportTicketsResolved: 200,
+    totalRatings: 200,
   },
   {
     year: "2027",
     customerSatisfaction: 92,
-    supportTicketsResolved: 220,
+    totalRatings: 220,
   },
   {
     year: "2028",
     customerSatisfaction: 90,
-    supportTicketsResolved: 210,
+    totalRatings: 210,
   },
 ];
 
-const CustomerSatisfactionChart = () => {
+const CustomerSatisfactionChart = ({ data }) => {
+  const chartData = data && data.length ? data : fallbackData;
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart
         width={500}
         height={400}
-        data={data}
+        data={chartData}
         margin={{
           top: 10,
           right: 8,
@@ -96,12 +98,14 @@ const CustomerSatisfactionChart = () => {
         <Area
           type="monotone"
           dataKey="customerSatisfaction"
+          name="Satisfaction %"
           stroke="#28a745"
           fill="url(#colorCustomerSatisfaction)" // Use gradient for fill
         />
         <Area
           type="monotone"
-          dataKey="supportTicketsResolved"
+          dataKey="totalRatings"
+          name="Total Ratings"
           stroke="#17a2b8"
           fill="url(#colorSupportTicketsResolved)" // Use gradient for fill
         />

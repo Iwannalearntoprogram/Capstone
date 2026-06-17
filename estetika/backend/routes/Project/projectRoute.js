@@ -17,6 +17,7 @@ const {
 } = require("../../controllers/Project/ProjectUpdateController");
 const {
   design_recommendation_get,
+  design_recommendation_tags,
   design_recommendation_match,
   design_recommendation_post,
   design_recommendation_put,
@@ -46,6 +47,7 @@ router.post("/update", project_update_post);
 router.put("/update", project_update_put);
 router.delete("/update", project_update_delete);
 
+router.get("/recommendation/tags", design_recommendation_tags);
 router.get("/recommendation", design_recommendation_get);
 router.get("/recommendation/match", design_recommendation_match);
 router.post("/recommendation", design_recommendation_post);

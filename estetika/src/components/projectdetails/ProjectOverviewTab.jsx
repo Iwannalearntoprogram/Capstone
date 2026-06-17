@@ -283,7 +283,107 @@ export default function ProjectOverviewTab() {
         </SectionPanel>
       </div>
 
-      {project.designRecommendation ? (
+      {Array.isArray(project.designRecommendations) &&
+      project.designRecommendations.length > 0 ? (
+        <SectionPanel
+          eyebrow="Concept"
+          title="Design recommendations"
+          description="Supporting design directions per room, matched to the brief and stylistic preferences."
+        >
+          <div className="flex flex-col gap-8">
+            {project.designRecommendations.map((rec, recIndex) => (
+              <div key={rec._id || recIndex}>
+                {rec.type ? (
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    {rec.type}
+                  </p>
+                ) : null}
+                <div
+                  className={`grid gap-6 ${
+                    rec.imageLink
+                      ? "xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
+                      : ""
+                  }`}
+                >
+                  {rec.imageLink ? (
+                    <div className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-slate-100">
+                      <img
+                        src={rec.imageLink}
+                        alt={rec.title || "Design recommendation"}
+                        className="h-full min-h-[240px] w-full object-cover"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="space-y-5">
+                    <div className="rounded-[22px] border border-slate-200/80 bg-[#fcfbf8] px-5 py-5">
+                      <h3 className="text-xl font-semibold tracking-[-0.03em] text-slate-900">
+                        {rec.title || "Recommended design"}
+                      </h3>
+                      <p className="mt-2 text-sm leading-7 text-slate-600">
+                        {rec.specification ||
+                          "No design specification has been provided for this recommendation yet."}
+                      </p>
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <DetailItem
+                        label="Budget range"
+                        value={formatBudgetRange(rec.budgetRange)}
+                      />
+                      <DetailItem
+                        label="Popularity"
+                        value={
+                          rec.popularity !== undefined
+                            ? `${rec.popularity} likes`
+                            : "No popularity data"
+                        }
+                      />
+                    </div>
+                    {Array.isArray(rec.designPreferences) &&
+                    rec.designPreferences.length > 0 ? (
+                      <div className="rounded-[22px] border border-slate-200/80 bg-white px-5 py-5">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                          Design preferences
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {rec.designPreferences.map((preference, index) => (
+                            <span
+                              key={index}
+                              className="rounded-full bg-[#1d3c34]/10 px-3 py-1 text-sm font-medium text-[#1d3c34]"
+                            >
+                              {preference
+                                .replace("-", " ")
+                                .replace(/\b\w/g, (letter) =>
+                                  letter.toUpperCase(),
+                                )}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {Array.isArray(rec.tags) && rec.tags.length > 0 ? (
+                      <div className="rounded-[22px] border border-slate-200/80 bg-white px-5 py-5">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                          Tags
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {rec.tags.map((tag, index) => (
+                            <span
+                              key={index}
+                              className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </SectionPanel>
+      ) : project.designRecommendation ? (
         <SectionPanel
           eyebrow="Concept"
           title="Design recommendation"

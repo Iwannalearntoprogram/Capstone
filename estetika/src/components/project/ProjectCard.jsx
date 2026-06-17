@@ -288,7 +288,7 @@ const ProjectCard = ({
         designInspiration:
           trimValue(pendingProjectForm.designInspiration) || undefined,
         ...(recommendationCriteriaChanged
-          ? { designRecommendation: null }
+          ? { designRecommendation: null, designRecommendations: [] }
           : {}),
       };
 

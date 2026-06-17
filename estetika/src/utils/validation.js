@@ -1,6 +1,6 @@
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_REGEX = /^[A-Za-z0-9_]{3,30}$/;
-const DIGIT_REGEX = /\d/;
+const LETTERS_ONLY_REGEX = /^[A-Za-z]+$/;
 const STRONG_PASSWORD_REGEX =
   /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 const SIX_DIGIT_OTP_REGEX = /^\d{6}$/;
@@ -28,7 +28,7 @@ export const validateRequiredText = (
 };
 
 export const sanitizeNameInput = (value) =>
-  typeof value === "string" ? value.replace(/\d/g, "") : value ?? "";
+  typeof value === "string" ? value.replace(/[^A-Za-z]/g, "") : value ?? "";
 
 export const validateNameWithoutNumbers = (
   value,
@@ -37,8 +37,8 @@ export const validateNameWithoutNumbers = (
 ) => {
   const trimmed = trimValue(value);
   if (!trimmed) return `${label} is required.`;
-  if (DIGIT_REGEX.test(trimmed)) {
-    return `${label} cannot contain numbers.`;
+  if (!LETTERS_ONLY_REGEX.test(trimmed)) {
+    return `${label} can only contain letters.`;
   }
   if (options.minLength && trimmed.length < options.minLength) {
     return `${label} must be at least ${options.minLength} characters.`;

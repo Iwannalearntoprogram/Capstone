@@ -42,8 +42,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (value == null || value.trim().isEmpty) {
       return 'Enter $fieldLabel';
     }
-    if (RegExp(r'[0-9]').hasMatch(value)) {
-      return '$fieldLabel cannot contain numbers';
+    if (!RegExp(r'^[A-Za-z]+$').hasMatch(value.trim())) {
+      return '$fieldLabel can only contain letters';
     }
     return null;
   }
@@ -288,8 +288,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       child: TextFormField(
                                         controller: _firstNameController,
                                         inputFormatters: [
-                                          FilteringTextInputFormatter.deny(
-                                              RegExp(r'[0-9]')),
+                                          FilteringTextInputFormatter.allow(
+                                              RegExp(r'[A-Za-z]')),
                                         ],
                                         validator: (value) =>
                                             validateName(value, 'first name'),
@@ -308,8 +308,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       child: TextFormField(
                                         controller: _lastNameController,
                                         inputFormatters: [
-                                          FilteringTextInputFormatter.deny(
-                                              RegExp(r'[0-9]')),
+                                          FilteringTextInputFormatter.allow(
+                                              RegExp(r'[A-Za-z]')),
                                         ],
                                         validator: (value) =>
                                             validateName(value, 'last name'),

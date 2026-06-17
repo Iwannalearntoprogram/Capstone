@@ -60,6 +60,11 @@ const projectSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "DesignRecommendation",
     },
+    designRecommendations: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "DesignRecommendation",
+      default: undefined,
+    },
     projectUpdates: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "ProjectUpdate",

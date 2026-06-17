@@ -230,6 +230,7 @@ const project_get = catchAsync(async (req, res, next) => {
     { path: "projectCreator", select: "-password" },
     { path: "projectUpdates" },
     { path: "designRecommendation" },
+    { path: "designRecommendations" },
     { path: "materials.material" },
   ];
 
@@ -359,6 +360,7 @@ const project_post = catchAsync(async (req, res, next) => {
     projectLocation,
     designInspiration,
     designRecommendation,
+    designRecommendations,
   } = req.body;
 
   const { errors, normalized } = validateProjectPayload(req.body, {
@@ -397,6 +399,7 @@ const project_post = catchAsync(async (req, res, next) => {
       ? normalized.designInspiration
       : designInspiration,
     designRecommendation,
+    ...(Array.isArray(designRecommendations) ? { designRecommendations } : {}),
   });
 
   await newProject.save();
@@ -460,6 +463,7 @@ const project_put = catchAsync(async (req, res, next) => {
     projectLocation,
     designInspiration,
     designRecommendation,
+    designRecommendations,
     projectUpdates,
   } = req.body;
 
@@ -523,6 +527,8 @@ const project_put = catchAsync(async (req, res, next) => {
   }
   if (designRecommendation !== undefined)
     updates.designRecommendation = designRecommendation;
+  if (designRecommendations !== undefined)
+    updates.designRecommendations = designRecommendations;
   if (projectUpdates) updates.projectUpdates = projectUpdates;
 
   const updatedProject = await Project.findByIdAndUpdate(id, updates, {

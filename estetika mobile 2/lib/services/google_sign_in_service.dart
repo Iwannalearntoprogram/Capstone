@@ -19,6 +19,9 @@ class GoogleSignInService {
     try {
       AppLogger.info('Starting Google Sign In process...');
 
+      // Clear any cached account so the account chooser is always shown,
+      // allowing the user to switch Google accounts on each login.
+      await _googleSignIn.signOut();
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {

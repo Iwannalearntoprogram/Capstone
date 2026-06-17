@@ -14,6 +14,33 @@ import {
   FiX,
 } from "react-icons/fi";
 
+const priorityOptions = ["Budget", "Style"];
+
+const toDateInputValue = (value) => {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const buildBriefFields = (project) => ({
+  title: project?.title ?? "",
+  description: project?.description ?? "",
+  budget:
+    project?.budget === null || project?.budget === undefined
+      ? ""
+      : String(project.budget),
+  priority: project?.priority ?? "",
+  designPreference: project?.designPreference ?? "",
+  startDate: toDateInputValue(project?.startDate),
+});
+
 const ProjectDetailsModal = ({ project, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
@@ -21,21 +48,30 @@ const ProjectDetailsModal = ({ project, onClose }) => {
   const [status, setStatus] = useState(project?.status);
   const [designers, setDesigners] = useState([]);
   const [designersLoaded, setDesignersLoaded] = useState(false);
-  const [selectedDesigner, setSelectedDesigner] = useState("");
+  const [selectedDesigners, setSelectedDesigners] = useState([]);
   const [assignError, setAssignError] = useState("");
+  const [awaitingAssignment, setAwaitingAssignment] = useState(false);
+  const [editFields, setEditFields] = useState(() => buildBriefFields(project));
+  const [savingBrief, setSavingBrief] = useState(false);
+  const [briefMessage, setBriefMessage] = useState("");
+  const [briefMessageType, setBriefMessageType] = useState("success");
 
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
   useEffect(() => {
     setStatus(project?.status);
     setActionMessage("");
-    setSelectedDesigner("");
+    setSelectedDesigners([]);
     setAssignError("");
+    setAwaitingAssignment(false);
     setDesignersLoaded(false);
+    setEditFields(buildBriefFields(project));
+    setBriefMessage("");
+    setBriefMessageType("success");
   }, [project]);
 
   useEffect(() => {
-    if (status === "ongoing" || status === "delayed") {
+    if (status === "ongoing" || status === "delayed" || awaitingAssignment) {
       const fetchDesigners = async () => {
         try {
           const token = Cookies.get("token");
@@ -53,7 +89,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
 
       fetchDesigners();
     }
-  }, [status, serverUrl]);
+  }, [status, awaitingAssignment, serverUrl]);
 
   if (!project) return null;
 
@@ -149,8 +185,8 @@ const ProjectDetailsModal = ({ project, onClose }) => {
 
   const handleAssignDesigner = async (e) => {
     e.preventDefault();
-    if (!selectedDesigner) {
-      setAssignError("Please select a designer.");
+    if (selectedDesigners.length === 0) {
+      setAssignError("Please select at least one designer.");
       return;
     }
 
@@ -159,6 +195,10 @@ const ProjectDetailsModal = ({ project, onClose }) => {
     setActionMessageType("success");
     setAssignError("");
 
+    // When the project hasn't been approved yet, assigning a designer is what
+    // approves it and moves it to ongoing (done in the same request).
+    const isApproving = status === "pending";
+
     try {
       const token = Cookies.get("token");
       const prevMembers = Array.isArray(project.members)
@@ -166,13 +206,18 @@ const ProjectDetailsModal = ({ project, onClose }) => {
             typeof member === "string" ? member : member._id,
           )
         : [];
-      const updatedMembers = prevMembers.includes(selectedDesigner)
-        ? prevMembers
-        : [...prevMembers, selectedDesigner];
+      const updatedMembers = [...prevMembers];
+      selectedDesigners.forEach((designer) => {
+        if (!updatedMembers.includes(designer)) {
+          updatedMembers.push(designer);
+        }
+      });
 
       await axios.put(
         `${serverUrl}/api/project?id=${project._id}`,
-        { members: updatedMembers },
+        isApproving
+          ? { members: updatedMembers, status: "ongoing" }
+          : { members: updatedMembers },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -180,18 +225,74 @@ const ProjectDetailsModal = ({ project, onClose }) => {
         },
       );
 
+      if (isApproving) {
+        setStatus("ongoing");
+      }
+      const designersLabel =
+        selectedDesigners.length > 1 ? "Designers" : "Designer";
       setActionMessageType("success");
-      setActionMessage("Designer assigned successfully.");
+      setActionMessage(
+        isApproving
+          ? "Project approved and moved to ongoing."
+          : `${designersLabel} assigned successfully.`,
+      );
       setTimeout(() => {
         setActionMessage("");
         onClose();
         window.location.reload();
-      }, 500);
+      }, 800);
     } catch (err) {
       setActionMessageType("error");
-      setActionMessage("Failed to assign designer.");
+      setActionMessage(
+        isApproving
+          ? "Failed to approve and assign designer."
+          : "Failed to assign designer.",
+      );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBriefFieldChange = (e) => {
+    const { name, value } = e.target;
+    setEditFields((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveBrief = async (e) => {
+    e.preventDefault();
+    setSavingBrief(true);
+    setBriefMessage("");
+    setBriefMessageType("success");
+
+    try {
+      const token = Cookies.get("token");
+      await axios.put(
+        `${serverUrl}/api/project?id=${project._id}`,
+        {
+          title: editFields.title,
+          description: editFields.description,
+          budget:
+            editFields.budget === "" ? undefined : Number(editFields.budget),
+          priority: editFields.priority,
+          designPreference: editFields.designPreference,
+          startDate: editFields.startDate || undefined,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      setBriefMessageType("success");
+      setBriefMessage("Project brief saved.");
+    } catch (err) {
+      setBriefMessageType("error");
+      setBriefMessage(
+        err?.response?.data?.message || "Failed to save project brief.",
+      );
+    } finally {
+      setSavingBrief(false);
     }
   };
 
@@ -213,12 +314,21 @@ const ProjectDetailsModal = ({ project, onClose }) => {
 
   const availableDesigners = designers.filter(
     (designer) =>
+      !selectedDesigners.includes(designer.username) &&
       !currentDesigners.some(
         (currentDesigner) =>
           currentDesigner._id === designer._id ||
           currentDesigner.username === designer.username,
       ),
   );
+
+  const selectedDesignerDetails = selectedDesigners.map((username) => {
+    const match = designers.find((designer) => designer.username === username);
+    return {
+      username,
+      label: match?.fullName || match?.username || username,
+    };
+  });
 
   const detailItems = [
     {
@@ -323,7 +433,126 @@ const ProjectDetailsModal = ({ project, onClose }) => {
     </section>
   );
 
-  if (isActiveProject) {
+  const projectBriefSection = (
+    <SectionCard
+      title="Project Brief"
+      headerRight={
+        <button
+          type="submit"
+          form="project-brief-form"
+          disabled={savingBrief}
+          className="inline-flex items-center gap-2 rounded-[10px] bg-[#1D3C34] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#163129] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {savingBrief ? "Saving..." : "Save changes"}
+        </button>
+      }
+    >
+      <form
+        id="project-brief-form"
+        onSubmit={handleSaveBrief}
+        className="grid gap-4 sm:grid-cols-2"
+      >
+        <label className="sm:col-span-2">
+          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
+            Title
+          </span>
+          <input
+            type="text"
+            name="title"
+            value={editFields.title}
+            onChange={handleBriefFieldChange}
+            className="w-full rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
+          />
+        </label>
+
+        <label className="sm:col-span-2">
+          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
+            Description
+          </span>
+          <textarea
+            name="description"
+            value={editFields.description}
+            onChange={handleBriefFieldChange}
+            rows={3}
+            className="min-h-[96px] w-full resize-none rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
+          />
+        </label>
+
+        <label>
+          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
+            Budget
+          </span>
+          <input
+            type="number"
+            name="budget"
+            value={editFields.budget}
+            onChange={handleBriefFieldChange}
+            className="w-full rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
+          />
+        </label>
+
+        <label>
+          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
+            Priority
+          </span>
+          <select
+            name="priority"
+            value={editFields.priority}
+            onChange={handleBriefFieldChange}
+            className="w-full rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
+          >
+            <option value="">Select priority</option>
+            {priorityOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
+            Start Date
+          </span>
+          <input
+            type="date"
+            name="startDate"
+            value={editFields.startDate}
+            onChange={handleBriefFieldChange}
+            className="w-full rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
+          />
+        </label>
+
+        <label className="sm:col-span-2">
+          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
+            Design Preference
+          </span>
+          <textarea
+            name="designPreference"
+            value={editFields.designPreference}
+            onChange={handleBriefFieldChange}
+            rows={3}
+            placeholder="Modern, warm, minimalist, natural textures..."
+            className="min-h-[88px] w-full resize-none rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
+          />
+        </label>
+
+        {briefMessage && (
+          <p
+            className={`sm:col-span-2 rounded-[10px] border px-4 py-3 text-sm ${
+              briefMessageType === "error"
+                ? "text-rose-700 bg-rose-50 border-rose-200"
+                : "text-emerald-700 bg-emerald-50 border-emerald-200"
+            }`}
+          >
+            {briefMessage}
+          </p>
+        )}
+      </form>
+    </SectionCard>
+  );
+
+  if (isActiveProject || awaitingAssignment) {
     return (
       <ModalShell hideClose>
         <div className="min-h-0 overflow-y-auto md:grid md:grid-cols-[1.02fr_0.98fr] md:grid-rows-[1fr]">
@@ -385,6 +614,8 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                   </p>
                 )}
               </SectionCard>
+
+              {projectBriefSection}
             </div>
           </div>
 
@@ -399,20 +630,26 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                 className="flex h-full flex-col"
               >
                 <label className="text-sm font-medium text-slate-700">
-                  Designer
+                  Designers
                 </label>
                 <select
                   className="mt-2 w-full rounded-[10px] border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
-                  value={selectedDesigner}
+                  value=""
                   onChange={(e) => {
-                    setSelectedDesigner(e.target.value);
-                    setAssignError(
-                      e.target.value ? "" : "Please select a designer.",
+                    const username = e.target.value;
+                    if (!username) return;
+                    setSelectedDesigners((prev) =>
+                      prev.includes(username) ? prev : [...prev, username],
                     );
+                    setAssignError("");
                   }}
-                  required
+                  disabled={availableDesigners.length === 0}
                 >
-                  <option value="">Select a designer</option>
+                  <option value="">
+                    {availableDesigners.length === 0
+                      ? "No more designers to add"
+                      : "Select a designer to add"}
+                  </option>
                   {availableDesigners.map((designer) => (
                     <option key={designer._id} value={designer.username}>
                       {designer.fullName || designer.username}
@@ -420,15 +657,42 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                   ))}
                 </select>
 
+                {selectedDesignerDetails.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {selectedDesignerDetails.map((designer) => (
+                      <span
+                        key={designer.username}
+                        className="inline-flex items-center gap-1.5 rounded-[10px] bg-[#eef4f0] px-3 py-1.5 text-sm font-medium text-[#244338]"
+                      >
+                        {designer.label}
+                        <button
+                          type="button"
+                          className="rounded-full p-0.5 text-[#244338]/70 transition hover:text-[#244338]"
+                          onClick={() =>
+                            setSelectedDesigners((prev) =>
+                              prev.filter((u) => u !== designer.username),
+                            )
+                          }
+                          aria-label={`Remove ${designer.label}`}
+                        >
+                          <FiX size={14} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
                 {assignError && (
                   <p className="mt-2 text-sm text-rose-600">{assignError}</p>
                 )}
 
-                {designersLoaded && availableDesigners.length === 0 && (
-                  <div className="mt-4 rounded-[10px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                    All available designers are already assigned.
-                  </div>
-                )}
+                {designersLoaded &&
+                  availableDesigners.length === 0 &&
+                  selectedDesigners.length === 0 && (
+                    <div className="mt-4 rounded-[10px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                      All available designers are already assigned.
+                    </div>
+                  )}
 
                 <div className="mt-5 rounded-[10px] border border-slate-200 bg-slate-50/70 p-4">
                   <div className="flex items-start gap-3">
@@ -440,7 +704,7 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                         Assignment note
                       </p>
                       <p className="mt-1 text-sm leading-6 text-slate-600">
-                        The selected designer will be added to the project team
+                        The selected designers will be added to the project team
                         and the client will be notified.
                       </p>
                     </div>
@@ -467,9 +731,13 @@ const ProjectDetailsModal = ({ project, onClose }) => {
                     <button
                       type="submit"
                       className="inline-flex items-center gap-2 rounded-[10px] bg-[#1D3C34] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#163129] disabled:cursor-not-allowed disabled:opacity-60"
-                      disabled={loading || availableDesigners.length === 0}
+                      disabled={loading || selectedDesigners.length === 0}
                     >
-                      {loading ? "Assigning..." : "Assign Designer"}
+                      {loading
+                        ? "Assigning..."
+                        : selectedDesigners.length > 1
+                          ? "Assign Designers"
+                          : "Assign Designer"}
                       {!loading && <FiArrowRight size={16} />}
                     </button>
                   </div>
@@ -592,7 +860,71 @@ const ProjectDetailsModal = ({ project, onClose }) => {
           </div>
         </div>
 
-        {designRecommendation ? (
+        {Array.isArray(project?.designRecommendations) &&
+        project.designRecommendations.length > 0 ? (
+          <div className="mt-4">
+            <SectionCard title="Design Recommendations">
+              <div className="flex flex-col gap-6">
+                {project.designRecommendations.map((rec, recIndex) => (
+                  <div key={rec._id || recIndex}>
+                    {rec.type ? (
+                      <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:text-[11px]">
+                        {rec.type}
+                      </p>
+                    ) : null}
+                    <div
+                      className={`grid gap-4 ${
+                        rec.imageLink
+                          ? "lg:grid-cols-[240px_minmax(0,1fr)]"
+                          : ""
+                      }`}
+                    >
+                      {rec.imageLink ? (
+                        <div className="overflow-hidden rounded-[12px] border border-slate-200 bg-slate-100">
+                          <img
+                            src={rec.imageLink}
+                            alt={rec.title || "Design recommendation"}
+                            className="h-40 w-full object-cover"
+                          />
+                        </div>
+                      ) : null}
+                      <div className="min-w-0 space-y-3">
+                        <h4 className="text-lg font-semibold text-slate-900">
+                          {rec.title || "Recommended design"}
+                        </h4>
+                        <p className="text-sm leading-6 text-slate-600">
+                          {rec.specification?.trim()
+                            ? rec.specification
+                            : "No design specification has been provided yet."}
+                        </p>
+                        {Array.isArray(rec.designPreferences) &&
+                        rec.designPreferences.length > 0 ? (
+                          <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
+                              Preferences
+                            </p>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {rec.designPreferences.map(
+                                (preference, index) => (
+                                  <span
+                                    key={`${preference}-${index}`}
+                                    className="rounded-full bg-[#1D3C34]/10 px-3 py-1 text-xs font-medium text-[#1D3C34]"
+                                  >
+                                    {formatTagLabel(preference)}
+                                  </span>
+                                ),
+                              )}
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          </div>
+        ) : designRecommendation ? (
           <div className="mt-4">
             <SectionCard title="Design Recommendation">
               <div
@@ -683,11 +1015,14 @@ const ProjectDetailsModal = ({ project, onClose }) => {
           </button>
           <button
             className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-[#1D3C34] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#163129] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-            onClick={() => handleStatusChange("ongoing")}
+            onClick={() => {
+              setActionMessage("");
+              setAwaitingAssignment(true);
+            }}
             disabled={loading}
           >
             <FiCheck size={16} />
-            {loading ? "Processing..." : "Approve Project"}
+            Approve Project
           </button>
         </div>
       </div>

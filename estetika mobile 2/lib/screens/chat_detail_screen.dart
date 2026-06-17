@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 // import 'package:url_launcher/url_launcher.dart';
 
 class ChatDetailScreen extends StatefulWidget {
@@ -23,6 +24,7 @@ class ChatDetailScreen extends StatefulWidget {
   final VoidCallback? onStartVoiceCall;
   final VoidCallback? onStartVideoCall;
   final Stream<List<MessageItem>>? messageStream; // Add this
+  final socket_io.Socket? socket;
 
   const ChatDetailScreen({
     super.key,
@@ -36,6 +38,7 @@ class ChatDetailScreen extends StatefulWidget {
     this.onStartVoiceCall,
     this.onStartVideoCall,
     this.messageStream, // Add this
+    this.socket,
   });
 
   @override
@@ -48,11 +51,33 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   bool _isTyping = false;
 
   late List<MessageItem> _localMessages;
+  late bool _isOnline;
+  Function(dynamic)? _onUpdateUserList;
 
   @override
   void initState() {
     super.initState();
     _localMessages = List.from(widget.messages);
+    _isOnline = widget.isOnline;
+
+    // Track this peer's online status live. The backend rebroadcasts the full
+    // user list on every connect/disconnect, so we recompute from socketId.
+    if (widget.socket != null) {
+      _onUpdateUserList = (data) {
+        if (!mounted || data is! List) return;
+        for (final u in data) {
+          if (u is Map &&
+              (u['_id'] ?? u['id'])?.toString() == widget.recipientId) {
+            final online = u['socketId'] != null;
+            if (online != _isOnline) {
+              setState(() => _isOnline = online);
+            }
+            break;
+          }
+        }
+      };
+      widget.socket!.on('update_user_list', _onUpdateUserList!);
+    }
 
     // Listen to message stream for real-time updates
     if (widget.messageStream != null) {
@@ -93,6 +118,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   void dispose() {
+    if (widget.socket != null && _onUpdateUserList != null) {
+      widget.socket!.off('update_user_list', _onUpdateUserList!);
+    }
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -262,7 +290,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     width: 12,
                     height: 12,
                     decoration: BoxDecoration(
-                      color: widget.isOnline ? Colors.green : Colors.grey,
+                      color: _isOnline ? Colors.green : Colors.grey,
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: Colors.white,
@@ -286,9 +314,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  widget.isOnline ? 'Online' : 'Offline',
+                  _isOnline ? 'Online' : 'Offline',
                   style: TextStyle(
-                    color: widget.isOnline ? Colors.green : Colors.grey,
+                    color: _isOnline ? Colors.green : Colors.grey,
                     fontSize: 12,
                   ),
                 ),
