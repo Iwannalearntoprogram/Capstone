@@ -6,6 +6,7 @@ import 'package:estetika_ui/screens/signin_screen.dart';
 import 'package:estetika_ui/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -615,6 +616,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  // Map a file's extension to an image/* MediaType for the multipart upload.
+  MediaType _imageMediaType(String path) {
+    final ext = path.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'png':
+        return MediaType('image', 'png');
+      case 'gif':
+        return MediaType('image', 'gif');
+      case 'webp':
+        return MediaType('image', 'webp');
+      case 'jpg':
+      case 'jpeg':
+      default:
+        return MediaType('image', 'jpeg');
+    }
+  }
+
   Future<String?> _uploadProfileImage(File imageFile, String token) async {
     try {
       print('Uploading file: ${imageFile.path}');
@@ -622,7 +640,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       var uri = Uri.parse('${ApiConfig.apiBaseUrl}/upload/image');
       var request = http.MultipartRequest('POST', uri)
         ..headers['Authorization'] = 'Bearer $token'
-        ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+        ..files.add(await http.MultipartFile.fromPath(
+          'image',
+          imageFile.path,
+          // Without an explicit contentType the http package sends the part as
+          // application/octet-stream, which the backend rejects with
+          // "File is not an image." Derive it from the file extension.
+          contentType: _imageMediaType(imageFile.path),
+        ));
 
       var response = await request.send();
 

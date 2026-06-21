@@ -103,6 +103,16 @@ class _CallScreenState extends State<CallScreen> {
         });
       });
     }
+
+    // A failed ICE connection (or a peer that vanished without a clean
+    // 'call_ended') would otherwise leave this screen stuck on "Call failed".
+    // Show the message briefly, then tear down and dismiss properly.
+    if (status == 'Call failed') {
+      _durationTimer?.cancel();
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted && !_isEnding) _endCall();
+      });
+    }
   }
 
   void _handleRemoteEnd() {
@@ -121,8 +131,12 @@ class _CallScreenState extends State<CallScreen> {
       _status = 'Call ended';
     });
     _durationTimer?.cancel();
-    await _callService?.endCall();
+    // endCall() emits 'call_end' synchronously before it awaits teardown, so
+    // the peer is notified immediately. Pop without waiting on dispose() so a
+    // slow or failed teardown can never trap us on the call screen.
+    final ending = _callService?.endCall();
     if (mounted) Navigator.of(context).maybePop();
+    await ending;
   }
 
   Future<void> _toggleMute() async {
