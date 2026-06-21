@@ -76,7 +76,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     'Home Office',
     'Dining Room',
     'Whole House',
-    'Commercial Space',
   ];
   final List<String> _projectTypes = [
     'Residential',
