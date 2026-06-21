@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:estetika_ui/utils/toast.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
   final Map<String, dynamic> project;
@@ -40,6 +41,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   List<dynamic> _projectUpdates = [];
   final NumberFormat _currencyFormat = NumberFormat('#,##0.##');
 
+  // Rating state
+  Map<String, dynamic>? _existingRating;
+  int _selectedStars = 0;
+  final TextEditingController _ratingCommentController = TextEditingController();
+  bool _submittingRating = false;
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +54,89 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     _loadClientInfo();
     _loadProjectDetails();
     _fetchUpdatedProject();
+    _fetchMyRating();
+  }
+
+  @override
+  void dispose() {
+    _ratingCommentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchMyRating() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final userString = prefs.getString('user');
+      if (userString == null) return;
+      final user = jsonDecode(userString);
+      final userId = user['id'] ?? user['_id'];
+      final projectId = _projectData['_id'];
+
+      final response = await http.get(
+        Uri.parse(
+            '${ApiConfig.apiBaseUrl}/rating?projectId=$projectId&userId=$userId'),
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final List ratings = decoded['ratings'] ?? decoded['rating'] ?? [];
+        if (ratings.isNotEmpty && mounted) {
+          setState(() {
+            _existingRating = Map<String, dynamic>.from(ratings.first);
+          });
+        }
+      }
+    } catch (e) {
+      // Silently ignore — rating section simply shows the submission form
+    }
+  }
+
+  Future<void> _submitRating() async {
+    if (_selectedStars < 1 || _selectedStars > 5) return;
+    setState(() => _submittingRating = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final projectId = _projectData['_id'];
+
+      final body = <String, dynamic>{
+        'projectId': projectId,
+        'rating': _selectedStars,
+      };
+      final comment = _ratingCommentController.text.trim();
+      if (comment.isNotEmpty) body['comment'] = comment;
+
+      final response = await http.post(
+        Uri.parse('${ApiConfig.apiBaseUrl}/rating'),
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body),
+      );
+
+      final decoded = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        showToast('Rating submitted!', success: true);
+        setState(() {
+          _existingRating = Map<String, dynamic>.from(decoded['rating']);
+          _selectedStars = 0;
+          _ratingCommentController.clear();
+        });
+      } else {
+        final message = decoded['message'] ?? 'Failed to submit rating';
+        showToast(message);
+      }
+    } catch (e) {
+      showToast('Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _submittingRating = false);
+    }
   }
 
   Future<void> _loadClientInfo() async {
@@ -343,6 +433,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
           // Project Progress section
           _buildProgressSection(),
+
+          // Rating section (visible only for completed projects)
+          _buildRatingSection(),
 
           // Designer section
           _buildDesignerSection(),
@@ -1012,6 +1105,148 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     } catch (e) {
       return dateTimeString;
     }
+  }
+
+  Widget _buildRatingSection() {
+    if (_projectData['status'] != 'completed') return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Your Rating'),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: _existingRating != null
+              ? _buildExistingRating()
+              : _buildRatingForm(),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildExistingRating() {
+    final stars = (_existingRating!['rating'] as num?)?.toInt() ?? 0;
+    final comment = _existingRating!['comment'] as String?;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: List.generate(5, (i) {
+            return Icon(
+              i < stars ? Icons.star : Icons.star_border,
+              color: const Color(0xFF203B32),
+              size: 28,
+            );
+          }),
+        ),
+        if (comment != null && comment.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            comment,
+            style: const TextStyle(fontSize: 15, color: Colors.black87),
+          ),
+        ],
+        const SizedBox(height: 8),
+        const Text(
+          'Ratings cannot be changed once submitted.',
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRatingForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'How was your experience?',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'Figtree',
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: List.generate(5, (i) {
+            final starValue = i + 1;
+            return GestureDetector(
+              onTap: () => setState(() => _selectedStars = starValue),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Icon(
+                  starValue <= _selectedStars ? Icons.star : Icons.star_border,
+                  color: const Color(0xFF203B32),
+                  size: 36,
+                ),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _ratingCommentController,
+          maxLines: 3,
+          maxLength: 500,
+          decoration: InputDecoration(
+            hintText: 'Leave a comment (optional)',
+            hintStyle: const TextStyle(fontFamily: 'Figtree'),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: (_selectedStars == 0 || _submittingRating)
+                ? null
+                : _submitRating,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF203B32),
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: Colors.grey[300],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            child: _submittingRating
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Text(
+                    'Submit Rating',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Figtree',
+                    ),
+                  ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildActionButtons() {

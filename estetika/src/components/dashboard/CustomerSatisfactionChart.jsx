@@ -9,51 +9,28 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const fallbackData = [
-  {
-    year: "2021",
-    customerSatisfaction: 85,
-    totalRatings: 110,
-  },
-  {
-    year: "2022",
-    customerSatisfaction: 82,
-    totalRatings: 140,
-  },
-  {
-    year: "2023",
-    customerSatisfaction: 88,
-    totalRatings: 160,
-  },
-  {
-    year: "2024",
-    customerSatisfaction: 91,
-    totalRatings: 190,
-  },
-  {
-    year: "2025",
-    customerSatisfaction: 87,
-    totalRatings: 180,
-  },
-  {
-    year: "2026",
-    customerSatisfaction: 89,
-    totalRatings: 200,
-  },
-  {
-    year: "2027",
-    customerSatisfaction: 92,
-    totalRatings: 220,
-  },
-  {
-    year: "2028",
-    customerSatisfaction: 90,
-    totalRatings: 210,
-  },
-];
-
 const CustomerSatisfactionChart = ({ data }) => {
-  const chartData = data && data.length ? data : fallbackData;
+  const chartData = data || [];
+
+  if (!chartData.length) {
+    return (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          color: "#aaa",
+          gap: 8,
+        }}
+      >
+        <span style={{ fontSize: 36 }}>⭐</span>
+        <span style={{ fontSize: 14 }}>No rating data yet</span>
+      </div>
+    );
+  }
 
   return (
     <ResponsiveContainer width="100%" height="100%">
