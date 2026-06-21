@@ -2,7 +2,7 @@ import 'package:estetika_ui/screens/call_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as socket_io;
 
-class IncomingCallScreen extends StatelessWidget {
+class IncomingCallScreen extends StatefulWidget {
   final socket_io.Socket socket;
   final String currentUserId;
   final String callerId;
@@ -22,26 +22,58 @@ class IncomingCallScreen extends StatelessWidget {
     required this.isVideo,
   });
 
+  @override
+  State<IncomingCallScreen> createState() => _IncomingCallScreenState();
+}
+
+class _IncomingCallScreenState extends State<IncomingCallScreen> {
+  late final Function(dynamic) _onCallEnded;
+  bool _accepted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // While ringing there is no CallService yet, so this screen must watch for
+    // the caller canceling or dropping. The backend emits 'call_ended' to the
+    // callee in both cases; without this listener the ringing screen would stay
+    // stuck on screen after the caller hangs up.
+    _onCallEnded = (data) {
+      if (!mounted || _accepted) return;
+      if (data is! Map || data['callId'] != widget.callId) return;
+      Navigator.of(context).maybePop();
+    };
+    widget.socket.on('call_ended', _onCallEnded);
+  }
+
+  @override
+  void dispose() {
+    widget.socket.off('call_ended', _onCallEnded);
+    super.dispose();
+  }
+
   void _reject(BuildContext context) {
-    socket.emit('call_reject', {
-      'recipientId': callerId,
-      'callId': callId,
+    widget.socket.emit('call_reject', {
+      'recipientId': widget.callerId,
+      'callId': widget.callId,
     });
     Navigator.of(context).maybePop();
   }
 
   void _accept(BuildContext context) {
+    // Once accepted, CallScreen/CallService own the 'call_ended' handling, so
+    // mark accepted to stop this screen's listener from racing the transition.
+    _accepted = true;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => CallScreen(
-          socket: socket,
-          currentUserId: currentUserId,
-          peerId: callerId,
-          peerName: callerName,
-          peerProfileImage: callerProfileImage,
-          isVideo: isVideo,
+          socket: widget.socket,
+          currentUserId: widget.currentUserId,
+          peerId: widget.callerId,
+          peerName: widget.callerName,
+          peerProfileImage: widget.callerProfileImage,
+          isVideo: widget.isVideo,
           isIncoming: true,
-          callId: callId,
+          callId: widget.callId,
         ),
       ),
     );
@@ -60,7 +92,7 @@ class IncomingCallScreen extends StatelessWidget {
               _buildAvatar(),
               const SizedBox(height: 24),
               Text(
-                callerName,
+                widget.callerName,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
@@ -70,7 +102,7 @@ class IncomingCallScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                isVideo ? 'Incoming video call' : 'Incoming voice call',
+                widget.isVideo ? 'Incoming video call' : 'Incoming voice call',
                 style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 16,
@@ -88,7 +120,7 @@ class IncomingCallScreen extends StatelessWidget {
                     onPressed: () => _reject(context),
                   ),
                   _buildActionButton(
-                    icon: isVideo ? Icons.videocam : Icons.call,
+                    icon: widget.isVideo ? Icons.videocam : Icons.call,
                     label: 'Accept',
                     color: const Color(0xff203B32),
                     onPressed: () => _accept(context),
@@ -103,10 +135,11 @@ class IncomingCallScreen extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    if (callerProfileImage != null && callerProfileImage!.isNotEmpty) {
+    if (widget.callerProfileImage != null &&
+        widget.callerProfileImage!.isNotEmpty) {
       return CircleAvatar(
         radius: 58,
-        backgroundImage: NetworkImage(callerProfileImage!),
+        backgroundImage: NetworkImage(widget.callerProfileImage!),
       );
     }
 

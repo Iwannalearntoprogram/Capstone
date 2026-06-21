@@ -125,17 +125,43 @@ class CallService {
       _unregisterSocketListeners();
     }
 
+    // Tear down every resource defensively: a throw from any single native
+    // call (peer connection, stream, or renderer) must not abort the rest of
+    // teardown. Previously an exception here propagated out of dispose() and
+    // prevented the call screen from ever dismissing, leaving both peers
+    // stuck on a "Call ended" screen that never closed.
     final tracks = _localStream?.getTracks() ?? [];
     for (final track in tracks) {
-      await track.stop();
+      try {
+        await track.stop();
+      } catch (_) {}
     }
 
-    await _localStream?.dispose();
-    await _peerConnection?.close();
-    await _peerConnection?.dispose();
+    try {
+      await _localStream?.dispose();
+    } catch (_) {}
+    _localStream = null;
+
+    // Detach renderers before disposing so a still-mounted RTCVideoView
+    // (video calls) isn't holding a stream we're about to free.
+    localRenderer.srcObject = null;
+    remoteRenderer.srcObject = null;
+
+    try {
+      await _peerConnection?.close();
+    } catch (_) {}
+    try {
+      await _peerConnection?.dispose();
+    } catch (_) {}
+    _peerConnection = null;
+
     if (_renderersInitialized) {
-      await localRenderer.dispose();
-      await remoteRenderer.dispose();
+      try {
+        await localRenderer.dispose();
+      } catch (_) {}
+      try {
+        await remoteRenderer.dispose();
+      } catch (_) {}
     }
   }
 
@@ -243,8 +269,9 @@ class CallService {
     _onCallEnded = (data) async {
       if (!_isCurrentCall(data)) return;
       onStatusChanged('Call ended');
-      await dispose();
+      // Dismiss the screen first; teardown then runs without gating the UI.
       onEnded?.call();
+      await dispose();
     };
 
     _onCallSignal = (data) async {
