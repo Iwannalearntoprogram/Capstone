@@ -3,6 +3,7 @@ import 'package:estetika_ui/config/api_config.dart';
 import 'package:estetika_ui/screens/inbox_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart' show MediaType;
 import 'dart:io';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -667,6 +668,23 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     await _uploadAndSendFile(File(picked.path), isImage: true);
   }
 
+  // Map an image file's extension to an image/* MediaType for multipart upload.
+  MediaType _imageMediaType(String path) {
+    final ext = path.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'png':
+        return MediaType('image', 'png');
+      case 'gif':
+        return MediaType('image', 'gif');
+      case 'webp':
+        return MediaType('image', 'webp');
+      case 'jpg':
+      case 'jpeg':
+      default:
+        return MediaType('image', 'jpeg');
+    }
+  }
+
   Future<void> _uploadAndSendFile(File file, {required bool isImage}) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
@@ -675,7 +693,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final uri = Uri.parse('${ApiConfig.apiBaseUrl}/upload/message');
     final request = http.MultipartRequest('POST', uri)
       ..headers['Authorization'] = 'Bearer $token'
-      ..files.add(await http.MultipartFile.fromPath('file', file.path));
+      ..files.add(await http.MultipartFile.fromPath(
+        'file',
+        file.path,
+        // For images, tag the part as image/* so the backend stores the right
+        // fileType and the chat renders it as an image instead of a generic
+        // octet-stream attachment.
+        contentType: isImage ? _imageMediaType(file.path) : null,
+      ));
 
     final response = await request.send();
     final responseBody = await response.stream.bytesToString();
