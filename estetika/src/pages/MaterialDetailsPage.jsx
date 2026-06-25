@@ -4,6 +4,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import Papa from "papaparse";
 import { useNavigate } from "react-router-dom";
+import { optimizeCloudinaryUrl } from "../utils/cloudinaryImage";
 
 function Button({ children, className = "", ...props }) {
   return (
@@ -111,9 +112,9 @@ export default function MaterialDetailsPage() {
       try {
         const token = Cookies.get("token");
         const res = await axios.get(
-          `${serverUrl}/api/material/search?query=${encodeURIComponent(
-            material.name
-          )}&max=10`,
+          `${serverUrl}/api/material/similar?id=${encodeURIComponent(
+            material._id
+          )}&max=8`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -121,18 +122,12 @@ export default function MaterialDetailsPage() {
           }
         );
 
-        const allProducts = res.data.candidates || res.data.results || [];
+        const allProducts = res.data.results || [];
         const filtered = allProducts.filter(
           (item) => item._id !== material._id
         );
 
-        const sorted = [...filtered].sort((a, b) => {
-          const priceA = typeof a.price === "number" ? a.price : 0;
-          const priceB = typeof b.price === "number" ? b.price : 0;
-          return priceA - priceB;
-        });
-
-        setSimilarProduct(sorted.slice(0, 8));
+        setSimilarProduct(filtered.slice(0, 8));
       } catch (err) {
         setSimilarProduct([]);
       } finally {
@@ -432,8 +427,10 @@ export default function MaterialDetailsPage() {
             {material.image?.map((img, idx) => (
               <img
                 key={idx}
-                src={img}
+                src={optimizeCloudinaryUrl(img, { width: 160 })}
                 alt={`thumb${idx + 1}`}
+                loading="lazy"
+                decoding="async"
                 className={`w-20 h-20 border rounded object-cover cursor-pointer ${
                   mainImageIdx === idx ? "ring-2 ring-[#1D3C34]" : ""
                 }`}
@@ -444,8 +441,11 @@ export default function MaterialDetailsPage() {
           </div>
           <div className="flex min-w-0 flex-1 items-center justify-center">
             <img
-              src={material.image?.[mainImageIdx]}
+              src={optimizeCloudinaryUrl(material.image?.[mainImageIdx], {
+                width: 900,
+              })}
               alt="main"
+              decoding="async"
               className="h-[16rem] w-full max-w-full rounded-lg bg-white object-contain shadow-md sm:h-[22rem] xl:h-[28rem] xl:max-w-[45rem]"
             />
           </div>
@@ -554,12 +554,15 @@ export default function MaterialDetailsPage() {
                   onClick={() => handleProductClick(product._id)}
                 >
                   <img
-                    src={
+                    src={optimizeCloudinaryUrl(
                       Array.isArray(product.image)
                         ? product.image[0]
-                        : product.image
-                    }
+                        : product.image,
+                      { width: 400 }
+                    )}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-40 object-cover rounded-t-lg"
                   />
                   <div className="p-4">

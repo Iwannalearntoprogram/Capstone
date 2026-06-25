@@ -20,6 +20,7 @@ import {
   validatePositiveNumber,
   validateRequiredText,
 } from "../utils/validation";
+import { optimizeCloudinaryUrl } from "../utils/cloudinaryImage";
 
 const calculateCategorySales = (materials = []) => {
   const categorySales = {};
@@ -2755,8 +2756,13 @@ const HomePage = () => {
                       {drForm.imageLink && (
                         <div className="mt-3">
                           <img
-                            src={normalizeDriveLink(drForm.imageLink)}
+                            src={optimizeCloudinaryUrl(
+                              normalizeDriveLink(drForm.imageLink),
+                              { width: 300 }
+                            )}
                             alt="preview"
+                            loading="lazy"
+                            decoding="async"
                             className="h-24 rounded border"
                           />
                         </div>
@@ -2870,8 +2876,12 @@ const HomePage = () => {
                   </div>
                   {rec.imageLink ? (
                     <img
-                      src={normalizeDriveLink(rec.imageLink)}
+                      src={optimizeCloudinaryUrl(normalizeDriveLink(rec.imageLink), {
+                        width: 400,
+                      })}
                       alt={rec.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-32 object-cover rounded-lg border mb-2"
                     />
                   ) : (

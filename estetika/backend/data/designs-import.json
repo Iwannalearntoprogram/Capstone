@@ -1,0 +1,861 @@
+{
+  "generatedAt": "2026-06-25T14:14:31.693Z",
+  "dryRun": false,
+  "docxCount": 3,
+  "designCount": 30,
+  "missingImageCount": 0,
+  "missingImages": [],
+  "importSummary": {
+    "inserted": 0,
+    "updated": 30,
+    "imagesUploaded": 30,
+    "failed": 0,
+    "noImages": [],
+    "errors": []
+  },
+  "designs": [
+    {
+      "title": "Modern Minimalist Bathroom",
+      "type": "Bathroom",
+      "budgetRange": {
+        "min": 35000,
+        "max": 75000
+      },
+      "designPreferences": [
+        "Modern",
+        "Brown",
+        "White",
+        "Minimalist",
+        "Luxury"
+      ],
+      "tags": [
+        "American Style",
+        "Personal",
+        "Luxury",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Upgrade your home with this modern minimalist bathroom design inspired by trending American interiors. This sleek bathroom features a floating vanity, frameless glass shower, warm LED lighting, and neutral color palette for a clean and luxurious feel. Perfect for small bathrooms, contemporary homes, and stylish renovations. Save this idea for your next bathroom makeover and discover elegant, clutter-free living with modern aesthetics.",
+      "imageFile": "Bathroom/Modern Minimalist Bathroom.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061951/design/6a381b7d48d916a5d53b3296/modern-minimalist-bathroom.jpg",
+      "sourceDocument": "Bathroom/06 - Bathroom Design.docx"
+    },
+    {
+      "title": "Modern Scandi Bathroom",
+      "type": "Bathroom",
+      "budgetRange": {
+        "min": 25000,
+        "max": 55000
+      },
+      "designPreferences": [
+        "Modern",
+        "Brown",
+        "White",
+        "Minimalist"
+      ],
+      "tags": [
+        "Scandi",
+        "Personal",
+        "Luxury",
+        "Wood",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Get the ultimate spa-at-home vibe with this modern Scandi bathroom inspiration. This design features a beautiful wood-textured walk-in shower, a sleek floating vanity, and clean black hardware for a high-contrast look. Perfect for small bathroom layouts, the backlit mirror and recessed shelving create a bright, airy, and organized space. Whether you're planning a bathroom renovation or just looking for organic modern decor, this minimalist aesthetic is timeless.",
+      "imageFile": "Bathroom/Modern Scandi Bathroom.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061952/design/6a381b7f48d916a5d53b329a/modern-scandi-bathroom.jpg",
+      "sourceDocument": "Bathroom/06 - Bathroom Design.docx"
+    },
+    {
+      "title": "Modern Black & White Bathroom",
+      "type": "Bathroom",
+      "budgetRange": {
+        "min": 45000,
+        "max": 85000
+      },
+      "designPreferences": [
+        "Modern",
+        "Black",
+        "Brown",
+        "White",
+        "Minimalist"
+      ],
+      "tags": [
+        "Personal",
+        "Minimal",
+        "Simple",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Simple modern black & white bathroom",
+      "imageFile": "Bathroom/Modern Black & White Bathroom.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061953/design/6a381b8048d916a5d53b329e/modern-black-and-white-bathroom.jpg",
+      "sourceDocument": "Bathroom/06 - Bathroom Design.docx"
+    },
+    {
+      "title": "Modern Luxe Bathroom",
+      "type": "Bathroom",
+      "budgetRange": {
+        "min": 55000,
+        "max": 95000
+      },
+      "designPreferences": [
+        "Modern",
+        "Black",
+        "White",
+        "Luxury",
+        "Contemporary"
+      ],
+      "tags": [
+        "Personal",
+        "Luxury",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Explore a modern and luxurious minimalist bathroom featuring gray tiled walls and marble flooring. A large round, black-framed mirror is paired with woven pendant lights, creating a stylish focal point. The walk-in shower with glass door and neatly organized shelves adds both functionality and elegance. Subtle greenery completes the gray-and-white color scheme, making this bathroom a serene and contemporary space. perfect for modern bathroom inspiration.",
+      "imageFile": "Bathroom/Modern Luxe Bathroom.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061954/design/6a381b8148d916a5d53b32a2/modern-luxe-bathroom.jpg",
+      "sourceDocument": "Bathroom/06 - Bathroom Design.docx"
+    },
+    {
+      "title": "Modern Dual-Sink Bathroom",
+      "type": "Bathroom",
+      "budgetRange": {
+        "min": 105000,
+        "max": 145000
+      },
+      "designPreferences": [
+        "Modern",
+        "Grey",
+        "Black",
+        "White",
+        "Luxury",
+        "Minimalist"
+      ],
+      "tags": [
+        "Personal",
+        "Minimal",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Explore a sleek, minimalist bathroom featuring dual sinks, a central bathtub, and clean grey tones. Perfect for modern homes seeking calm, organized spaces with contemporary flair",
+      "imageFile": "Bathroom/Modern Dual-Sink Bathroom.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061955/design/6a381b8248d916a5d53b32a6/modern-dual-sink-bathroom.jpg",
+      "sourceDocument": "Bathroom/06 - Bathroom Design.docx"
+    },
+    {
+      "title": "Chic Compact Bathroom",
+      "type": "Bathroom",
+      "budgetRange": {
+        "min": 125000,
+        "max": 145000
+      },
+      "designPreferences": [
+        "Modern",
+        "Grey",
+        "Black",
+        "White",
+        "Luxury"
+      ],
+      "tags": [
+        "Personal",
+        "Minimal",
+        "Stylish",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Explore a stylish compact bathroom layout featuring a separate sink, toilet, and shower area. Perfect for small spaces, this design maximizes functionality with modern fixtures and smart organization ideas",
+      "imageFile": "Bathroom/Chic Compact Bathroom.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061956/design/6a381b8348d916a5d53b32aa/chic-compact-bathroom.jpg",
+      "sourceDocument": "Bathroom/06 - Bathroom Design.docx"
+    },
+    {
+      "title": "Luxury Wood Vanity Bathroom",
+      "type": "Bathroom",
+      "budgetRange": {
+        "min": 95000,
+        "max": 115000
+      },
+      "designPreferences": [
+        "Modern",
+        "Brown",
+        "White",
+        "Luxury",
+        "Contemporary"
+      ],
+      "tags": [
+        "Personal",
+        "Bright",
+        "Stylish",
+        "Luxury",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Contemporary bathroom interior featuring a floating wood vanity, matte black fixtures, walk in glass shower, soft LED lighting, and large neutral tiles. Sleek minimalist bathroom design with clean lines, spa inspired styling, and elegant modern architecture perfect for luxury home inspiration.",
+      "imageFile": "Bathroom/Luxury Wood Vanity Bathroom.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061956/design/6a381b8448d916a5d53b32ae/luxury-wood-vanity-bathroom.jpg",
+      "sourceDocument": "Bathroom/06 - Bathroom Design.docx"
+    },
+    {
+      "title": "Aesthetic Minimalist Bathroom",
+      "type": "Bathroom",
+      "budgetRange": {
+        "min": 155000,
+        "max": 195000
+      },
+      "designPreferences": [
+        "Modern",
+        "Brown",
+        "White",
+        "Luxury",
+        "Minimalist"
+      ],
+      "tags": [
+        "Personal",
+        "Bright",
+        "Stylish",
+        "Luxury",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Upgrade your space instantly with these bathroom aesthetic minimalist tips, perfectly complemented by touches of bathroom aesthetic boho charm. Chic, simple, and stunning.",
+      "imageFile": "Bathroom/Aesthetic Minimalist Bathroom.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061957/design/6a381b8548d916a5d53b32b2/aesthetic-minimalist-bathroom.jpg",
+      "sourceDocument": "Bathroom/06 - Bathroom Design.docx"
+    },
+    {
+      "title": "Small Modern Bathroom",
+      "type": "Bathroom",
+      "budgetRange": {
+        "min": 15000,
+        "max": 35000
+      },
+      "designPreferences": [
+        "Modern",
+        "Brown",
+        "White",
+        "Minimalist"
+      ],
+      "tags": [
+        "Personal",
+        "Bright",
+        "Stylish",
+        "Small",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Transform limited space with stylish inspiration blending luxury touches and smart layouts. Discover Small Narrow Bathroom Ideas, Compact Bathroom Ideas, and creative Micro Bathroom Ideas perfect for modern living. Explore clever storage, sleek fixtures, plus Very Small Shower Room Ideas designed for function, comfort, and elegance in tight areas.",
+      "imageFile": "Bathroom/Small Modern Bathroom.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061958/design/6a381b8648d916a5d53b32b6/small-modern-bathroom.jpg",
+      "sourceDocument": "Bathroom/06 - Bathroom Design.docx"
+    },
+    {
+      "title": "Chic Small Bathroom",
+      "type": "Bathroom",
+      "budgetRange": {
+        "min": 25000,
+        "max": 45000
+      },
+      "designPreferences": [
+        "Modern",
+        "Green",
+        "Grey",
+        "White",
+        "Minimalist"
+      ],
+      "tags": [
+        "Personal",
+        "Bright",
+        "Stylish",
+        "Small",
+        "Residential",
+        "Commercial",
+        "Renovation"
+      ],
+      "specification": "Visit a sleek small bath makeover featuring a round mirror, minimalist sink area, and a white toilet. Perfect for compact spaces with clean lines, modern decor, and functional upgrades for a fresh, uncluttered bathroom inspo.",
+      "imageFile": "Bathroom/Chic Small Bathroom.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061959/design/6a381b8648d916a5d53b32ba/chic-small-bathroom.jpg",
+      "sourceDocument": "Bathroom/06 - Bathroom Design.docx"
+    },
+    {
+      "title": "Modern Black & White Office",
+      "type": "Home Office",
+      "budgetRange": {
+        "min": 15000,
+        "max": 25000
+      },
+      "designPreferences": [
+        "Simple",
+        "Modern",
+        "Black",
+        "White",
+        "Classic",
+        "Traditional",
+        "Minimalist"
+      ],
+      "tags": [
+        "Professional",
+        "Personal",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Homepolish designer Carly Callahan of Callahan Interiors and her husband turned an outdated, historical one-story Chicago home into a stunning, classically beautiful two-story space. Let her walk you through the renovation process.",
+      "imageFile": "Home Office/Modern Black & White.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061960/design/6a381b8748d916a5d53b32be/modern-black-and-white-office.jpg",
+      "sourceDocument": "Home Office/06 - Home Office Designs.docx"
+    },
+    {
+      "title": "Classic Brown Office",
+      "type": "Home Office",
+      "budgetRange": {
+        "min": 25000,
+        "max": 35000
+      },
+      "designPreferences": [
+        "Black",
+        "Brown",
+        "Classic",
+        "Traditional",
+        "Minimalist"
+      ],
+      "tags": [
+        "Professional",
+        "Personal",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Designing a men’s home office starts with creating a space that feels purposeful, refined, and aligned with your personal taste.",
+      "imageFile": "Home Office/Classic Brown Office.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061961/design/6a381b8848d916a5d53b32c2/classic-brown-office.jpg",
+      "sourceDocument": "Home Office/06 - Home Office Designs.docx"
+    },
+    {
+      "title": "Modern Luxury Office",
+      "type": "Home Office",
+      "budgetRange": {
+        "min": 45000,
+        "max": 65000
+      },
+      "designPreferences": [
+        "White",
+        "Brown",
+        "Classic",
+        "Traditional",
+        "Luxury"
+      ],
+      "tags": [
+        "Professional",
+        "Personal",
+        "Luxury",
+        "Expensive",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Designing a luxury home office starts with creating a space that feels purposeful, refined, and aligned with your personal taste.",
+      "imageFile": "Home Office/Modern Luxury Office.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061962/design/6a381b8948d916a5d53b32c6/modern-luxury-office.jpg",
+      "sourceDocument": "Home Office/06 - Home Office Designs.docx"
+    },
+    {
+      "title": "Luxury Home Office",
+      "type": "Home Office",
+      "budgetRange": {
+        "min": 65000,
+        "max": 105000
+      },
+      "designPreferences": [
+        "White",
+        "Brown",
+        "Blue",
+        "Classic",
+        "Traditional",
+        "Luxury",
+        "Modern"
+      ],
+      "tags": [
+        "Professional",
+        "Personal",
+        "Luxury",
+        "Expensive",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Elevate your work environment in our Elegant Office Space, characterized by deep blue tones, modern traditional style, and fine contemporary artwork, fostering creativity and sophistication. | Studio Own Architecture | Interior Design | Home Office | Office Space | Luxury House | Elegant Office |",
+      "imageFile": "Home Office/Luxury Home Office.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061963/design/6a381b8a48d916a5d53b32ca/luxury-home-office.jpg",
+      "sourceDocument": "Home Office/06 - Home Office Designs.docx"
+    },
+    {
+      "title": "Sophisticated Modern Home Office",
+      "type": "Home Office",
+      "budgetRange": {
+        "min": 105000,
+        "max": 185000
+      },
+      "designPreferences": [
+        "Black",
+        "Brown",
+        "Blue",
+        "Classic",
+        "Traditional",
+        "Luxury",
+        "Modern"
+      ],
+      "tags": [
+        "Professional",
+        "Personal",
+        "Luxury",
+        "Expensive",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Explore this modern masculine office featuring a dark walnut desk, cognac leather chair, and navy walls adorned with bold artwork. A blend of elegance and functionality for the modern professional.",
+      "imageFile": "Home Office/Sophisticated Modern Office.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061964/design/6a381b8b48d916a5d53b32ce/sophisticated-modern-home-office.jpg",
+      "sourceDocument": "Home Office/06 - Home Office Designs.docx"
+    },
+    {
+      "title": "Elegant Executive Home Office",
+      "type": "Home Office",
+      "budgetRange": {
+        "min": 85000,
+        "max": 125000
+      },
+      "designPreferences": [
+        "Black",
+        "Brown",
+        "Blue",
+        "Modern",
+        "Elegant"
+      ],
+      "tags": [
+        "Professional",
+        "Personal",
+        "Luxury",
+        "Expensive",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Looking for modern luxury office inspiration? This sophisticated workspace features a stunning deep navy-blue accent wall paired with warm LED backlighting. The center piece is a minimalist black desk with a bold gold/brass cylindrical base, complemented by ergonomic charcoal grey chairs. Perfect for executive offices or high-end home workspaces. High-quality textures like concrete walls and herringbone flooring create a professional yet cozy atmosphere.",
+      "imageFile": "Home Office/Elegant Executive Office.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061965/design/6a381b8c48d916a5d53b32d2/elegant-executive-home-office.jpg",
+      "sourceDocument": "Home Office/06 - Home Office Designs.docx"
+    },
+    {
+      "title": "Dark Monolithic Home Office",
+      "type": "Home Office",
+      "budgetRange": {
+        "min": 155000,
+        "max": 205000
+      },
+      "designPreferences": [
+        "Black",
+        "Grey",
+        "Modern",
+        "Elegant"
+      ],
+      "tags": [
+        "Professional",
+        "Personal",
+        "Luxury",
+        "Expensive",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Looking for modern luxury office inspiration? This sophisticated workspace features a stunning deep grey accent wall paired with warm LED lighting. The center piece is a minimalist black desk, complemented by ergonomic charcoal black chairs. Perfect for executive offices or high-end home workspaces. High-quality textures like concrete walls and herringbone flooring create a professional yet cozy atmosphere.",
+      "imageFile": "Home Office/Dark Monolithic Modern Office.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061966/design/6a381b8d48d916a5d53b32d6/dark-monolithic-home-office.jpg",
+      "sourceDocument": "Home Office/06 - Home Office Designs.docx"
+    },
+    {
+      "title": "Elegant Grey Home Office",
+      "type": "Home Office",
+      "budgetRange": {
+        "min": 125000,
+        "max": 175000
+      },
+      "designPreferences": [
+        "Black",
+        "Grey",
+        "Modern",
+        "Elegant",
+        "Luxury"
+      ],
+      "tags": [
+        "Professional",
+        "Personal",
+        "Luxury",
+        "Expensive",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Elegant Home Office Ideas for a Stylish and Productive Space",
+      "imageFile": "Home Office/Elegant Grey Home Office.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061967/design/6a381b8e48d916a5d53b32da/elegant-grey-home-office.jpg",
+      "sourceDocument": "Home Office/06 - Home Office Designs.docx"
+    },
+    {
+      "title": "Modern Grey Home Office",
+      "type": "Home Office",
+      "budgetRange": {
+        "min": 25000,
+        "max": 55000
+      },
+      "designPreferences": [
+        "Black",
+        "Grey",
+        "Modern",
+        "Traditional"
+      ],
+      "tags": [
+        "Professional",
+        "Personal",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "Modern Home Office Ideas for a Modern and Productive Space",
+      "imageFile": "Home Office/Modern Grey Home Office.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061968/design/6a381b8f48d916a5d53b32de/modern-grey-home-office.jpg",
+      "sourceDocument": "Home Office/06 - Home Office Designs.docx"
+    },
+    {
+      "title": "Bright Home Office",
+      "type": "Home Office",
+      "budgetRange": {
+        "min": 45000,
+        "max": 75000
+      },
+      "designPreferences": [
+        "White",
+        "Brown",
+        "Modern",
+        "Traditional",
+        "Simple",
+        "Minimalist"
+      ],
+      "tags": [
+        "Professional",
+        "Personal",
+        "Simple",
+        "Bright",
+        "Residential",
+        "Commercial"
+      ],
+      "specification": "A minimal office with a light wood desk, gray task chair, pendant lights, simple wall art, a large window with white blinds, and a gray rug—balanced, neat, and productivity-focused.",
+      "imageFile": "Home Office/Bright Home Office.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061969/design/6a381b9048d916a5d53b32e2/bright-home-office.jpg",
+      "sourceDocument": "Home Office/06 - Home Office Designs.docx"
+    },
+    {
+      "title": "Cozy Neutral Interior Design",
+      "type": "Whole House",
+      "budgetRange": {
+        "min": 1105000,
+        "max": 1575000
+      },
+      "designPreferences": [
+        "Modern",
+        "Brown",
+        "White",
+        "Minimalist",
+        "Luxury"
+      ],
+      "tags": [
+        "Cozy",
+        "Luxury",
+        "Bright",
+        "Neutral",
+        "Scandi",
+        "Aesthetic",
+        "Residential",
+        "Renovation"
+      ],
+      "specification": "Transform your home with this stunning open-concept living room design featuring modern interior decor, neutral color palettes, cozy textures, warm wood accents, elegant lighting, and a spacious luxury layout. This contemporary living room blends seamlessly with the kitchen and dining area, creating the perfect airy and stylish home aesthetic. Ideal for lovers of modern farmhouse, minimalist decor, Scandinavian interiors, and cozy luxury homes. Perfect inspiration for apartment living rooms, family spaces, open floor plans, and sophisticated home makeovers.",
+      "imageFile": "Whole House/Cozy Neutral Interior Design.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061970/design/6a381b9148d916a5d53b32e6/cozy-neutral-interior-design.jpg",
+      "sourceDocument": "Whole House/06 Interior Whole House.docx"
+    },
+    {
+      "title": "Modern Japandi Mezzanine Interior Design",
+      "type": "Whole House",
+      "budgetRange": {
+        "min": 1200000,
+        "max": 1800000
+      },
+      "designPreferences": [
+        "Japandi",
+        "Modern",
+        "Minimalist",
+        "Warm Wood",
+        "White"
+      ],
+      "tags": [
+        "Loft",
+        "High-Ceiling",
+        "Open-Concept",
+        "Warm-Minimalism",
+        "Airy",
+        "Sophisticated",
+        "Residential",
+        "Renovation"
+      ],
+      "specification": "Experience the ultimate in open-concept living with this breathtaking double-height residential design. The space seamlessly integrates a cozy, low-profile living room setup with a sleek, minimalist kitchen and dining area, all anchored by rich wooden flooring and warm wood accents. A striking mezzanine loft overlooks the main floor, framed by a contemporary black-and-wood railing, while massive floor-to-ceiling windows flood the entire home with natural light. This design perfectly blends Japanese minimalism with Scandinavian warmth, making it the ultimate inspiration for luxury loft living, modern architectural makeovers, and bright, airy family spaces.",
+      "imageFile": "Whole House/Modern Japandi Mezzanine Interior Design.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061971/design/6a381b9248d916a5d53b32ea/modern-japandi-mezzanine-interior-design.jpg",
+      "sourceDocument": "Whole House/06 Interior Whole House.docx"
+    },
+    {
+      "title": "Luxury Indoor-Outdoor Mezzanine Interior Design",
+      "type": "Whole House",
+      "budgetRange": {
+        "min": 2200000,
+        "max": 4800000
+      },
+      "designPreferences": [
+        "Modern",
+        "Luxury",
+        "Contemporary",
+        "Earthy",
+        "Neutrals",
+        "Biophilic",
+        "Minimalist"
+      ],
+      "tags": [
+        "Luxury",
+        "Indoor-Outdoor",
+        "High-Ceiling",
+        "Marble",
+        "Sophisticated",
+        "Panoramic",
+        "Airy",
+        "Residential",
+        "Renovation"
+      ],
+      "specification": "An elevate living experience with this grand, double-height architectural masterpiece that seamlessly merges ultra-luxury indoor comfort with nature. The space showcases an expansive open floor plan where a sophisticated beige living area transitions into a high-end chef's kitchen, highlighted by a stunning white marble waterfall island and premium dark wood cabinetry. Massive glass pocket doors slide completely away, effortlessly extending the main living zone to an elegant outdoor patio and dining deck. Overhead, a sleek glass-paneled mezzanine loft overlooks the entire volume, capturing panoramic views through soaring floor-to-ceiling windows. This design is the ultimate inspiration for high-end custom homes, luxury villa makeovers, and elite open-concept living.",
+      "imageFile": "Whole House/Luxury Indoor-Outdoor Mezzanine Interior Design.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061971/design/6a381b9348d916a5d53b32ee/luxury-indoor-outdoor-mezzanine-interior-design.jpg",
+      "sourceDocument": "Whole House/06 Interior Whole House.docx"
+    },
+    {
+      "title": "High-Contrast Contemporary Mezzanine Interior Design",
+      "type": "Whole House",
+      "budgetRange": {
+        "min": 4200000,
+        "max": 6800000
+      },
+      "designPreferences": [
+        "Contemporary",
+        "Monochrome",
+        "Bold",
+        "Contrast",
+        "Modern",
+        "Luxury",
+        "Minimalist"
+      ],
+      "tags": [
+        "High-Ceiling",
+        "Dramatic-Contrast",
+        "Open-Concept",
+        "Luxury",
+        "Monochromatic",
+        "Statement-Lighting",
+        "Residential",
+        "Renovation"
+      ],
+      "specification": "A bold architectural statement with this dramatic, ultra-modern double-height residence. The expansive open-concept ground floor features a striking high-contrast color palette, pairing crisp white walls and warm wood flooring with a sleek black gourmet kitchen complete with a dramatic marble waterfall island and matching backsplash. A grand, wraparound mezzanine walkway with glass balustrades framing a matte black structural deck cuts dynamically across the upper level, highlighting a unique glass-enclosed upper room. The spacious living zone flows effortlessly into a sunlit dining area at the far end, bounded by massive glass doors that lead to the outdoors. This design offers premier inspiration for high-end modern custom homes, avant-garde interior makeovers, and sophisticated, grand-scale family living.",
+      "imageFile": "Whole House/High-Contrast Contemporary Mezzanine Interior Design.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061972/design/6a381b9448d916a5d53b32f2/high-contrast-contemporary-mezzanine-interior-design.jpg",
+      "sourceDocument": "Whole House/06 Interior Whole House.docx"
+    },
+    {
+      "title": "Sophisticated Interior Design",
+      "type": "Whole House",
+      "budgetRange": {
+        "min": 1200000,
+        "max": 2800000
+      },
+      "designPreferences": [
+        "Transitional",
+        "Contemporary",
+        "Classic",
+        "Warm",
+        "Neutrals",
+        "Charcoal & Cream"
+      ],
+      "tags": [
+        "High-Ceiling",
+        "Transitional",
+        "Open-Concept",
+        "Elegant",
+        "Textural",
+        "Multi-Zone",
+        "Grand-Scale",
+        "Residential",
+        "Renovation"
+      ],
+      "specification": "Experience an exquisite masterclass in high-ceiling, open-concept design that perfectly balances grand architectural scale with inviting warmth. Captured from a dramatic high-angle view, the main living area anchors the home with a symmetrical arrangement of deep, comfortable cream sofas, contrasting black-and-white accent chairs, and a striking black block coffee table resting on a textured geometric area rug. The space flows seamlessly into a gourmet chef's kitchen, highlighted by dark wood cabinetry and a massive warm stone island that easily accommodates five barstools for casual dining. Soaring neutral walls are thoughtfully dressed with oversized, sophisticated artwork, while a grand transitional chandelier casts a warm glow from above. Massive black-framed glass sliding doors line the perimeter, offering an effortless visual and physical connection to a beautifully appointed outdoor deck. This layout serves as ideal inspiration for expansive family estates, custom suburban builds, and upscale home makeovers looking for a timeless, cozy luxury aesthetic.",
+      "imageFile": "Whole House/Sophisticated Interior Design.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061974/design/6a381b9548d916a5d53b32f6/sophisticated-interior-design.jpg",
+      "sourceDocument": "Whole House/06 Interior Whole House.docx"
+    },
+    {
+      "title": "Open Concept Interior Design",
+      "type": "Whole House",
+      "budgetRange": {
+        "min": 1500000,
+        "max": 2000000
+      },
+      "designPreferences": [
+        "Modern",
+        "Warm",
+        "Minimalism",
+        "Contemporary",
+        "Neutral",
+        "Elegance"
+      ],
+      "tags": [
+        "High-Ceiling",
+        "Multi-Level",
+        "Open-Concept",
+        "Grand-Scale",
+        "Bright",
+        "Textural",
+        "Matte-Black-Accents",
+        "Residential",
+        "Renovation"
+      ],
+      "specification": "Immerse yourself in a beautifully engineered, grand-scale open residential layout that prioritizes volume, light, and architectural depth. The main floor features a cozy yet sophisticated conversational living zone anchored by a large beige sectional, a light wood block coffee table, and an intricate neutral patterned area rug, all facing a sleek matte black media console. The space flows seamlessly into a bright white kitchen with warm leather barstools on one side, and a semi-private formal dining room visible tucked behind the main structure. A striking architectural staircase with bold black iron railings leads up to a multi-tiered mezzanine layout, creating a dynamic sense of movement and connection between floors. Punctuated by a dramatic, oversized black propeller ceiling fan and warm ambient lighting, this design serves as premier inspiration for custom luxury builds, grand suburban family homes, and multi-level interior renovations.",
+      "imageFile": "Whole House/Open Concept Interior Design.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061975/design/6a381b9648d916a5d53b32fa/open-concept-interior-design.jpg",
+      "sourceDocument": "Whole House/06 Interior Whole House.docx"
+    },
+    {
+      "title": "Chic Mid-Century Modern Mezzanine Interior Design",
+      "type": "Whole House",
+      "budgetRange": {
+        "min": 1800000,
+        "max": 2500000
+      },
+      "designPreferences": [
+        "Mid-Century Modern",
+        "Graphic Minimalist",
+        "Warm",
+        "Neutrals",
+        "Matte Black Accents"
+      ],
+      "tags": [
+        "High-Ceiling",
+        "Loft",
+        "Open-Concept",
+        "Geometric",
+        "Contrast",
+        "Airy",
+        "Modern-Farmhouse",
+        "Residential",
+        "Renovation"
+      ],
+      "specification": "Step into a striking, double height open residential concept that effortlessly balances bold geometric graphics with organic warmth. The ground floor showcases a luxurious cream-colored sectional adorned with high-contrast monochrome accent pillows, anchored by a unique black-and-white linear patterned area rug and a matte black slatted coffee table. This inviting conversational space transitions fluidly into a gourmet kitchen and dining zone, beautifully styled with warm wood cabinetry, camel leather dining chairs, and iconic mid-century black cone pendant lights. Soaring above the culinary area is an expansive mezzanine loft framed by clean, horizontal black iron balustrades, offering a versatile bonus room overlooking the light-filled sanctuary below. Perfectly suited for enthusiasts of urban loft living, contemporary renovations, and sophisticated family layouts.",
+      "imageFile": "Whole House/Chic Mid-Century Modern Mezzanine Interior Design.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061976/design/6a381b9748d916a5d53b32fe/chic-mid-century-modern-mezzanine-interior-design.jpg",
+      "sourceDocument": "Whole House/06 Interior Whole House.docx"
+    },
+    {
+      "title": "Elegant Coastal Transition Interior Design",
+      "type": "Whole House",
+      "budgetRange": {
+        "min": 2800000,
+        "max": 4500000
+      },
+      "designPreferences": [
+        "Transitional",
+        "Modern",
+        "Coastal",
+        "Neutral",
+        "Soft",
+        "Teal Accents",
+        "Airy",
+        "Luxury"
+      ],
+      "tags": [
+        "High-Ceiling",
+        "Multi-Loft",
+        "Open-Concept",
+        "Bright",
+        "Marble-Waterfall",
+        "Coastal-Vibe",
+        "Grand-Scale",
+        "Residential",
+        "Renovation"
+      ],
+      "specification": "Immerse yourself in a spectacular, light-filled double-height residential design that masters the art of grand-scale, open-concept living. The ground floor features a magnificent chef's kitchen highlighted by pristine white cabinetry, a dramatic marble waterfall island with seating for four woven barstools, and a trio of elegant smoky glass pendant lights. The layout flows effortlessly into a bright conversational living area, grounded by a clean cream sofa layered with refreshing teal and patterned accent pillows, a distressed wood coffee table, and a deep brown leather armchair. In the background, an elegant formal dining room sits beneath a classic candle-style chandelier. Architectural drama is achieved overhead with an expansive upper level boasting dual mezzanine overlooks framed by sophisticated black wrought-iron railings. This interior serves as premier inspiration for custom luxury beach homes, upscale suburban estates, and sophisticated airy home makeovers.",
+      "imageFile": "Whole House/Elegant Coastal Transition Interior Design.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061977/design/6a381b9848d916a5d53b3302/elegant-coastal-transition-interior-design.jpg",
+      "sourceDocument": "Whole House/06 Interior Whole House.docx"
+    },
+    {
+      "title": "Modern Multi-Suite Luxury Loft Interior Design",
+      "type": "Whole House",
+      "budgetRange": {
+        "min": 4500000,
+        "max": 6500000
+      },
+      "designPreferences": [
+        "Modern",
+        "Luxury",
+        "Urban Loft",
+        "Industrial",
+        "Elegance",
+        "Moody",
+        "Neutrals",
+        "Minimalist"
+      ],
+      "tags": [
+        "Double-Height",
+        "Multi-Suite Loft",
+        "Open-Concept",
+        "Glass-Walls",
+        "Urban-Aesthetic",
+        "Sophisticated-Lighting",
+        "Residential",
+        "Renovation"
+      ],
+      "specification": "Experience a breathtaking masterclass in modern architectural zoning and high-end urban loft design. Captured from an elevated vantage point, this grand, multi-level layout masterfully maximizes vertical space. The ground floor centers around a spacious, low-profile cream sectional sofa accented with rich brown pillows, grounded by a distressed charcoal-and-grey area rug and sleek, nested black circular coffee tables. The expansive living zone transitions into an ultra-modern, seamless grey kitchen equipped with under-cabinet ambient lighting and a built-in casual dining table. Above, the dramatic mezzanine floor features dual luxury bedroom suites—one an open gallery design with minimal glass barriers, and the other fully enclosed in stunning floor-to-ceiling black-framed glass partitions with a backlit warm-toned feature wall. This design offers the ultimate inspiration for high-end penthouse apartments, custom architectural builds, and premium luxury home transformations.",
+      "imageFile": "Whole House/Modern Multi-Suite Luxury Loft Interior Design.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061978/design/6a381b9948d916a5d53b3306/modern-multi-suite-luxury-loft-interior-design.jpg",
+      "sourceDocument": "Whole House/06 Interior Whole House.docx"
+    },
+    {
+      "title": "Cozy Japandi Mezzanine Interior Design",
+      "type": "Whole House",
+      "budgetRange": {
+        "min": 950000,
+        "max": 1500000
+      },
+      "designPreferences": [
+        "Japandi",
+        "Warm",
+        "Minimalism",
+        "Natural",
+        "Wood",
+        "Cozy",
+        "Asian",
+        "Contemporary"
+      ],
+      "tags": [
+        "High-Ceiling",
+        "Wooden-Ceiling",
+        "Compact-Luxury",
+        "Home-Office",
+        "Mezzanine",
+        "Airy",
+        "Functional-Design",
+        "Residential",
+        "Renovation"
+      ],
+      "specification": "Discover the perfect harmony of natural warmth and structural efficiency with this stunning Japandi-inspired open-concept home. The main floor utilizes a smart, space-saving layout featuring a cozy, dual-tone sectional sofa paired with an organic wood coffee table over a dark leaf-patterned area rug. Tucked neatly beneath the mezzanine overhang is a sleek, light-wood kitchen and dining island crowned by a matching natural wood-paneled ceiling that exudes organic charm. Adjacent to the main lounge, a practical built-in home office workspace maximizes utility along the wall under the floating open-tread wooden staircase. Rising above, a spacious mezzanine gallery framed by a simple black iron horizontal rail provides an elevated multi-purpose zone while soaring floor-to-ceiling windows wash the entire timber-rich sanctuary in soft, natural light. This design provides exceptional inspiration for compact custom builds, modern suburban homes, and minimalist architectural renovations.",
+      "imageFile": "Whole House/Cozy Japandi Mezzanine Interior Design.jpg",
+      "imageLink": "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782061979/design/6a381b9a48d916a5d53b330a/cozy-japandi-mezzanine-interior-design.jpg",
+      "sourceDocument": "Whole House/06 Interior Whole House.docx"
+    }
+  ]
+}

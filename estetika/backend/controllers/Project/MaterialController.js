@@ -568,6 +568,95 @@ const material_search = catchAsync(async (req, res) => {
   }
 });
 
+// Similar materials for the material details page. Uses the material's OWN
+// stored embedding as the query vector, so it never calls OpenAI at request
+// time (no quota/429 dependency). Falls back to same-category matches for
+// materials that don't have an embedding yet.
+const material_similar = catchAsync(async (req, res) => {
+  const { id, max } = req.query;
+
+  if (!id) return res.status(400).json({ error: "id is required." });
+
+  const maxInt = Math.min(Math.max(parseInt(max, 10) || 8, 1), 24);
+
+  const material = await Material.findById(id)
+    .select("name category subCategory embedding")
+    .lean();
+
+  if (!material) return res.status(404).json({ error: "Material not found." });
+
+  const hasEmbedding =
+    Array.isArray(material.embedding) && material.embedding.length > 0;
+
+  // 1) Vector similarity using the material's stored embedding (no OpenAI).
+  if (hasEmbedding) {
+    try {
+      const results = await Material.aggregate([
+        {
+          $vectorSearch: {
+            queryVector: material.embedding,
+            path: "embedding",
+            numCandidates: 100,
+            // Fetch a few extra so we can drop the material itself and still
+            // return up to maxInt neighbors.
+            limit: maxInt + 1,
+            index: "materials_search",
+          },
+        },
+      ]);
+
+      const sanitized = results
+        .map(({ embedding, ...rest }) => rest)
+        .filter((item) => String(item._id) !== String(material._id))
+        .slice(0, maxInt);
+
+      if (sanitized.length > 0) {
+        return res.json({
+          message: `Found ${sanitized.length} similar materials.`,
+          results: sanitized,
+          source: "vector",
+        });
+      }
+    } catch (err) {
+      // Fall through to the category-based fallback below.
+      console.error("material_similar vector search failed:", err.message);
+    }
+  }
+
+  // 2) Fallback: same category (then subCategory), excluding self.
+  const orConditions = [];
+  if (material.category) orConditions.push({ category: material.category });
+  if (material.subCategory)
+    orConditions.push({ subCategory: material.subCategory });
+
+  const fallbackQuery = {
+    _id: { $ne: material._id },
+    ...(orConditions.length > 0 ? { $or: orConditions } : {}),
+  };
+
+  let fallback = await Material.find(fallbackQuery)
+    .select("-embedding")
+    .sort({ sales: -1, price: 1 })
+    .limit(maxInt)
+    .lean();
+
+  // If category yielded nothing, surface other popular materials so the
+  // section is never empty.
+  if (fallback.length === 0) {
+    fallback = await Material.find({ _id: { $ne: material._id } })
+      .select("-embedding")
+      .sort({ sales: -1, price: 1 })
+      .limit(maxInt)
+      .lean();
+  }
+
+  return res.json({
+    message: `Found ${fallback.length} related materials.`,
+    results: fallback,
+    source: "category",
+  });
+});
+
 module.exports = {
   material_get,
   material_post,
@@ -575,4 +664,5 @@ module.exports = {
   material_delete,
   vector_search,
   material_search,
+  material_similar,
 };

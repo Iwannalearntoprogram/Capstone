@@ -20,9 +20,29 @@ const genericSvg = `
 export const PROFILE_FALLBACK_SRC = toDataUri(profileSvg);
 export const GENERIC_FALLBACK_SRC = toDataUri(genericSvg);
 
+const MAX_RETRIES = 1;
+
 export function applyImageFallback(img) {
   if (!(img instanceof HTMLImageElement)) return;
   if (img.dataset.fallbackApplied === "true") return;
+
+  // Transient failures (throttled/dropped requests during a burst of card
+  // images) shouldn't stick permanently. Retry the original URL once with a
+  // cache-busting param before swapping in the placeholder.
+  const currentSrc = img.currentSrc || img.src;
+  const retries = Number(img.dataset.retryCount || 0);
+  if (/^https?:/i.test(currentSrc) && retries < MAX_RETRIES) {
+    const base = img.dataset.originalSrc || currentSrc;
+    img.dataset.originalSrc = base;
+    img.dataset.retryCount = String(retries + 1);
+    const separator = base.includes("?") ? "&" : "?";
+    const retrySrc = `${base}${separator}_retry=${retries + 1}`;
+    setTimeout(() => {
+      // Guard against a fallback that was applied in the meantime.
+      if (img.dataset.fallbackApplied !== "true") img.src = retrySrc;
+    }, 500 * (retries + 1));
+    return;
+  }
 
   const fallbackType =
     img.dataset.fallback === "profile" || /\bprofile\b/i.test(img.alt || "")

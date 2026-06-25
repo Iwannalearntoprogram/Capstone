@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { optimizeCloudinaryUrl } from "../../utils/cloudinaryImage";
 
 export default function Material({
   materialDetails,
@@ -29,8 +30,10 @@ export default function Material({
       >
         {image?.[0] ? (
           <img
-            src={image[0]}
+            src={optimizeCloudinaryUrl(image[0], { width: 500 })}
             alt={name}
+            loading="lazy"
+            decoding="async"
             className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-300"
           />
         ) : (

@@ -108,13 +108,22 @@ class _SignInScreenState extends State<SigninScreen> {
         }
 
         if (mounted) {
-          // Skip OTP when "Remember me" is checked, or when this account was already
-          // OTP-verified within the last 24h (per-account remember).
-          if (_rememberMe || await _shouldSkipOtp(email)) {
+          // Force a fresh OTP whenever the account being signed into differs from
+          // the last account used on this device, even if "Remember me" is checked
+          // or this account was OTP-verified within the last 24h.
+          final lastAccount = prefs.getString('lastAccountEmail');
+          final isAccountChange = lastAccount != null &&
+              lastAccount.toLowerCase() != email.toLowerCase();
+
+          // Skip OTP only for the same account, when "Remember me" is checked or it
+          // was already OTP-verified within the last 24h (per-account remember).
+          if (!isAccountChange &&
+              (_rememberMe || await _shouldSkipOtp(email))) {
             // Persist the remember state so auto-login and later sign-ins also skip OTP.
             if (_rememberMe) {
               await _markOtpVerified(email);
             }
+            await prefs.setString('lastAccountEmail', email.toLowerCase());
             // Skip OTP and go directly to home
             Navigator.pushReplacement(
               context,
@@ -127,6 +136,7 @@ class _SignInScreenState extends State<SigninScreen> {
             if (verified == true) {
               // Mark OTP verified time for this account if remember me was chosen
               await _markOtpVerified(email);
+              await prefs.setString('lastAccountEmail', email.toLowerCase());
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const HomeScreen()),

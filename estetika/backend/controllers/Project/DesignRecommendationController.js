@@ -615,6 +615,28 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
     },
   });
 
+  // Only keep items that actually match at least one of the user's stated
+  // preferences (exact preference/tag match or a partial/regex match). This
+  // prevents the budget fallbacks (and the in-budget top results) from padding
+  // the response with designs that fit the room type + budget but are unrelated
+  // to what the user typed.
+  const preferenceRelevanceStage = {
+    $match: {
+      $expr: {
+        $gt: [
+          {
+            $add: [
+              "$preferenceMatchCount",
+              "$tagMatchCount",
+              "$partialMatchScore",
+            ],
+          },
+          0,
+        ],
+      },
+    },
+  };
+
   const matchForRoomType = async (targetRoomType, limit) => {
     const topPipeline = [
       {
@@ -655,6 +677,7 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
           else: 0,
         },
       }),
+      preferenceRelevanceStage,
       buildSortStage("budgetFitScore"),
       { $limit: limit },
       buildProjectionStage("budgetFitScore"),
@@ -679,6 +702,7 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
           },
         ],
       }),
+      preferenceRelevanceStage,
       buildSortStage("budgetClosenessScore", { includeBudgetMax: true }),
       { $limit: remaining },
       buildProjectionStage("budgetClosenessScore"),
@@ -709,6 +733,7 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
           },
         ],
       }),
+      preferenceRelevanceStage,
       buildSortStage("budgetClosenessScore"),
       { $limit: remaining },
       buildProjectionStage("budgetClosenessScore"),

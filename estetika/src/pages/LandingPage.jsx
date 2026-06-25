@@ -172,7 +172,7 @@ function LandingPage() {
                 <a
                   href="#work-with-us"
                   onClick={(e) => handleSmoothScroll(e, "work-with-us")}
-                  className="border border-gray-400 text-gray-700 px-6 py-3 rounded-md font-medium hover:border-[#1D3C34] hover:text-[#1D3C34] transition"
+                  className="border border-gray-400 text-gray-700 px-6 py-3 rounded-md font-medium text-center hover:border-[#1D3C34] hover:text-[#1D3C34] transition"
                 >
                   Work With Us
                 </a>
