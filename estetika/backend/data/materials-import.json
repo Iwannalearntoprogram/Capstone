@@ -1,24 +1,1430 @@
 {
-  "generatedAt": "2026-05-23T19:53:18.771Z",
+  "generatedAt": "2026-06-25T18:28:51.136Z",
   "dryRun": false,
-  "docxCount": 25,
-  "materialCount": 43,
-  "missingImageCount": 0,
-  "missingImages": [],
+  "docxCount": 35,
+  "materialCount": 103,
+  "missingImageCount": 10,
+  "missingImages": [
+    {
+      "name": "HAVBÄCK / ORRSJÖN",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx",
+      "expectedFolder": "Bathroom/Warren/HAVBÄCK - ORRSJÖN"
+    },
+    {
+      "name": "TÄNNFORSEN / ORRSJÖN",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx",
+      "expectedFolder": "Bathroom/Warren/TÄNNFORSEN - ORRSJÖN"
+    },
+    {
+      "name": "ÄNGSJÖN / LERSJÖN",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx",
+      "expectedFolder": "Bathroom/Warren/ÄNGSJÖN - LERSJÖN"
+    },
+    {
+      "name": "VESKEN",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx",
+      "expectedFolder": "Bathroom/Warren/VESKEN"
+    },
+    {
+      "name": "EKENABBEN",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx",
+      "expectedFolder": "Bathroom/Warren/EKENABBEN"
+    },
+    {
+      "name": "Clara Wardrobe Cabinet",
+      "sourceDocument": "Bed Room/Warren/06_24_BedroomMats.docx",
+      "expectedFolder": ""
+    },
+    {
+      "name": "ZARDOX OFFICE CHAIR",
+      "sourceDocument": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx",
+      "expectedFolder": ""
+    },
+    {
+      "name": "Bryson 3 Tier Rolling Card",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx",
+      "expectedFolder": ""
+    },
+    {
+      "name": "Magnus 5 Tier Adjustable Metal Rack",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx",
+      "expectedFolder": "Kitchen/Kurt/Magnus 5 Tier Adjustable Metal Rack"
+    },
+    {
+      "name": "Merrick 3 Door Kitchen Cabinet",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx",
+      "expectedFolder": ""
+    }
+  ],
   "importSummary": {
     "dryRun": false,
-    "updateImagesOnly": true,
-    "inserted": 0,
-    "updated": 43,
-    "matched": 43,
+    "updateImagesOnly": false,
+    "inserted": 60,
+    "updated": 0,
+    "matched": 0,
+    "skipped": 43,
     "failed": 0,
-    "imageLinks": 165,
+    "imageLinks": 200,
     "imageMode": "cloudinary",
-    "noImages": [],
+    "noImages": [
+      "HAVBÄCK / ORRSJÖN",
+      "TÄNNFORSEN / ORRSJÖN",
+      "ÄNGSJÖN / LERSJÖN",
+      "VESKEN",
+      "EKENABBEN",
+      "Clara Wardrobe Cabinet",
+      "ZARDOX OFFICE CHAIR",
+      "Bryson 3 Tier Rolling Card",
+      "Magnus 5 Tier Adjustable Metal Rack",
+      "Merrick 3 Door Kitchen Cabinet"
+    ],
     "missingMongoMatches": [],
     "errors": []
   },
   "materials": [
+    {
+      "name": "WIRE BATH RACK 1-TIER FB20011 W30D11H9.5",
+      "company": "Nitori",
+      "price": 299,
+      "description": "a sleek, stainless steel wire shower caddy or countertop organizer. It sits on small, capped feet and holds three uniform, square-shaped white plastic pump bottles of varying sizes alongside a dark translucent squeeze tube labeled for hair care. This minimalist setup offers a clean, organized solution for keeping bath, shower, or vanity essentials tidy.",
+      "category": "Bathroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Silver",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Shower Rack",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "W30 x D11 x H9.5cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Silver"
+        },
+        {
+          "key": "Type",
+          "value": "Shower Rack"
+        },
+        {
+          "key": "Size",
+          "value": "W30 x D11 x H9.5cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.nitori.com.ph/collections/shower-racks/products/wire-bath-rack-1-tier-fb20011-w30d11h9-5"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/06_25_BathroomMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_1.png, WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_2.png, WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_3.png, WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_4.png, WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_5.png, WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_6.png, WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_7.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411876/materials/imported/wire-bath-rack-1-tier-fb20011-w30d11h9-5/wire-bath-rack-1-tier-fb20011-w30d11h9-5-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411877/materials/imported/wire-bath-rack-1-tier-fb20011-w30d11h9-5/wire-bath-rack-1-tier-fb20011-w30d11h9-5-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411878/materials/imported/wire-bath-rack-1-tier-fb20011-w30d11h9-5/wire-bath-rack-1-tier-fb20011-w30d11h9-5-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411879/materials/imported/wire-bath-rack-1-tier-fb20011-w30d11h9-5/wire-bath-rack-1-tier-fb20011-w30d11h9-5-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411880/materials/imported/wire-bath-rack-1-tier-fb20011-w30d11h9-5/wire-bath-rack-1-tier-fb20011-w30d11h9-5-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411881/materials/imported/wire-bath-rack-1-tier-fb20011-w30d11h9-5/wire-bath-rack-1-tier-fb20011-w30d11h9-5-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411882/materials/imported/wire-bath-rack-1-tier-fb20011-w30d11h9-5/wire-bath-rack-1-tier-fb20011-w30d11h9-5-7.png"
+      ],
+      "localImageFiles": [
+        "WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_1.png",
+        "WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_2.png",
+        "WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_3.png",
+        "WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_4.png",
+        "WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_5.png",
+        "WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_6.png",
+        "WIRE BATH RACK 1-TIER FB20011 W30D11H9.5_7.png"
+      ],
+      "productFolder": "Bathroom/Warren/WIRE BATH RACK 1-TIER FB20011 W30D11H9.5",
+      "sourceDocument": "Bathroom/Warren/06_25_BathroomMats.docx"
+    },
+    {
+      "name": "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61",
+      "company": "Nitori",
+      "price": 1199,
+      "description": "a white, three-tier wire corner shelf designed for bathroom or shower organization. The triangular caddy is placed in a corner and holds various toiletries, including a soap dish on top, a white pump dispenser and squeeze tube on the middle shelf, and two translucent gray pump bottles on the bottom shelf. Additionally, a wooden long-handled bath brush and a smaller facial brush hang from the sides, creating an efficient and tidy storage solution.",
+      "category": "Bathroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Shower Rack",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "W27.7 x D20 x H61cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "White"
+        },
+        {
+          "key": "Type",
+          "value": "Shower Rack"
+        },
+        {
+          "key": "Size",
+          "value": "W27.7 x D20 x H61cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.nitori.com.ph/products/wire-bath-rack-3tier-corner-piatto-2-w27-7d20h61?pr_prod_strat=e5_desc&pr_rec_id=bb66339ba&pr_rec_pid=8675175301332&pr_ref_pid=8156373090516&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/06_25_BathroomMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_1.png, WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_10.png, WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_11.png, WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_2.png, WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_3.png, WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_4.png, WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_5.png, WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_6.png, WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_7.png, WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_8.png, WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_9.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411885/materials/imported/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411886/materials/imported/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61-10.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411887/materials/imported/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61-11.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411888/materials/imported/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411889/materials/imported/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411889/materials/imported/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411890/materials/imported/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411892/materials/imported/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411893/materials/imported/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61-7.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411893/materials/imported/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61-8.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411894/materials/imported/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61/wire-bath-rack-3-tier-corner-piatto-2-w27-7xd20xh61-9.png"
+      ],
+      "localImageFiles": [
+        "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_1.png",
+        "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_10.png",
+        "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_11.png",
+        "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_2.png",
+        "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_3.png",
+        "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_4.png",
+        "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_5.png",
+        "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_6.png",
+        "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_7.png",
+        "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_8.png",
+        "WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61_9.png"
+      ],
+      "productFolder": "Bathroom/Warren/WIRE BATH RACK 3-TIER CORNER PIATTO-2 W27.7XD20XH61",
+      "sourceDocument": "Bathroom/Warren/06_25_BathroomMats.docx"
+    },
+    {
+      "name": "SOFT KAITEKI BATH MAT 29X39 UM01",
+      "company": "Nitori",
+      "price": 539,
+      "description": "a white, three-tier wire corner shelf designed for bathroom or shower organization. The triangular caddy is placed in a corner and holds various toiletries, including a soap dish on top, a white pump dispenser and squeeze tube on the middle shelf, and two translucent gray pump bottles on the bottom shelf. Additionally, a wooden long-handled bath brush and a smaller facial brush hang from the sides, creating an efficient and tidy storage solution.",
+      "category": "Bathroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Pale Blue",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Shower Mat",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "W29 x D39 x H0.5cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Pale Blue"
+        },
+        {
+          "key": "Type",
+          "value": "Shower Mat"
+        },
+        {
+          "key": "Size",
+          "value": "W29 x D39 x H0.5cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.nitori.com.ph/products/soft-kaiteki-bathmat-29x39-um01?pr_prod_strat=jac&pr_rec_id=6aa473249&pr_rec_pid=8684700926164&pr_ref_pid=8675175301332&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/06_25_BathroomMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "SOFT KAITEKI BATH MAT 29X39 UM01_1.png, SOFT KAITEKI BATH MAT 29X39 UM01_2.png, SOFT KAITEKI BATH MAT 29X39 UM01_3.png, SOFT KAITEKI BATH MAT 29X39 UM01_4.png, SOFT KAITEKI BATH MAT 29X39 UM01_5.png, SOFT KAITEKI BATH MAT 29X39 UM01_6.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411897/materials/imported/soft-kaiteki-bath-mat-29x39-um01/soft-kaiteki-bath-mat-29x39-um01-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411898/materials/imported/soft-kaiteki-bath-mat-29x39-um01/soft-kaiteki-bath-mat-29x39-um01-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411900/materials/imported/soft-kaiteki-bath-mat-29x39-um01/soft-kaiteki-bath-mat-29x39-um01-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411902/materials/imported/soft-kaiteki-bath-mat-29x39-um01/soft-kaiteki-bath-mat-29x39-um01-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411904/materials/imported/soft-kaiteki-bath-mat-29x39-um01/soft-kaiteki-bath-mat-29x39-um01-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411905/materials/imported/soft-kaiteki-bath-mat-29x39-um01/soft-kaiteki-bath-mat-29x39-um01-6.png"
+      ],
+      "localImageFiles": [
+        "SOFT KAITEKI BATH MAT 29X39 UM01_1.png",
+        "SOFT KAITEKI BATH MAT 29X39 UM01_2.png",
+        "SOFT KAITEKI BATH MAT 29X39 UM01_3.png",
+        "SOFT KAITEKI BATH MAT 29X39 UM01_4.png",
+        "SOFT KAITEKI BATH MAT 29X39 UM01_5.png",
+        "SOFT KAITEKI BATH MAT 29X39 UM01_6.png"
+      ],
+      "productFolder": "Bathroom/Warren/SOFT KAITEKI BATH MAT 29X39 UM01",
+      "sourceDocument": "Bathroom/Warren/06_25_BathroomMats.docx"
+    },
+    {
+      "name": "SOFT DIATOMITE KAITEKI BATHMAT 38X59 GY",
+      "company": "Nitori",
+      "price": 809,
+      "description": "a dark gray or charcoal-colored diatomaceous earth bathmat placed on a light tiled floor. A person's bare feet are shown walking across it, leaving behind distinct wet footprints that are quickly absorbing into the porous surface. This minimalist mat offers a highly absorbent, fast-drying, and slip-resistant alternative to traditional fabric bathmats.",
+      "category": "Bathroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Gray",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Shower Mat",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Width 38 x Depth 59 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Gray"
+        },
+        {
+          "key": "Type",
+          "value": "Shower Mat"
+        },
+        {
+          "key": "Size",
+          "value": "Width 38 x Depth 59 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.nitori.com.ph/collections/diatomite-bath-mats/products/soft-diatomite-kaiteki-bathmat-38x59-gy"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/06_25_BathroomMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_1.png, SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_2.png, SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_3.png, SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_4.png, SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_5.png, SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_6.png, SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_7.png, SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_8.png, SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_9.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411907/materials/imported/soft-diatomite-kaiteki-bathmat-38x59-gy/soft-diatomite-kaiteki-bath-mat-38x59-gy-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411908/materials/imported/soft-diatomite-kaiteki-bathmat-38x59-gy/soft-diatomite-kaiteki-bath-mat-38x59-gy-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411909/materials/imported/soft-diatomite-kaiteki-bathmat-38x59-gy/soft-diatomite-kaiteki-bath-mat-38x59-gy-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411910/materials/imported/soft-diatomite-kaiteki-bathmat-38x59-gy/soft-diatomite-kaiteki-bath-mat-38x59-gy-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411911/materials/imported/soft-diatomite-kaiteki-bathmat-38x59-gy/soft-diatomite-kaiteki-bath-mat-38x59-gy-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411912/materials/imported/soft-diatomite-kaiteki-bathmat-38x59-gy/soft-diatomite-kaiteki-bath-mat-38x59-gy-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411914/materials/imported/soft-diatomite-kaiteki-bathmat-38x59-gy/soft-diatomite-kaiteki-bath-mat-38x59-gy-7.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411915/materials/imported/soft-diatomite-kaiteki-bathmat-38x59-gy/soft-diatomite-kaiteki-bath-mat-38x59-gy-8.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411916/materials/imported/soft-diatomite-kaiteki-bathmat-38x59-gy/soft-diatomite-kaiteki-bath-mat-38x59-gy-9.png"
+      ],
+      "localImageFiles": [
+        "SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_1.png",
+        "SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_2.png",
+        "SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_3.png",
+        "SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_4.png",
+        "SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_5.png",
+        "SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_6.png",
+        "SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_7.png",
+        "SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_8.png",
+        "SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY_9.png"
+      ],
+      "productFolder": "Bathroom/Warren/SOFT DIATOMITE KAITEKI BATH MAT 38X59 GY",
+      "sourceDocument": "Bathroom/Warren/06_25_BathroomMats.docx"
+    },
+    {
+      "name": "SHOWER CURTAIN PLAIN 135X180",
+      "company": "Nitori",
+      "price": 379,
+      "description": "a plain white shower curtain partially drawn closed in a bathroom setting. It features a simple, clean, and solid design that offers privacy while keeping water contained. In the background, a free-standing bathtub with classic gold fixtures is partially visible, providing a bright and neutral accent to the space.",
+      "category": "Bathroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Shower Curtains",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "135 x 180 X 0.2cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "White"
+        },
+        {
+          "key": "Type",
+          "value": "Shower Curtains"
+        },
+        {
+          "key": "Size",
+          "value": "135 x 180 X 0.2cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.nitori.com.ph/collections/shower-curtains/products/shower-curtain-plain-135x180"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/06_25_BathroomMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "SHOWER CURTAIN PLAIN 135X180_1.png, SHOWER CURTAIN PLAIN 135X180_2.png, SHOWER CURTAIN PLAIN 135X180_3.png, SHOWER CURTAIN PLAIN 135X180_4.png, SHOWER CURTAIN PLAIN 135X180_5.png, SHOWER CURTAIN PLAIN 135X180_6.png, SHOWER CURTAIN PLAIN 135X180_7.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411917/materials/imported/shower-curtain-plain-135x180/shower-curtain-plain-135x180-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411918/materials/imported/shower-curtain-plain-135x180/shower-curtain-plain-135x180-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411919/materials/imported/shower-curtain-plain-135x180/shower-curtain-plain-135x180-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411920/materials/imported/shower-curtain-plain-135x180/shower-curtain-plain-135x180-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411921/materials/imported/shower-curtain-plain-135x180/shower-curtain-plain-135x180-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411922/materials/imported/shower-curtain-plain-135x180/shower-curtain-plain-135x180-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411923/materials/imported/shower-curtain-plain-135x180/shower-curtain-plain-135x180-7.png"
+      ],
+      "localImageFiles": [
+        "SHOWER CURTAIN PLAIN 135X180_1.png",
+        "SHOWER CURTAIN PLAIN 135X180_2.png",
+        "SHOWER CURTAIN PLAIN 135X180_3.png",
+        "SHOWER CURTAIN PLAIN 135X180_4.png",
+        "SHOWER CURTAIN PLAIN 135X180_5.png",
+        "SHOWER CURTAIN PLAIN 135X180_6.png",
+        "SHOWER CURTAIN PLAIN 135X180_7.png"
+      ],
+      "productFolder": "Bathroom/Warren/SHOWER CURTAIN PLAIN 135X180",
+      "sourceDocument": "Bathroom/Warren/06_25_BathroomMats.docx"
+    },
+    {
+      "name": "HAVBÄCK / ORRSJÖN",
+      "company": "IKEA",
+      "price": 21999,
+      "description": "HAVBÄCK bathroom furniture has a clean, straightforward design that is easy to personalize with knobs or handles. This combo offers closed storage and a deep wash-basin that prevents spilling on the floor.",
+      "category": "Bathroom Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Dark Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Beige and White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Bathroom Sink",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "62 x 49 x 72 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Dark Grey, Beige and White"
+        },
+        {
+          "key": "Type",
+          "value": "Bathroom Sink"
+        },
+        {
+          "key": "Size",
+          "value": "62 x 49 x 72 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.ikea.com/ph/en/p/havbaeck-orrsjoen-bathroom-vanity-with-sink-faucet-dark-gray-s49566596/#content"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/BathFurni_6_13_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        }
+      ],
+      "image": [],
+      "localImageFiles": [],
+      "productFolder": "Bathroom/Warren/HAVBÄCK - ORRSJÖN",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
+    },
+    {
+      "name": "TÄNNFORSEN / ORRSJÖN",
+      "company": "IKEA",
+      "price": 30999,
+      "description": "TÄNNFORSEN bathroom furniture expresses classic elegance with beveled edges that add a crafted look. This combo has 2 spacious drawers and room on the wash-basin for toothbrushes and soap.",
+      "category": "Bathroom Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Light Grey and White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Bathroom Sink",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "62 x 49 x 69 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Light Grey and White"
+        },
+        {
+          "key": "Type",
+          "value": "Bathroom Sink"
+        },
+        {
+          "key": "Size",
+          "value": "62 x 49 x 69 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.ikea.com/ph/en/p/taennforsen-orrsjoen-bathroom-vanity-with-sink-faucet-s39580121/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/BathFurni_6_13_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        }
+      ],
+      "image": [],
+      "localImageFiles": [],
+      "productFolder": "Bathroom/Warren/TÄNNFORSEN - ORRSJÖN",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
+    },
+    {
+      "name": "ÄNGSJÖN / LERSJÖN",
+      "company": "IKEA",
+      "price": 34999,
+      "description": "ÄNGSJÖN bathroom furniture has a modern appeal with minimal details. This wash-stand with countertop and a round countertop wash-basin creates a personal and stylish centerpiece in your bathroom.",
+      "category": "Bathroom Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Oak and White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Bathroom Sink",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "62 x 49 x 79 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Oak and White"
+        },
+        {
+          "key": "Type",
+          "value": "Bathroom Sink"
+        },
+        {
+          "key": "Size",
+          "value": "62 x 49 x 79 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.ikea.com/ph/en/p/aengsjoen-lersjoen-bathroom-vanity-with-sink-faucet-s79571582/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/BathFurni_6_13_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        }
+      ],
+      "image": [],
+      "localImageFiles": [],
+      "productFolder": "Bathroom/Warren/ÄNGSJÖN - LERSJÖN",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
+    },
+    {
+      "name": "VESKEN",
+      "company": "IKEA",
+      "price": 499,
+      "description": "It fits in the smallest of bathrooms, but there’s plenty of space on the shelves for all your toiletries from shampoo bottles to soap and small items.",
+      "category": "Bathroom Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black and White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Bathroom Shelf",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "37 x 23 x 101 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black and White"
+        },
+        {
+          "key": "Type",
+          "value": "Bathroom Shelf"
+        },
+        {
+          "key": "Size",
+          "value": "37 x 23 x 101 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.ikea.com/ph/en/p/vesken-shelf-unit-white-20307867/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/BathFurni_6_13_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        }
+      ],
+      "image": [],
+      "localImageFiles": [],
+      "productFolder": "Bathroom/Warren/VESKEN",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
+    },
+    {
+      "name": "JONAXEL",
+      "company": "IKEA",
+      "price": 1250,
+      "description": "It can be difficult to keep things neat and tidy. JONAXEL storage system lets you utilize the spaces you have in smarter ways. You can build a combination that fits exactly your needs and use it almost anywhere, even in humid bathrooms and laundry rooms.",
+      "category": "Bathroom Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Bathroom Shelf",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "25 x 51 x 70 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "White"
+        },
+        {
+          "key": "Type",
+          "value": "Bathroom Shelf"
+        },
+        {
+          "key": "Size",
+          "value": "25 x 51 x 70 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.ikea.com/ph/en/p/jonaxel-shelf-unit-white-10431315/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/BathFurni_6_13_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "JONAXEL_White_1.png, JONAXEL_White_2.png, JONAXEL_White_3.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411928/materials/imported/jonaxel/jonaxel-white-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411929/materials/imported/jonaxel/jonaxel-white-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411931/materials/imported/jonaxel/jonaxel-white-3.png"
+      ],
+      "localImageFiles": [
+        "JONAXEL_White_1.png",
+        "JONAXEL_White_2.png",
+        "JONAXEL_White_3.png"
+      ],
+      "productFolder": "Bathroom/Warren/JONAXEL",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
+    },
+    {
+      "name": "EKENABBEN",
+      "company": "IKEA",
+      "price": 2999,
+      "description": "Flexible and easy-to-place. EKENABBEN shelving unit has a simple design with open storage that helps you keep track of your things. Or you can customize it with boxes that suit your storage needs.",
+      "category": "Bathroom Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Aspen/White and Aspen Blue",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Bathroom Shelf",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "70 x 34 x 86 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Aspen/White and Aspen Blue"
+        },
+        {
+          "key": "Type",
+          "value": "Bathroom Shelf"
+        },
+        {
+          "key": "Size",
+          "value": "70 x 34 x 86 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.ikea.com/ph/en/p/ekenabben-open-shelf-unit-aspen-white-90487817/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/BathFurni_6_13_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        }
+      ],
+      "image": [],
+      "localImageFiles": [],
+      "productFolder": "Bathroom/Warren/EKENABBEN",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
+    },
+    {
+      "name": "SNIGLAR",
+      "company": "IKEA",
+      "price": 2999,
+      "description": "A secure place where you and your baby can get to know one another in peace and quiet. Comfortable height and storage close at hand so you can reach what you need and always keep one hand on the baby.",
+      "category": "Bathroom Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Birch/White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Changing Table",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "72 x 53cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Birch/White"
+        },
+        {
+          "key": "Type",
+          "value": "Changing Table"
+        },
+        {
+          "key": "Size",
+          "value": "72 x 53cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.ikea.com/ph/en/p/sniglar-changing-table-birch-white-00610614/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/BathFurni_6_13_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "SNIGLAR_BirchWhite_1.png, SNIGLAR_BirchWhite_2.png, SNIGLAR_BirchWhite_3.png, SNIGLAR_BirchWhite_4.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411932/materials/imported/sniglar/sniglar-birchwhite-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411933/materials/imported/sniglar/sniglar-birchwhite-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411934/materials/imported/sniglar/sniglar-birchwhite-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411936/materials/imported/sniglar/sniglar-birchwhite-4.png"
+      ],
+      "localImageFiles": [
+        "SNIGLAR_BirchWhite_1.png",
+        "SNIGLAR_BirchWhite_2.png",
+        "SNIGLAR_BirchWhite_3.png",
+        "SNIGLAR_BirchWhite_4.png"
+      ],
+      "productFolder": "Bathroom/Warren/SNIGLAR",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
+    },
+    {
+      "name": "SMÅSTAD",
+      "company": "IKEA",
+      "price": 13699,
+      "description": "A secure place where you and your baby can get to know one another in peace and quiet. Comfortable height and storage close at hand so you can reach what you need and always keep one hand on the baby.",
+      "category": "Bathroom Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Changing Table",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "90 x 79 x 100cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "White"
+        },
+        {
+          "key": "Type",
+          "value": "Changing Table"
+        },
+        {
+          "key": "Size",
+          "value": "90 x 79 x 100cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.ikea.com/ph/en/p/smastad-changing-table-white-white-with-3-drawers-s79582868/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/BathFurni_6_13_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "SMÅSTAD_White_1.png, SMÅSTAD_White_2.png, SMÅSTAD_White_3.png, SMÅSTAD_White_4.png, SMÅSTAD_White_5.png, SMÅSTAD_White_6.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411937/materials/imported/sm-stad/sm-stad-white-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411938/materials/imported/sm-stad/sm-stad-white-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411939/materials/imported/sm-stad/sm-stad-white-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411941/materials/imported/sm-stad/sm-stad-white-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411943/materials/imported/sm-stad/sm-stad-white-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411943/materials/imported/sm-stad/sm-stad-white-6.png"
+      ],
+      "localImageFiles": [
+        "SMÅSTAD_White_1.png",
+        "SMÅSTAD_White_2.png",
+        "SMÅSTAD_White_3.png",
+        "SMÅSTAD_White_4.png",
+        "SMÅSTAD_White_5.png",
+        "SMÅSTAD_White_6.png"
+      ],
+      "productFolder": "Bathroom/Warren/SMÅSTAD",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
+    },
+    {
+      "name": "ÄLSKVÄRD",
+      "company": "IKEA",
+      "price": 17999,
+      "description": "You can create a complete Scandinavian-styled room for a baby with the ÄLSKVÄRD series. Here you keep both diapers and clothes close by. And when the diaper stage is over it turns into a chest of drawers.",
+      "category": "Bathroom Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Birch/White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Changing Table",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "94 x 58 x 106cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Birch/White"
+        },
+        {
+          "key": "Type",
+          "value": "Changing Table"
+        },
+        {
+          "key": "Size",
+          "value": "94 x 58 x 106cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.ikea.com/ph/en/p/aelskvaerd-changing-table-chest-birch-white-60466680/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/BathFurni_6_13_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "ÄLSKVÄRD_BirchWhite_1.png, ÄLSKVÄRD_BirchWhite_2.png, ÄLSKVÄRD_BirchWhite_3.png, ÄLSKVÄRD_BirchWhite_4.png, ÄLSKVÄRD_BirchWhite_5.png, ÄLSKVÄRD_BirchWhite_6.png, ÄLSKVÄRD_BirchWhite_7.png, ÄLSKVÄRD_BirchWhite_8.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411946/materials/imported/lskv-rd/lskv-rd-birchwhite-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411948/materials/imported/lskv-rd/lskv-rd-birchwhite-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411950/materials/imported/lskv-rd/lskv-rd-birchwhite-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411951/materials/imported/lskv-rd/lskv-rd-birchwhite-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411952/materials/imported/lskv-rd/lskv-rd-birchwhite-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411954/materials/imported/lskv-rd/lskv-rd-birchwhite-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411955/materials/imported/lskv-rd/lskv-rd-birchwhite-7.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411956/materials/imported/lskv-rd/lskv-rd-birchwhite-8.png"
+      ],
+      "localImageFiles": [
+        "ÄLSKVÄRD_BirchWhite_1.png",
+        "ÄLSKVÄRD_BirchWhite_2.png",
+        "ÄLSKVÄRD_BirchWhite_3.png",
+        "ÄLSKVÄRD_BirchWhite_4.png",
+        "ÄLSKVÄRD_BirchWhite_5.png",
+        "ÄLSKVÄRD_BirchWhite_6.png",
+        "ÄLSKVÄRD_BirchWhite_7.png",
+        "ÄLSKVÄRD_BirchWhite_8.png"
+      ],
+      "productFolder": "Bathroom/Warren/ÄLSKVÄRD",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
+    },
+    {
+      "name": "BROGRUND",
+      "company": "IKEA",
+      "price": 7999,
+      "description": "The full spray function of the showerhead gives a wide and even coverage over the body, for a calming rainfall feeling. This hand shower with full spray function gives a wide and even coverage for a relaxing shower experience. You can easily adjust the height of the hand shower thanks to the flexible parking bracket on the rail. Easy to clean by rubbing the rubber nozzles on the showerheads. It’s easy to switch between the hand shower and showerhead using the diverter on the rail. The chrome-plated surface is a hard, durable and easy to clean. A washer integrated in the shower keeps the water flow just right while less water and energy are used.",
+      "category": "Bathroom Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Chrome",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Head/Hand Shower",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "20 x 56 x 88cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Chrome"
+        },
+        {
+          "key": "Type",
+          "value": "Head/Hand Shower"
+        },
+        {
+          "key": "Size",
+          "value": "20 x 56 x 88cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.ikea.com/ph/en/p/brogrund-head-hand-shower-kit-with-diverter-chrome-plated-30624662/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bathroom/Warren/BathFurni_6_13_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bathroom/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "BROGRUND_1.png, BROGRUND_2.png, BROGRUND_3.png, BROGRUND_5.png, BROGRUND_6.png, BROGRUND_7.png, BROGRUND_8.png, BROGRUND_9.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411957/materials/imported/brogrund/brogrund-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411959/materials/imported/brogrund/brogrund-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411960/materials/imported/brogrund/brogrund-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411961/materials/imported/brogrund/brogrund-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411962/materials/imported/brogrund/brogrund-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411963/materials/imported/brogrund/brogrund-7.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411964/materials/imported/brogrund/brogrund-8.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411965/materials/imported/brogrund/brogrund-9.png"
+      ],
+      "localImageFiles": [
+        "BROGRUND_1.png",
+        "BROGRUND_2.png",
+        "BROGRUND_3.png",
+        "BROGRUND_5.png",
+        "BROGRUND_6.png",
+        "BROGRUND_7.png",
+        "BROGRUND_8.png",
+        "BROGRUND_9.png"
+      ],
+      "productFolder": "Bathroom/Warren/BROGRUND",
+      "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
+    },
+    {
+      "name": "Polette Queen Bedframe",
+      "company": "AbensonHome",
+      "price": 18295,
+      "description": "Actual color of product may vary slightly from what appears online. IMPORTANT: Before placing your order, please refer to the product dimensions to fit in your intended area. ASSEMBLY SERVICE REMINDERS Item assembly will be scheduled separately from item shipping. The assembly of multiple items with more than three (3) units will be scheduled based on available calendar dates. For out of assembly serviceable areas, certain charges may apply and for further coordination. Please contact our abenson.com Team at 8811-8811 or email us at shop@abenson.com Unserviceable Areas: Cebu/Calapan/Davao/Bohol/Bacolod Gensan/Iloilo/Albay/Camarines/Ilocos/Isabela/CDO.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Honey Oak",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Queen Bed",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "216 x 160 x 113 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Honey Oak"
+        },
+        {
+          "key": "Type",
+          "value": "Queen Bed"
+        },
+        {
+          "key": "Size",
+          "value": "216 x 160 x 113 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.abenson.com/abensonhome-polette-queen-bedframe-light-house-grey.html"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/06_24_BedroomMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Polette Queen Bedframe_1.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411967/materials/imported/polette-queen-bedframe/polette-queen-bedframe-1.png"
+      ],
+      "localImageFiles": [
+        "Polette Queen Bedframe_1.png"
+      ],
+      "productFolder": "Bed Room/Warren/Polette Queen Bedframe",
+      "sourceDocument": "Bed Room/Warren/06_24_BedroomMats.docx"
+    },
+    {
+      "name": "Galen Queen Bedframe",
+      "company": "AbensonHome",
+      "price": 26995,
+      "description": "This is wooden bed frame with walnut finish featuring a slatted headboard and sturdy legs. It has a minimalist design with evenly spaced wooden slats for mattress support, offering a modern yet classic look suitable for various bedroom styles.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Dark Brown",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Queen Bed Frame",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "201 x 100 x 158 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Dark Brown"
+        },
+        {
+          "key": "Type",
+          "value": "Queen Bed Frame"
+        },
+        {
+          "key": "Size",
+          "value": "201 x 100 x 158 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://home.abenson.com/abensonhome-galen-queen-bedframe-putty-grey.html"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/06_24_BedroomMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Galen Queen Bedframe_1.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411968/materials/imported/galen-queen-bedframe/galen-queen-bedframe-1.png"
+      ],
+      "localImageFiles": [
+        "Galen Queen Bedframe_1.png"
+      ],
+      "productFolder": "Bed Room/Warren/Galen Queen Bedframe",
+      "sourceDocument": "Bed Room/Warren/06_24_BedroomMats.docx"
+    },
+    {
+      "name": "Home Suite Chandana 54 Double Bedframe",
+      "company": "AbensonHome",
+      "price": 13839,
+      "description": "a modern bed frame featuring a dark wood or metal structure. Both the headboard and footboard are accented with rectangular, tufted faux-leather or vinyl panels in black, featuring subtle button detailing. The frame utilizes a sturdy grid-style metal slat system to support a mattress without needing a box spring.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Queen Bed Frame",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "190 x 84 x 137 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black"
+        },
+        {
+          "key": "Type",
+          "value": "Queen Bed Frame"
+        },
+        {
+          "key": "Size",
+          "value": "190 x 84 x 137 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://home.abenson.com/home-suite-chandana-54-double-bedframe-brown.html"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/06_24_BedroomMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Home Suite Chandana 54 Double Bedframe_1.png, Home Suite Chandana 54 Double Bedframe_2.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411969/materials/imported/home-suite-chandana-54-double-bedframe/home-suite-chandana-54-double-bedframe-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411970/materials/imported/home-suite-chandana-54-double-bedframe/home-suite-chandana-54-double-bedframe-2.png"
+      ],
+      "localImageFiles": [
+        "Home Suite Chandana 54 Double Bedframe_1.png",
+        "Home Suite Chandana 54 Double Bedframe_2.png"
+      ],
+      "productFolder": "Bed Room/Warren/Home Suite Chandana 54 Double Bedframe",
+      "sourceDocument": "Bed Room/Warren/06_24_BedroomMats.docx"
+    },
+    {
+      "name": "Clara Wardrobe Cabinet",
+      "company": "AbensonHome",
+      "price": 7195,
+      "description": "a freestanding, three-door wardrobe cabinet finished in a dark, textured wood grain finish (such as espresso or wenge). It features a clean-lined, modern design with three vertical doors, each equipped with a sleek, metallic silver bar handle for easy opening. This storage unit offers a practical and minimalist solution for organizing clothes or linen.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Wardrobe",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "90 x 180 x 40 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black"
+        },
+        {
+          "key": "Type",
+          "value": "Wardrobe"
+        },
+        {
+          "key": "Size",
+          "value": "90 x 180 x 40 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://home.abenson.com/abensonhome-clara-3-door-wardrobe-cabinet-wenge.html"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/06_24_BedroomMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        }
+      ],
+      "image": [],
+      "localImageFiles": [],
+      "productFolder": "",
+      "sourceDocument": "Bed Room/Warren/06_24_BedroomMats.docx"
+    },
+    {
+      "name": "Koncept Furniture Keith Low Cabinet",
+      "company": "AbensonHome",
+      "price": 18995,
+      "description": "a low-profile, minimalist sideboard or storage cabinet finished in a clean, light gray or off-white tone. It features a modern, handle-less look achieved through four integrated panel doors with subtle, dark recessed lip pulls along the top edge for a seamless aesthetic. This sleek unit offers a contemporary storage solution ideal for dining rooms, living areas, or entryways.",
+      "category": "Bedroom",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Wardrobe",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "90 x 180 x 40 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black"
+        },
+        {
+          "key": "Type",
+          "value": "Wardrobe"
+        },
+        {
+          "key": "Size",
+          "value": "90 x 180 x 40 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://home.abenson.com/koncept-furniture-keith-40x160x75cm-snow-low-cabinet-white-black.html"
+        },
+        {
+          "key": "Source Document",
+          "value": "Bed Room/Warren/06_24_BedroomMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Bed Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Koncept Furniture Keith Low Cabinet_1.png, Koncept Furniture Keith Low Cabinet_2.png, Koncept Furniture Keith Low Cabinet_3.png, Koncept Furniture Keith Low Cabinet_4.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411971/materials/imported/koncept-furniture-keith-low-cabinet/koncept-furniture-keith-low-cabinet-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411972/materials/imported/koncept-furniture-keith-low-cabinet/koncept-furniture-keith-low-cabinet-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411973/materials/imported/koncept-furniture-keith-low-cabinet/koncept-furniture-keith-low-cabinet-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411974/materials/imported/koncept-furniture-keith-low-cabinet/koncept-furniture-keith-low-cabinet-4.png"
+      ],
+      "localImageFiles": [
+        "Koncept Furniture Keith Low Cabinet_1.png",
+        "Koncept Furniture Keith Low Cabinet_2.png",
+        "Koncept Furniture Keith Low Cabinet_3.png",
+        "Koncept Furniture Keith Low Cabinet_4.png"
+      ],
+      "productFolder": "Bed Room/Warren/Koncept Furniture Keith Low Cabinet",
+      "sourceDocument": "Bed Room/Warren/06_24_BedroomMats.docx"
+    },
     {
       "name": "LAUREN QUEEN BED",
       "company": "BLIMS Fine Furniture",
@@ -73,11 +1479,7 @@
           "value": "LAUREN QUEEN BED_1.png, LAUREN QUEEN BED_2.png, LAUREN QUEEN BED_3.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565826/materials/imported/lauren-queen-bed/lauren-queen-bed-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565828/materials/imported/lauren-queen-bed/lauren-queen-bed-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565830/materials/imported/lauren-queen-bed/lauren-queen-bed-3.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "LAUREN QUEEN BED_1.png",
         "LAUREN QUEEN BED_2.png",
@@ -140,12 +1542,7 @@
           "value": "LYRA KING BED_1.png, LYRA KING BED_2.png, LYRA KING BED_3.png, LYRA KING BED_4.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565833/materials/imported/lyra-king-bed/lyra-king-bed-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565834/materials/imported/lyra-king-bed/lyra-king-bed-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565837/materials/imported/lyra-king-bed/lyra-king-bed-3.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565839/materials/imported/lyra-king-bed/lyra-king-bed-4.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "LYRA KING BED_1.png",
         "LYRA KING BED_2.png",
@@ -209,12 +1606,7 @@
           "value": "GUNNAR DOUBLE BED_1.png, GUNNAR DOUBLE BED_2.png, GUNNAR DOUBLE BED_3.png, GUNNAR DOUBLE BED_4.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565840/materials/imported/gunnar-double-bed/gunnar-double-bed-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565841/materials/imported/gunnar-double-bed/gunnar-double-bed-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565842/materials/imported/gunnar-double-bed/gunnar-double-bed-3.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565844/materials/imported/gunnar-double-bed/gunnar-double-bed-4.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "GUNNAR DOUBLE BED_1.png",
         "GUNNAR DOUBLE BED_2.png",
@@ -288,10 +1680,7 @@
           "value": "DALLAS II QUEEN BED_1.png, DALLAS II QUEEN BED_2.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565845/materials/imported/dallas-ii-queen-bed/dallas-ii-queen-bed-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565847/materials/imported/dallas-ii-queen-bed/dallas-ii-queen-bed-2.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "DALLAS II QUEEN BED_1.png",
         "DALLAS II QUEEN BED_2.png"
@@ -358,11 +1747,7 @@
           "value": "HAVANA KING BED_1.png, HAVANA KING BED_2.png, HAVANA KING BED_3.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565848/materials/imported/havana-king-bed/havana-king-bed-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565848/materials/imported/havana-king-bed/havana-king-bed-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565849/materials/imported/havana-king-bed/havana-king-bed-3.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "HAVANA KING BED_1.png",
         "HAVANA KING BED_2.png",
@@ -435,13 +1820,7 @@
           "value": "OSKAR II DOUBLE BED_1.png, OSKAR II DOUBLE BED_2.png, OSKAR II DOUBLE BED_3.png, OSKAR II DOUBLE BED_4.png, OSKAR II DOUBLE BED_5.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565850/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565851/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565852/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-3.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565853/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-4.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565854/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-5.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "OSKAR II DOUBLE BED_1.png",
         "OSKAR II DOUBLE BED_2.png",
@@ -506,11 +1885,7 @@
           "value": "LAUREN DRESSER_1.png, LAUREN DRESSER_2.png, LAUREN DRESSER_3.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565855/materials/imported/lauren-dresser/lauren-dresser-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565856/materials/imported/lauren-dresser/lauren-dresser-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565858/materials/imported/lauren-dresser/lauren-dresser-3.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "LAUREN DRESSER_1.png",
         "LAUREN DRESSER_2.png",
@@ -578,16 +1953,7 @@
           "value": "SEOUL CHEST OF DRAWERS_GREY_1.png, SEOUL CHEST OF DRAWERS_GREY_2.png, SEOUL CHEST OF DRAWERS_GREY_3.png, SEOUL CHEST OF DRAWERS_GREY_4.png, SEOUL CHEST OF DRAWERS_GREY_5.png, SEOUL CHEST OF DRAWERS_GREY_6.png, SEOUL CHEST OF DRAWERS_MINT GREEN_1.png, SEOUL CHEST OF DRAWERS_MINT GREEN_2.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565859/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565859/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565860/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-3.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565861/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-4.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565862/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-5.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565863/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-6.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565863/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-mint-green-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565865/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-mint-green-2.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "SEOUL CHEST OF DRAWERS_GREY_1.png",
         "SEOUL CHEST OF DRAWERS_GREY_2.png",
@@ -665,17 +2031,7 @@
           "value": "ANDANTE SINGLE BED_ALDEARLY_2.png, ANDANTE SINGLE BED_ALDERLY CHARCOAL_1.png, ANDANTE SINGLE BED_MARBELLA DARK GREY_1.png, ANDANTE SINGLE BED_PENDLE OATMEAL_1.png, ANDANTE SINGLE BED_PENDLE OATMEAL_2.png, ANDANTE SINGLE BED_PENDLE OATMEAL_3.png, ANDANTE SINGLE BED_PENDLE OATMEAL_5.png, ANDANTE SINGLE BED_PENDLE OATMEAL_6.png, ANDANTE SINGLE BED_PENDLE_OATMEAL_4.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565866/materials/imported/andante-single-bed/andante-single-bed-aldearly-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565866/materials/imported/andante-single-bed/andante-single-bed-alderly-charcoal-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565867/materials/imported/andante-single-bed/andante-single-bed-marbella-dark-grey-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565868/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565869/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565870/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-3.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565870/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-5.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565872/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-6.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565872/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-4.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "ANDANTE SINGLE BED_ALDEARLY_2.png",
         "ANDANTE SINGLE BED_ALDERLY CHARCOAL_1.png",
@@ -754,14 +2110,7 @@
           "value": "OLI II SINGLE BED_1.png, OLI II SINGLE BED_2.png, OLI II SINGLE BED_3.png, OLI II SINGLE BED_4.png, OLI II SINGLE BED_5.png, OLI II SINGLE BED_6.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565873/materials/imported/oli-ii-single-bed/oli-ii-single-bed-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565876/materials/imported/oli-ii-single-bed/oli-ii-single-bed-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565876/materials/imported/oli-ii-single-bed/oli-ii-single-bed-3.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565877/materials/imported/oli-ii-single-bed/oli-ii-single-bed-4.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565878/materials/imported/oli-ii-single-bed/oli-ii-single-bed-5.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565879/materials/imported/oli-ii-single-bed/oli-ii-single-bed-6.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "OLI II SINGLE BED_1.png",
         "OLI II SINGLE BED_2.png",
@@ -805,12 +2154,7 @@
           "value": "IMG_4723.jpg, IMG_7851.jpg, IMG_7852.jpg, Studio-Project-1-21.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565880/materials/imported/aurora-rattan-chair/img-4723.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565881/materials/imported/aurora-rattan-chair/img-7851.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565882/materials/imported/aurora-rattan-chair/img-7852.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565884/materials/imported/aurora-rattan-chair/studio-project-1-21.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "IMG_4723.jpg",
         "IMG_7851.jpg",
@@ -856,12 +2200,7 @@
           "value": "Butter-Callstone-Gray-1.jpg, Butter-Callstone-Gray-2.jpg, Butter-Callstone-Gray-4.jpg, Studio-Project-12-4.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565885/materials/imported/butter-callstone-wood-chair-natural-gray-fabric/butter-callstone-gray-1.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565885/materials/imported/butter-callstone-wood-chair-natural-gray-fabric/butter-callstone-gray-2.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565886/materials/imported/butter-callstone-wood-chair-natural-gray-fabric/butter-callstone-gray-4.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565888/materials/imported/butter-callstone-wood-chair-natural-gray-fabric/studio-project-12-4.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "Butter-Callstone-Gray-1.jpg",
         "Butter-Callstone-Gray-2.jpg",
@@ -903,11 +2242,7 @@
           "value": "Butter-Cruise-Wood-1.jpg, Butter-Cruise-Wood-2.jpg, Gemini_Generated_Image_cfqz33cfqz33cfqz-1.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565889/materials/imported/butter-cruise-wood-chair-wood/butter-cruise-wood-1.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565889/materials/imported/butter-cruise-wood-chair-wood/butter-cruise-wood-2.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565891/materials/imported/butter-cruise-wood-chair-wood/gemini-generated-image-cfqz33cfqz33cfqz-1.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "Butter-Cruise-Wood-1.jpg",
         "Butter-Cruise-Wood-2.jpg",
@@ -952,12 +2287,7 @@
           "value": "Butter-Cuurv-Cream-Wood2Main.jpg, Butter-donut-1.jpg, Butter-donut-4.jpg, Studio-Project-9-6.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565892/materials/imported/butter-donut-chair-natural-white-boucle/butter-cuurv-cream-wood2main.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565893/materials/imported/butter-donut-chair-natural-white-boucle/butter-donut-1.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565893/materials/imported/butter-donut-chair-natural-white-boucle/butter-donut-4.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565895/materials/imported/butter-donut-chair-natural-white-boucle/studio-project-9-6.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "Butter-Cuurv-Cream-Wood2Main.jpg",
         "Butter-donut-1.jpg",
@@ -1003,12 +2333,7 @@
           "value": "Butter-curvv-black-1.jpg, Butter-curvv-black-2.jpg, Butter-curvv-black-3.jpg, BUTTER-OLAN-CHAIR-BLACK-2-scaled.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565896/materials/imported/butter-olan-chair-black/butter-curvv-black-1.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565897/materials/imported/butter-olan-chair-black/butter-curvv-black-2.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565898/materials/imported/butter-olan-chair-black/butter-curvv-black-3.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565899/materials/imported/butter-olan-chair-black/butter-olan-chair-black-2-scaled.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "Butter-curvv-black-1.jpg",
         "Butter-curvv-black-2.jpg",
@@ -1050,10 +2375,7 @@
           "value": "Alleso-big.jpg, Studio-Project-15-3.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565900/materials/imported/alleso-dining-table-200cm/alleso-big.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565902/materials/imported/alleso-dining-table-200cm/studio-project-15-3.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "Alleso-big.jpg",
         "Studio-Project-15-3.png"
@@ -1098,12 +2420,7 @@
           "value": "Edited-2-min.jpg, Edited-min.jpg, FIT-EDITED-2-min.jpg, Studio-Project-1-21.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565903/materials/imported/aurora-dining-table-180-cm-natural/edited-2-min.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565904/materials/imported/aurora-dining-table-180-cm-natural/edited-min.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565905/materials/imported/aurora-dining-table-180-cm-natural/fit-edited-2-min.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565906/materials/imported/aurora-dining-table-180-cm-natural/studio-project-1-21.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "Edited-2-min.jpg",
         "Edited-min.jpg",
@@ -1150,12 +2467,7 @@
           "value": "Danee-Dining-Final.jpg, LS357R1-A-dining-set-4.jpg, LS357R1-AT¦-¦¦¦¦-LS628S3-A¦-5.jpg, LS357R1-AT¦-3D-o¦v-¦¦¦¦-LS628S3-A¦-LS068S5-A¦-¦-2.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565907/materials/imported/danee-dining-set/danee-dining-final.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565908/materials/imported/danee-dining-set/ls357r1-a-dining-set-4.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565909/materials/imported/danee-dining-set/ls357r1-at-ls628s3-a-5.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565910/materials/imported/danee-dining-set/ls357r1-at-3d-o-v-ls628s3-a-ls068s5-a-2.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "Danee-Dining-Final.jpg",
         "LS357R1-A-dining-set-4.jpg",
@@ -1202,16 +2514,413 @@
           "value": "FJALLMAN-TABLE-120CM-2-2.jpg, FJALLMAN-TABLE-120CM-3-1.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565912/materials/imported/fjallman-table-120-cm/fjallman-table-120cm-2-2.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565913/materials/imported/fjallman-table-120-cm/fjallman-table-120cm-3-1.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "FJALLMAN-TABLE-120CM-2-2.jpg",
         "FJALLMAN-TABLE-120CM-3-1.jpg"
       ],
       "productFolder": "Dining Area/Kurt_/Tables/Fjallman Table 120 cm",
       "sourceDocument": "Dining Area/Kurt_/Tables/Fjallman Table 120 cm/Fjallman Table 120 cm.docx"
+    },
+    {
+      "name": "Dermott 6 Seater Dining Set",
+      "company": "Mandauefoam Home Store",
+      "price": 23210,
+      "description": "We understand that every office has unique needs. That’s why the Aop-01 is built with flexibility and user comfort at its core. Whether you need a spacious main work area for a computer and documents, or a dedicated side table for meetings, this desk adapts to you.",
+      "category": "Dining Room",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "White + Walnut",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Table & Chair",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Table: W140cm D80cm H75.8cm",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Chair: W43cm D78.5cm H78.5cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "White + Walnut"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Table & Chair"
+        },
+        {
+          "key": "Size",
+          "value": "Table: W140cm D80cm H75.8cm, Chair: W43cm D78.5cm H78.5cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/dermott-6-seater-dining-set"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/06_25_DiningMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Dermott 6 Seater Dining Set_1.png, Dermott 6 Seater Dining Set_2.png, Dermott 6 Seater Dining Set_3.png, Dermott 6 Seater Dining Set_4.png, Dermott 6 Seater Dining Set_5.png, Dermott 6 Seater Dining Set_6.png, Dermott 6 Seater Dining Set_7.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411976/materials/imported/dermott-6-seater-dining-set/dermott-6-seater-dining-set-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411977/materials/imported/dermott-6-seater-dining-set/dermott-6-seater-dining-set-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411978/materials/imported/dermott-6-seater-dining-set/dermott-6-seater-dining-set-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411979/materials/imported/dermott-6-seater-dining-set/dermott-6-seater-dining-set-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411980/materials/imported/dermott-6-seater-dining-set/dermott-6-seater-dining-set-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411981/materials/imported/dermott-6-seater-dining-set/dermott-6-seater-dining-set-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411982/materials/imported/dermott-6-seater-dining-set/dermott-6-seater-dining-set-7.png"
+      ],
+      "localImageFiles": [
+        "Dermott 6 Seater Dining Set_1.png",
+        "Dermott 6 Seater Dining Set_2.png",
+        "Dermott 6 Seater Dining Set_3.png",
+        "Dermott 6 Seater Dining Set_4.png",
+        "Dermott 6 Seater Dining Set_5.png",
+        "Dermott 6 Seater Dining Set_6.png",
+        "Dermott 6 Seater Dining Set_7.png"
+      ],
+      "productFolder": "Dining Area/Warren/Dermott 6 Seater Dining Set",
+      "sourceDocument": "Dining Area/Warren/06_25_DiningMats.docx"
+    },
+    {
+      "name": "Baltimore 8 Seater Dining Set",
+      "company": "Mandauefoam Home Store",
+      "price": 57700,
+      "description": "This 8-seater dining set offers a contemporary and comfortable solution for any modern dining space.Subtly rounded edges create a softer look and help reduce sharp corners for added safety. A cement-look veneer gives the tabletop a sleek, industrial-inspired appearance.Strong metal legs with a central crossbar provide excellent stability and overall durability.The chair is fully upholstered in textured fabric, offering a comfortable and inviting seat.The chair features an ergonomic organic shape that offers lumbar support and a modern silhouette.",
+      "category": "Dining Room",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Cement + Black",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Table & Chair",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Table: W220cm D100cm H76cm",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Chair: W53cm D59cm H87cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Cement + Black"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Table & Chair"
+        },
+        {
+          "key": "Size",
+          "value": "Table: W220cm D100cm H76cm, Chair: W53cm D59cm H87cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/baltimore-8-seater-dining-set"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/06_25_DiningMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Baltimore 8 Seater Dining Set_1.png, Baltimore 8 Seater Dining Set_2.png, Baltimore 8 Seater Dining Set_3.png, Baltimore 8 Seater Dining Set_4.png, Baltimore 8 Seater Dining Set_5.png, Baltimore 8 Seater Dining Set_6.png, Baltimore 8 Seater Dining Set_7.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411983/materials/imported/baltimore-8-seater-dining-set/baltimore-8-seater-dining-set-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411984/materials/imported/baltimore-8-seater-dining-set/baltimore-8-seater-dining-set-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411986/materials/imported/baltimore-8-seater-dining-set/baltimore-8-seater-dining-set-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411987/materials/imported/baltimore-8-seater-dining-set/baltimore-8-seater-dining-set-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411989/materials/imported/baltimore-8-seater-dining-set/baltimore-8-seater-dining-set-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411990/materials/imported/baltimore-8-seater-dining-set/baltimore-8-seater-dining-set-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411990/materials/imported/baltimore-8-seater-dining-set/baltimore-8-seater-dining-set-7.png"
+      ],
+      "localImageFiles": [
+        "Baltimore 8 Seater Dining Set_1.png",
+        "Baltimore 8 Seater Dining Set_2.png",
+        "Baltimore 8 Seater Dining Set_3.png",
+        "Baltimore 8 Seater Dining Set_4.png",
+        "Baltimore 8 Seater Dining Set_5.png",
+        "Baltimore 8 Seater Dining Set_6.png",
+        "Baltimore 8 Seater Dining Set_7.png"
+      ],
+      "productFolder": "Dining Area/Warren/Baltimore 8 Seater Dining Set",
+      "sourceDocument": "Dining Area/Warren/06_25_DiningMats.docx"
+    },
+    {
+      "name": "Howard 4 Seater Dining Set",
+      "company": "Mandauefoam Home Store",
+      "price": 7000,
+      "description": "Available in 2 seater, 4 seater and 6 seater dining set.This dining set is designed for comfort and compact living.It features curved backrests that offer ergonomic comfort with a light, minimalist aesthetic.The subtly beveled tabletop edge adds comfort, safety, and a refined finishing detail.",
+      "category": "Dining Room",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Maple + Beige",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Table & Chair",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Table: W110cm D70cm H75cm",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Chair: W41cm D45.5cm H77.5cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Maple + Beige"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Table & Chair"
+        },
+        {
+          "key": "Size",
+          "value": "Table: W110cm D70cm H75cm, Chair: W41cm D45.5cm H77.5cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/howard-4-seater-dining-set"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/06_25_DiningMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Howard 4 Seater Dining Set_1.png, Howard 4 Seater Dining Set_2.png, Howard 4 Seater Dining Set_3.png, Howard 4 Seater Dining Set_4.png, Howard 4 Seater Dining Set_5.png, Howard 4 Seater Dining Set_6.png, Howard 4 Seater Dining Set_7.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411993/materials/imported/howard-4-seater-dining-set/howard-4-seater-dining-set-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411994/materials/imported/howard-4-seater-dining-set/howard-4-seater-dining-set-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411996/materials/imported/howard-4-seater-dining-set/howard-4-seater-dining-set-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411997/materials/imported/howard-4-seater-dining-set/howard-4-seater-dining-set-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411998/materials/imported/howard-4-seater-dining-set/howard-4-seater-dining-set-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782411999/materials/imported/howard-4-seater-dining-set/howard-4-seater-dining-set-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412000/materials/imported/howard-4-seater-dining-set/howard-4-seater-dining-set-7.png"
+      ],
+      "localImageFiles": [
+        "Howard 4 Seater Dining Set_1.png",
+        "Howard 4 Seater Dining Set_2.png",
+        "Howard 4 Seater Dining Set_3.png",
+        "Howard 4 Seater Dining Set_4.png",
+        "Howard 4 Seater Dining Set_5.png",
+        "Howard 4 Seater Dining Set_6.png",
+        "Howard 4 Seater Dining Set_7.png"
+      ],
+      "productFolder": "Dining Area/Warren/Howard 4 Seater Dining Set",
+      "sourceDocument": "Dining Area/Warren/06_25_DiningMats.docx"
+    },
+    {
+      "name": "Jensen Glass Top 6 Seater Dining Set",
+      "company": "Mandauefoam Home Store",
+      "price": 69350,
+      "description": "With its clear tempered glass tabletop held firmly by walnut rubberwood inverted V legs, the 6-seater dining set display elegance.Glass tabletops, such as this dining set, are a stylish and practical option for a modern cozy dining atmosphere because they are multipurpose, simple to clean, and provide an illusion of more space.With their rounded backrests and luxurious fabric, the matching rubberwood chairs have a distinctly modern style that combines comfort and style to create a chic and welcoming dining area.",
+      "category": "Dining Room",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Walnut + Beige",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Table & Chair",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Table: W180cm D90cm H75cm",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Chair: W41cm D45.5cm H77.5cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Walnut + Beige"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Table & Chair"
+        },
+        {
+          "key": "Size",
+          "value": "Table: W180cm D90cm H75cm, Chair: W41cm D45.5cm H77.5cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/jensen-glass-top-6-seater-dining-set"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/06_25_DiningMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Jensen Glass Top 6 Seater Dining Set_1.png, Jensen Glass Top 6 Seater Dining Set_2.png, Jensen Glass Top 6 Seater Dining Set_3.png, Jensen Glass Top 6 Seater Dining Set_4.png, Jensen Glass Top 6 Seater Dining Set_5.png, Jensen Glass Top 6 Seater Dining Set_6.png, Jensen Glass Top 6 Seater Dining Set_7.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412002/materials/imported/jensen-glass-top-6-seater-dining-set/jensen-glass-top-6-seater-dining-set-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412004/materials/imported/jensen-glass-top-6-seater-dining-set/jensen-glass-top-6-seater-dining-set-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412006/materials/imported/jensen-glass-top-6-seater-dining-set/jensen-glass-top-6-seater-dining-set-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412008/materials/imported/jensen-glass-top-6-seater-dining-set/jensen-glass-top-6-seater-dining-set-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412009/materials/imported/jensen-glass-top-6-seater-dining-set/jensen-glass-top-6-seater-dining-set-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412010/materials/imported/jensen-glass-top-6-seater-dining-set/jensen-glass-top-6-seater-dining-set-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412012/materials/imported/jensen-glass-top-6-seater-dining-set/jensen-glass-top-6-seater-dining-set-7.png"
+      ],
+      "localImageFiles": [
+        "Jensen Glass Top 6 Seater Dining Set_1.png",
+        "Jensen Glass Top 6 Seater Dining Set_2.png",
+        "Jensen Glass Top 6 Seater Dining Set_3.png",
+        "Jensen Glass Top 6 Seater Dining Set_4.png",
+        "Jensen Glass Top 6 Seater Dining Set_5.png",
+        "Jensen Glass Top 6 Seater Dining Set_6.png",
+        "Jensen Glass Top 6 Seater Dining Set_7.png"
+      ],
+      "productFolder": "Dining Area/Warren/Jensen Glass Top 6 Seater Dining Set",
+      "sourceDocument": "Dining Area/Warren/06_25_DiningMats.docx"
+    },
+    {
+      "name": "Nadine 6 Seater Dining Set",
+      "company": "Mandauefoam Home Store",
+      "price": 12005,
+      "description": "Available in two size, 4 Seater, and 6 Seater sets.This dining set for six has a rectangular glass tabletop with a marble paper print, which is supported by sleek metal legs, providing a fresh spin on the classic marble look.Six upholstered chairs with metal legs complete the set, and their modest design blends in seamlessly with the table.",
+      "category": "Dining Room",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black + Gray",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Dining Table & Chair",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Table: W140cm D80cm H75cm",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Chair: W41cm D39cm H96cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black + Gray"
+        },
+        {
+          "key": "Type",
+          "value": "Dining Table & Chair"
+        },
+        {
+          "key": "Size",
+          "value": "Table: W140cm D80cm H75cm, Chair: W41cm D39cm H96cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/nadine-6-seater-dining-set"
+        },
+        {
+          "key": "Source Document",
+          "value": "Dining Area/Warren/06_25_DiningMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Dining Area/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Nadine 6 Seater Dining Set_1.png, Nadine 6 Seater Dining Set_2.png, Nadine 6 Seater Dining Set_3.png, Nadine 6 Seater Dining Set_4.png, Nadine 6 Seater Dining Set_5.png, Nadine 6 Seater Dining Set_6.png, Nadine 6 Seater Dining Set_7.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412013/materials/imported/nadine-6-seater-dining-set/nadine-6-seater-dining-set-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412015/materials/imported/nadine-6-seater-dining-set/nadine-6-seater-dining-set-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412017/materials/imported/nadine-6-seater-dining-set/nadine-6-seater-dining-set-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412018/materials/imported/nadine-6-seater-dining-set/nadine-6-seater-dining-set-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412020/materials/imported/nadine-6-seater-dining-set/nadine-6-seater-dining-set-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412022/materials/imported/nadine-6-seater-dining-set/nadine-6-seater-dining-set-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412024/materials/imported/nadine-6-seater-dining-set/nadine-6-seater-dining-set-7.png"
+      ],
+      "localImageFiles": [
+        "Nadine 6 Seater Dining Set_1.png",
+        "Nadine 6 Seater Dining Set_2.png",
+        "Nadine 6 Seater Dining Set_3.png",
+        "Nadine 6 Seater Dining Set_4.png",
+        "Nadine 6 Seater Dining Set_5.png",
+        "Nadine 6 Seater Dining Set_6.png",
+        "Nadine 6 Seater Dining Set_7.png"
+      ],
+      "productFolder": "Dining Area/Warren/Nadine 6 Seater Dining Set",
+      "sourceDocument": "Dining Area/Warren/06_25_DiningMats.docx"
     },
     {
       "name": "RUNA DINING SET FOR 4",
@@ -1277,11 +2986,7 @@
           "value": "RUNA DINING SET FOR 4_1.png, RUNA DINING SET FOR 4_2.png, RUNA DINING SET FOR 4_3.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565914/materials/imported/runa-dining-set-for-4/runa-dining-set-for-4-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565915/materials/imported/runa-dining-set-for-4/runa-dining-set-for-4-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565917/materials/imported/runa-dining-set-for-4/runa-dining-set-for-4-3.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "RUNA DINING SET FOR 4_1.png",
         "RUNA DINING SET FOR 4_2.png",
@@ -1344,11 +3049,7 @@
           "value": "VERONA DINING SET FOR 6_1.png, VERONA DINING SET FOR 6_2.png, VERONA DINING SET FOR 6_3.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565917/materials/imported/verona-dining-set-for-6/verona-dining-set-for-6-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565918/materials/imported/verona-dining-set-for-6/verona-dining-set-for-6-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565919/materials/imported/verona-dining-set-for-6/verona-dining-set-for-6-3.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "VERONA DINING SET FOR 6_1.png",
         "VERONA DINING SET FOR 6_2.png",
@@ -1411,10 +3112,7 @@
           "value": "CARSON DINING SET FOR 8_1.png, CARSON DINING SET FOR 8_2.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565920/materials/imported/carson-dining-set-for-8/carson-dining-set-for-8-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565922/materials/imported/carson-dining-set-for-8/carson-dining-set-for-8-2.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "CARSON DINING SET FOR 8_1.png",
         "CARSON DINING SET FOR 8_2.png"
@@ -1476,11 +3174,7 @@
           "value": "BYRON EXT DINING SET FOR 6_1.png, BYRON EXT DINING SET FOR 6_2.png, BYRON EXT DINING SET FOR 6_3.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565923/materials/imported/byron-ext-dining-set-for-6/byron-ext-dining-set-for-6-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565925/materials/imported/byron-ext-dining-set-for-6/byron-ext-dining-set-for-6-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565927/materials/imported/byron-ext-dining-set-for-6/byron-ext-dining-set-for-6-3.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "BYRON EXT DINING SET FOR 6_1.png",
         "BYRON EXT DINING SET FOR 6_2.png",
@@ -1543,10 +3237,7 @@
           "value": "ALCOT EXT DINING SET FOR 6_1.png, ALCOT EXT DINING SET FOR 6_2.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565927/materials/imported/alcot-ext-dining-set-for-6/alcot-ext-dining-set-for-6-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565928/materials/imported/alcot-ext-dining-set-for-6/alcot-ext-dining-set-for-6-2.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "ALCOT EXT DINING SET FOR 6_1.png",
         "ALCOT EXT DINING SET FOR 6_2.png"
@@ -1608,14 +3299,7 @@
           "value": "FEMMIE DINING TABLE_1.png, FEMMIE DINING TABLE_2.png, FEMMIE DINING TABLE_3.png, FEMMIE DINING TABLE_4.png, FEMMIE DINING TABLE_5.png, FEMMIE DINING TABLE_6.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565929/materials/imported/femmie-dining-table/femmie-dining-table-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565930/materials/imported/femmie-dining-table/femmie-dining-table-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565931/materials/imported/femmie-dining-table/femmie-dining-table-3.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565932/materials/imported/femmie-dining-table/femmie-dining-table-4.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565933/materials/imported/femmie-dining-table/femmie-dining-table-5.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565934/materials/imported/femmie-dining-table/femmie-dining-table-6.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "FEMMIE DINING TABLE_1.png",
         "FEMMIE DINING TABLE_2.png",
@@ -1681,13 +3365,7 @@
           "value": "MACE DINING TABLE_1.png, MACE DINING TABLE_2.png, MACE DINING TABLE_3.png, MACE DINING TABLE_4.png, MACE DINING TABLE_5.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565936/materials/imported/mace-dining-table/mace-dining-table-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565937/materials/imported/mace-dining-table/mace-dining-table-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565938/materials/imported/mace-dining-table/mace-dining-table-3.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565939/materials/imported/mace-dining-table/mace-dining-table-4.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565940/materials/imported/mace-dining-table/mace-dining-table-5.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "MACE DINING TABLE_1.png",
         "MACE DINING TABLE_2.png",
@@ -1772,15 +3450,7 @@
           "value": "BROOKLYN CHAIR_BEIGE_1.png, BROOKLYN CHAIR_BEIGE_2.png, BROOKLYN CHAIR_BLACK_1.png, BROOKLYN CHAIR_BLACK_2.png, BROOKLYN CHAIR_BLACK_3.png, BROOKLYN CHAIR_BROWN_1.png, BROOKLYN CHAIR_WHITE_1.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565940/materials/imported/brooklyn-chair/brooklyn-chair-beige-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565941/materials/imported/brooklyn-chair/brooklyn-chair-beige-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565942/materials/imported/brooklyn-chair/brooklyn-chair-black-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565943/materials/imported/brooklyn-chair/brooklyn-chair-black-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565944/materials/imported/brooklyn-chair/brooklyn-chair-black-3.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565945/materials/imported/brooklyn-chair/brooklyn-chair-brown-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565946/materials/imported/brooklyn-chair/brooklyn-chair-white-1.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "BROOKLYN CHAIR_BEIGE_1.png",
         "BROOKLYN CHAIR_BEIGE_2.png",
@@ -1847,13 +3517,7 @@
           "value": "SABRINA DINING CHAIR_1.png, SABRINA DINING CHAIR_2.png, SABRINA DINING CHAIR_3.png, SABRINA DINING CHAIR_4.png, SABRINA DINING CHAIR_5.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565947/materials/imported/sabrina-dining-chair/sabrina-dining-chair-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565948/materials/imported/sabrina-dining-chair/sabrina-dining-chair-2.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565949/materials/imported/sabrina-dining-chair/sabrina-dining-chair-3.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565950/materials/imported/sabrina-dining-chair/sabrina-dining-chair-4.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565951/materials/imported/sabrina-dining-chair/sabrina-dining-chair-5.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "SABRINA DINING CHAIR_1.png",
         "SABRINA DINING CHAIR_2.png",
@@ -1918,16 +3582,1975 @@
           "value": "COUPE DRINK CABINET_1.png, COUPE DRINK CABINET_2.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565952/materials/imported/coupe-drinks-cabinet/coupe-drink-cabinet-1.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565953/materials/imported/coupe-drinks-cabinet/coupe-drink-cabinet-2.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "COUPE DRINK CABINET_1.png",
         "COUPE DRINK CABINET_2.png"
       ],
       "productFolder": "Dining Area/Warren/COUPE DRINKS CABINET",
       "sourceDocument": "Dining Area/Warren/DiningFurni_05_10_26.docx"
+    },
+    {
+      "name": "Office Table Aop – 01",
+      "company": "Manila Office Furniture Den",
+      "price": 23210,
+      "description": "We understand that every office has unique needs. That’s why the Aop-01 is built with flexibility and user comfort at its core. Whether you need a spacious main work area for a computer and documents, or a dedicated side table for meetings, this desk adapts to you.",
+      "category": "Home Office",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown Oak",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Desk",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "1800mm L x 800mm D x 750mm Ht",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "1000mm L x 600mm D X 750mm Ht",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown Oak"
+        },
+        {
+          "key": "Type",
+          "value": "Office Desk"
+        },
+        {
+          "key": "Size",
+          "value": "1800mm L x 800mm D x 750mm Ht, 1000mm L x 600mm D X 750mm Ht"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.manilaofficefurnitureden.ph/product/office-table-aop-01/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/06_25_HomeOfficeMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Office Table Aop – 01_1.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412026/materials/imported/office-table-aop-01/office-table-aop-01-1.png"
+      ],
+      "localImageFiles": [
+        "Office Table Aop – 01_1.png"
+      ],
+      "productFolder": "Home Office/Warren_/Office Table Aop – 01",
+      "sourceDocument": "Home Office/Warren_/06_25_HomeOfficeMats.docx"
+    },
+    {
+      "name": "Office Table Oft 11",
+      "company": "Manila Office Furniture Den",
+      "price": 8880,
+      "description": "Create an efficient and stylish workspace with the Office Table Oft 11 from Manila Office Furniture Den. Priced at just ₱8,880.00, this compact and versatile office table is the perfect solution for businesses in Metro Manila, Makati, BGC, and Quezon City seeking quality and value.",
+      "category": "Home Office",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Light Gray & Charcoal Gray",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Desk",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "1200mm L x 600mm D x 750mm Ht",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Light Gray & Charcoal Gray"
+        },
+        {
+          "key": "Type",
+          "value": "Office Desk"
+        },
+        {
+          "key": "Size",
+          "value": "1200mm L x 600mm D x 750mm Ht"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.manilaofficefurnitureden.ph/product/office-table-oft-11-2/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/06_25_HomeOfficeMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Office Table Oft 11_1.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412027/materials/imported/office-table-oft-11/office-table-oft-11-1.png"
+      ],
+      "localImageFiles": [
+        "Office Table Oft 11_1.png"
+      ],
+      "productFolder": "Home Office/Warren_/Office Table Oft 11",
+      "sourceDocument": "Home Office/Warren_/06_25_HomeOfficeMats.docx"
+    },
+    {
+      "name": "Executive Office Chair Bc – 01",
+      "company": "Manila Office Furniture Den",
+      "price": 10153,
+      "description": "Ergonomic Executive Chair Bc – 01 a super comfortable office chair with health back benefits would prioritize ergonomic design and support to promote good posture and reduce strain on the spine.",
+      "category": "Home Office",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Chair",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "340mm black base",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black"
+        },
+        {
+          "key": "Type",
+          "value": "Office Chair"
+        },
+        {
+          "key": "Size",
+          "value": "340mm black base"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.manilaofficefurnitureden.ph/product/executive-office-chair-bc-01/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/06_25_HomeOfficeMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Executive Office Chair Bc – 01_1.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412029/materials/imported/executive-office-chair-bc-01/executive-office-chair-bc-01-1.png"
+      ],
+      "localImageFiles": [
+        "Executive Office Chair Bc – 01_1.png"
+      ],
+      "productFolder": "Home Office/Warren_/Executive Office Chair Bc – 01",
+      "sourceDocument": "Home Office/Warren_/06_25_HomeOfficeMats.docx"
+    },
+    {
+      "name": "Executive Office Chair E-04",
+      "company": "Manila Office Furniture Den",
+      "price": 12490,
+      "description": "Ergonomic Executive Chair Ac – 02 has the perfect combination of comfort and style for the modern executive. A super comfortable office chair designed for a cloud like experience.",
+      "category": "Home Office",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Chair",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "350mm chrome metal base",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black"
+        },
+        {
+          "key": "Type",
+          "value": "Office Chair"
+        },
+        {
+          "key": "Size",
+          "value": "350mm chrome metal base"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.manilaofficefurnitureden.ph/product/executive-office-chair-e-04/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/06_25_HomeOfficeMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Executive Office Chair E-04_1.png, Executive Office Chair E-04_2.png, Executive Office Chair E-04_3.png, Executive Office Chair E-04_4.png, Executive Office Chair E-04_5.png, Executive Office Chair E-04_6.png, Executive Office Chair E-04_7.png, Executive Office Chair E-04_8.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412030/materials/imported/executive-office-chair-e-04/executive-office-chair-e-04-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412031/materials/imported/executive-office-chair-e-04/executive-office-chair-e-04-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412033/materials/imported/executive-office-chair-e-04/executive-office-chair-e-04-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412033/materials/imported/executive-office-chair-e-04/executive-office-chair-e-04-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412034/materials/imported/executive-office-chair-e-04/executive-office-chair-e-04-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412035/materials/imported/executive-office-chair-e-04/executive-office-chair-e-04-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412036/materials/imported/executive-office-chair-e-04/executive-office-chair-e-04-7.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412036/materials/imported/executive-office-chair-e-04/executive-office-chair-e-04-8.png"
+      ],
+      "localImageFiles": [
+        "Executive Office Chair E-04_1.png",
+        "Executive Office Chair E-04_2.png",
+        "Executive Office Chair E-04_3.png",
+        "Executive Office Chair E-04_4.png",
+        "Executive Office Chair E-04_5.png",
+        "Executive Office Chair E-04_6.png",
+        "Executive Office Chair E-04_7.png",
+        "Executive Office Chair E-04_8.png"
+      ],
+      "productFolder": "Home Office/Warren_/Executive Office Chair E-04",
+      "sourceDocument": "Home Office/Warren_/06_25_HomeOfficeMats.docx"
+    },
+    {
+      "name": "Office Table Aor – 01",
+      "company": "Manila Office Furniture Den",
+      "price": 10750,
+      "description": "Need a workspace that keeps everything organized—drawers for supplies, a dedicated spot for your CPU, and cables hidden away—without taking up your whole office? The Office Table Aor-01 is a customizable 1200mm desk with built-in lockable drawers and a wooden CPU rack. You choose the finish. We build it to your specs and install it in 7-10 working days. No separate cabinets to buy—just one integrated unit.",
+      "category": "Home Office",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Mahogany Brown",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Desk",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "1200mm (L) x 600mm (D) x 750mm (H)",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Mahogany Brown"
+        },
+        {
+          "key": "Type",
+          "value": "Office Desk"
+        },
+        {
+          "key": "Size",
+          "value": "1200mm (L) x 600mm (D) x 750mm (H)"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.manilaofficefurnitureden.ph/product/office-table-aor-01/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/06_25_HomeOfficeMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Office Table Aor – 01_1.png, Office Table Aor – 01_2.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412037/materials/imported/office-table-aor-01/office-table-aor-01-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412038/materials/imported/office-table-aor-01/office-table-aor-01-2.png"
+      ],
+      "localImageFiles": [
+        "Office Table Aor – 01_1.png",
+        "Office Table Aor – 01_2.png"
+      ],
+      "productFolder": "Home Office/Warren_/Office Table Aor – 01",
+      "sourceDocument": "Home Office/Warren_/06_25_HomeOfficeMats.docx"
+    },
+    {
+      "name": "ENZO OFFICE CHAIR",
+      "company": "BLIMS Fine Furniture",
+      "price": 4500,
+      "description": "A modern black office chair.",
+      "category": "Home Office Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Chair",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "83-92 x 56 x 37 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black"
+        },
+        {
+          "key": "Type",
+          "value": "Office Chair"
+        },
+        {
+          "key": "Size",
+          "value": "83-92 x 56 x 37 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/office-chair/products/enzo-i-office-chair-3-700"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "ENZO OFFICE CHAIR_1.png, ENZO OFFICE CHAIR_2.png, ENZO OFFICE CHAIR_3.png, ENZO OFFICE CHAIR_4.png, ENZO OFFICE CHAIR_5.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412039/materials/imported/enzo-office-chair/enzo-office-chair-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412040/materials/imported/enzo-office-chair/enzo-office-chair-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412041/materials/imported/enzo-office-chair/enzo-office-chair-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412042/materials/imported/enzo-office-chair/enzo-office-chair-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412043/materials/imported/enzo-office-chair/enzo-office-chair-5.png"
+      ],
+      "localImageFiles": [
+        "ENZO OFFICE CHAIR_1.png",
+        "ENZO OFFICE CHAIR_2.png",
+        "ENZO OFFICE CHAIR_3.png",
+        "ENZO OFFICE CHAIR_4.png",
+        "ENZO OFFICE CHAIR_5.png"
+      ],
+      "productFolder": "Home Office/Warren_/ENZO OFFICE CHAIR",
+      "sourceDocument": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+    },
+    {
+      "name": "ZARDOX OFFICE CHAIR",
+      "company": "BLIMS Fine Furniture",
+      "price": 3800,
+      "description": "A modern black office chair with Pneumatic Seat, Tension Control, Tilt Lock, Synchro-Tilt and Weight capacity 120kgs.",
+      "category": "Home Office Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Chair",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "95-107 x 57 x 49 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black"
+        },
+        {
+          "key": "Type",
+          "value": "Office Chair"
+        },
+        {
+          "key": "Size",
+          "value": "95-107 x 57 x 49 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/products/zardox-office-chair?pr_prod_strat=e5_desc&pr_rec_id=d86052303&pr_rec_pid=7581982195939&pr_ref_pid=7581981966563&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        }
+      ],
+      "image": [],
+      "localImageFiles": [],
+      "productFolder": "",
+      "sourceDocument": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+    },
+    {
+      "name": "COOPER OFFICE CHAIR",
+      "company": "BLIMS Fine Furniture",
+      "price": 4750,
+      "description": "A modern black office chair with Pneumatic Seat, Tension Control, Tilt Lock and Center Tilt.",
+      "category": "Home Office Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black + Dark Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Chair",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "90-100 x 56.5 x 47 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black + Dark Grey"
+        },
+        {
+          "key": "Type",
+          "value": "Office Chair"
+        },
+        {
+          "key": "Size",
+          "value": "90-100 x 56.5 x 47 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/products/cooper-office-chair?pr_prod_strat=e5_desc&pr_rec_id=4655ecfe9&pr_rec_pid=9175294509283&pr_ref_pid=7581982195939&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "COOPER OFFICE CHAIR_1.png, COOPER OFFICE CHAIR_2.png, COOPER OFFICE CHAIR_3.png, COOPER OFFICE CHAIR_4.png, COOPER OFFICE CHAIR_5.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412044/materials/imported/cooper-office-chair/cooper-office-chair-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412045/materials/imported/cooper-office-chair/cooper-office-chair-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412046/materials/imported/cooper-office-chair/cooper-office-chair-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412047/materials/imported/cooper-office-chair/cooper-office-chair-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412048/materials/imported/cooper-office-chair/cooper-office-chair-5.png"
+      ],
+      "localImageFiles": [
+        "COOPER OFFICE CHAIR_1.png",
+        "COOPER OFFICE CHAIR_2.png",
+        "COOPER OFFICE CHAIR_3.png",
+        "COOPER OFFICE CHAIR_4.png",
+        "COOPER OFFICE CHAIR_5.png"
+      ],
+      "productFolder": "Home Office/Warren_/COOPER OFFICE CHAIR",
+      "sourceDocument": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+    },
+    {
+      "name": "MP3 1270 OFFICE DESK",
+      "company": "BLIMS Fine Furniture",
+      "price": 5450,
+      "description": "A modern Newport Grey with Grey Solama Oak office desk with 2 plastic grommets, Melamine lamination on top for heat and scratch resistance, Floor levelers and D-nut metal to metal connection for durability and easy re-installation.",
+      "category": "Home Office Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Newport Grey with Grey Solama Oak",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Desk",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "120 x 70 x 75 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Newport Grey with Grey Solama Oak"
+        },
+        {
+          "key": "Type",
+          "value": "Office Desk"
+        },
+        {
+          "key": "Size",
+          "value": "120 x 70 x 75 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/office-tables/products/mp3-1270-office-desk"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "MP3 1270 OFFICE DESK_1.png, MP3 1270 OFFICE DESK_2.png, MP3 1270 OFFICE DESK_3.png, MP3 1270 OFFICE DESK_4.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412049/materials/imported/mp3-1270-office-desk/mp3-1270-office-desk-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412050/materials/imported/mp3-1270-office-desk/mp3-1270-office-desk-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412050/materials/imported/mp3-1270-office-desk/mp3-1270-office-desk-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412051/materials/imported/mp3-1270-office-desk/mp3-1270-office-desk-4.png"
+      ],
+      "localImageFiles": [
+        "MP3 1270 OFFICE DESK_1.png",
+        "MP3 1270 OFFICE DESK_2.png",
+        "MP3 1270 OFFICE DESK_3.png",
+        "MP3 1270 OFFICE DESK_4.png"
+      ],
+      "productFolder": "Home Office/Warren_/MP3 1270 OFFICE DESK",
+      "sourceDocument": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+    },
+    {
+      "name": "MP6 1270 OFFICE DESK",
+      "company": "BLIMS Fine Furniture",
+      "price": 8450,
+      "description": "A modern White Oak + Natural Oak office desk with 2 grommets, 3 drawer hanging pedestal with nickel handle, Melamine lamination on top for heat and scratch resistance, Floor levelers and D-nut metal to metal connection for durability and easy re-installation.",
+      "category": "Home Office Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "White Oak + Natural Oak",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Desk",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "120 x 70 x 75 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "White Oak + Natural Oak"
+        },
+        {
+          "key": "Type",
+          "value": "Office Desk"
+        },
+        {
+          "key": "Size",
+          "value": "120 x 70 x 75 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/products/mp6-1270-office-desk?pr_prod_strat=e5_desc&pr_rec_id=e984d98e3&pr_rec_pid=8706202894563&pr_ref_pid=7581976723683&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "MP6 1270 OFFICE DESK_1.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412052/materials/imported/mp6-1270-office-desk/mp6-1270-office-desk-1.png"
+      ],
+      "localImageFiles": [
+        "MP6 1270 OFFICE DESK_1.png"
+      ],
+      "productFolder": "Home Office/Warren_/MP6 1270 OFFICE DESK",
+      "sourceDocument": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+    },
+    {
+      "name": "ISTANBUL SIDEBOARD",
+      "company": "BLIMS Fine Furniture",
+      "price": 27995,
+      "description": "A mid-century sideboard featuring two soft close glass door, two shelves and three drawers with rubberwood legs.",
+      "category": "Home Office Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Marcello Walnut",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Sideboard",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "160 x 45 x 80 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Marcello Walnut"
+        },
+        {
+          "key": "Type",
+          "value": "Office Sideboard"
+        },
+        {
+          "key": "Size",
+          "value": "160 x 45 x 80 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/products/istanbul-sideboard?pr_prod_strat=jac&pr_rec_id=a21a42e64&pr_rec_pid=8814579351779&pr_ref_pid=8706202894563&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "ISTANBUL SIDEBOARD_1.png, ISTANBUL SIDEBOARD_2.png, ISTANBUL SIDEBOARD_3.png, ISTANBUL SIDEBOARD_4.png, ISTANBUL SIDEBOARD_5.png, ISTANBUL SIDEBOARD_6.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412054/materials/imported/istanbul-sideboard/istanbul-sideboard-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412054/materials/imported/istanbul-sideboard/istanbul-sideboard-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412055/materials/imported/istanbul-sideboard/istanbul-sideboard-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412056/materials/imported/istanbul-sideboard/istanbul-sideboard-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412057/materials/imported/istanbul-sideboard/istanbul-sideboard-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412058/materials/imported/istanbul-sideboard/istanbul-sideboard-6.png"
+      ],
+      "localImageFiles": [
+        "ISTANBUL SIDEBOARD_1.png",
+        "ISTANBUL SIDEBOARD_2.png",
+        "ISTANBUL SIDEBOARD_3.png",
+        "ISTANBUL SIDEBOARD_4.png",
+        "ISTANBUL SIDEBOARD_5.png",
+        "ISTANBUL SIDEBOARD_6.png"
+      ],
+      "productFolder": "Home Office/Warren_/ISTANBUL SIDEBOARD",
+      "sourceDocument": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+    },
+    {
+      "name": "4 DRAWER VERTICAL FILING CABINET by SOHO",
+      "company": "BLIMS Fine Furniture",
+      "price": 10500,
+      "description": "A vertical filing cabinet with central lock, Plastic handle with label slot and Anti-tipping mechanism only allows 1 drawer to open at a time",
+      "category": "Home Office Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Light Gray",
+          "addToPrice": 0
+        },
+        {
+          "type": "color",
+          "option": "Beige",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Cabinet",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "45.6 x 62 x 133.1 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Light Gray, Beige"
+        },
+        {
+          "key": "Type",
+          "value": "Office Cabinet"
+        },
+        {
+          "key": "Size",
+          "value": "45.6 x 62 x 133.1 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/cabinets/products/soho-4-drawer-vertical-filing-cabinet"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "4 DRAWER VERTICAL FILING CABINET BY SOHO_1.png, 4 DRAWER VERTICAL FILING CABINET BY SOHO_2.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412060/materials/imported/4-drawer-vertical-filing-cabinet-by-soho/4-drawer-vertical-filing-cabinet-by-soho-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412061/materials/imported/4-drawer-vertical-filing-cabinet-by-soho/4-drawer-vertical-filing-cabinet-by-soho-2.png"
+      ],
+      "localImageFiles": [
+        "4 DRAWER VERTICAL FILING CABINET BY SOHO_1.png",
+        "4 DRAWER VERTICAL FILING CABINET BY SOHO_2.png"
+      ],
+      "productFolder": "Home Office/Warren_/4 DRAWER VERTICAL FILING CABINET by SOHO",
+      "sourceDocument": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+    },
+    {
+      "name": "MP3 BOOKSHELF WITH GLASS DOOR",
+      "company": "BLIMS Fine Furniture",
+      "price": 12450,
+      "description": "A bookshelf with Glassdoor in 3-layer cabinet (8042GD), Wooden door in 2-layer cabinet with lock, Nickel handles. Floor levelers, Melamine lamination on top and front for heat and scratch resistance and D-nut metal to metal connection for durability and easy re-installation.",
+      "category": "Home Office Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Newport Grey + Grey Solama Oak",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Cabinet",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "80 x 42 x 203.5 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Newport Grey + Grey Solama Oak"
+        },
+        {
+          "key": "Type",
+          "value": "Office Cabinet"
+        },
+        {
+          "key": "Size",
+          "value": "80 x 42 x 203.5 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/cabinets/products/mp3-bookshelf"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "MP3 BOOKSHELF WITH GLASS DOOR_1.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412062/materials/imported/mp3-bookshelf-with-glass-door/mp3-bookshelf-with-glass-door-1.png"
+      ],
+      "localImageFiles": [
+        "MP3 BOOKSHELF WITH GLASS DOOR_1.png"
+      ],
+      "productFolder": "Home Office/Warren_/MP3 BOOKSHELF WITH GLASS DOOR",
+      "sourceDocument": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+    },
+    {
+      "name": "MP3 MEDIUM HEIGHT OPEN CABINET",
+      "company": "BLIMS Fine Furniture",
+      "price": 4950,
+      "description": "A open cabinet with Medium height open cabinet with three shelves (MHO1245), Floor levellers, Three shelves, Melamine lamination on top for heat and scratch resistance and D-nut metal to metal connection for durability and easy re-installation.",
+      "category": "Home Office Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Newport Grey + Grey Solama Oak",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Office Cabinet",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "80 x 42 x 124.5cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Newport Grey + Grey Solama Oak"
+        },
+        {
+          "key": "Type",
+          "value": "Office Cabinet"
+        },
+        {
+          "key": "Size",
+          "value": "80 x 42 x 124.5cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/products/mp3-mho1245-meduim-height-open-cabinet?pr_prod_strat=e5_desc&pr_rec_id=d14241ff2&pr_rec_pid=7581976494307&pr_ref_pid=8845409091811&pr_seq=uniform"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "MP3 MEDIUM HEIGHT OPEN CABINET_1.png, MP3 MEDIUM HEIGHT OPEN CABINET_2.png, MP3 MEDIUM HEIGHT OPEN CABINET_3.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412063/materials/imported/mp3-medium-height-open-cabinet/mp3-medium-height-open-cabinet-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412064/materials/imported/mp3-medium-height-open-cabinet/mp3-medium-height-open-cabinet-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412065/materials/imported/mp3-medium-height-open-cabinet/mp3-medium-height-open-cabinet-3.png"
+      ],
+      "localImageFiles": [
+        "MP3 MEDIUM HEIGHT OPEN CABINET_1.png",
+        "MP3 MEDIUM HEIGHT OPEN CABINET_2.png",
+        "MP3 MEDIUM HEIGHT OPEN CABINET_3.png"
+      ],
+      "productFolder": "Home Office/Warren_/MP3 MEDIUM HEIGHT OPEN CABINET",
+      "sourceDocument": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+    },
+    {
+      "name": "MX3 CONFERENCE TABLE",
+      "company": "BLIMS Fine Furniture",
+      "price": 24950,
+      "description": "A conference table with Rectangular conference table with large grommets (RCT2412), Cable management box, Metal legs with adjustable floor leveler and D-nut metal to metal connection for durability and easy re-installation.",
+      "category": "Home Office Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Newport Grey + Grey Solama Oak",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "White oak + Kronberg",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "240 x 120 x 75 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Newport Grey + Grey Solama Oak"
+        },
+        {
+          "key": "Type",
+          "value": "White oak + Kronberg"
+        },
+        {
+          "key": "Size",
+          "value": "240 x 120 x 75 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://blimsfurniture.com.ph/collections/office-world/products/mx3-conference-table"
+        },
+        {
+          "key": "Source Document",
+          "value": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Home Office/Warren_"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "MX3 CONFERENCE TABLE_1.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412066/materials/imported/mx3-conference-table/mx3-conference-table-1.png"
+      ],
+      "localImageFiles": [
+        "MX3 CONFERENCE TABLE_1.png"
+      ],
+      "productFolder": "Home Office/Warren_/MX3 CONFERENCE TABLE",
+      "sourceDocument": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
+    },
+    {
+      "name": "Weston 5 Tier Metal Rack",
+      "company": "Mandaue Foam",
+      "price": 6850,
+      "description": "This kitchen shelving rack is designed for practicality and versatility, with a five-tier shelf design and an adjustable center shelf that can accommodate a variety of storage needs. Made with stainless steel pipe frames and sturdy plate shelves, it not only ensures durability but also exudes a sleek and modern aesthetic, showcasing the exceptional qualities of stainless steel for kitchen applications, such as corrosion resistance, ease of maintenance, and an overall hygienic surface.",
+      "category": "Kitchen Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Silver",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Rack",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Width: 80 cm Depth: 40 cm Height: 170 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Silver"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Rack"
+        },
+        {
+          "key": "Size",
+          "value": "Width: 80 cm Depth: 40 cm Height: 170 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/weston-80-ss-5-tier-metal-rack?_pos=21&_fid=7cefab2c1&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Kurt/Kitchen List.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Kurt"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Screenshot 2026-06-12 173113.png, Screenshot 2026-06-12 173502.png, Screenshot 2026-06-12 173529.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412067/materials/imported/weston-5-tier-metal-rack/screenshot-2026-06-12-173113.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412069/materials/imported/weston-5-tier-metal-rack/screenshot-2026-06-12-173502.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412070/materials/imported/weston-5-tier-metal-rack/screenshot-2026-06-12-173529.png"
+      ],
+      "localImageFiles": [
+        "Screenshot 2026-06-12 173113.png",
+        "Screenshot 2026-06-12 173502.png",
+        "Screenshot 2026-06-12 173529.png"
+      ],
+      "productFolder": "Kitchen/Kurt/Weston 5 Tier Metal Rack",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx"
+    },
+    {
+      "name": "Weston Storage Console",
+      "company": "Mandaue Foam",
+      "price": 5950,
+      "description": "This storage console is built for functionality and versatility, with 5 multi-level shelves beneath the top shelf that can fit a wide range of storage needs. Made with stainless steel pipe frames and sturdy plate shelves, it not only ensures durability but also exudes a sleek and modern aesthetic, showcasing the exceptional qualities of stainless steel for kitchen applications, such as corrosion resistance, ease of maintenance, and an overall hygienic surface.",
+      "category": "Kitchen Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Silver",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Rack",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Width: 91 cm Depth: 40 cm Height: 89 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Silver"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Rack"
+        },
+        {
+          "key": "Size",
+          "value": "Width: 91 cm Depth: 40 cm Height: 89 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/weston-storage-console?_pos=22&_fid=7cefab2c1&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Kurt/Kitchen List.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Kurt"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Screenshot 2026-06-12 173919.png, Screenshot 2026-06-12 174235.png, Screenshot 2026-06-12 174246.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412071/materials/imported/weston-storage-console/screenshot-2026-06-12-173919.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412072/materials/imported/weston-storage-console/screenshot-2026-06-12-174235.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412074/materials/imported/weston-storage-console/screenshot-2026-06-12-174246.png"
+      ],
+      "localImageFiles": [
+        "Screenshot 2026-06-12 173919.png",
+        "Screenshot 2026-06-12 174235.png",
+        "Screenshot 2026-06-12 174246.png"
+      ],
+      "productFolder": "Kitchen/Kurt/Weston Storage Console",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx"
+    },
+    {
+      "name": "Nova Dish Rack",
+      "company": "Mandaue Foam",
+      "price": 1650,
+      "description": "Made of sturdy stainless steel, this countertop dish rack provides plenty of room to dry and arrange plates, glasses, spoons, forks, ladles, and other kitchen utensils. Its construction in stainless steel not only makes it stain-, corrosion-, and corrosion-resistant but also offers an easily-cleaned, hygienic surface, making it a dependable and sanitary addition to your kitchen. Additionally, the classic and elegant look of stainless steel gives your countertop a hint of contemporary elegance.",
+      "category": "Kitchen Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Silver",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Rack",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Width: 53 cm Depth: 22 cm Height: 42 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Silver"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Rack"
+        },
+        {
+          "key": "Size",
+          "value": "Width: 53 cm Depth: 22 cm Height: 42 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/nova-dish-rack?_pos=23&_fid=7cefab2c1&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Kurt/Kitchen List.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Kurt"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Screenshot 2026-06-12 174509.png, Screenshot 2026-06-12 174519.png, Screenshot 2026-06-12 174528.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412075/materials/imported/nova-dish-rack/screenshot-2026-06-12-174509.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412076/materials/imported/nova-dish-rack/screenshot-2026-06-12-174519.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412077/materials/imported/nova-dish-rack/screenshot-2026-06-12-174528.png"
+      ],
+      "localImageFiles": [
+        "Screenshot 2026-06-12 174509.png",
+        "Screenshot 2026-06-12 174519.png",
+        "Screenshot 2026-06-12 174528.png"
+      ],
+      "productFolder": "Kitchen/Kurt/Nova Dish Rack",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx"
+    },
+    {
+      "name": "Bryson 3 Tier Rolling Card",
+      "company": "Mandaue Foam",
+      "price": 2300,
+      "description": "Crafted with three durable metal baskets, each featuring a specialized mesh design at the base, this trolley not only provides substantial storage capacity but also ensures convenient and swift access to your stored items. Designed for easy maneuverability, the trolley is equipped with four wheel casters, featuring two lockable wheels for added stability when needed.",
+      "category": "Kitchen Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Rolling Cart",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Width: 44.2 cm Depth: 30.6 cm Height: 77.7 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black"
+        },
+        {
+          "key": "Type",
+          "value": "Rolling Cart"
+        },
+        {
+          "key": "Size",
+          "value": "Width: 44.2 cm Depth: 30.6 cm Height: 77.7 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/bryson-3-tier-rolling-cart?_pos=24&_fid=7cefab2c1&_ss=c&variant=43627000856754"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Kurt/Kitchen List.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Kurt"
+        }
+      ],
+      "image": [],
+      "localImageFiles": [],
+      "productFolder": "",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx"
+    },
+    {
+      "name": "Weston Microwave Stand",
+      "company": "Mandaue Foam",
+      "price": 2500,
+      "description": "This kitchen shelving unit is designed for practicality and versatility, with a three-tier shelf design and an adjustable center shelf that can accommodate a variety of storage needs. The top and center shelf can serve as a microwave space, and the incorporation of four additional wheels allows seamless mobility and easy relocation within your kitchen space. This stainless steel shelving unit not only provides utilitarian storage but also adds a touch of modern appeal to your kitchen design.",
+      "category": "Kitchen Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Silver",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Microwave Stand",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Width: 60 cm Depth: 35 cm Height: 77 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Silver"
+        },
+        {
+          "key": "Type",
+          "value": "Microwave Stand"
+        },
+        {
+          "key": "Size",
+          "value": "Width: 60 cm Depth: 35 cm Height: 77 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/weston-microwave-stand?_pos=25&_fid=7cefab2c1&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Kurt/Kitchen List.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Kurt"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Screenshot 2026-06-12 175051.png, Screenshot 2026-06-12 175108.png, Screenshot 2026-06-12 175117.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412079/materials/imported/weston-microwave-stand/screenshot-2026-06-12-175051.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412080/materials/imported/weston-microwave-stand/screenshot-2026-06-12-175108.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412081/materials/imported/weston-microwave-stand/screenshot-2026-06-12-175117.png"
+      ],
+      "localImageFiles": [
+        "Screenshot 2026-06-12 175051.png",
+        "Screenshot 2026-06-12 175108.png",
+        "Screenshot 2026-06-12 175117.png"
+      ],
+      "productFolder": "Kitchen/Kurt/Weston Microwave Stand",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx"
+    },
+    {
+      "name": "Cabello Base Cabinet",
+      "company": "Mandaue Foam",
+      "price": 10950,
+      "description": "The 90cm wide base cabinet has been expertly crafted to meet the needs of kitchen storage. The table top of the kitchen base features an enticing marble-inspired laminate that exudes refinement while providing a spacious surface for seamless culinary tasks, changing meal preparation into a joyful experience in style.",
+      "category": "Kitchen Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Silver",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Cabinet",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Width: 90 cm Depth: 56 cm Height: 85 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Silver"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Cabinet"
+        },
+        {
+          "key": "Size",
+          "value": "Width: 90 cm Depth: 56 cm Height: 85 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/cabello-base-cabinet-90-cm?_pos=3&_fid=47543f454&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Kurt/Kitchen List.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Kurt"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Screenshot 2026-06-12 175421.png, Screenshot 2026-06-12 175437.png, Screenshot 2026-06-12 175450.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412082/materials/imported/cabello-base-cabinet/screenshot-2026-06-12-175421.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412083/materials/imported/cabello-base-cabinet/screenshot-2026-06-12-175437.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412085/materials/imported/cabello-base-cabinet/screenshot-2026-06-12-175450.png"
+      ],
+      "localImageFiles": [
+        "Screenshot 2026-06-12 175421.png",
+        "Screenshot 2026-06-12 175437.png",
+        "Screenshot 2026-06-12 175450.png"
+      ],
+      "productFolder": "Kitchen/Kurt/Cabello Base Cabinet",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx"
+    },
+    {
+      "name": "Cabello Hanging Cabinet",
+      "company": "Mandaue Foam",
+      "price": 6850,
+      "description": "The 90 cm wide hanging cabinet has been expertly designed to meet the demands for kitchen storage. It is designed with two doors and a four-shelf section, providing ample space for orderly storage and ensuring a flexible and structured solution for storing cooking equipment, consumables, and kitchen wares. Furthermore, the inclusion of an open shelf beneath adds storage space and helps the clean organization of various kitchen essentials, resulting in a functional and orderly arrangement of condiments and canisters.",
+      "category": "Kitchen Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Silver",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Cabinet",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Width: 90 cm Depth: 33 cm Height: 72 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Silver"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Cabinet"
+        },
+        {
+          "key": "Size",
+          "value": "Width: 90 cm Depth: 33 cm Height: 72 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/cabello-hanging-cabinet-90-cm?_pos=16&_fid=47543f454&_ss=c&variant=44709432459442"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Kurt/Kitchen List.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Kurt"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Screenshot 2026-06-12 175739.png, Screenshot 2026-06-12 175749.png, Screenshot 2026-06-12 175759.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412086/materials/imported/cabello-hanging-cabinet/screenshot-2026-06-12-175739.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412087/materials/imported/cabello-hanging-cabinet/screenshot-2026-06-12-175749.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412088/materials/imported/cabello-hanging-cabinet/screenshot-2026-06-12-175759.png"
+      ],
+      "localImageFiles": [
+        "Screenshot 2026-06-12 175739.png",
+        "Screenshot 2026-06-12 175749.png",
+        "Screenshot 2026-06-12 175759.png"
+      ],
+      "productFolder": "Kitchen/Kurt/Cabello Hanging Cabinet",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx"
+    },
+    {
+      "name": "Magnus 5 Tier Adjustable Metal Rack",
+      "company": "Mandaue Foam",
+      "price": 7350,
+      "description": "The 90 cm wide hanging cabinet has been expertly designed to meet the demands for kitchen storage. It is designed with two doors and a four-shelf section, providing ample space for orderly storage and ensuring a flexible and structured solution for storing cooking equipment, consumables, and kitchen wares. Furthermore, the inclusion of an open shelf beneath adds storage space and helps the clean organization of various kitchen essentials, resulting in a functional and orderly arrangement of condiments and canisters.",
+      "category": "Kitchen Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Rack",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Width: 90 cm Depth: 40 cm Height: 180 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Grey"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Rack"
+        },
+        {
+          "key": "Size",
+          "value": "Width: 90 cm Depth: 40 cm Height: 180 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/magnus-5-tier-adjustable-metal-rack?_pos=1&_fid=47543f454&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Kurt/Kitchen List.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Kurt"
+        }
+      ],
+      "image": [],
+      "localImageFiles": [],
+      "productFolder": "Kitchen/Kurt/Magnus 5 Tier Adjustable Metal Rack",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx"
+    },
+    {
+      "name": "Larry 5 Tier Storage Rack",
+      "company": "Mandaue Foam",
+      "price": 2500,
+      "description": "The kitchen shelving features adjustable height and shelves, as well as boltless assembly for easy set up. The shelves are made of high-quality MDF boards with reinforced corners and embedded connection to ensure durability and stability. It also has Non-slip Scratch- Resistant pads on its feet to prevent slippage, offer stability, and protect both the shelving and floor surfaces from scratches or damages.",
+      "category": "Kitchen Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Black",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Rack",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Width: 90 cm Depth: 40 cm Height: 180 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Black"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Rack"
+        },
+        {
+          "key": "Size",
+          "value": "Width: 90 cm Depth: 40 cm Height: 180 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/larry-5-tier-storage-rack?_pos=4&_fid=47543f454&_ss=c"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Kurt/Kitchen List.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Kurt"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Screenshot 2026-06-12 180443.png, Screenshot 2026-06-12 180452.png, Screenshot 2026-06-12 180501.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412089/materials/imported/larry-5-tier-storage-rack/screenshot-2026-06-12-180443.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412091/materials/imported/larry-5-tier-storage-rack/screenshot-2026-06-12-180452.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412093/materials/imported/larry-5-tier-storage-rack/screenshot-2026-06-12-180501.png"
+      ],
+      "localImageFiles": [
+        "Screenshot 2026-06-12 180443.png",
+        "Screenshot 2026-06-12 180452.png",
+        "Screenshot 2026-06-12 180501.png"
+      ],
+      "productFolder": "Kitchen/Kurt/Larry 5 Tier Storage Rack",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx"
+    },
+    {
+      "name": "Merrick 3 Door Kitchen Cabinet",
+      "company": "Mandaue Foam",
+      "price": 17800,
+      "description": "With 3 compartments and 1 drawer at the bottom and 2 compartments and 2 open shelves at the top, this provides plenty of area for storing various objects such as cookware, utensils, and so on.",
+      "category": "Kitchen Project",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Brown",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Cabinet",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "Width: 114.5 cm Depth: 40 cm Height: 190 cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Brown"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Cabinet"
+        },
+        {
+          "key": "Size",
+          "value": "Width: 114.5 cm Depth: 40 cm Height: 190 cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://mandauefoam.ph/products/merrick-3-door-kitchen-cabinet?_pos=7&_fid=47543f454&_ss=c&variant=43648690094258"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Kurt/Kitchen List.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Kurt"
+        }
+      ],
+      "image": [],
+      "localImageFiles": [],
+      "productFolder": "",
+      "sourceDocument": "Kitchen/Kurt/Kitchen List.docx"
+    },
+    {
+      "name": "1420 Kitchen Cabinet",
+      "company": "Furniture Manila",
+      "price": 6995,
+      "description": "a modern kitchen cabinet or sideboard with a dark brown wood grain finish and silver hardware.",
+      "category": "Kitchen",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Dark Brown",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Cabinet",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L47.75″ x W16″ x H32″",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Dark Brown"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Cabinet"
+        },
+        {
+          "key": "Size",
+          "value": "L47.75″ x W16″ x H32″"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.furnituremanila.com.ph/product/1420-kitchen-cabinet/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Warren/06_24_KitchenMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "1420 Kitchen Cabinet_1.png, 1420 Kitchen Cabinet_2.png, 1420 Kitchen Cabinet_3.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412094/materials/imported/1420-kitchen-cabinet/1420-kitchen-cabinet-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412095/materials/imported/1420-kitchen-cabinet/1420-kitchen-cabinet-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412096/materials/imported/1420-kitchen-cabinet/1420-kitchen-cabinet-3.png"
+      ],
+      "localImageFiles": [
+        "1420 Kitchen Cabinet_1.png",
+        "1420 Kitchen Cabinet_2.png",
+        "1420 Kitchen Cabinet_3.png"
+      ],
+      "productFolder": "Kitchen/Warren/1420 Kitchen Cabinet",
+      "sourceDocument": "Kitchen/Warren/06_24_KitchenMats.docx"
+    },
+    {
+      "name": "2203 Kitchen Rack",
+      "company": "Furniture Manila",
+      "price": 3200,
+      "description": "a multi-tiered kitchen baker's rack or utility cart designed with a white metal frame and dark, wood-grain laminate shelves.",
+      "category": "Kitchen",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Dark Brown",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Rack",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "900 x 415 x 1235mm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Dark Brown"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Rack"
+        },
+        {
+          "key": "Size",
+          "value": "900 x 415 x 1235mm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.furnituremanila.com.ph/product/2203-kitchen-rack/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Warren/06_24_KitchenMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "2203 Kitchen Rack_1.png, 2203 Kitchen Rack_2.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412097/materials/imported/2203-kitchen-rack/2203-kitchen-rack-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412098/materials/imported/2203-kitchen-rack/2203-kitchen-rack-2.png"
+      ],
+      "localImageFiles": [
+        "2203 Kitchen Rack_1.png",
+        "2203 Kitchen Rack_2.png"
+      ],
+      "productFolder": "Kitchen/Warren/2203 Kitchen Rack",
+      "sourceDocument": "Kitchen/Warren/06_24_KitchenMats.docx"
+    },
+    {
+      "name": "B12 Multipurpose Metal Cabinet",
+      "company": "Furniture Manila",
+      "price": 13500,
+      "description": "a multi-tier, cream-colored kitchen baker's rack or storage hutch set on small caster wheels.",
+      "category": "Kitchen",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Warm White",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Cabinet",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "W1200 x D450 x H1867 mm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Warm White"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Cabinet"
+        },
+        {
+          "key": "Size",
+          "value": "W1200 x D450 x H1867 mm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.furnituremanila.com.ph/product/b12-multipurpose-metal-cabinet/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Warren/06_24_KitchenMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "B12 Multipurpose Metal Cabinet_1.png, B12 Multipurpose Metal Cabinet_2.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412100/materials/imported/b12-multipurpose-metal-cabinet/b12-multipurpose-metal-cabinet-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412101/materials/imported/b12-multipurpose-metal-cabinet/b12-multipurpose-metal-cabinet-2.png"
+      ],
+      "localImageFiles": [
+        "B12 Multipurpose Metal Cabinet_1.png",
+        "B12 Multipurpose Metal Cabinet_2.png"
+      ],
+      "productFolder": "Kitchen/Warren/B12 Multipurpose Metal Cabinet",
+      "sourceDocument": "Kitchen/Warren/06_24_KitchenMats.docx"
+    },
+    {
+      "name": "499 Kitchen Cabinet",
+      "company": "Furniture Manila",
+      "price": 9950,
+      "description": "a large kitchen hutch and buffet unit featuring a warm, reddish-brown faux wood-block grain finish with dark handles.",
+      "category": "Kitchen",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Oak",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Cabinet",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L144 x D41 x H190cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Oak"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Cabinet"
+        },
+        {
+          "key": "Size",
+          "value": "L144 x D41 x H190cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.furnituremanila.com.ph/product/499-kitchen-cabinet/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Warren/06_24_KitchenMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "499 Kitchen Cabinet_1.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412102/materials/imported/499-kitchen-cabinet/499-kitchen-cabinet-1.png"
+      ],
+      "localImageFiles": [
+        "499 Kitchen Cabinet_1.png"
+      ],
+      "productFolder": "Kitchen/Warren/499 Kitchen Cabinet",
+      "sourceDocument": "Kitchen/Warren/06_24_KitchenMats.docx"
+    },
+    {
+      "name": "B1985 Kitchen Cabinet",
+      "company": "Furniture Manila",
+      "price": 9500,
+      "description": "a modern, two-tone kitchen hutch and cabinet unit featuring light wood-grain front panels contrasted against a dark brown wood-grain frame.",
+      "category": "Kitchen",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Fendi/Moka",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Kitchen Cabinet",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L41.25″ x W15.25″ x H70.75″",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Fendi/Moka"
+        },
+        {
+          "key": "Type",
+          "value": "Kitchen Cabinet"
+        },
+        {
+          "key": "Size",
+          "value": "L41.25″ x W15.25″ x H70.75″"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.furnituremanila.com.ph/product/b1985-kitchen-cabinet/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Kitchen/Warren/06_24_KitchenMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Kitchen/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "B1985 Kitchen Cabinet_1.png, B1985 Kitchen Cabinet_2.png, B1985 Kitchen Cabinet_3.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412103/materials/imported/b1985-kitchen-cabinet/b1985-kitchen-cabinet-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412104/materials/imported/b1985-kitchen-cabinet/b1985-kitchen-cabinet-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412105/materials/imported/b1985-kitchen-cabinet/b1985-kitchen-cabinet-3.png"
+      ],
+      "localImageFiles": [
+        "B1985 Kitchen Cabinet_1.png",
+        "B1985 Kitchen Cabinet_2.png",
+        "B1985 Kitchen Cabinet_3.png"
+      ],
+      "productFolder": "Kitchen/Warren/B1985 Kitchen Cabinet",
+      "sourceDocument": "Kitchen/Warren/06_24_KitchenMats.docx"
     },
     {
       "name": "Accre Round Table 120 cm",
@@ -1966,12 +5589,7 @@
           "value": "DT-1.jpg, Gemini_Generated_Image_ku5fxeku5fxeku5f.png, Gemini_Generated_Image_nswzvmnswzvmnswz.png, Studio-Project-2-15.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565954/materials/imported/accre-round-table-120-cm/dt-1.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565955/materials/imported/accre-round-table-120-cm/gemini-generated-image-ku5fxeku5fxeku5f.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565958/materials/imported/accre-round-table-120-cm/gemini-generated-image-nswzvmnswzvmnswz.png",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565960/materials/imported/accre-round-table-120-cm/studio-project-2-15.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "DT-1.jpg",
         "Gemini_Generated_Image_ku5fxeku5fxeku5f.png",
@@ -2018,12 +5636,7 @@
           "value": "Accre-Stone-Dining-Table-2.jpg, Accre-Stone-Dining-Table-4.jpg, Accre-Stone-Dining-Table-8.jpg, Accre-Stone-Dining-Table.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565961/materials/imported/accre-stone-dining-table-160cm/accre-stone-dining-table-2.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565962/materials/imported/accre-stone-dining-table-160cm/accre-stone-dining-table-4.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565963/materials/imported/accre-stone-dining-table-160cm/accre-stone-dining-table-8.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565964/materials/imported/accre-stone-dining-table-160cm/accre-stone-dining-table.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "Accre-Stone-Dining-Table-2.jpg",
         "Accre-Stone-Dining-Table-4.jpg",
@@ -2065,10 +5678,7 @@
           "value": "BARNES-BAR-TABLE-WHITE.jpg, Barnes-Doily-Bar-Table.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565965/materials/imported/barnes-bar-table-70-cm-white/barnes-bar-table-white.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565966/materials/imported/barnes-bar-table-70-cm-white/barnes-doily-bar-table.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "BARNES-BAR-TABLE-WHITE.jpg",
         "Barnes-Doily-Bar-Table.jpg"
@@ -2108,11 +5718,7 @@
           "value": "Black-2.jpg, Gallery-1-2.jpg, Gallery-2-2.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565966/materials/imported/challis-plastic-side-table-42-cm-black/black-2.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565967/materials/imported/challis-plastic-side-table-42-cm-black/gallery-1-2.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565968/materials/imported/challis-plastic-side-table-42-cm-black/gallery-2-2.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "Black-2.jpg",
         "Gallery-1-2.jpg",
@@ -2158,13 +5764,7 @@
           "value": "barron-gallery-2.jpg, barron-gallery-3.jpg, barron-gallery-4.jpg, barron-gallery-7.jpg, barron-main-photo.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565968/materials/imported/barron-2-seater-sofabed/barron-gallery-2.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565969/materials/imported/barron-2-seater-sofabed/barron-gallery-3.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565970/materials/imported/barron-2-seater-sofabed/barron-gallery-4.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565971/materials/imported/barron-2-seater-sofabed/barron-gallery-7.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565971/materials/imported/barron-2-seater-sofabed/barron-main-photo.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "barron-gallery-2.jpg",
         "barron-gallery-3.jpg",
@@ -2207,11 +5807,7 @@
           "value": "barron-main-photo-alter.jpg, IMG_2809.jpg, IMG_2810.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565972/materials/imported/barsten-5-in-1-sofabed-leatheric-beige/barron-main-photo-alter.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565973/materials/imported/barsten-5-in-1-sofabed-leatheric-beige/img-2809.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565973/materials/imported/barsten-5-in-1-sofabed-leatheric-beige/img-2810.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "barron-main-photo-alter.jpg",
         "IMG_2809.jpg",
@@ -2252,11 +5848,7 @@
           "value": "barron-main-gray-photo-alter.jpg, IMG_2829.jpg, IMG_2830.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565974/materials/imported/barsten-5-in-1-sofabed-leatheric-light-gray/barron-main-gray-photo-alter.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565975/materials/imported/barsten-5-in-1-sofabed-leatheric-light-gray/img-2829.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565976/materials/imported/barsten-5-in-1-sofabed-leatheric-light-gray/img-2830.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "barron-main-gray-photo-alter.jpg",
         "IMG_2829.jpg",
@@ -2297,11 +5889,7 @@
           "value": "Berkshire-1-Blue.jpg, Berkshire-2-Blue.jpg, Berkshire-3-Blue.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565977/materials/imported/berkshire-2-seater-sofabed-blue/berkshire-1-blue.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565977/materials/imported/berkshire-2-seater-sofabed-blue/berkshire-2-blue.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565978/materials/imported/berkshire-2-seater-sofabed-blue/berkshire-3-blue.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "Berkshire-1-Blue.jpg",
         "Berkshire-2-Blue.jpg",
@@ -2346,11 +5934,7 @@
           "value": "Berkshire-1-Sage-Green.jpg, Berkshire-2-Green.jpg, Berkshire-3-Green.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565979/materials/imported/berkshire-2-seater-sofabed-sage-green/berkshire-1-sage-green.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565980/materials/imported/berkshire-2-seater-sofabed-sage-green/berkshire-2-green.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565981/materials/imported/berkshire-2-seater-sofabed-sage-green/berkshire-3-green.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "Berkshire-1-Sage-Green.jpg",
         "Berkshire-2-Green.jpg",
@@ -2391,11 +5975,7 @@
           "value": "Midst-TV-Cabinet-180cm-White-3.jpg, Midst-TV-Cabinet-180cm-White.jpg, Studio-Project-4-17.png"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565982/materials/imported/midst-tv-cabinet-150cm-white/midst-tv-cabinet-180cm-white-3.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565983/materials/imported/midst-tv-cabinet-150cm-white/midst-tv-cabinet-180cm-white.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565984/materials/imported/midst-tv-cabinet-150cm-white/studio-project-4-17.png"
-      ],
+      "image": [],
       "localImageFiles": [
         "Midst-TV-Cabinet-180cm-White-3.jpg",
         "Midst-TV-Cabinet-180cm-White.jpg",
@@ -2440,12 +6020,7 @@
           "value": "120026374_c_Milnion_180cm_GY.jpg, 120026374_f_Milnion_180cm_GY.jpg, 120026374_op2_Milnion_180cm_GY.jpg, 120026374_pf_Milnion_180cm_GY.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565985/materials/imported/milinion-tv-cabinet-180-cm/120026374-c-milnion-180cm-gy.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565986/materials/imported/milinion-tv-cabinet-180-cm/120026374-f-milnion-180cm-gy.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565987/materials/imported/milinion-tv-cabinet-180-cm/120026374-op2-milnion-180cm-gy.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565988/materials/imported/milinion-tv-cabinet-180-cm/120026374-pf-milnion-180cm-gy.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "120026374_c_Milnion_180cm_GY.jpg",
         "120026374_f_Milnion_180cm_GY.jpg",
@@ -2492,12 +6067,7 @@
           "value": "110041005_c_Picasso_180cm_IV.jpg, 110041005_f_Picasso_180cm_IV.jpg, 110041005_op2_Picasso_180cm_IV.jpg, 110041005_op4_Picasso_180cm_IV.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565989/materials/imported/picasso-tv-cabinet-180cm-ivory/110041005-c-picasso-180cm-iv.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565990/materials/imported/picasso-tv-cabinet-180cm-ivory/110041005-f-picasso-180cm-iv.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565990/materials/imported/picasso-tv-cabinet-180cm-ivory/110041005-op2-picasso-180cm-iv.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565991/materials/imported/picasso-tv-cabinet-180cm-ivory/110041005-op4-picasso-180cm-iv.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "110041005_c_Picasso_180cm_IV.jpg",
         "110041005_f_Picasso_180cm_IV.jpg",
@@ -2539,12 +6109,7 @@
           "value": "120024993_c_Takayama_150cm_LTK.jpg, 120024993_f_Takayama_150cm_LTK.jpg, 120024993_op8_Takayama_150cm_LTK.jpg, 120024993_pc_Takayama_150cm_LTK.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565992/materials/imported/takayama-solid-wood-tv-cabinet-150cm-light-teak/120024993-c-takayama-150cm-ltk.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565993/materials/imported/takayama-solid-wood-tv-cabinet-150cm-light-teak/120024993-f-takayama-150cm-ltk.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565995/materials/imported/takayama-solid-wood-tv-cabinet-150cm-light-teak/120024993-op8-takayama-150cm-ltk.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565995/materials/imported/takayama-solid-wood-tv-cabinet-150cm-light-teak/120024993-pc-takayama-150cm-ltk.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "120024993_c_Takayama_150cm_LTK.jpg",
         "120024993_f_Takayama_150cm_LTK.jpg",
@@ -2586,12 +6151,7 @@
           "value": "120025475_2.jpg, 120025475_3.jpg, 120025475_7.jpg, 120025475.jpg"
         }
       ],
-      "image": [
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565996/materials/imported/wasabi-solid-wood-tv-cabinet-200cm-natural/120025475-2.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565997/materials/imported/wasabi-solid-wood-tv-cabinet-200cm-natural/120025475-3.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565998/materials/imported/wasabi-solid-wood-tv-cabinet-200cm-natural/120025475-7.jpg",
-        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565999/materials/imported/wasabi-solid-wood-tv-cabinet-200cm-natural/120025475.jpg"
-      ],
+      "image": [],
       "localImageFiles": [
         "120025475_2.jpg",
         "120025475_3.jpg",
@@ -2600,6 +6160,341 @@
       ],
       "productFolder": "Living Room/Kurt_/TV Stand/Wasabi Solid Wood TV Cabinet 200CM (Natural)",
       "sourceDocument": "Living Room/Kurt_/TV Stand/Wasabi Solid Wood TV Cabinet 200CM (Natural)/Wasabi Solid Wood TV Cabinet 200CM (Natural).docx"
+    },
+    {
+      "name": "Sophia Sofa",
+      "company": "Urban Concepts",
+      "price": 21950,
+      "description": "The Sophia Sofa is the perfect solution for small spaces, with its cozy and chic design, green fabric upholstery, and natural wood-colored legs. It comes with two cream pillows and is easy to match with any decor, making it a great option for apartments, condos, or any space that needs a stylish, space-saving seating option.",
+      "category": "Living Room",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Green",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Sofa",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L136cm x W77cm x H87cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Green"
+        },
+        {
+          "key": "Type",
+          "value": "Sofa"
+        },
+        {
+          "key": "Size",
+          "value": "L136cm x W77cm x H87cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.urbanconcepts.ph/product/sophia-sofa/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Warren/06_24_LivingMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Sophia Sofa_1.png, Sophia Sofa_2.png, Sophia Sofa_3.png, Sophia Sofa_4.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412107/materials/imported/sophia-sofa/sophia-sofa-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412109/materials/imported/sophia-sofa/sophia-sofa-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412111/materials/imported/sophia-sofa/sophia-sofa-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412113/materials/imported/sophia-sofa/sophia-sofa-4.png"
+      ],
+      "localImageFiles": [
+        "Sophia Sofa_1.png",
+        "Sophia Sofa_2.png",
+        "Sophia Sofa_3.png",
+        "Sophia Sofa_4.png"
+      ],
+      "productFolder": "Living Room/Warren/Sophia Sofa",
+      "sourceDocument": "Living Room/Warren/06_24_LivingMats.docx"
+    },
+    {
+      "name": "Sarina Sofa",
+      "company": "Urban Concepts",
+      "price": 17560,
+      "description": "The sofa features a cozy, mid-century modern aesthetic. It has a plush, streamlined silhouette with gently sloping armrests and thick, inviting seat cushions. The upholstery is a soft, light grey suede-like fabric that gives it a velvety texture. It stands on four splayed, tapered wooden legs finished in a warm walnut tone, adding an elegant contrast to the light fabric.",
+      "category": "Living Room",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Light grey",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Sofa",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "W144.7cm x D86.3cm x H72cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Light grey"
+        },
+        {
+          "key": "Type",
+          "value": "Sofa"
+        },
+        {
+          "key": "Size",
+          "value": "W144.7cm x D86.3cm x H72cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.urbanconcepts.ph/product/sarina-sofa-set/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Warren/06_24_LivingMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Sarina Sofa_1.png, Sarina Sofa_2.png, Sarina Sofa_3.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412115/materials/imported/sarina-sofa/sarina-sofa-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412117/materials/imported/sarina-sofa/sarina-sofa-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412118/materials/imported/sarina-sofa/sarina-sofa-3.png"
+      ],
+      "localImageFiles": [
+        "Sarina Sofa_1.png",
+        "Sarina Sofa_2.png",
+        "Sarina Sofa_3.png"
+      ],
+      "productFolder": "Living Room/Warren/Sarina Sofa",
+      "sourceDocument": "Living Room/Warren/06_24_LivingMats.docx"
+    },
+    {
+      "name": "Rance Multipurpose Rack",
+      "company": "Urban Concepts",
+      "price": 11640,
+      "description": "Rance rack set of 2, the two sections can be placed side by side or stack them in a 4-tier unit to fit that right spot in your home. The rack also makes a great shelf unit in a playroom for storing toys, puzzles and games.",
+      "category": "Living Room",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Natural Wood",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Shelf",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L90 x W30 x H180cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Natural Wood"
+        },
+        {
+          "key": "Type",
+          "value": "Shelf"
+        },
+        {
+          "key": "Size",
+          "value": "L90 x W30 x H180cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.urbanconcepts.ph/product/rance-multipurpose-rack/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Warren/06_24_LivingMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Rance Multipurpose Rack_1.png, Rance Multipurpose Rack_2.png, Rance Multipurpose Rack_3.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412120/materials/imported/rance-multipurpose-rack/rance-multipurpose-rack-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412122/materials/imported/rance-multipurpose-rack/rance-multipurpose-rack-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412124/materials/imported/rance-multipurpose-rack/rance-multipurpose-rack-3.png"
+      ],
+      "localImageFiles": [
+        "Rance Multipurpose Rack_1.png",
+        "Rance Multipurpose Rack_2.png",
+        "Rance Multipurpose Rack_3.png"
+      ],
+      "productFolder": "Living Room/Warren/Rance Multipurpose Rack",
+      "sourceDocument": "Living Room/Warren/06_24_LivingMats.docx"
+    },
+    {
+      "name": "Reina Storage Cabinet",
+      "company": "Urban Concepts",
+      "price": 13560,
+      "description": "Reina Storage Cabinet asymmetrical design allows two big drawers, two small sized drawers and a whole drawer. It also includes one open shelf for display. Very efficient use of space!",
+      "category": "Living Room",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Natural",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Shelf",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L60 x W40 x H115cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Natural"
+        },
+        {
+          "key": "Type",
+          "value": "Shelf"
+        },
+        {
+          "key": "Size",
+          "value": "L60 x W40 x H115cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.urbanconcepts.ph/product/reina-storage-cabinet/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Warren/06_24_LivingMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Reina Storage Cabinet_1.png, Reina Storage Cabinet_2.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412125/materials/imported/reina-storage-cabinet/reina-storage-cabinet-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412127/materials/imported/reina-storage-cabinet/reina-storage-cabinet-2.png"
+      ],
+      "localImageFiles": [
+        "Reina Storage Cabinet_1.png",
+        "Reina Storage Cabinet_2.png"
+      ],
+      "productFolder": "Living Room/Warren/Reina Storage Cabinet",
+      "sourceDocument": "Living Room/Warren/06_24_LivingMats.docx"
+    },
+    {
+      "name": "Ezeck TV Cabinet",
+      "company": "Urban Concepts",
+      "price": 11640,
+      "description": "The Ezeck TV Cabinet is part of our Natural Collection. It includes two open shelves for display and two sliding door cabinet. Crafted from Solid hevea wood also known as rubber wood.",
+      "category": "Living Room",
+      "subCategory": "",
+      "options": [
+        {
+          "type": "color",
+          "option": "Natural",
+          "addToPrice": 0
+        },
+        {
+          "type": "type",
+          "option": "Shelf",
+          "addToPrice": 0
+        },
+        {
+          "type": "size",
+          "option": "L120 x W37.5 x H180cm",
+          "addToPrice": 0
+        }
+      ],
+      "attributes": [
+        {
+          "key": "Color",
+          "value": "Natural"
+        },
+        {
+          "key": "Type",
+          "value": "Shelf"
+        },
+        {
+          "key": "Size",
+          "value": "L120 x W37.5 x H180cm"
+        },
+        {
+          "key": "Link",
+          "value": "https://www.urbanconcepts.ph/product/ezeck-tv-cabinet/"
+        },
+        {
+          "key": "Source Document",
+          "value": "Living Room/Warren/06_24_LivingMats.docx"
+        },
+        {
+          "key": "Source Folder",
+          "value": "Living Room/Warren"
+        },
+        {
+          "key": "Original Image Files",
+          "value": "Ezeck TV Cabinet_1.png, Ezeck TV Cabinet_2.png, Ezeck TV Cabinet_3.png"
+        }
+      ],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412128/materials/imported/ezeck-tv-cabinet/ezeck-tv-cabinet-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412130/materials/imported/ezeck-tv-cabinet/ezeck-tv-cabinet-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412131/materials/imported/ezeck-tv-cabinet/ezeck-tv-cabinet-3.png"
+      ],
+      "localImageFiles": [
+        "Ezeck TV Cabinet_1.png",
+        "Ezeck TV Cabinet_2.png",
+        "Ezeck TV Cabinet_3.png"
+      ],
+      "productFolder": "Living Room/Warren/Ezeck TV Cabinet",
+      "sourceDocument": "Living Room/Warren/06_24_LivingMats.docx"
     }
   ]
 }

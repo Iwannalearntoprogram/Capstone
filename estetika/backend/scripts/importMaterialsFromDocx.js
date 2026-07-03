@@ -65,6 +65,7 @@ function parseArgs(argv) {
     skipEmbeddings: false,
     skipImages: false,
     updateImagesOnly: false,
+    onlyNew: false,
     imageMode: process.env.MATERIAL_IMAGE_MODE || "static",
     materialsRoot: DEFAULT_MATERIALS_ROOT,
     jsonOutput: DEFAULT_JSON_OUTPUT,
@@ -76,6 +77,7 @@ function parseArgs(argv) {
     else if (arg === "--no-embed") args.skipEmbeddings = true;
     else if (arg === "--skip-images") args.skipImages = true;
     else if (arg === "--update-images-only") args.updateImagesOnly = true;
+    else if (arg === "--only-new") args.onlyNew = true;
     else if (arg === "--image-mode") args.imageMode = argv[++i];
     else if (arg === "--materials-root") args.materialsRoot = path.resolve(argv[++i]);
     else if (arg === "--json-output") args.jsonOutput = path.resolve(argv[++i]);
@@ -87,6 +89,7 @@ Options:
   --no-embed            Skip OpenAI embedding generation
   --skip-images         Do not upload or update material images
   --update-images-only  Only update images on existing MongoDB materials
+  --only-new            Only insert materials missing from MongoDB; skip existing
   --image-mode MODE     static (default), firebase, or cloudinary
   --materials-root DIR  Override the source Materials directory
   --json-output FILE    Override the JSON export file path
@@ -571,6 +574,7 @@ async function importRecords(records, args) {
     inserted: 0,
     updated: 0,
     matched: 0,
+    skipped: 0,
     failed: 0,
     imageLinks: 0,
     imageMode: args.skipImages ? "skipped" : args.imageMode,
@@ -587,6 +591,11 @@ async function importRecords(records, args) {
           company: record.company,
           category: record.category,
         });
+
+        if (args.onlyNew && existing) {
+          summary.skipped += 1;
+          continue;
+        }
 
         if (args.updateImagesOnly) {
           if (!existing) {
