@@ -378,12 +378,17 @@ const MaterialModal = ({
                       className="mb-4 border border-gray-200 rounded-xl p-4 bg-white"
                     >
                       <div className="flex items-center gap-2 mb-3">
-                        <input
-                          className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
-                          placeholder="Key (e.g., Color)"
-                          value={g.key}
-                          onChange={(e) => updateAttrKey(gi, e.target.value)}
-                        />
+                        <div className="flex-1 space-y-2">
+                          <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+                            Key <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+                            placeholder="Key (e.g., Color)"
+                            value={g.key}
+                            onChange={(e) => updateAttrKey(gi, e.target.value)}
+                          />
+                        </div>
                         {attrGroups.length > 1 && (
                           <button
                             type="button"
@@ -396,7 +401,9 @@ const MaterialModal = ({
                       </div>
                       <div className="ml-1">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs text-gray-600">Values</span>
+                          <span className="text-xs text-gray-600">
+                            Values <span className="text-red-500">*</span>
+                          </span>
                           <button
                             type="button"
                             onClick={() => addAttrValue(gi)}
@@ -496,7 +503,7 @@ const MaterialModal = ({
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">
-                              Type
+                              Type <span className="text-red-500">*</span>
                             </label>
                             <select
                               value={option.type}
@@ -514,7 +521,7 @@ const MaterialModal = ({
 
                           <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">
-                              Option Name
+                              Option Name <span className="text-red-500">*</span>
                             </label>
                             <input
                               type="text"
@@ -529,7 +536,7 @@ const MaterialModal = ({
 
                           <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">
-                              Price Addition (₱)
+                              Price Addition (₱) <span className="text-red-500">*</span>
                             </label>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">

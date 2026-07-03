@@ -8,6 +8,7 @@ const { openai } = require("../../utils/openaiClient");
 const {
   rankMaterialsForProjectContext,
 } = require("../../utils/materialRecommendation");
+const { inferProductType } = require("../../utils/materialType");
 
 const getProjectSearchContext = (project) => {
   if (!project || typeof project !== "object") return "";
@@ -147,6 +148,25 @@ const material_post = catchAsync(async (req, res, next) => {
     }
   }
 
+  // Attributes: allow empty array; if provided validate structure
+  if (attributes !== undefined) {
+    if (!Array.isArray(attributes)) {
+      return next(new AppError("Attributes must be an array.", 400));
+    }
+    for (const attribute of attributes) {
+      if (
+        !attribute ||
+        typeof attribute !== "object" ||
+        !attribute.key ||
+        !attribute.value
+      ) {
+        return next(
+          new AppError("Each attribute must include 'key' and 'value'.", 400)
+        );
+      }
+    }
+  }
+
   let embedding = [];
   try {
     embedding = await generateEmbedding(`${name} ${description}`);
@@ -167,9 +187,7 @@ const material_post = catchAsync(async (req, res, next) => {
     options: Array.isArray(options) ? options : [],
     category,
     subCategory,
-    attributes: Array.isArray(attributes)
-      ? attributes.filter((a) => a && a.key && a.value)
-      : [],
+    attributes: Array.isArray(attributes) ? attributes : [],
     embedding,
   });
 
@@ -231,7 +249,25 @@ const material_put = catchAsync(async (req, res, next) => {
   if (image) updates.image = image;
   if (category) updates.category = category;
   if (subCategory) updates.subCategory = subCategory;
-  if (attributes) updates.attributes = attributes;
+
+  if (attributes) {
+    if (!Array.isArray(attributes)) {
+      return next(new AppError("Attributes must be an array.", 400));
+    }
+    for (const attribute of attributes) {
+      if (
+        !attribute ||
+        typeof attribute !== "object" ||
+        !attribute.key ||
+        !attribute.value
+      ) {
+        return next(
+          new AppError("Each attribute must include 'key' and 'value'.", 400)
+        );
+      }
+    }
+    updates.attributes = attributes;
+  }
 
   if (price !== undefined) {
     if (typeof price !== "number" || price <= 0) {
@@ -570,8 +606,13 @@ const material_search = catchAsync(async (req, res) => {
 
 // Similar materials for the material details page. Uses the material's OWN
 // stored embedding as the query vector, so it never calls OpenAI at request
-// time (no quota/429 dependency). Falls back to same-category matches for
+// time (no quota/429 dependency). Falls back to same-type matches for
 // materials that don't have an embedding yet.
+//
+// `category` mixes room groupings ("Office") with real furniture types
+// ("Chair"), so desks and chairs can share a category — filtering on it
+// directly lets unrelated furniture through. inferProductType() derives the
+// actual product type from the name instead, and both paths filter on that.
 const material_similar = catchAsync(async (req, res) => {
   const { id, max } = req.query;
 
@@ -585,6 +626,7 @@ const material_similar = catchAsync(async (req, res) => {
 
   if (!material) return res.status(404).json({ error: "Material not found." });
 
+  const targetType = inferProductType(material);
   const hasEmbedding =
     Array.isArray(material.embedding) && material.embedding.length > 0;
 
@@ -596,10 +638,10 @@ const material_similar = catchAsync(async (req, res) => {
           $vectorSearch: {
             queryVector: material.embedding,
             path: "embedding",
-            numCandidates: 100,
-            // Fetch a few extra so we can drop the material itself and still
-            // return up to maxInt neighbors.
-            limit: maxInt + 1,
+            numCandidates: 200,
+            // Fetch a wide pool so the type filter below still leaves
+            // enough same-type neighbors to fill up to maxInt.
+            limit: 100,
             index: "materials_search",
           },
         },
@@ -608,6 +650,7 @@ const material_similar = catchAsync(async (req, res) => {
       const sanitized = results
         .map(({ embedding, ...rest }) => rest)
         .filter((item) => String(item._id) !== String(material._id))
+        .filter((item) => !targetType || inferProductType(item) === targetType)
         .slice(0, maxInt);
 
       if (sanitized.length > 0) {
@@ -618,37 +661,22 @@ const material_similar = catchAsync(async (req, res) => {
         });
       }
     } catch (err) {
-      // Fall through to the category-based fallback below.
+      // Fall through to the type-based fallback below.
       console.error("material_similar vector search failed:", err.message);
     }
   }
 
-  // 2) Fallback: same category (then subCategory), excluding self.
-  const orConditions = [];
-  if (material.category) orConditions.push({ category: material.category });
-  if (material.subCategory)
-    orConditions.push({ subCategory: material.subCategory });
-
-  const fallbackQuery = {
-    _id: { $ne: material._id },
-    ...(orConditions.length > 0 ? { $or: orConditions } : {}),
-  };
-
-  let fallback = await Material.find(fallbackQuery)
+  // 2) Fallback: strictly same product type, excluding self. No filler from
+  // other types — an empty/short list is preferable to recommending other
+  // types.
+  const candidates = await Material.find({ _id: { $ne: material._id } })
     .select("-embedding")
     .sort({ sales: -1, price: 1 })
-    .limit(maxInt)
     .lean();
 
-  // If category yielded nothing, surface other popular materials so the
-  // section is never empty.
-  if (fallback.length === 0) {
-    fallback = await Material.find({ _id: { $ne: material._id } })
-      .select("-embedding")
-      .sort({ sales: -1, price: 1 })
-      .limit(maxInt)
-      .lean();
-  }
+  const fallback = candidates
+    .filter((item) => !targetType || inferProductType(item) === targetType)
+    .slice(0, maxInt);
 
   return res.json({
     message: `Found ${fallback.length} related materials.`,
