@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-25T18:28:51.136Z",
+  "generatedAt": "2026-07-06T13:55:30.670Z",
   "dryRun": false,
   "docxCount": 35,
   "materialCount": 103,
@@ -59,13 +59,13 @@
   "importSummary": {
     "dryRun": false,
     "updateImagesOnly": false,
-    "inserted": 60,
-    "updated": 0,
+    "inserted": 0,
+    "updated": 103,
     "matched": 0,
-    "skipped": 43,
+    "skipped": 0,
     "failed": 0,
-    "imageLinks": 200,
-    "imageMode": "cloudinary",
+    "imageLinks": 0,
+    "imageMode": "skipped",
     "noImages": [
       "HAVBÄCK / ORRSJÖN",
       "TÄNNFORSEN / ORRSJÖN",
@@ -89,6 +89,7 @@
       "description": "a sleek, stainless steel wire shower caddy or countertop organizer. It sits on small, capped feet and holds three uniform, square-shaped white plastic pump bottles of varying sizes alongside a dark translucent squeeze tube labeled for hair care. This minimalist setup offers a clean, organized solution for keeping bath, shower, or vanity essentials tidy.",
       "category": "Bathroom",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -164,6 +165,7 @@
       "description": "a white, three-tier wire corner shelf designed for bathroom or shower organization. The triangular caddy is placed in a corner and holds various toiletries, including a soap dish on top, a white pump dispenser and squeeze tube on the middle shelf, and two translucent gray pump bottles on the bottom shelf. Additionally, a wooden long-handled bath brush and a smaller facial brush hang from the sides, creating an efficient and tidy storage solution.",
       "category": "Bathroom",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -247,6 +249,7 @@
       "description": "a white, three-tier wire corner shelf designed for bathroom or shower organization. The triangular caddy is placed in a corner and holds various toiletries, including a soap dish on top, a white pump dispenser and squeeze tube on the middle shelf, and two translucent gray pump bottles on the bottom shelf. Additionally, a wooden long-handled bath brush and a smaller facial brush hang from the sides, creating an efficient and tidy storage solution.",
       "category": "Bathroom",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -320,6 +323,7 @@
       "description": "a dark gray or charcoal-colored diatomaceous earth bathmat placed on a light tiled floor. A person's bare feet are shown walking across it, leaving behind distinct wet footprints that are quickly absorbing into the porous surface. This minimalist mat offers a highly absorbent, fast-drying, and slip-resistant alternative to traditional fabric bathmats.",
       "category": "Bathroom",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -399,6 +403,7 @@
       "description": "a plain white shower curtain partially drawn closed in a bathroom setting. It features a simple, clean, and solid design that offers privacy while keeping water contained. In the background, a free-standing bathtub with classic gold fixtures is partially visible, providing a bright and neutral accent to the space.",
       "category": "Bathroom",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -474,6 +479,7 @@
       "description": "HAVBÄCK bathroom furniture has a clean, straightforward design that is easy to personalize with knobs or handles. This combo offers closed storage and a deep wash-basin that prevents spilling on the floor.",
       "category": "Bathroom Project",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -522,7 +528,23 @@
           "value": "Bathroom/Warren"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412557/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-beige-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412558/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-beige-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412559/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-beige-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412562/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-beige-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412563/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-beige-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412563/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-dark-grey-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412565/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-dark-grey-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412567/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-dark-grey-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412569/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-dark-grey-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412570/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-dark-grey-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412571/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-white-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412572/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-white-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412573/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-white-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412574/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-white-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412575/materials/imported/havb-ck-orrsj-n/havb-ck-orrsj-n-white-5.png"
+      ],
       "localImageFiles": [],
       "productFolder": "Bathroom/Warren/HAVBÄCK - ORRSJÖN",
       "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
@@ -534,6 +556,7 @@
       "description": "TÄNNFORSEN bathroom furniture expresses classic elegance with beveled edges that add a crafted look. This combo has 2 spacious drawers and room on the wash-basin for toothbrushes and soap.",
       "category": "Bathroom Project",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -577,7 +600,20 @@
           "value": "Bathroom/Warren"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412575/materials/imported/t-nnforsen-orrsj-n/t-nnforsen-orrsj-n-light-grey-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412577/materials/imported/t-nnforsen-orrsj-n/t-nnforsen-orrsj-n-light-grey-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412578/materials/imported/t-nnforsen-orrsj-n/t-nnforsen-orrsj-n-light-grey-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412579/materials/imported/t-nnforsen-orrsj-n/t-nnforsen-orrsj-n-light-grey-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412580/materials/imported/t-nnforsen-orrsj-n/t-nnforsen-orrsj-n-light-grey-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412581/materials/imported/t-nnforsen-orrsj-n/t-nnforsen-orrsj-n-light-grey-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412582/materials/imported/t-nnforsen-orrsj-n/t-nnforsen-orrsj-n-white-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412583/materials/imported/t-nnforsen-orrsj-n/t-nnforsen-orrsj-n-white-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412584/materials/imported/t-nnforsen-orrsj-n/t-nnforsen-orrsj-n-white-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412585/materials/imported/t-nnforsen-orrsj-n/t-nnforsen-orrsj-n-white-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412586/materials/imported/t-nnforsen-orrsj-n/t-nnforsen-orrsj-n-white-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412587/materials/imported/t-nnforsen-orrsj-n/t-nnforsen-orrsj-n-white-6.png"
+      ],
       "localImageFiles": [],
       "productFolder": "Bathroom/Warren/TÄNNFORSEN - ORRSJÖN",
       "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
@@ -589,6 +625,7 @@
       "description": "ÄNGSJÖN bathroom furniture has a modern appeal with minimal details. This wash-stand with countertop and a round countertop wash-basin creates a personal and stylish centerpiece in your bathroom.",
       "category": "Bathroom Project",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -632,7 +669,22 @@
           "value": "Bathroom/Warren"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412588/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-oak-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412589/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-oak-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412591/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-oak-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412592/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-oak-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412593/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-oak-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412595/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-oak-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412595/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-oak-7.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412596/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-white-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412598/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-white-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412599/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-white-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412600/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-white-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412601/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-white-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412602/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-white-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412603/materials/imported/ngsj-n-lersj-n/ngsj-n-lersj-n-white-7.png"
+      ],
       "localImageFiles": [],
       "productFolder": "Bathroom/Warren/ÄNGSJÖN - LERSJÖN",
       "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
@@ -644,6 +696,7 @@
       "description": "It fits in the smallest of bathrooms, but there’s plenty of space on the shelves for all your toiletries from shampoo bottles to soap and small items.",
       "category": "Bathroom Project",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -687,7 +740,16 @@
           "value": "Bathroom/Warren"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412606/materials/imported/vesken/vesken-black-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412607/materials/imported/vesken/vesken-black-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412607/materials/imported/vesken/vesken-black-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412608/materials/imported/vesken/vesken-white-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412609/materials/imported/vesken/vesken-white-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412610/materials/imported/vesken/vesken-white-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412611/materials/imported/vesken/vesken-white-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412612/materials/imported/vesken/vesken-white-5.png"
+      ],
       "localImageFiles": [],
       "productFolder": "Bathroom/Warren/VESKEN",
       "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
@@ -699,6 +761,7 @@
       "description": "It can be difficult to keep things neat and tidy. JONAXEL storage system lets you utilize the spaces you have in smarter ways. You can build a combination that fits exactly your needs and use it almost anywhere, even in humid bathrooms and laundry rooms.",
       "category": "Bathroom Project",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -766,6 +829,7 @@
       "description": "Flexible and easy-to-place. EKENABBEN shelving unit has a simple design with open storage that helps you keep track of your things. Or you can customize it with boxes that suit your storage needs.",
       "category": "Bathroom Project",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -809,7 +873,20 @@
           "value": "Bathroom/Warren"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412613/materials/imported/ekenabben/ekenabben-aspenblue-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412614/materials/imported/ekenabben/ekenabben-aspenblue-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412615/materials/imported/ekenabben/ekenabben-aspenblue-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412616/materials/imported/ekenabben/ekenabben-aspenblue-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412617/materials/imported/ekenabben/ekenabben-aspenwhite-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412618/materials/imported/ekenabben/ekenabben-aspenwhite-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412619/materials/imported/ekenabben/ekenabben-aspenwhite-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412621/materials/imported/ekenabben/ekenabben-aspenwhite-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412622/materials/imported/ekenabben/ekenabben-aspenwhite-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412624/materials/imported/ekenabben/ekenabben-aspenwhite-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412625/materials/imported/ekenabben/ekenabben-aspenwhite-7.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412626/materials/imported/ekenabben/ekenabben-aspenwhite-8.png"
+      ],
       "localImageFiles": [],
       "productFolder": "Bathroom/Warren/EKENABBEN",
       "sourceDocument": "Bathroom/Warren/BathFurni_6_13_26.docx"
@@ -821,6 +898,7 @@
       "description": "A secure place where you and your baby can get to know one another in peace and quiet. Comfortable height and storage close at hand so you can reach what you need and always keep one hand on the baby.",
       "category": "Bathroom Project",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -890,6 +968,7 @@
       "description": "A secure place where you and your baby can get to know one another in peace and quiet. Comfortable height and storage close at hand so you can reach what you need and always keep one hand on the baby.",
       "category": "Bathroom Project",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -963,6 +1042,7 @@
       "description": "You can create a complete Scandinavian-styled room for a baby with the ÄLSKVÄRD series. Here you keep both diapers and clothes close by. And when the diaper stage is over it turns into a chest of drawers.",
       "category": "Bathroom Project",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -1040,6 +1120,7 @@
       "description": "The full spray function of the showerhead gives a wide and even coverage over the body, for a calming rainfall feeling. This hand shower with full spray function gives a wide and even coverage for a relaxing shower experience. You can easily adjust the height of the hand shower thanks to the flexible parking bracket on the rail. Easy to clean by rubbing the rubber nozzles on the showerheads. It’s easy to switch between the hand shower and showerhead using the diverter on the rail. The chrome-plated surface is a hard, durable and easy to clean. A washer integrated in the shower keeps the water flow just right while less water and energy are used.",
       "category": "Bathroom Project",
       "subCategory": "",
+      "roomType": "Bathroom",
       "options": [
         {
           "type": "color",
@@ -1117,6 +1198,7 @@
       "description": "Actual color of product may vary slightly from what appears online. IMPORTANT: Before placing your order, please refer to the product dimensions to fit in your intended area. ASSEMBLY SERVICE REMINDERS Item assembly will be scheduled separately from item shipping. The assembly of multiple items with more than three (3) units will be scheduled based on available calendar dates. For out of assembly serviceable areas, certain charges may apply and for further coordination. Please contact our abenson.com Team at 8811-8811 or email us at shop@abenson.com Unserviceable Areas: Cebu/Calapan/Davao/Bohol/Bacolod Gensan/Iloilo/Albay/Camarines/Ilocos/Isabela/CDO.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1180,6 +1262,7 @@
       "description": "This is wooden bed frame with walnut finish featuring a slatted headboard and sturdy legs. It has a minimalist design with evenly spaced wooden slats for mattress support, offering a modern yet classic look suitable for various bedroom styles.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1243,6 +1326,7 @@
       "description": "a modern bed frame featuring a dark wood or metal structure. Both the headboard and footboard are accented with rectangular, tufted faux-leather or vinyl panels in black, featuring subtle button detailing. The frame utilizes a sturdy grid-style metal slat system to support a mattress without needing a box spring.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1308,6 +1392,7 @@
       "description": "a freestanding, three-door wardrobe cabinet finished in a dark, textured wood grain finish (such as espresso or wenge). It features a clean-lined, modern design with three vertical doors, each equipped with a sleek, metallic silver bar handle for easy opening. This storage unit offers a practical and minimalist solution for organizing clothes or linen.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1363,6 +1448,7 @@
       "description": "a low-profile, minimalist sideboard or storage cabinet finished in a clean, light gray or off-white tone. It features a modern, handle-less look achieved through four integrated panel doors with subtle, dark recessed lip pulls along the top edge for a seamless aesthetic. This sleek unit offers a contemporary storage solution ideal for dining rooms, living areas, or entryways.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1432,6 +1518,7 @@
       "description": "A modern contemporary bedroom series featuring a padded headboard and two drawers on tapered wooden legs.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1479,7 +1566,11 @@
           "value": "LAUREN QUEEN BED_1.png, LAUREN QUEEN BED_2.png, LAUREN QUEEN BED_3.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565826/materials/imported/lauren-queen-bed/lauren-queen-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565828/materials/imported/lauren-queen-bed/lauren-queen-bed-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565830/materials/imported/lauren-queen-bed/lauren-queen-bed-3.png"
+      ],
       "localImageFiles": [
         "LAUREN QUEEN BED_1.png",
         "LAUREN QUEEN BED_2.png",
@@ -1495,6 +1586,7 @@
       "description": "A Transitional Series featuring chevron padded fabric headboard on tapered wooden legs.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1542,7 +1634,12 @@
           "value": "LYRA KING BED_1.png, LYRA KING BED_2.png, LYRA KING BED_3.png, LYRA KING BED_4.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565833/materials/imported/lyra-king-bed/lyra-king-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565834/materials/imported/lyra-king-bed/lyra-king-bed-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565837/materials/imported/lyra-king-bed/lyra-king-bed-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565839/materials/imported/lyra-king-bed/lyra-king-bed-4.png"
+      ],
       "localImageFiles": [
         "LYRA KING BED_1.png",
         "LYRA KING BED_2.png",
@@ -1559,6 +1656,7 @@
       "description": "Inspired by Retro Scandinavian style, it features simple lines with rounded edges, tapered solid legs, and cut-out finger pulls. The mattress size is 54 x 75 inches.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1606,7 +1704,12 @@
           "value": "GUNNAR DOUBLE BED_1.png, GUNNAR DOUBLE BED_2.png, GUNNAR DOUBLE BED_3.png, GUNNAR DOUBLE BED_4.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565840/materials/imported/gunnar-double-bed/gunnar-double-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565841/materials/imported/gunnar-double-bed/gunnar-double-bed-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565842/materials/imported/gunnar-double-bed/gunnar-double-bed-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565844/materials/imported/gunnar-double-bed/gunnar-double-bed-4.png"
+      ],
       "localImageFiles": [
         "GUNNAR DOUBLE BED_1.png",
         "GUNNAR DOUBLE BED_2.png",
@@ -1623,6 +1726,7 @@
       "description": "Fabric upholstered bedframe w/ tufted headboard and lift top storage base.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1680,7 +1784,10 @@
           "value": "DALLAS II QUEEN BED_1.png, DALLAS II QUEEN BED_2.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565845/materials/imported/dallas-ii-queen-bed/dallas-ii-queen-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565847/materials/imported/dallas-ii-queen-bed/dallas-ii-queen-bed-2.png"
+      ],
       "localImageFiles": [
         "DALLAS II QUEEN BED_1.png",
         "DALLAS II QUEEN BED_2.png"
@@ -1695,6 +1802,7 @@
       "description": "A Contemporary fabric upholstered bedframe with graceful curved headboard.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1747,7 +1855,11 @@
           "value": "HAVANA KING BED_1.png, HAVANA KING BED_2.png, HAVANA KING BED_3.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565848/materials/imported/havana-king-bed/havana-king-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565848/materials/imported/havana-king-bed/havana-king-bed-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565849/materials/imported/havana-king-bed/havana-king-bed-3.png"
+      ],
       "localImageFiles": [
         "HAVANA KING BED_1.png",
         "HAVANA KING BED_2.png",
@@ -1763,6 +1875,7 @@
       "description": "A Contemporary fabric upholstered bedframe with large front drawer.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1820,7 +1933,13 @@
           "value": "OSKAR II DOUBLE BED_1.png, OSKAR II DOUBLE BED_2.png, OSKAR II DOUBLE BED_3.png, OSKAR II DOUBLE BED_4.png, OSKAR II DOUBLE BED_5.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565850/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565851/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565852/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565853/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565854/materials/imported/oskar-ii-double-bed/oskar-ii-double-bed-5.png"
+      ],
       "localImageFiles": [
         "OSKAR II DOUBLE BED_1.png",
         "OSKAR II DOUBLE BED_2.png",
@@ -1838,6 +1957,7 @@
       "description": "A modern contemporary bedroom series made of solid rubberwood featuring six drawers on a tapered wooden legs.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1885,7 +2005,11 @@
           "value": "LAUREN DRESSER_1.png, LAUREN DRESSER_2.png, LAUREN DRESSER_3.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565855/materials/imported/lauren-dresser/lauren-dresser-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565856/materials/imported/lauren-dresser/lauren-dresser-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565858/materials/imported/lauren-dresser/lauren-dresser-3.png"
+      ],
       "localImageFiles": [
         "LAUREN DRESSER_1.png",
         "LAUREN DRESSER_2.png",
@@ -1901,6 +2025,7 @@
       "description": "A modern chest of drawers featuring six fluted design drawers with gold finish steel legs and handles.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -1953,7 +2078,16 @@
           "value": "SEOUL CHEST OF DRAWERS_GREY_1.png, SEOUL CHEST OF DRAWERS_GREY_2.png, SEOUL CHEST OF DRAWERS_GREY_3.png, SEOUL CHEST OF DRAWERS_GREY_4.png, SEOUL CHEST OF DRAWERS_GREY_5.png, SEOUL CHEST OF DRAWERS_GREY_6.png, SEOUL CHEST OF DRAWERS_MINT GREEN_1.png, SEOUL CHEST OF DRAWERS_MINT GREEN_2.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565859/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565859/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565860/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565861/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565862/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565863/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-grey-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565863/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-mint-green-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565865/materials/imported/seoul-chest-of-drawers/seoul-chest-of-drawers-mint-green-2.png"
+      ],
       "localImageFiles": [
         "SEOUL CHEST OF DRAWERS_GREY_1.png",
         "SEOUL CHEST OF DRAWERS_GREY_2.png",
@@ -1974,6 +2108,7 @@
       "description": "Fabric upholstered bed with pull out trundle drawer. Tufted headboard.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -2031,7 +2166,17 @@
           "value": "ANDANTE SINGLE BED_ALDEARLY_2.png, ANDANTE SINGLE BED_ALDERLY CHARCOAL_1.png, ANDANTE SINGLE BED_MARBELLA DARK GREY_1.png, ANDANTE SINGLE BED_PENDLE OATMEAL_1.png, ANDANTE SINGLE BED_PENDLE OATMEAL_2.png, ANDANTE SINGLE BED_PENDLE OATMEAL_3.png, ANDANTE SINGLE BED_PENDLE OATMEAL_5.png, ANDANTE SINGLE BED_PENDLE OATMEAL_6.png, ANDANTE SINGLE BED_PENDLE_OATMEAL_4.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565866/materials/imported/andante-single-bed/andante-single-bed-aldearly-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565866/materials/imported/andante-single-bed/andante-single-bed-alderly-charcoal-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565867/materials/imported/andante-single-bed/andante-single-bed-marbella-dark-grey-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565868/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565869/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565870/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565870/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565872/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565872/materials/imported/andante-single-bed/andante-single-bed-pendle-oatmeal-4.png"
+      ],
       "localImageFiles": [
         "ANDANTE SINGLE BED_ALDEARLY_2.png",
         "ANDANTE SINGLE BED_ALDERLY CHARCOAL_1.png",
@@ -2053,6 +2198,7 @@
       "description": "Fabric upholstered bed with pull-out trundle drawer and framed headboard.",
       "category": "Bedroom",
       "subCategory": "",
+      "roomType": "Bedroom",
       "options": [
         {
           "type": "color",
@@ -2110,7 +2256,14 @@
           "value": "OLI II SINGLE BED_1.png, OLI II SINGLE BED_2.png, OLI II SINGLE BED_3.png, OLI II SINGLE BED_4.png, OLI II SINGLE BED_5.png, OLI II SINGLE BED_6.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565873/materials/imported/oli-ii-single-bed/oli-ii-single-bed-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565876/materials/imported/oli-ii-single-bed/oli-ii-single-bed-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565876/materials/imported/oli-ii-single-bed/oli-ii-single-bed-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565877/materials/imported/oli-ii-single-bed/oli-ii-single-bed-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565878/materials/imported/oli-ii-single-bed/oli-ii-single-bed-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565879/materials/imported/oli-ii-single-bed/oli-ii-single-bed-6.png"
+      ],
       "localImageFiles": [
         "OLI II SINGLE BED_1.png",
         "OLI II SINGLE BED_2.png",
@@ -2129,6 +2282,7 @@
       "description": "Made from real rubberwood. Features a square backrest crafted from rubberwood with genuine rattan weave. Perfectly paired with the Aurora Dining Table.",
       "category": "Dining Area",
       "subCategory": "Chairs",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2154,7 +2308,12 @@
           "value": "IMG_4723.jpg, IMG_7851.jpg, IMG_7852.jpg, Studio-Project-1-21.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565880/materials/imported/aurora-rattan-chair/img-4723.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565881/materials/imported/aurora-rattan-chair/img-7851.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565882/materials/imported/aurora-rattan-chair/img-7852.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565884/materials/imported/aurora-rattan-chair/studio-project-1-21.png"
+      ],
       "localImageFiles": [
         "IMG_4723.jpg",
         "IMG_7851.jpg",
@@ -2171,6 +2330,7 @@
       "description": "Made in a rubberwood frame in high-quality foam.",
       "category": "Dining Area",
       "subCategory": "Chairs",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2200,7 +2360,12 @@
           "value": "Butter-Callstone-Gray-1.jpg, Butter-Callstone-Gray-2.jpg, Butter-Callstone-Gray-4.jpg, Studio-Project-12-4.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565885/materials/imported/butter-callstone-wood-chair-natural-gray-fabric/butter-callstone-gray-1.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565885/materials/imported/butter-callstone-wood-chair-natural-gray-fabric/butter-callstone-gray-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565886/materials/imported/butter-callstone-wood-chair-natural-gray-fabric/butter-callstone-gray-4.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565888/materials/imported/butter-callstone-wood-chair-natural-gray-fabric/studio-project-12-4.png"
+      ],
       "localImageFiles": [
         "Butter-Callstone-Gray-1.jpg",
         "Butter-Callstone-Gray-2.jpg",
@@ -2217,6 +2382,7 @@
       "description": "Fabric/wood colored frame.",
       "category": "Dining Area",
       "subCategory": "Chairs",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2242,7 +2408,11 @@
           "value": "Butter-Cruise-Wood-1.jpg, Butter-Cruise-Wood-2.jpg, Gemini_Generated_Image_cfqz33cfqz33cfqz-1.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565889/materials/imported/butter-cruise-wood-chair-wood/butter-cruise-wood-1.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565889/materials/imported/butter-cruise-wood-chair-wood/butter-cruise-wood-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565891/materials/imported/butter-cruise-wood-chair-wood/gemini-generated-image-cfqz33cfqz33cfqz-1.png"
+      ],
       "localImageFiles": [
         "Butter-Cruise-Wood-1.jpg",
         "Butter-Cruise-Wood-2.jpg",
@@ -2258,6 +2428,7 @@
       "description": "Made in a rubberwood frame in high-quality foam",
       "category": "Dining Area",
       "subCategory": "Chairs",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2287,7 +2458,12 @@
           "value": "Butter-Cuurv-Cream-Wood2Main.jpg, Butter-donut-1.jpg, Butter-donut-4.jpg, Studio-Project-9-6.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565892/materials/imported/butter-donut-chair-natural-white-boucle/butter-cuurv-cream-wood2main.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565893/materials/imported/butter-donut-chair-natural-white-boucle/butter-donut-1.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565893/materials/imported/butter-donut-chair-natural-white-boucle/butter-donut-4.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565895/materials/imported/butter-donut-chair-natural-white-boucle/studio-project-9-6.png"
+      ],
       "localImageFiles": [
         "Butter-Cuurv-Cream-Wood2Main.jpg",
         "Butter-donut-1.jpg",
@@ -2304,6 +2480,7 @@
       "description": "Made with an iron frame and boucle fabric.",
       "category": "Dining Area",
       "subCategory": "Chairs",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2333,7 +2510,12 @@
           "value": "Butter-curvv-black-1.jpg, Butter-curvv-black-2.jpg, Butter-curvv-black-3.jpg, BUTTER-OLAN-CHAIR-BLACK-2-scaled.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565896/materials/imported/butter-olan-chair-black/butter-curvv-black-1.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565897/materials/imported/butter-olan-chair-black/butter-curvv-black-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565898/materials/imported/butter-olan-chair-black/butter-curvv-black-3.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565899/materials/imported/butter-olan-chair-black/butter-olan-chair-black-2-scaled.jpg"
+      ],
       "localImageFiles": [
         "Butter-curvv-black-1.jpg",
         "Butter-curvv-black-2.jpg",
@@ -2350,6 +2532,7 @@
       "description": "Made with ceramic and glass table top or base. Legs are made of stainless steel shining gold.",
       "category": "Dining Area",
       "subCategory": "Tables",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2375,7 +2558,10 @@
           "value": "Alleso-big.jpg, Studio-Project-15-3.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565900/materials/imported/alleso-dining-table-200cm/alleso-big.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565902/materials/imported/alleso-dining-table-200cm/studio-project-15-3.png"
+      ],
       "localImageFiles": [
         "Alleso-big.jpg",
         "Studio-Project-15-3.png"
@@ -2390,6 +2576,7 @@
       "description": "Rubberwood dining table. The tabletop is resistant to liquids, food stains, oil, heat, scratches, and bumps. Built to withstand daily use with durability in mind. Solid rubberwood legs for sturdy support. Recommended for indoor use only, comfortably seating 6-8 people.",
       "category": "Dining Area",
       "subCategory": "Tables",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2420,7 +2607,12 @@
           "value": "Edited-2-min.jpg, Edited-min.jpg, FIT-EDITED-2-min.jpg, Studio-Project-1-21.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565903/materials/imported/aurora-dining-table-180-cm-natural/edited-2-min.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565904/materials/imported/aurora-dining-table-180-cm-natural/edited-min.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565905/materials/imported/aurora-dining-table-180-cm-natural/fit-edited-2-min.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565906/materials/imported/aurora-dining-table-180-cm-natural/studio-project-1-21.png"
+      ],
       "localImageFiles": [
         "Edited-2-min.jpg",
         "Edited-min.jpg",
@@ -2437,6 +2629,7 @@
       "description": "The table is beautifully made with a 6mm gloss sintered stone top and treated wood and rubber wood legs. The chair is made with rubber wood legs and a treated wood and foam with leather seat. The stool is made with treated wood and foam with cotton and linen rubber wood legs.",
       "category": "Dining Area",
       "subCategory": "Tables",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2467,7 +2660,12 @@
           "value": "Danee-Dining-Final.jpg, LS357R1-A-dining-set-4.jpg, LS357R1-AT¦-¦¦¦¦-LS628S3-A¦-5.jpg, LS357R1-AT¦-3D-o¦v-¦¦¦¦-LS628S3-A¦-LS068S5-A¦-¦-2.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565907/materials/imported/danee-dining-set/danee-dining-final.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565908/materials/imported/danee-dining-set/ls357r1-a-dining-set-4.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565909/materials/imported/danee-dining-set/ls357r1-at-ls628s3-a-5.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565910/materials/imported/danee-dining-set/ls357r1-at-3d-o-v-ls628s3-a-ls068s5-a-2.jpg"
+      ],
       "localImageFiles": [
         "Danee-Dining-Final.jpg",
         "LS357R1-A-dining-set-4.jpg",
@@ -2484,6 +2682,7 @@
       "description": "Top: MDF covered paper Leg: white powder coated",
       "category": "Dining Area",
       "subCategory": "Tables",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2514,7 +2713,10 @@
           "value": "FJALLMAN-TABLE-120CM-2-2.jpg, FJALLMAN-TABLE-120CM-3-1.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565912/materials/imported/fjallman-table-120-cm/fjallman-table-120cm-2-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565913/materials/imported/fjallman-table-120-cm/fjallman-table-120cm-3-1.jpg"
+      ],
       "localImageFiles": [
         "FJALLMAN-TABLE-120CM-2-2.jpg",
         "FJALLMAN-TABLE-120CM-3-1.jpg"
@@ -2529,6 +2731,7 @@
       "description": "We understand that every office has unique needs. That’s why the Aop-01 is built with flexibility and user comfort at its core. Whether you need a spacious main work area for a computer and documents, or a dedicated side table for meetings, this desk adapts to you.",
       "category": "Dining Room",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2609,6 +2812,7 @@
       "description": "This 8-seater dining set offers a contemporary and comfortable solution for any modern dining space.Subtly rounded edges create a softer look and help reduce sharp corners for added safety. A cement-look veneer gives the tabletop a sleek, industrial-inspired appearance.Strong metal legs with a central crossbar provide excellent stability and overall durability.The chair is fully upholstered in textured fabric, offering a comfortable and inviting seat.The chair features an ergonomic organic shape that offers lumbar support and a modern silhouette.",
       "category": "Dining Room",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2689,6 +2893,7 @@
       "description": "Available in 2 seater, 4 seater and 6 seater dining set.This dining set is designed for comfort and compact living.It features curved backrests that offer ergonomic comfort with a light, minimalist aesthetic.The subtly beveled tabletop edge adds comfort, safety, and a refined finishing detail.",
       "category": "Dining Room",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2769,6 +2974,7 @@
       "description": "With its clear tempered glass tabletop held firmly by walnut rubberwood inverted V legs, the 6-seater dining set display elegance.Glass tabletops, such as this dining set, are a stylish and practical option for a modern cozy dining atmosphere because they are multipurpose, simple to clean, and provide an illusion of more space.With their rounded backrests and luxurious fabric, the matching rubberwood chairs have a distinctly modern style that combines comfort and style to create a chic and welcoming dining area.",
       "category": "Dining Room",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2849,6 +3055,7 @@
       "description": "Available in two size, 4 Seater, and 6 Seater sets.This dining set for six has a rectangular glass tabletop with a marble paper print, which is supported by sleek metal legs, providing a fresh spin on the classic marble look.Six upholstered chairs with metal legs complete the set, and their modest design blends in seamlessly with the table.",
       "category": "Dining Room",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2929,6 +3136,7 @@
       "description": "A round dining set featuring a Smart Top table that is shock and scratch-resistant in a rough marble finish paired with elegant walnut stained beech wood legs. Bentwood chair with fabric cushion.",
       "category": "Dining Area",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -2986,7 +3194,11 @@
           "value": "RUNA DINING SET FOR 4_1.png, RUNA DINING SET FOR 4_2.png, RUNA DINING SET FOR 4_3.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565914/materials/imported/runa-dining-set-for-4/runa-dining-set-for-4-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565915/materials/imported/runa-dining-set-for-4/runa-dining-set-for-4-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565917/materials/imported/runa-dining-set-for-4/runa-dining-set-for-4-3.png"
+      ],
       "localImageFiles": [
         "RUNA DINING SET FOR 4_1.png",
         "RUNA DINING SET FOR 4_2.png",
@@ -3002,6 +3214,7 @@
       "description": "A modern luxe rectangular dining table with a white sintered top and bentwood dining chairs upholstered in fabric.",
       "category": "Dining Area",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -3049,7 +3262,11 @@
           "value": "VERONA DINING SET FOR 6_1.png, VERONA DINING SET FOR 6_2.png, VERONA DINING SET FOR 6_3.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565917/materials/imported/verona-dining-set-for-6/verona-dining-set-for-6-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565918/materials/imported/verona-dining-set-for-6/verona-dining-set-for-6-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565919/materials/imported/verona-dining-set-for-6/verona-dining-set-for-6-3.png"
+      ],
       "localImageFiles": [
         "VERONA DINING SET FOR 6_1.png",
         "VERONA DINING SET FOR 6_2.png",
@@ -3065,6 +3282,7 @@
       "description": "A mid-century modern inspired dining set with a rectangular extending dining table and unique curved back design chairs upholstered in fabric.",
       "category": "Dining Area",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -3112,7 +3330,10 @@
           "value": "CARSON DINING SET FOR 8_1.png, CARSON DINING SET FOR 8_2.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565920/materials/imported/carson-dining-set-for-8/carson-dining-set-for-8-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565922/materials/imported/carson-dining-set-for-8/carson-dining-set-for-8-2.png"
+      ],
       "localImageFiles": [
         "CARSON DINING SET FOR 8_1.png",
         "CARSON DINING SET FOR 8_2.png"
@@ -3127,6 +3348,7 @@
       "description": "A mid-century inspired dining set with a rectangular butterfly extending dining table, Four bentwood chairs, and one fabric bench.",
       "category": "Dining Area",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -3174,7 +3396,11 @@
           "value": "BYRON EXT DINING SET FOR 6_1.png, BYRON EXT DINING SET FOR 6_2.png, BYRON EXT DINING SET FOR 6_3.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565923/materials/imported/byron-ext-dining-set-for-6/byron-ext-dining-set-for-6-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565925/materials/imported/byron-ext-dining-set-for-6/byron-ext-dining-set-for-6-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565927/materials/imported/byron-ext-dining-set-for-6/byron-ext-dining-set-for-6-3.png"
+      ],
       "localImageFiles": [
         "BYRON EXT DINING SET FOR 6_1.png",
         "BYRON EXT DINING SET FOR 6_2.png",
@@ -3190,6 +3416,7 @@
       "description": "A rectangular dining set featuring a butterfly extending dining table and solid wood chairs with fabric cushions.",
       "category": "Dining Area",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -3237,7 +3464,10 @@
           "value": "ALCOT EXT DINING SET FOR 6_1.png, ALCOT EXT DINING SET FOR 6_2.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565927/materials/imported/alcot-ext-dining-set-for-6/alcot-ext-dining-set-for-6-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565928/materials/imported/alcot-ext-dining-set-for-6/alcot-ext-dining-set-for-6-2.png"
+      ],
       "localImageFiles": [
         "ALCOT EXT DINING SET FOR 6_1.png",
         "ALCOT EXT DINING SET FOR 6_2.png"
@@ -3252,6 +3482,7 @@
       "description": "A rectangular dining table with slightly rounded corner.",
       "category": "Dining Area",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -3299,7 +3530,14 @@
           "value": "FEMMIE DINING TABLE_1.png, FEMMIE DINING TABLE_2.png, FEMMIE DINING TABLE_3.png, FEMMIE DINING TABLE_4.png, FEMMIE DINING TABLE_5.png, FEMMIE DINING TABLE_6.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565929/materials/imported/femmie-dining-table/femmie-dining-table-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565930/materials/imported/femmie-dining-table/femmie-dining-table-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565931/materials/imported/femmie-dining-table/femmie-dining-table-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565932/materials/imported/femmie-dining-table/femmie-dining-table-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565933/materials/imported/femmie-dining-table/femmie-dining-table-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565934/materials/imported/femmie-dining-table/femmie-dining-table-6.png"
+      ],
       "localImageFiles": [
         "FEMMIE DINING TABLE_1.png",
         "FEMMIE DINING TABLE_2.png",
@@ -3318,6 +3556,7 @@
       "description": "Rectangular white matte ceramic dining table in black powder coating steel frame and base.",
       "category": "Dining Area",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -3365,7 +3604,13 @@
           "value": "MACE DINING TABLE_1.png, MACE DINING TABLE_2.png, MACE DINING TABLE_3.png, MACE DINING TABLE_4.png, MACE DINING TABLE_5.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565936/materials/imported/mace-dining-table/mace-dining-table-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565937/materials/imported/mace-dining-table/mace-dining-table-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565938/materials/imported/mace-dining-table/mace-dining-table-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565939/materials/imported/mace-dining-table/mace-dining-table-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565940/materials/imported/mace-dining-table/mace-dining-table-5.png"
+      ],
       "localImageFiles": [
         "MACE DINING TABLE_1.png",
         "MACE DINING TABLE_2.png",
@@ -3383,6 +3628,7 @@
       "description": "Designed to be light but durable, this Uratex lifestyle chair without armrest is reinforced with fiberglass. It is coated with a UV stabilizer to protect the product from deterioration and minimize color fading and has non-slip furniture pads to keep the chair in place.",
       "category": "Dining Area",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -3450,7 +3696,15 @@
           "value": "BROOKLYN CHAIR_BEIGE_1.png, BROOKLYN CHAIR_BEIGE_2.png, BROOKLYN CHAIR_BLACK_1.png, BROOKLYN CHAIR_BLACK_2.png, BROOKLYN CHAIR_BLACK_3.png, BROOKLYN CHAIR_BROWN_1.png, BROOKLYN CHAIR_WHITE_1.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565940/materials/imported/brooklyn-chair/brooklyn-chair-beige-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565941/materials/imported/brooklyn-chair/brooklyn-chair-beige-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565942/materials/imported/brooklyn-chair/brooklyn-chair-black-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565943/materials/imported/brooklyn-chair/brooklyn-chair-black-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565944/materials/imported/brooklyn-chair/brooklyn-chair-black-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565945/materials/imported/brooklyn-chair/brooklyn-chair-brown-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565946/materials/imported/brooklyn-chair/brooklyn-chair-white-1.png"
+      ],
       "localImageFiles": [
         "BROOKLYN CHAIR_BEIGE_1.png",
         "BROOKLYN CHAIR_BEIGE_2.png",
@@ -3470,6 +3724,7 @@
       "description": "Elegant upholstered dining chair with button tufted backrest. Solid wood frame.",
       "category": "Dining Area",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -3517,7 +3772,13 @@
           "value": "SABRINA DINING CHAIR_1.png, SABRINA DINING CHAIR_2.png, SABRINA DINING CHAIR_3.png, SABRINA DINING CHAIR_4.png, SABRINA DINING CHAIR_5.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565947/materials/imported/sabrina-dining-chair/sabrina-dining-chair-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565948/materials/imported/sabrina-dining-chair/sabrina-dining-chair-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565949/materials/imported/sabrina-dining-chair/sabrina-dining-chair-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565950/materials/imported/sabrina-dining-chair/sabrina-dining-chair-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565951/materials/imported/sabrina-dining-chair/sabrina-dining-chair-5.png"
+      ],
       "localImageFiles": [
         "SABRINA DINING CHAIR_1.png",
         "SABRINA DINING CHAIR_2.png",
@@ -3535,6 +3796,7 @@
       "description": "A two door bar cabinet with nine bottle wine rack & hanging racks for glassware. One fixed shelf with metal handle.",
       "category": "Dining Area",
       "subCategory": "",
+      "roomType": "Dining Room",
       "options": [
         {
           "type": "color",
@@ -3582,7 +3844,10 @@
           "value": "COUPE DRINK CABINET_1.png, COUPE DRINK CABINET_2.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565952/materials/imported/coupe-drinks-cabinet/coupe-drink-cabinet-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565953/materials/imported/coupe-drinks-cabinet/coupe-drink-cabinet-2.png"
+      ],
       "localImageFiles": [
         "COUPE DRINK CABINET_1.png",
         "COUPE DRINK CABINET_2.png"
@@ -3597,6 +3862,7 @@
       "description": "We understand that every office has unique needs. That’s why the Aop-01 is built with flexibility and user comfort at its core. Whether you need a spacious main work area for a computer and documents, or a dedicated side table for meetings, this desk adapts to you.",
       "category": "Home Office",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -3665,6 +3931,7 @@
       "description": "Create an efficient and stylish workspace with the Office Table Oft 11 from Manila Office Furniture Den. Priced at just ₱8,880.00, this compact and versatile office table is the perfect solution for businesses in Metro Manila, Makati, BGC, and Quezon City seeking quality and value.",
       "category": "Home Office",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -3728,6 +3995,7 @@
       "description": "Ergonomic Executive Chair Bc – 01 a super comfortable office chair with health back benefits would prioritize ergonomic design and support to promote good posture and reduce strain on the spine.",
       "category": "Home Office",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -3791,6 +4059,7 @@
       "description": "Ergonomic Executive Chair Ac – 02 has the perfect combination of comfort and style for the modern executive. A super comfortable office chair designed for a cloud like experience.",
       "category": "Home Office",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -3868,6 +4137,7 @@
       "description": "Need a workspace that keeps everything organized—drawers for supplies, a dedicated spot for your CPU, and cables hidden away—without taking up your whole office? The Office Table Aor-01 is a customizable 1200mm desk with built-in lockable drawers and a wooden CPU rack. You choose the finish. We build it to your specs and install it in 7-10 working days. No separate cabinets to buy—just one integrated unit.",
       "category": "Home Office",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -3933,6 +4203,7 @@
       "description": "A modern black office chair.",
       "category": "Home Office Project",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -4004,6 +4275,7 @@
       "description": "A modern black office chair with Pneumatic Seat, Tension Control, Tilt Lock, Synchro-Tilt and Weight capacity 120kgs.",
       "category": "Home Office Project",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -4047,7 +4319,20 @@
           "value": "Home Office/Warren_"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412627/materials/imported/zardox-office-chair/zardox-office-chair-1.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412628/materials/imported/zardox-office-chair/zardox-office-chair-10.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412629/materials/imported/zardox-office-chair/zardox-office-chair-11.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412631/materials/imported/zardox-office-chair/zardox-office-chair-12.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412632/materials/imported/zardox-office-chair/zardox-office-chair-2.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412633/materials/imported/zardox-office-chair/zardox-office-chair-3.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412634/materials/imported/zardox-office-chair/zardox-office-chair-4.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412635/materials/imported/zardox-office-chair/zardox-office-chair-5.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412636/materials/imported/zardox-office-chair/zardox-office-chair-6.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412637/materials/imported/zardox-office-chair/zardox-office-chair-7.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412638/materials/imported/zardox-office-chair/zardox-office-chair-8.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412638/materials/imported/zardox-office-chair/zardox-office-chair-9.png"
+      ],
       "localImageFiles": [],
       "productFolder": "",
       "sourceDocument": "Home Office/Warren_/HomeOfficeFurni_06_11_26.docx"
@@ -4059,6 +4344,7 @@
       "description": "A modern black office chair with Pneumatic Seat, Tension Control, Tilt Lock and Center Tilt.",
       "category": "Home Office Project",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -4130,6 +4416,7 @@
       "description": "A modern Newport Grey with Grey Solama Oak office desk with 2 plastic grommets, Melamine lamination on top for heat and scratch resistance, Floor levelers and D-nut metal to metal connection for durability and easy re-installation.",
       "category": "Home Office Project",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -4199,6 +4486,7 @@
       "description": "A modern White Oak + Natural Oak office desk with 2 grommets, 3 drawer hanging pedestal with nickel handle, Melamine lamination on top for heat and scratch resistance, Floor levelers and D-nut metal to metal connection for durability and easy re-installation.",
       "category": "Home Office Project",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -4262,6 +4550,7 @@
       "description": "A mid-century sideboard featuring two soft close glass door, two shelves and three drawers with rubberwood legs.",
       "category": "Home Office Project",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -4335,6 +4624,7 @@
       "description": "A vertical filing cabinet with central lock, Plastic handle with label slot and Anti-tipping mechanism only allows 1 drawer to open at a time",
       "category": "Home Office Project",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -4405,6 +4695,7 @@
       "description": "A bookshelf with Glassdoor in 3-layer cabinet (8042GD), Wooden door in 2-layer cabinet with lock, Nickel handles. Floor levelers, Melamine lamination on top and front for heat and scratch resistance and D-nut metal to metal connection for durability and easy re-installation.",
       "category": "Home Office Project",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -4468,6 +4759,7 @@
       "description": "A open cabinet with Medium height open cabinet with three shelves (MHO1245), Floor levellers, Three shelves, Melamine lamination on top for heat and scratch resistance and D-nut metal to metal connection for durability and easy re-installation.",
       "category": "Home Office Project",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -4535,6 +4827,7 @@
       "description": "A conference table with Rectangular conference table with large grommets (RCT2412), Cable management box, Metal legs with adjustable floor leveler and D-nut metal to metal connection for durability and easy re-installation.",
       "category": "Home Office Project",
       "subCategory": "",
+      "roomType": "Home Office",
       "options": [
         {
           "type": "color",
@@ -4598,6 +4891,7 @@
       "description": "This kitchen shelving rack is designed for practicality and versatility, with a five-tier shelf design and an adjustable center shelf that can accommodate a variety of storage needs. Made with stainless steel pipe frames and sturdy plate shelves, it not only ensures durability but also exudes a sleek and modern aesthetic, showcasing the exceptional qualities of stainless steel for kitchen applications, such as corrosion resistance, ease of maintenance, and an overall hygienic surface.",
       "category": "Kitchen Project",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -4665,6 +4959,7 @@
       "description": "This storage console is built for functionality and versatility, with 5 multi-level shelves beneath the top shelf that can fit a wide range of storage needs. Made with stainless steel pipe frames and sturdy plate shelves, it not only ensures durability but also exudes a sleek and modern aesthetic, showcasing the exceptional qualities of stainless steel for kitchen applications, such as corrosion resistance, ease of maintenance, and an overall hygienic surface.",
       "category": "Kitchen Project",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -4732,6 +5027,7 @@
       "description": "Made of sturdy stainless steel, this countertop dish rack provides plenty of room to dry and arrange plates, glasses, spoons, forks, ladles, and other kitchen utensils. Its construction in stainless steel not only makes it stain-, corrosion-, and corrosion-resistant but also offers an easily-cleaned, hygienic surface, making it a dependable and sanitary addition to your kitchen. Additionally, the classic and elegant look of stainless steel gives your countertop a hint of contemporary elegance.",
       "category": "Kitchen Project",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -4799,6 +5095,7 @@
       "description": "Crafted with three durable metal baskets, each featuring a specialized mesh design at the base, this trolley not only provides substantial storage capacity but also ensures convenient and swift access to your stored items. Designed for easy maneuverability, the trolley is equipped with four wheel casters, featuring two lockable wheels for added stability when needed.",
       "category": "Kitchen Project",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -4842,7 +5139,11 @@
           "value": "Kitchen/Kurt"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412639/materials/imported/bryson-3-tier-rolling-card/screenshot-2026-06-12-174720.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412640/materials/imported/bryson-3-tier-rolling-card/screenshot-2026-06-12-174732.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412641/materials/imported/bryson-3-tier-rolling-card/screenshot-2026-06-12-174742.png"
+      ],
       "localImageFiles": [],
       "productFolder": "",
       "sourceDocument": "Kitchen/Kurt/Kitchen List.docx"
@@ -4854,6 +5155,7 @@
       "description": "This kitchen shelving unit is designed for practicality and versatility, with a three-tier shelf design and an adjustable center shelf that can accommodate a variety of storage needs. The top and center shelf can serve as a microwave space, and the incorporation of four additional wheels allows seamless mobility and easy relocation within your kitchen space. This stainless steel shelving unit not only provides utilitarian storage but also adds a touch of modern appeal to your kitchen design.",
       "category": "Kitchen Project",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -4921,6 +5223,7 @@
       "description": "The 90cm wide base cabinet has been expertly crafted to meet the needs of kitchen storage. The table top of the kitchen base features an enticing marble-inspired laminate that exudes refinement while providing a spacious surface for seamless culinary tasks, changing meal preparation into a joyful experience in style.",
       "category": "Kitchen Project",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -4988,6 +5291,7 @@
       "description": "The 90 cm wide hanging cabinet has been expertly designed to meet the demands for kitchen storage. It is designed with two doors and a four-shelf section, providing ample space for orderly storage and ensuring a flexible and structured solution for storing cooking equipment, consumables, and kitchen wares. Furthermore, the inclusion of an open shelf beneath adds storage space and helps the clean organization of various kitchen essentials, resulting in a functional and orderly arrangement of condiments and canisters.",
       "category": "Kitchen Project",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -5055,6 +5359,7 @@
       "description": "The 90 cm wide hanging cabinet has been expertly designed to meet the demands for kitchen storage. It is designed with two doors and a four-shelf section, providing ample space for orderly storage and ensuring a flexible and structured solution for storing cooking equipment, consumables, and kitchen wares. Furthermore, the inclusion of an open shelf beneath adds storage space and helps the clean organization of various kitchen essentials, resulting in a functional and orderly arrangement of condiments and canisters.",
       "category": "Kitchen Project",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -5110,6 +5415,7 @@
       "description": "The kitchen shelving features adjustable height and shelves, as well as boltless assembly for easy set up. The shelves are made of high-quality MDF boards with reinforced corners and embedded connection to ensure durability and stability. It also has Non-slip Scratch- Resistant pads on its feet to prevent slippage, offer stability, and protect both the shelving and floor surfaces from scratches or damages.",
       "category": "Kitchen Project",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -5177,6 +5483,7 @@
       "description": "With 3 compartments and 1 drawer at the bottom and 2 compartments and 2 open shelves at the top, this provides plenty of area for storing various objects such as cookware, utensils, and so on.",
       "category": "Kitchen Project",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -5220,7 +5527,11 @@
           "value": "Kitchen/Kurt"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412643/materials/imported/merrick-3-door-kitchen-cabinet/screenshot-2026-06-12-180734.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412644/materials/imported/merrick-3-door-kitchen-cabinet/screenshot-2026-06-12-180746.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1782412646/materials/imported/merrick-3-door-kitchen-cabinet/screenshot-2026-06-12-180756.png"
+      ],
       "localImageFiles": [],
       "productFolder": "",
       "sourceDocument": "Kitchen/Kurt/Kitchen List.docx"
@@ -5232,6 +5543,7 @@
       "description": "a modern kitchen cabinet or sideboard with a dark brown wood grain finish and silver hardware.",
       "category": "Kitchen",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -5299,6 +5611,7 @@
       "description": "a multi-tiered kitchen baker's rack or utility cart designed with a white metal frame and dark, wood-grain laminate shelves.",
       "category": "Kitchen",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -5364,6 +5677,7 @@
       "description": "a multi-tier, cream-colored kitchen baker's rack or storage hutch set on small caster wheels.",
       "category": "Kitchen",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -5429,6 +5743,7 @@
       "description": "a large kitchen hutch and buffet unit featuring a warm, reddish-brown faux wood-block grain finish with dark handles.",
       "category": "Kitchen",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -5492,6 +5807,7 @@
       "description": "a modern, two-tone kitchen hutch and cabinet unit featuring light wood-grain front panels contrasted against a dark brown wood-grain frame.",
       "category": "Kitchen",
       "subCategory": "",
+      "roomType": "Kitchen",
       "options": [
         {
           "type": "color",
@@ -5559,6 +5875,7 @@
       "description": "Sintered stone and acrylic legs.",
       "category": "Living Room",
       "subCategory": "Side Table & Center Table",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -5589,7 +5906,12 @@
           "value": "DT-1.jpg, Gemini_Generated_Image_ku5fxeku5fxeku5f.png, Gemini_Generated_Image_nswzvmnswzvmnswz.png, Studio-Project-2-15.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565954/materials/imported/accre-round-table-120-cm/dt-1.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565955/materials/imported/accre-round-table-120-cm/gemini-generated-image-ku5fxeku5fxeku5f.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565958/materials/imported/accre-round-table-120-cm/gemini-generated-image-nswzvmnswzvmnswz.png",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565960/materials/imported/accre-round-table-120-cm/studio-project-2-15.png"
+      ],
       "localImageFiles": [
         "DT-1.jpg",
         "Gemini_Generated_Image_ku5fxeku5fxeku5f.png",
@@ -5606,6 +5928,7 @@
       "description": "Made of acrylic and slate table top",
       "category": "Living Room",
       "subCategory": "Side Table & Center Table",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -5636,7 +5959,12 @@
           "value": "Accre-Stone-Dining-Table-2.jpg, Accre-Stone-Dining-Table-4.jpg, Accre-Stone-Dining-Table-8.jpg, Accre-Stone-Dining-Table.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565961/materials/imported/accre-stone-dining-table-160cm/accre-stone-dining-table-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565962/materials/imported/accre-stone-dining-table-160cm/accre-stone-dining-table-4.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565963/materials/imported/accre-stone-dining-table-160cm/accre-stone-dining-table-8.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565964/materials/imported/accre-stone-dining-table-160cm/accre-stone-dining-table.jpg"
+      ],
       "localImageFiles": [
         "Accre-Stone-Dining-Table-2.jpg",
         "Accre-Stone-Dining-Table-4.jpg",
@@ -5653,6 +5981,7 @@
       "description": "N/A",
       "category": "Living Room",
       "subCategory": "Side Table & Center Table",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -5678,7 +6007,10 @@
           "value": "BARNES-BAR-TABLE-WHITE.jpg, Barnes-Doily-Bar-Table.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565965/materials/imported/barnes-bar-table-70-cm-white/barnes-bar-table-white.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565966/materials/imported/barnes-bar-table-70-cm-white/barnes-doily-bar-table.jpg"
+      ],
       "localImageFiles": [
         "BARNES-BAR-TABLE-WHITE.jpg",
         "Barnes-Doily-Bar-Table.jpg"
@@ -5693,6 +6025,7 @@
       "description": "Polypropylene plastic with iron.",
       "category": "Living Room",
       "subCategory": "Side Table & Center Table",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -5718,7 +6051,11 @@
           "value": "Black-2.jpg, Gallery-1-2.jpg, Gallery-2-2.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565966/materials/imported/challis-plastic-side-table-42-cm-black/black-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565967/materials/imported/challis-plastic-side-table-42-cm-black/gallery-1-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565968/materials/imported/challis-plastic-side-table-42-cm-black/gallery-2-2.jpg"
+      ],
       "localImageFiles": [
         "Black-2.jpg",
         "Gallery-1-2.jpg",
@@ -5734,6 +6071,7 @@
       "description": "A limited edition sofabed in a modern chic checkered fabric with matching pillow. Made with fabric cover, polyurethane foam and wooden frame and legs.",
       "category": "Living Room",
       "subCategory": "Sofa",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -5764,7 +6102,13 @@
           "value": "barron-gallery-2.jpg, barron-gallery-3.jpg, barron-gallery-4.jpg, barron-gallery-7.jpg, barron-main-photo.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565968/materials/imported/barron-2-seater-sofabed/barron-gallery-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565969/materials/imported/barron-2-seater-sofabed/barron-gallery-3.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565970/materials/imported/barron-2-seater-sofabed/barron-gallery-4.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565971/materials/imported/barron-2-seater-sofabed/barron-gallery-7.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565971/materials/imported/barron-2-seater-sofabed/barron-main-photo.jpg"
+      ],
       "localImageFiles": [
         "barron-gallery-2.jpg",
         "barron-gallery-3.jpg",
@@ -5782,6 +6126,7 @@
       "description": "Made of our signature Leatheric material – a leather material that looks and feels like fabric, allowing for easy maintenance while enjoying the same benefit and aesthetic of a fabric sofa. Comes with a shelf, drinks table, and storage. Easily converted into a queen sized bed.",
       "category": "Living Room",
       "subCategory": "Sofa",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -5807,7 +6152,11 @@
           "value": "barron-main-photo-alter.jpg, IMG_2809.jpg, IMG_2810.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565972/materials/imported/barsten-5-in-1-sofabed-leatheric-beige/barron-main-photo-alter.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565973/materials/imported/barsten-5-in-1-sofabed-leatheric-beige/img-2809.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565973/materials/imported/barsten-5-in-1-sofabed-leatheric-beige/img-2810.jpg"
+      ],
       "localImageFiles": [
         "barron-main-photo-alter.jpg",
         "IMG_2809.jpg",
@@ -5823,6 +6172,7 @@
       "description": "Made of our signature Leatheric material – a leather material that looks and feels like fabric, allowing for easy maintenance while enjoying the same benefit and aesthetic of a fabric sofa. Comes with a shelf, drinks table, and storage. Easily converted into a queen sized bed.",
       "category": "Living Room",
       "subCategory": "Sofa",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -5848,7 +6198,11 @@
           "value": "barron-main-gray-photo-alter.jpg, IMG_2829.jpg, IMG_2830.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565974/materials/imported/barsten-5-in-1-sofabed-leatheric-light-gray/barron-main-gray-photo-alter.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565975/materials/imported/barsten-5-in-1-sofabed-leatheric-light-gray/img-2829.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565976/materials/imported/barsten-5-in-1-sofabed-leatheric-light-gray/img-2830.jpg"
+      ],
       "localImageFiles": [
         "barron-main-gray-photo-alter.jpg",
         "IMG_2829.jpg",
@@ -5864,6 +6218,7 @@
       "description": "Made of fabric and high quality resilient polyurethane foam",
       "category": "Living Room",
       "subCategory": "Sofa",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -5889,7 +6244,11 @@
           "value": "Berkshire-1-Blue.jpg, Berkshire-2-Blue.jpg, Berkshire-3-Blue.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565977/materials/imported/berkshire-2-seater-sofabed-blue/berkshire-1-blue.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565977/materials/imported/berkshire-2-seater-sofabed-blue/berkshire-2-blue.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565978/materials/imported/berkshire-2-seater-sofabed-blue/berkshire-3-blue.jpg"
+      ],
       "localImageFiles": [
         "Berkshire-1-Blue.jpg",
         "Berkshire-2-Blue.jpg",
@@ -5905,6 +6264,7 @@
       "description": "Made of fabric and high quality resilient polyurethane foam",
       "category": "Living Room",
       "subCategory": "Sofa",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -5934,7 +6294,11 @@
           "value": "Berkshire-1-Sage-Green.jpg, Berkshire-2-Green.jpg, Berkshire-3-Green.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565979/materials/imported/berkshire-2-seater-sofabed-sage-green/berkshire-1-sage-green.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565980/materials/imported/berkshire-2-seater-sofabed-sage-green/berkshire-2-green.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565981/materials/imported/berkshire-2-seater-sofabed-sage-green/berkshire-3-green.jpg"
+      ],
       "localImageFiles": [
         "Berkshire-1-Sage-Green.jpg",
         "Berkshire-2-Green.jpg",
@@ -5950,6 +6314,7 @@
       "description": "Made from high-grade treated wood with melamine or foil, excellent heat and moisture resistance. Utility areas and two large drawers with roller drawer slides smooth and durability. It can be used for both living room and bedroom perfectly.",
       "category": "Living Room",
       "subCategory": "TV Stand",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -5975,7 +6340,11 @@
           "value": "Midst-TV-Cabinet-180cm-White-3.jpg, Midst-TV-Cabinet-180cm-White.jpg, Studio-Project-4-17.png"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565982/materials/imported/midst-tv-cabinet-150cm-white/midst-tv-cabinet-180cm-white-3.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565983/materials/imported/midst-tv-cabinet-150cm-white/midst-tv-cabinet-180cm-white.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565984/materials/imported/midst-tv-cabinet-150cm-white/studio-project-4-17.png"
+      ],
       "localImageFiles": [
         "Midst-TV-Cabinet-180cm-White-3.jpg",
         "Midst-TV-Cabinet-180cm-White.jpg",
@@ -5991,6 +6360,7 @@
       "description": "Made from treated wood to ensure a safe and durable build. Finished with melamine for excellent heat and moisture resistance. Features 2 smooth-running drawers for organized storage. Includes 2 open cabinets for concealed storage and an open shelf for easy access. Supported by coated steel legs for stability and style. Ideal for use in bedrooms or living spaces.",
       "category": "Living Room",
       "subCategory": "TV Stand",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -6020,7 +6390,12 @@
           "value": "120026374_c_Milnion_180cm_GY.jpg, 120026374_f_Milnion_180cm_GY.jpg, 120026374_op2_Milnion_180cm_GY.jpg, 120026374_pf_Milnion_180cm_GY.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565985/materials/imported/milinion-tv-cabinet-180-cm/120026374-c-milnion-180cm-gy.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565986/materials/imported/milinion-tv-cabinet-180-cm/120026374-f-milnion-180cm-gy.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565987/materials/imported/milinion-tv-cabinet-180-cm/120026374-op2-milnion-180cm-gy.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565988/materials/imported/milinion-tv-cabinet-180-cm/120026374-pf-milnion-180cm-gy.jpg"
+      ],
       "localImageFiles": [
         "120026374_c_Milnion_180cm_GY.jpg",
         "120026374_f_Milnion_180cm_GY.jpg",
@@ -6037,6 +6412,7 @@
       "description": "Sleek TV cabinet design. The grooved leg details add a modern touch with gold aluminium trim. Can easily mix and match a room in a variety of styles. The Picasso series is designed to be placed together with sideboard cabinets. Showcase in the same series or mix and match with other furniture models. 18 mm frame with ivory melamine finish cross metal. 18 mm open door with ivory melamine finish cross metal. Interior layer made of 18 mm treated wood with ivory melamine finish. Left leg made of 18 mm MDF corrugation in ivory paint. Right leg made of 18 mm MDF in ivory paint. Decorated with gold aluminum strands. 3 openings with soft close hinges and 1 wooden adjustable layer.",
       "category": "Living Room",
       "subCategory": "TV Stand",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -6067,7 +6443,12 @@
           "value": "110041005_c_Picasso_180cm_IV.jpg, 110041005_f_Picasso_180cm_IV.jpg, 110041005_op2_Picasso_180cm_IV.jpg, 110041005_op4_Picasso_180cm_IV.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565989/materials/imported/picasso-tv-cabinet-180cm-ivory/110041005-c-picasso-180cm-iv.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565990/materials/imported/picasso-tv-cabinet-180cm-ivory/110041005-f-picasso-180cm-iv.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565990/materials/imported/picasso-tv-cabinet-180cm-ivory/110041005-op2-picasso-180cm-iv.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565991/materials/imported/picasso-tv-cabinet-180cm-ivory/110041005-op4-picasso-180cm-iv.jpg"
+      ],
       "localImageFiles": [
         "110041005_c_Picasso_180cm_IV.jpg",
         "110041005_f_Picasso_180cm_IV.jpg",
@@ -6084,6 +6465,7 @@
       "description": "Made from real rubber wood, woven with natural rattan, beautiful and unique. The wood grain is eye-catching, with stylish storage, ultra-clean lines, and natural elements. Rubber wood is painted with teak wood to look natural and add durability to the furniture as well. Adjustable shelves and soft-close hinges. Black plastic handles and rubber wood legs. Real rattan hand-woven coated with moisture repellent and insect. It is perfectly combined with other furniture in the Takayama series. As it is made of natural wood, resulting in different colors and patterns in each piece. Furniture for indoor use only",
       "category": "Living Room",
       "subCategory": "TV Stand",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -6109,7 +6491,12 @@
           "value": "120024993_c_Takayama_150cm_LTK.jpg, 120024993_f_Takayama_150cm_LTK.jpg, 120024993_op8_Takayama_150cm_LTK.jpg, 120024993_pc_Takayama_150cm_LTK.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565992/materials/imported/takayama-solid-wood-tv-cabinet-150cm-light-teak/120024993-c-takayama-150cm-ltk.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565993/materials/imported/takayama-solid-wood-tv-cabinet-150cm-light-teak/120024993-f-takayama-150cm-ltk.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565995/materials/imported/takayama-solid-wood-tv-cabinet-150cm-light-teak/120024993-op8-takayama-150cm-ltk.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565995/materials/imported/takayama-solid-wood-tv-cabinet-150cm-light-teak/120024993-pc-takayama-150cm-ltk.jpg"
+      ],
       "localImageFiles": [
         "120024993_c_Takayama_150cm_LTK.jpg",
         "120024993_f_Takayama_150cm_LTK.jpg",
@@ -6126,6 +6513,7 @@
       "description": "Enhance your living area with this large TV cabinet. Suitable for any room, this is the ideal solution for neatly arranging all of your media essentials. Made with a combination of real solid rubberwood, protective paper foil and treated wood, this attractive cabinet is built to last. There are 2 doors, left and right, 2 drawers in the middle, able to store a variety of things. and dust-free as well. Solid rubberwood exterior with solid wood adjustable shelving. Solid rubberwood legs with middle leg for better support. Soft close hinges for silent closing. Suitable for TV screens up to 75 inch with a center stand. Clear coating retains a natural look with added durability. Natural wood displays different color and patterns in each piece.",
       "category": "Living Room",
       "subCategory": "TV Stand",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -6151,7 +6539,12 @@
           "value": "120025475_2.jpg, 120025475_3.jpg, 120025475_7.jpg, 120025475.jpg"
         }
       ],
-      "image": [],
+      "image": [
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565996/materials/imported/wasabi-solid-wood-tv-cabinet-200cm-natural/120025475-2.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565997/materials/imported/wasabi-solid-wood-tv-cabinet-200cm-natural/120025475-3.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565998/materials/imported/wasabi-solid-wood-tv-cabinet-200cm-natural/120025475-7.jpg",
+        "https://res.cloudinary.com/dsnvb7cpo/image/upload/v1779565999/materials/imported/wasabi-solid-wood-tv-cabinet-200cm-natural/120025475.jpg"
+      ],
       "localImageFiles": [
         "120025475_2.jpg",
         "120025475_3.jpg",
@@ -6168,6 +6561,7 @@
       "description": "The Sophia Sofa is the perfect solution for small spaces, with its cozy and chic design, green fabric upholstery, and natural wood-colored legs. It comes with two cream pillows and is easy to match with any decor, making it a great option for apartments, condos, or any space that needs a stylish, space-saving seating option.",
       "category": "Living Room",
       "subCategory": "",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -6237,6 +6631,7 @@
       "description": "The sofa features a cozy, mid-century modern aesthetic. It has a plush, streamlined silhouette with gently sloping armrests and thick, inviting seat cushions. The upholstery is a soft, light grey suede-like fabric that gives it a velvety texture. It stands on four splayed, tapered wooden legs finished in a warm walnut tone, adding an elegant contrast to the light fabric.",
       "category": "Living Room",
       "subCategory": "",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -6304,6 +6699,7 @@
       "description": "Rance rack set of 2, the two sections can be placed side by side or stack them in a 4-tier unit to fit that right spot in your home. The rack also makes a great shelf unit in a playroom for storing toys, puzzles and games.",
       "category": "Living Room",
       "subCategory": "",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -6371,6 +6767,7 @@
       "description": "Reina Storage Cabinet asymmetrical design allows two big drawers, two small sized drawers and a whole drawer. It also includes one open shelf for display. Very efficient use of space!",
       "category": "Living Room",
       "subCategory": "",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",
@@ -6436,6 +6833,7 @@
       "description": "The Ezeck TV Cabinet is part of our Natural Collection. It includes two open shelves for display and two sliding door cabinet. Crafted from Solid hevea wood also known as rubber wood.",
       "category": "Living Room",
       "subCategory": "",
+      "roomType": "Living Room",
       "options": [
         {
           "type": "color",

@@ -3,6 +3,17 @@ import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
+const ROOM_TYPE_OPTIONS = [
+  "Living Room",
+  "Bedroom",
+  "Kitchen",
+  "Bathroom",
+  "Home Office",
+  "Dining Room",
+  "Whole House",
+  "Commercial Space",
+];
+
 const MaterialModal = ({
   isOpen,
   isEditMode,
@@ -306,6 +317,30 @@ const MaterialModal = ({
                     />
                     {errors.category && (
                       <p className="text-red-500 text-sm">{errors.category}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      Room Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={material.roomType || ""}
+                      onChange={(e) =>
+                        onMaterialChange("roomType", e.target.value)
+                      }
+                      className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] bg-white"
+                      required
+                    >
+                      <option value="">Select room type</option>
+                      {ROOM_TYPE_OPTIONS.map((roomType) => (
+                        <option key={roomType} value={roomType}>
+                          {roomType}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.roomType && (
+                      <p className="text-red-500 text-sm">{errors.roomType}</p>
                     )}
                   </div>
 

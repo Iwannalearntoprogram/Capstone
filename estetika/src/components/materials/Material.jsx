@@ -8,7 +8,7 @@ export default function Material({
   onEdit,
   onDelete,
 }) {
-  const { _id, name, company, price, image } = materialDetails;
+  const { _id, name, company, price, image, roomType } = materialDetails;
   const navigate = useNavigate();
 
   // Calculate price range if price is an array
@@ -81,6 +81,11 @@ export default function Material({
             {name}
           </h3>
           <p className="text-sm text-gray-600 font-medium">{company}</p>
+          {roomType && (
+            <p className="mt-1 text-xs font-semibold text-[#1D3C34]">
+              {roomType}
+            </p>
+          )}
         </div>
 
         <div className="flex items-center justify-between">

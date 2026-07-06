@@ -307,6 +307,7 @@ const buildMaterialTokenSet = (material) => {
   const parts = [
     material.name,
     material.company,
+    material.roomType,
     material.category,
     material.subCategory,
     material.description,
@@ -517,6 +518,7 @@ const toPublicMaterial = (material) => ({
   company: material.company,
   category: material.category,
   subCategory: material.subCategory,
+  roomType: material.roomType,
   price: material.price,
   description: material.description,
   image: material.image,
@@ -792,6 +794,13 @@ const rankMaterialsForProjectContext = (
     });
 };
 
+const materialMatchesProjectRoom = (material, roomType) => {
+  if (!roomType || roomType === "Whole House") return true;
+  if (!material?.roomType) return true;
+  if (material.roomType === "Whole House") return true;
+  return material.roomType === roomType;
+};
+
 const getRecommendedMaterialsForProject = async (project, materialsOverride) => {
   const Material = require("../models/Project/Material");
 
@@ -805,15 +814,20 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
 
   const priority = project?.priority === "Budget" ? "Budget" : "Style";
   const scoredMaterials = rankMaterialsForProjectContext(project, materials);
+  const roomFilteredMaterials = scoredMaterials.filter((item) =>
+    materialMatchesProjectRoom(item.material, project?.roomType)
+  );
+  const roomScopedMaterials =
+    roomFilteredMaterials.length > 0 ? roomFilteredMaterials : scoredMaterials;
   const strictContextKeywords = getStrictContextKeywordsForProject(project);
   const contextFilteredMaterials =
     strictContextKeywords.length > 0
-      ? scoredMaterials.filter((item) => item.strictContextMatchCount > 0)
-      : scoredMaterials;
+      ? roomScopedMaterials.filter((item) => item.strictContextMatchCount > 0)
+      : roomScopedMaterials;
   let eligibleMaterials =
     contextFilteredMaterials.length > 0
       ? contextFilteredMaterials
-      : scoredMaterials;
+      : roomScopedMaterials;
 
   // Priority-aware filtering.
   const STYLE_MIN_MATCHES = 1; // raise for stricter style matching

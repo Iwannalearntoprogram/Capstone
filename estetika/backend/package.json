@@ -8,6 +8,7 @@
     "start": "node server.js",
     "import:materials": "node scripts/importMaterialsFromDocx.js",
     "import:designs": "node scripts/importDesignsFromDocx.js",
+    "backfill:material-room-types": "node scripts/backfillMaterialRoomTypes.js",
     "normalize:material-categories": "node scripts/normalizeMaterialCategories.js"
   },
   "keywords": [],

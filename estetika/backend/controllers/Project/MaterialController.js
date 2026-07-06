@@ -93,8 +93,9 @@ const material_post = catchAsync(async (req, res, next) => {
     options,
     category,
     subCategory,
+    roomType,
     attributes,
-  } = req.body; // added category
+  } = req.body;
 
   const isDesignerValid = await User.findById(designerId);
   if (!isDesignerValid)
@@ -106,11 +107,12 @@ const material_post = catchAsync(async (req, res, next) => {
     company == null ||
     price == null ||
     description == null ||
-    category == null
+    category == null ||
+    roomType == null
   ) {
     return next(
       new AppError(
-        "Missing required fields: name, company, price, description, category.",
+        "Missing required fields: name, company, price, description, category, roomType.",
         400
       )
     );
@@ -187,6 +189,7 @@ const material_post = catchAsync(async (req, res, next) => {
     options: Array.isArray(options) ? options : [],
     category,
     subCategory,
+    roomType,
     attributes: Array.isArray(attributes) ? attributes : [],
     embedding,
   });
@@ -210,6 +213,7 @@ const material_put = catchAsync(async (req, res, next) => {
     options,
     category,
     subCategory,
+    roomType,
     attributes,
   } = req.body;
 
@@ -231,6 +235,7 @@ const material_put = catchAsync(async (req, res, next) => {
     !options &&
     !category &&
     !subCategory &&
+    !roomType &&
     !attributes
   ) {
     return next(new AppError("No data to update", 400));
@@ -249,6 +254,7 @@ const material_put = catchAsync(async (req, res, next) => {
   if (image) updates.image = image;
   if (category) updates.category = category;
   if (subCategory) updates.subCategory = subCategory;
+  if (roomType) updates.roomType = roomType;
 
   if (attributes) {
     if (!Array.isArray(attributes)) {
@@ -306,6 +312,7 @@ const material_put = catchAsync(async (req, res, next) => {
 
   const updatedMaterial = await Material.findByIdAndUpdate(id, updates, {
     new: true,
+    runValidators: true,
   });
 
   if (!updatedMaterial) {
@@ -621,7 +628,7 @@ const material_similar = catchAsync(async (req, res) => {
   const maxInt = Math.min(Math.max(parseInt(max, 10) || 8, 1), 24);
 
   const material = await Material.findById(id)
-    .select("name category subCategory embedding")
+    .select("name category subCategory roomType embedding")
     .lean();
 
   if (!material) return res.status(404).json({ error: "Material not found." });
@@ -651,6 +658,14 @@ const material_similar = catchAsync(async (req, res) => {
         .map(({ embedding, ...rest }) => rest)
         .filter((item) => String(item._id) !== String(material._id))
         .filter((item) => !targetType || inferProductType(item) === targetType)
+        .filter(
+          (item) =>
+            !material.roomType ||
+            !item.roomType ||
+            material.roomType === "Whole House" ||
+            item.roomType === "Whole House" ||
+            item.roomType === material.roomType
+        )
         .slice(0, maxInt);
 
       if (sanitized.length > 0) {
@@ -676,6 +691,14 @@ const material_similar = catchAsync(async (req, res) => {
 
   const fallback = candidates
     .filter((item) => !targetType || inferProductType(item) === targetType)
+    .filter(
+      (item) =>
+        !material.roomType ||
+        !item.roomType ||
+        material.roomType === "Whole House" ||
+        item.roomType === "Whole House" ||
+        item.roomType === material.roomType
+    )
     .slice(0, maxInt);
 
   return res.json({

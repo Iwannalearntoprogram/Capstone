@@ -16,6 +16,17 @@ import {
   validateRequiredText,
 } from "../utils/validation";
 
+const ROOM_TYPE_OPTIONS = [
+  "Living Room",
+  "Bedroom",
+  "Kitchen",
+  "Bathroom",
+  "Home Office",
+  "Dining Room",
+  "Whole House",
+  "Commercial Space",
+];
+
 const MaterialsPage = () => {
   const [materialsData, setMaterialsData] = useState([]);
   const [search, setSearch] = useState("");
@@ -31,6 +42,7 @@ const MaterialsPage = () => {
     description: "",
     options: [],
     category: "",
+    roomType: "",
     image: [],
     attributes: [],
   });
@@ -93,6 +105,7 @@ const MaterialsPage = () => {
       name: validateRequiredText(newMaterial.name, "Material name"),
       company: validateRequiredText(newMaterial.company, "Company"),
       category: validateRequiredText(newMaterial.category, "Category"),
+      roomType: validateRequiredText(newMaterial.roomType, "Room type"),
       price: validatePositiveNumber(newMaterial.price, "Base price"),
       description: validateRequiredText(newMaterial.description, "Description"),
       options: validateOptionRows(newMaterial.options),
@@ -157,6 +170,7 @@ const MaterialsPage = () => {
         image: imageUrls,
         options: newMaterial.options.filter((opt) => trimValue(opt.option) !== ""),
         category: trimValue(newMaterial.category),
+        roomType: trimValue(newMaterial.roomType),
         attributes: Array.isArray(newMaterial.attributes)
           ? newMaterial.attributes
           : [],
@@ -195,6 +209,7 @@ const MaterialsPage = () => {
       description: material.description || "",
       options: Array.isArray(material.options) ? material.options : [],
       category: material.category || "",
+      roomType: material.roomType || "",
       image: Array.isArray(material.image) ? material.image : [],
       attributes: Array.isArray(material.attributes) ? material.attributes : [],
     });
@@ -211,6 +226,7 @@ const MaterialsPage = () => {
       name: validateRequiredText(newMaterial.name, "Material name"),
       company: validateRequiredText(newMaterial.company, "Company"),
       category: validateRequiredText(newMaterial.category, "Category"),
+      roomType: validateRequiredText(newMaterial.roomType, "Room type"),
       price: validatePositiveNumber(newMaterial.price, "Base price"),
       description: validateRequiredText(newMaterial.description, "Description"),
       options: validateOptionRows(newMaterial.options),
@@ -271,6 +287,7 @@ const MaterialsPage = () => {
       description: trimValue(newMaterial.description),
       options: newMaterial.options,
       category: trimValue(newMaterial.category),
+      roomType: trimValue(newMaterial.roomType),
       image: [...existingImageUrls, ...uploadedUrls],
       attributes: Array.isArray(newMaterial.attributes)
         ? newMaterial.attributes
@@ -371,6 +388,8 @@ const MaterialsPage = () => {
           ? validateRequiredText(value, "Company")
           : field === "category"
           ? validateRequiredText(value, "Category")
+          : field === "roomType"
+          ? validateRequiredText(value, "Room type")
           : field === "price"
           ? validatePositiveNumber(value, "Base price")
           : field === "description"
@@ -410,6 +429,8 @@ const MaterialsPage = () => {
       image: [],
       options: [],
       category: "",
+      roomType: "",
+      attributes: [],
     });
     setSelectedImages([]);
     setSelectedImagePreviews([]);
@@ -497,6 +518,7 @@ const MaterialsPage = () => {
 
   // Filter states
   const [filterCategory, setFilterCategory] = useState("");
+  const [filterRoomType, setFilterRoomType] = useState("");
   const [filterCompany, setFilterCompany] = useState("");
   const [sortType, setSortType] = useState(null); // 'sales-desc', 'sales-asc', 'price-desc', 'price-asc', null
   const [priceMin, setPriceMin] = useState("");
@@ -532,6 +554,9 @@ const MaterialsPage = () => {
     const matchesCategory = filterCategory
       ? toTitleCase(mat.category) === filterCategory
       : true;
+    const matchesRoomType = filterRoomType
+      ? mat.roomType === filterRoomType
+      : true;
     const matchesCompany = filterCompany ? mat.company === filterCompany : true;
     const matchesPriceMin =
       priceMin !== "" ? Number(mat.price) >= Number(priceMin) : true;
@@ -540,6 +565,7 @@ const MaterialsPage = () => {
     return (
       matchesName &&
       matchesCategory &&
+      matchesRoomType &&
       matchesCompany &&
       matchesPriceMin &&
       matchesPriceMax
@@ -553,6 +579,7 @@ const MaterialsPage = () => {
     cheaperAlternatives = materialsData.filter(
       (mat) =>
         (filterCategory ? mat.category === filterCategory : true) &&
+        (filterRoomType ? mat.roomType === filterRoomType : true) &&
         (filterCompany ? mat.company === filterCompany : true) &&
         priceMin !== "" &&
         Number(mat.price) < Number(priceMin)
@@ -560,6 +587,7 @@ const MaterialsPage = () => {
     expensiveAlternatives = materialsData.filter(
       (mat) =>
         (filterCategory ? mat.category === filterCategory : true) &&
+        (filterRoomType ? mat.roomType === filterRoomType : true) &&
         (filterCompany ? mat.company === filterCompany : true) &&
         priceMax !== "" &&
         Number(mat.price) > Number(priceMax)
@@ -662,7 +690,7 @@ const MaterialsPage = () => {
         </div>
 
         {/* Filters - always visible */}
-        <div className="mb-4 grid grid-cols-1 items-end gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-5">
+        <div className="mb-4 grid grid-cols-1 items-end gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-6">
           {/* Category Filter (dropdown) */}
           <div className="flex flex-col items-start">
             <span className="font-semibold text-gray-700 mb-1">Category</span>
@@ -675,6 +703,22 @@ const MaterialsPage = () => {
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* Room Type Filter (dropdown) */}
+          <div className="flex flex-col items-start">
+            <span className="font-semibold text-gray-700 mb-1">Room Type</span>
+            <select
+              value={filterRoomType}
+              onChange={(e) => setFilterRoomType(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+            >
+              <option value="">All Room Types</option>
+              {ROOM_TYPE_OPTIONS.map((roomType) => (
+                <option key={roomType} value={roomType}>
+                  {roomType}
                 </option>
               ))}
             </select>
@@ -764,6 +808,7 @@ const MaterialsPage = () => {
             <button
               onClick={() => {
                 setFilterCategory("");
+                setFilterRoomType("");
                 setFilterCompany("");
                 setSortType(null);
                 setPriceMin("");

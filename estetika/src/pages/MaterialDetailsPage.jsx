@@ -454,6 +454,11 @@ export default function MaterialDetailsPage() {
         <div>
           <h2 className="text-2xl font-bold">{material.name}</h2>
           <p className="text-sm text-gray-600">COMPANY: {material.company}</p>
+          {material.roomType && (
+            <p className="text-sm text-gray-600">
+              ROOM TYPE: {material.roomType}
+            </p>
+          )}
           <p className="text-2xl font-semibold mt-4">
             ₱{calculateFinalPrice().toLocaleString()}
           </p>
@@ -572,6 +577,11 @@ export default function MaterialDetailsPage() {
                     <p className="text-xs text-gray-500 mb-2">
                       {product.company}
                     </p>
+                    {product.roomType && (
+                      <p className="text-xs font-semibold text-[#1D3C34] mb-2">
+                        {product.roomType}
+                      </p>
+                    )}
                     <p className="font-semibold text-[#1D3C34] mb-2">
                       ₱{(product.price || 0).toLocaleString()}
                     </p>

@@ -41,6 +41,18 @@ const DEFAULT_JSON_OUTPUT = path.resolve(
   "materials-import.json"
 );
 const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
+const ROOM_TYPE_ALIASES = new Map([
+  ["bathroom", "Bathroom"],
+  ["bedroom", "Bedroom"],
+  ["bed room", "Bedroom"],
+  ["commercial space", "Commercial Space"],
+  ["dining area", "Dining Room"],
+  ["dining room", "Dining Room"],
+  ["home office", "Home Office"],
+  ["kitchen", "Kitchen"],
+  ["living room", "Living Room"],
+  ["whole house", "Whole House"],
+]);
 const LABELS = [
   "Material Name",
   "Company Name",
@@ -127,6 +139,27 @@ function slugify(value) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 90) || "material";
+}
+
+function toTitleCase(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function normalizeRoomType(value) {
+  const compact = String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
+  return ROOM_TYPE_ALIASES.get(compact) || toTitleCase(value);
+}
+
+function inferRoomTypeFromPath(materialsRoot, sourcePath) {
+  const relativePath = path.relative(materialsRoot, sourcePath);
+  const topLevelFolder = relativePath.split(path.sep).filter(Boolean)[0];
+  return normalizeRoomType(topLevelFolder);
 }
 
 function normalizeText(text) {
@@ -280,6 +313,7 @@ async function parseDocx(docxPath, materialsRoot) {
     .filter((chunk) => /^\s*(?:Material\s+)?Name\s*:/i.test(chunk));
   const isSingleProductDoc = chunks.length === 1;
   const folderName = path.basename(path.dirname(docxPath));
+  const roomType = inferRoomTypeFromPath(materialsRoot, docxPath);
 
   const records = chunks.map((chunk) => {
     const extractedName =
@@ -306,6 +340,7 @@ async function parseDocx(docxPath, materialsRoot) {
       sourceFolder: toRelative(materialsRoot, path.dirname(docxPath)),
       docxPath,
       docxDir: path.dirname(docxPath),
+      roomType,
       localImageFiles: [],
       image: [],
       options: buildOptions(raw),
@@ -322,6 +357,7 @@ function validateRecord(record) {
   if (!Number.isFinite(record.price) || record.price <= 0) missing.push("price");
   if (!record.description) missing.push("description");
   if (!record.category) missing.push("category");
+  if (!record.roomType) missing.push("roomType");
   return missing;
 }
 
@@ -486,6 +522,7 @@ async function buildEmbedding(record, existing) {
         record.company,
         record.category,
         record.subCategory,
+        record.roomType,
         record.description,
         record.color,
         record.type,
@@ -510,6 +547,7 @@ function toMaterialPayload(record, imageUrls, embedding) {
     description: record.description,
     category: record.category,
     subCategory: record.subCategory,
+    roomType: record.roomType,
     options: record.options,
     attributes: record.attributes,
     image: imageUrls,
@@ -530,6 +568,7 @@ function publicRecord(record) {
     description: record.description,
     category: record.category,
     subCategory: record.subCategory,
+    roomType: record.roomType,
     options: record.options,
     attributes: record.attributes,
     image: record.image,
@@ -586,11 +625,18 @@ async function importRecords(records, args) {
   try {
     for (const record of records) {
       try {
-        const existing = await Material.findOne({
-          name: record.name,
-          company: record.company,
-          category: record.category,
-        });
+        const existing =
+          (await Material.findOne({
+            name: record.name,
+            company: record.company,
+            category: record.category,
+            roomType: record.roomType,
+          })) ||
+          (await Material.findOne({
+            name: record.name,
+            company: record.company,
+            category: record.category,
+          }));
 
         if (args.onlyNew && existing) {
           summary.skipped += 1;
@@ -603,6 +649,7 @@ async function importRecords(records, args) {
               name: record.name,
               company: record.company,
               category: record.category,
+              roomType: record.roomType,
               sourceDocument: record.sourceDocument,
             });
             continue;
