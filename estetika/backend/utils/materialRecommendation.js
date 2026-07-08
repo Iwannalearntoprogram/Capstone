@@ -386,8 +386,7 @@ const scoreRoomFit = (roomType, materialTokens) => {
 
 // Per-material budget allowance derived from the project budget, room type,
 // and size. Returns null when the project has no usable budget.
-// Shared by scoreBudgetFit (soft scoring) and the hard budget cap in
-// getRecommendedMaterialsForProject.
+// Shared by scoreBudgetFit (soft scoring) and the legacy search ranking flow.
 const getBudgetCeilingForProject = (project) => {
   const projectBudget = Number(project?.budget);
   if (!Number.isFinite(projectBudget) || projectBudget <= 0) return null;
@@ -611,6 +610,92 @@ const buildWeightedKeywordsForProject = (
   return weightedKeywords;
 };
 
+const buildStyleKeywordsForProject = (project) => {
+  const designRecommendation = getProjectDesignRecommendation(project);
+  const weightedKeywords = new Map();
+
+  addWeightedTokens(weightedKeywords, project?.designPreference, 4);
+  addWeightedTokens(
+    weightedKeywords,
+    designRecommendation?.designPreferences,
+    3
+  );
+
+  return weightedKeywords;
+};
+
+const normalizeCategoryName = (value) => {
+  if (!value || typeof value !== "string") return "";
+
+  return value
+    .trim()
+    .replace(/\s+/g, " ")
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
+
+const INVALID_RECOMMENDATION_CATEGORIES = new Set([
+  "Bedroom",
+  "Dining Room",
+  "Entryway",
+  "Hallway",
+  "Kitchen",
+  "Living Room",
+  "Office",
+  "Outdoor",
+  "Test",
+  "Other",
+]);
+
+const getMaterialPrice = (material) => {
+  const price = Number(material?.price);
+  return Number.isFinite(price) && price > 0 ? price : null;
+};
+
+const getProjectBudget = (project) => {
+  const budget = Number(project?.budget);
+  return Number.isFinite(budget) && budget > 0 ? budget : null;
+};
+
+const buildCostFirstReason = ({ material, project, matchedKeywords }) => {
+  const category = normalizeCategoryName(material.category) || "category";
+  const reasons = [
+    `Lowest-cost ${category.toLowerCase()} option in the warehouse catalog that satisfies the project constraints.`,
+  ];
+
+  if (project?.roomType) {
+    reasons.push(`Valid for ${project.roomType}.`);
+  }
+
+  if (matchedKeywords.length > 0) {
+    reasons.push(
+      `Matches style cues like ${matchedKeywords.slice(0, 3).join(", ")}.`
+    );
+  }
+
+  return reasons;
+};
+
+const buildTradeOffs = (categoryCandidates, selectedMaterial) => {
+  const selectedPrice = Number(selectedMaterial?.price) || 0;
+  const moreExpensiveAlternatives = categoryCandidates.filter(
+    (item) =>
+      String(item.material._id) !== String(selectedMaterial._id) &&
+      (Number(item.material.price) || 0) > selectedPrice
+  );
+
+  if (moreExpensiveAlternatives.length === 0) {
+    return [];
+  }
+
+  return [
+    `${moreExpensiveAlternatives.length} higher-cost valid alternative${
+      moreExpensiveAlternatives.length === 1 ? "" : "s"
+    } skipped to preserve budget efficiency.`,
+  ];
+};
+
 const getBaseWeights = (keywordWeightTotal) => {
   const baseWeights = {
     keyword: 0.28,
@@ -726,104 +811,233 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
     ? materialsOverride
     : await Material.find().lean();
 
+  const projectBudget = getProjectBudget(project);
+  const summary = {
+    estimatedTotalCost: 0,
+    remainingBudget: projectBudget,
+    constraintsSatisfied: false,
+    budget: projectBudget,
+    consideredMaterials: Array.isArray(materials) ? materials.length : 0,
+    validMaterials: 0,
+    uncoveredCategories: [],
+    conflicts: [],
+  };
+
   if (!Array.isArray(materials) || materials.length === 0) {
-    return null;
+    summary.conflicts.push("No catalog materials are available to evaluate.");
+    return { recommendations: [], summary };
   }
 
-  const scoredMaterials = rankMaterialsForProjectContext(project, materials);
-  const roomFilteredMaterials = scoredMaterials.filter((item) =>
-    materialMatchesProjectRoom(item.material, project?.roomType)
-  );
-  const roomScopedMaterials =
-    roomFilteredMaterials.length > 0 ? roomFilteredMaterials : scoredMaterials;
-  const strictContextKeywords = getStrictContextKeywordsForProject(project);
-  const contextFilteredMaterials =
-    strictContextKeywords.length > 0
-      ? roomScopedMaterials.filter((item) => item.strictContextMatchCount > 0)
-      : roomScopedMaterials;
-  let eligibleMaterials =
-    contextFilteredMaterials.length > 0
-      ? contextFilteredMaterials
-      : roomScopedMaterials;
-
-  // Strictly exclude anything over the per-item allowance. No fallback: it is
-  // acceptable to recommend nothing if all options are over budget.
-  const ceiling = getBudgetCeilingForProject(project);
-  if (ceiling != null) {
-    eligibleMaterials = eligibleMaterials.filter(
-      (item) => Number(item.material.price) <= ceiling
+  if (projectBudget == null) {
+    summary.conflicts.push(
+      "A valid project budget is required before materials can be recommended."
     );
+    return { recommendations: [], summary };
   }
-  if (eligibleMaterials.length === 0) return [];
 
-  const INVALID_CATEGORIES = new Set([
-    "Bedroom",
-    "Dining Room",
-    "Entryway",
-    "Hallway",
-    "Kitchen",
-    "Living Room",
-    "Office",
-    "Outdoor",
-    "Test",
-    "Other"
-  ]);
+  const weightedKeywords = buildWeightedKeywordsForProject(project);
+  const styleKeywords = buildStyleKeywordsForProject(project);
+  const hasStyleConstraint = [...styleKeywords.values()].some(
+    (weight) => weight > 0
+  );
+  const maxSales = materials.reduce(
+    (max, material) => Math.max(max, Number(material?.sales) || 0),
+    0
+  );
+  const rejected = {
+    roomType: 0,
+    stylePreference: 0,
+    budget: 0,
+    category: 0,
+  };
+  const groupedByCategory = new Map();
 
-  // Group by category to recommend 1 per category
-  const topByCategory = new Map();
-  for (const item of eligibleMaterials) {
-    let rawCategory = item.material.category;
-    if (!rawCategory || typeof rawCategory !== "string") continue;
-    
-    // Normalize to prevent duplicates (e.g., "sofa" vs "Sofa", "Storage cabinet" vs "Storage Cabinet")
-    const category = rawCategory
-      .trim()
-      .replace(/\s+/g, " ")
-      .split(" ")
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-      .join(" ");
+  for (const material of materials) {
+    const category = normalizeCategoryName(material?.category);
+    if (!category || INVALID_RECOMMENDATION_CATEGORIES.has(category)) {
+      rejected.category += 1;
+      continue;
+    }
 
-    if (INVALID_CATEGORIES.has(category)) continue;
+    if (!materialMatchesProjectRoom(material, project?.roomType)) {
+      rejected.roomType += 1;
+      continue;
+    }
 
-    // Since scoredMaterials is already sorted highest-to-lowest,
-    // the first one we encounter for a category is the top result.
-    if (!topByCategory.has(category)) {
-      item.material.category = category; // Override the material payload to use clean title casing
-      topByCategory.set(category, item);
+    const price = getMaterialPrice(material);
+    if (price == null || price > projectBudget) {
+      rejected.budget += 1;
+      continue;
+    }
+
+    const materialTokens = buildMaterialTokenSet(material);
+    const styleMatch = scoreKeywordMatch(styleKeywords, materialTokens);
+    if (hasStyleConstraint && styleMatch.matchedKeywords.length === 0) {
+      rejected.stylePreference += 1;
+      continue;
+    }
+
+    const keywordMatch = scoreKeywordMatch(weightedKeywords, materialTokens);
+    const roomScore = scoreRoomFit(project?.roomType, materialTokens);
+    const popularityScore = scorePopularity(material, maxSales);
+    const item = {
+      material: {
+        ...material,
+        category,
+      },
+      price,
+      keywordScore: keywordMatch.score,
+      roomScore,
+      budgetScore: 1,
+      popularityScore,
+      styleScore: styleMatch.score,
+      matchedKeywords:
+        styleMatch.matchedKeywords.length > 0
+          ? styleMatch.matchedKeywords
+          : keywordMatch.matchedKeywords,
+    };
+
+    if (!groupedByCategory.has(category)) {
+      groupedByCategory.set(category, []);
+    }
+    groupedByCategory.get(category).push(item);
+  }
+
+  for (const candidates of groupedByCategory.values()) {
+    candidates.sort((left, right) => {
+      if (left.price !== right.price) return left.price - right.price;
+      if (right.styleScore !== left.styleScore) {
+        return right.styleScore - left.styleScore;
+      }
+      if (right.keywordScore !== left.keywordScore) {
+        return right.keywordScore - left.keywordScore;
+      }
+      if (right.roomScore !== left.roomScore) {
+        return right.roomScore - left.roomScore;
+      }
+      return right.popularityScore - left.popularityScore;
+    });
+  }
+
+  const categoryChoices = [...groupedByCategory.entries()]
+    .map(([category, candidates]) => ({
+      category,
+      candidates,
+      cheapest: candidates[0],
+    }))
+    .sort((left, right) => {
+      if (left.cheapest.price !== right.cheapest.price) {
+        return left.cheapest.price - right.cheapest.price;
+      }
+      return left.category.localeCompare(right.category);
+    });
+
+  let estimatedTotalCost = 0;
+  const selected = [];
+
+  for (const group of categoryChoices) {
+    const nextTotal = estimatedTotalCost + group.cheapest.price;
+
+    if (nextTotal > projectBudget) {
+      summary.uncoveredCategories.push({
+        category: group.category,
+        cheapestValidCost: group.cheapest.price,
+        remainingBudget: Math.max(projectBudget - estimatedTotalCost, 0),
+        reason: `Remaining budget ${formatCurrency(
+          projectBudget - estimatedTotalCost
+        )} cannot cover the cheapest valid option at ${formatCurrency(
+          group.cheapest.price
+        )}.`,
+      });
+      continue;
+    }
+
+    selected.push({
+      ...group.cheapest,
+      categoryCandidates: group.candidates,
+    });
+    estimatedTotalCost = nextTotal;
+  }
+
+  summary.estimatedTotalCost = estimatedTotalCost;
+  summary.remainingBudget = Math.max(projectBudget - estimatedTotalCost, 0);
+  summary.validMaterials = categoryChoices.reduce(
+    (count, group) => count + group.candidates.length,
+    0
+  );
+
+  if (summary.validMaterials === 0) {
+    if (rejected.roomType > 0) {
+      summary.conflicts.push(
+        `${rejected.roomType} material${
+          rejected.roomType === 1 ? "" : "s"
+        } did not match the room type.`
+      );
+    }
+    if (rejected.stylePreference > 0) {
+      summary.conflicts.push(
+        `${rejected.stylePreference} material${
+          rejected.stylePreference === 1 ? "" : "s"
+        } did not match the design preference.`
+      );
+    }
+    if (rejected.budget > 0) {
+      summary.conflicts.push(
+        `${rejected.budget} material${
+          rejected.budget === 1 ? "" : "s"
+        } exceeded the project budget or had no valid price.`
+      );
+    }
+    if (summary.conflicts.length === 0) {
+      summary.conflicts.push(
+        "No warehouse catalog materials satisfy the room type, budget, and style constraints."
+      );
     }
   }
 
-  // Map the top results into the expected format
-  const recommendations = Array.from(topByCategory.values()).map(topResult => ({
-    material: toPublicMaterial(topResult.material),
-    score: {
-      total: Number(topResult.totalScore.toFixed(3)),
-      keywordFit: Number(topResult.keywordScore.toFixed(3)),
-      roomFit: Number(topResult.roomScore.toFixed(3)),
-      budgetFit: Number(topResult.budgetScore.toFixed(3)),
-      popularity: Number(topResult.popularityScore.toFixed(3)),
-    },
-    analysis: {
-      matchedKeywords: topResult.matchedKeywords,
-      estimatedTarget: topResult.estimatedTarget
-        ? Math.round(topResult.estimatedTarget)
-        : null,
-      estimatedCeiling: topResult.estimatedCeiling
-        ? Math.round(topResult.estimatedCeiling)
-        : null,
-      reasons: buildReasons({
-        material: topResult.material,
-        project,
-        matchedKeywords: topResult.matchedKeywords,
-        keywordScore: topResult.keywordScore,
-        roomScore: topResult.roomScore,
-        popularityScore: topResult.popularityScore,
-        estimatedCeiling: topResult.estimatedCeiling,
-      }),
-    },
-  }));
+  if (summary.uncoveredCategories.length > 0) {
+    summary.conflicts.push(
+      `Budget can cover ${selected.length} of ${categoryChoices.length} valid categor${
+        categoryChoices.length === 1 ? "y" : "ies"
+      }. Increase the budget or relax category coverage to include the skipped items.`
+    );
+  }
 
-  return recommendations;
+  summary.constraintsSatisfied =
+    selected.length > 0 &&
+    summary.uncoveredCategories.length === 0 &&
+    summary.conflicts.length === 0;
+
+  const recommendations = selected.map((item) => {
+    const reasons = buildCostFirstReason({
+      material: item.material,
+      project,
+      matchedKeywords: item.matchedKeywords,
+    });
+    const tradeOffs = buildTradeOffs(item.categoryCandidates, item.material);
+
+    return {
+      material: toPublicMaterial(item.material),
+      score: {
+        total: 1,
+        keywordFit: Number(item.keywordScore.toFixed(3)),
+        roomFit: Number(item.roomScore.toFixed(3)),
+        budgetFit: 1,
+        popularity: Number(item.popularityScore.toFixed(3)),
+      },
+      analysis: {
+        matchedKeywords: item.matchedKeywords,
+        estimatedCost: Math.round(item.price),
+        estimatedTarget: null,
+        estimatedCeiling: projectBudget,
+        reason: reasons[0],
+        reasons,
+        tradeOffs,
+      },
+    };
+  });
+
+  return { recommendations, summary };
 };
 
 module.exports = {

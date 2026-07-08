@@ -165,6 +165,18 @@ export default function ProjectOverviewTab() {
   const recommendedMaterials = Array.isArray(project?.recommendedMaterials)
     ? project.recommendedMaterials
     : [];
+  const materialRecommendationSummary =
+    project?.materialRecommendationSummary || null;
+  const recommendationConflicts = Array.isArray(
+    materialRecommendationSummary?.conflicts,
+  )
+    ? materialRecommendationSummary.conflicts
+    : [];
+  const uncoveredCategories = Array.isArray(
+    materialRecommendationSummary?.uncoveredCategories,
+  )
+    ? materialRecommendationSummary.uncoveredCategories
+    : [];
   const materialsPerPage = 4;
   const totalMaterialPages = Math.max(
     1,
@@ -493,12 +505,69 @@ export default function ProjectOverviewTab() {
       <SectionPanel
         eyebrow="Materials"
         title="Recommended materials"
-        description="Category-based material recommendations automatically tailored to the preferences, description, and budget."
+        description="Cost-efficient category recommendations from the warehouse catalog that satisfy room type, budget, and design preference."
       >
+        {materialRecommendationSummary ? (
+          <div className="mb-5 space-y-4">
+            <div className="grid gap-3 md:grid-cols-4">
+              <MetricCard
+                label="Estimated total"
+                value={formatCurrency(
+                  materialRecommendationSummary.estimatedTotalCost,
+                )}
+              />
+              <MetricCard
+                label="Remaining budget"
+                value={formatCurrency(
+                  materialRecommendationSummary.remainingBudget,
+                )}
+              />
+              <MetricCard
+                label="Constraints"
+                value={
+                  materialRecommendationSummary.constraintsSatisfied
+                    ? "Satisfied"
+                    : "Needs review"
+                }
+              />
+              <MetricCard
+                label="Categories covered"
+                value={`${recommendedMaterials.length}`}
+              />
+            </div>
+
+            {(recommendationConflicts.length > 0 ||
+              uncoveredCategories.length > 0) && (
+              <div className="rounded-[20px] border border-amber-200 bg-amber-50 px-4 py-4">
+                <p className="text-sm font-semibold text-amber-900">
+                  Recommendation constraints need review
+                </p>
+                <div className="mt-3 space-y-2 text-sm leading-6 text-amber-900/80">
+                  {recommendationConflicts.map((conflict, index) => (
+                    <p key={`conflict-${index}`}>{conflict}</p>
+                  ))}
+                  {uncoveredCategories.map((item, index) => (
+                    <p key={`uncovered-${item.category || index}`}>
+                      {item.category || "Category"} skipped:{" "}
+                      {item.reason || "No valid option fit the remaining budget."}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null}
+
         {recommendedMaterials.length > 0 ? (
           <div className="flex flex-col gap-4">
             {paginatedMaterials.map((rec, index) => {
               const recommendedMaterial = rec.material;
+              const reasons = Array.isArray(rec.analysis?.reasons)
+                ? rec.analysis.reasons
+                : [];
+              const tradeOffs = Array.isArray(rec.analysis?.tradeOffs)
+                ? rec.analysis.tradeOffs
+                : [];
 
               return (
                 <div 
@@ -538,6 +607,28 @@ export default function ProjectOverviewTab() {
                       <p className="truncate text-sm text-slate-500">
                         {recommendedMaterial.company || "Unknown supplier"}
                       </p>
+                      {(rec.analysis?.reason || reasons.length > 0) && (
+                        <p className="mt-3 text-sm leading-6 text-slate-600">
+                          {rec.analysis?.reason || reasons[0]}
+                        </p>
+                      )}
+                      {reasons.length > 1 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {reasons.slice(1, 3).map((reason, reasonIndex) => (
+                            <span
+                              key={reasonIndex}
+                              className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600"
+                            >
+                              {reason}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {tradeOffs.length > 0 && (
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                          {tradeOffs[0]}
+                        </p>
+                      )}
                     </div>
 
                   </div>

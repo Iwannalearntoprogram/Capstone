@@ -290,8 +290,13 @@ const project_get = catchAsync(async (req, res, next) => {
       project.status = "delayed";
     }
 
-    project.recommendedMaterials =
+    const materialRecommendationResult =
       await getRecommendedMaterialsForProject(project);
+    project.recommendedMaterials = Array.isArray(materialRecommendationResult)
+      ? materialRecommendationResult
+      : materialRecommendationResult?.recommendations || [];
+    project.materialRecommendationSummary =
+      materialRecommendationResult?.summary || null;
   } else {
     project.forEach((proj, idx) => {
       if (proj.toObject) project[idx] = proj = proj.toObject();
