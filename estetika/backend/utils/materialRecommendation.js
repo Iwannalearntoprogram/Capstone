@@ -1,4 +1,5 @@
 const { MATERIAL_KEYWORDS, COLOR_KEYWORDS } = require("./materialLexicon");
+const { normalizeAttributeTags } = require("./attributeTags");
 
 const STOP_WORDS = new Set([
   "about",
@@ -314,12 +315,7 @@ const buildMaterialTokenSet = (material) => {
     ...(Array.isArray(material.options)
       ? material.options.map((option) => option?.option)
       : []),
-    ...(Array.isArray(material.attributes)
-      ? material.attributes.flatMap((attribute) => [
-          attribute?.key,
-          attribute?.value,
-        ])
-      : []),
+    ...normalizeAttributeTags(material.attributes),
   ].filter(Boolean);
 
   return new Set(tokenize(parts.join(" ")));

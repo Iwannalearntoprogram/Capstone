@@ -298,6 +298,57 @@ export const validateAttributeGroups = (groups = [], { required = false } = {}) 
   return "";
 };
 
+const normalizeTagText = (value) =>
+  typeof value === "string" ? value.trim().replace(/\s+/g, " ") : "";
+
+const flattenAttributeTags = (input) => {
+  if (!input) return [];
+  if (typeof input === "string" || typeof input === "number") {
+    return [String(input)];
+  }
+  if (Array.isArray(input)) {
+    return input.flatMap((item) => flattenAttributeTags(item));
+  }
+  if (input instanceof Map) {
+    return Array.from(input.values()).flatMap((value) =>
+      flattenAttributeTags(value)
+    );
+  }
+  if (typeof input === "object") {
+    if (Array.isArray(input.values)) return flattenAttributeTags(input.values);
+    if (input.value !== undefined && input.value !== null) {
+      return flattenAttributeTags(input.value);
+    }
+    return Object.entries(input)
+      .filter(([key]) => !["_id", "id", "__v"].includes(key))
+      .flatMap(([, value]) => flattenAttributeTags(value));
+  }
+  return [];
+};
+
+export const normalizeAttributeTags = (input) => {
+  const seen = new Set();
+  const tags = [];
+
+  flattenAttributeTags(input).forEach((value) => {
+    const tag = normalizeTagText(value);
+    const key = tag.toLowerCase();
+    if (!tag || seen.has(key)) return;
+    seen.add(key);
+    tags.push(tag);
+  });
+
+  return tags;
+};
+
+export const validateAttributeTags = (tags = [], { required = false } = {}) => {
+  const normalized = normalizeAttributeTags(tags);
+  if (required && normalized.length === 0) {
+    return "Add at least one attribute tag.";
+  }
+  return "";
+};
+
 export const getFirstError = (errors = {}) =>
   Object.values(errors).find(Boolean) || "";
 

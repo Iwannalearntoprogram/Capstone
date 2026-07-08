@@ -1,8 +1,14 @@
 const Material = require("../../models/Project/Material");
+const CategoryTemplate = require("../../models/Project/CategoryTemplate");
 const Project = require("../../models/Project/Project");
 const User = require("../../models/User/User");
 const AppError = require("../../utils/appError");
 const catchAsync = require("../../utils/catchAsync");
+const {
+  comparable,
+  normalizeAttributeTags,
+  normalizeSpaces,
+} = require("../../utils/attributeTags");
 const { generateEmbedding } = require("../../utils/embed");
 const { openai } = require("../../utils/openaiClient");
 const {
@@ -48,6 +54,30 @@ const getProjectSearchContext = (project) => {
     .join("\n");
 };
 
+const uniqueNormalized = (values = []) => {
+  const seen = new Set();
+  const out = [];
+
+  values.forEach((value) => {
+    const normalized = normalizeSpaces(value);
+    const key = comparable(normalized);
+    if (!normalized || seen.has(key)) return;
+    seen.add(key);
+    out.push(normalized);
+  });
+
+  return out.sort((a, b) => a.localeCompare(b));
+};
+
+const serializeMaterial = (material) => {
+  if (!material) return material;
+  const plain = typeof material.toObject === "function" ? material.toObject() : material;
+  return {
+    ...plain,
+    attributes: normalizeAttributeTags(plain.attributes),
+  };
+};
+
 // Get Material by Id or DesignerId
 const material_get = catchAsync(async (req, res, next) => {
   const { id, designerId } = req.query;
@@ -78,7 +108,31 @@ const material_get = catchAsync(async (req, res, next) => {
 
   return res
     .status(200)
-    .json({ message: "Material Successfully Fetched", material });
+    .json({
+      message: "Material Successfully Fetched",
+      material: Array.isArray(material)
+        ? material.map(serializeMaterial)
+        : serializeMaterial(material),
+    });
+});
+
+const material_field_options = catchAsync(async (req, res) => {
+  const [companyValues, materialCategoryValues, templates] = await Promise.all([
+    Material.distinct("company"),
+    Material.distinct("category"),
+    CategoryTemplate.find().select("category").lean(),
+  ]);
+
+  const templateCategoryValues = templates.map((template) => template.category);
+
+  return res.status(200).json({
+    message: "Material field options fetched",
+    companies: uniqueNormalized(companyValues),
+    categories: uniqueNormalized([
+      ...materialCategoryValues,
+      ...templateCategoryValues,
+    ]),
+  });
 });
 
 // Create Material
@@ -150,24 +204,7 @@ const material_post = catchAsync(async (req, res, next) => {
     }
   }
 
-  // Attributes: allow empty array; if provided validate structure
-  if (attributes !== undefined) {
-    if (!Array.isArray(attributes)) {
-      return next(new AppError("Attributes must be an array.", 400));
-    }
-    for (const attribute of attributes) {
-      if (
-        !attribute ||
-        typeof attribute !== "object" ||
-        !attribute.key ||
-        !attribute.value
-      ) {
-        return next(
-          new AppError("Each attribute must include 'key' and 'value'.", 400)
-        );
-      }
-    }
-  }
+  const attributeTags = normalizeAttributeTags(attributes);
 
   let embedding = [];
   try {
@@ -190,7 +227,7 @@ const material_post = catchAsync(async (req, res, next) => {
     category,
     subCategory,
     roomType,
-    attributes: Array.isArray(attributes) ? attributes : [],
+    attributes: attributeTags,
     embedding,
   });
 
@@ -256,23 +293,8 @@ const material_put = catchAsync(async (req, res, next) => {
   if (subCategory) updates.subCategory = subCategory;
   if (roomType) updates.roomType = roomType;
 
-  if (attributes) {
-    if (!Array.isArray(attributes)) {
-      return next(new AppError("Attributes must be an array.", 400));
-    }
-    for (const attribute of attributes) {
-      if (
-        !attribute ||
-        typeof attribute !== "object" ||
-        !attribute.key ||
-        !attribute.value
-      ) {
-        return next(
-          new AppError("Each attribute must include 'key' and 'value'.", 400)
-        );
-      }
-    }
-    updates.attributes = attributes;
+  if (attributes !== undefined) {
+    updates.attributes = normalizeAttributeTags(attributes);
   }
 
   if (price !== undefined) {
@@ -710,6 +732,7 @@ const material_similar = catchAsync(async (req, res) => {
 
 module.exports = {
   material_get,
+  material_field_options,
   material_post,
   material_put,
   material_delete,

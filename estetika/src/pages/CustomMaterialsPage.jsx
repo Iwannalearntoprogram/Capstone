@@ -5,12 +5,12 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import Toast from "../components/common/Toast";
 import MaterialModal from "../components/materials/MaterialModal";
+import { normalizeAttributeTags } from "../utils/validation";
 
 const CustomMaterialsPage = () => {
-  const [userRole, setUserRole] = useState(null);
   const [requests, setRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [toast, setToast] = useState({
     isVisible: false,
@@ -24,7 +24,6 @@ const CustomMaterialsPage = () => {
 
   useEffect(() => {
     const role = localStorage.getItem("role");
-    setUserRole(role);
     if (role !== "storage_admin") {
       navigate("/not-authorized");
     }
@@ -81,6 +80,7 @@ const CustomMaterialsPage = () => {
     name: "",
     company: "",
     category: "",
+    roomType: "",
     price: 0,
     description: "",
     options: [],
@@ -93,10 +93,11 @@ const CustomMaterialsPage = () => {
       name: "",
       company: "",
       category: reqItem.category || "",
+      roomType: "",
       price: reqItem.budgetMax || 0,
       description: reqItem.notes || "",
       options: [],
-      attributes: Array.isArray(reqItem.attributes) ? reqItem.attributes : [],
+      attributes: normalizeAttributeTags(reqItem.attributes),
     });
     setPrefillContext({
       requestId: reqItem._id,
@@ -116,11 +117,17 @@ const CustomMaterialsPage = () => {
       // 1) create material
       const createRes = await axios.post(
         `${serverUrl}/api/material`,
-        prefillMaterial,
+        {
+          ...prefillMaterial,
+          price: Number(prefillMaterial.price),
+          attributes: normalizeAttributeTags(prefillMaterial.attributes),
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const newMaterialId =
-        createRes?.data?.material?._id || createRes?.data?._id;
+        createRes?.data?.newMaterial?._id ||
+        createRes?.data?.material?._id ||
+        createRes?.data?._id;
 
       // 2) add to project (basic add with qty 1, no options)
       if (prefillContext?.projectId && newMaterialId) {
@@ -157,6 +164,7 @@ const CustomMaterialsPage = () => {
         name: "",
         company: "",
         category: "",
+        roomType: "",
         price: 0,
         description: "",
         options: [],
@@ -209,7 +217,7 @@ const CustomMaterialsPage = () => {
     declined: false,
   });
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerReq, setDrawerReq] = useState(null);
+  const [drawerReq] = useState(null);
 
   const toggleSection = (sectionKey) => {
     setExpandedSections((prev) => ({
@@ -332,30 +340,22 @@ const CustomMaterialsPage = () => {
                             : "—"}
                         </div>
                         {/* Attribute chips */}
-                        {Array.isArray(req.attributes) &&
-                          req.attributes.length > 0 && (
+                        {normalizeAttributeTags(req.attributes).length > 0 && (
                             <div className="mt-1 flex flex-wrap gap-2">
-                              {req.attributes.slice(0, 6).map((a, i) => (
+                              {normalizeAttributeTags(req.attributes)
+                                .slice(0, 6)
+                                .map((tag, i) => (
                                 <span
                                   key={i}
                                   className="inline-flex items-center text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border"
-                                  title={`${a.key}: ${
-                                    Array.isArray(a.values)
-                                      ? a.values.join(", ")
-                                      : a.value || ""
-                                  }`}
+                                  title={tag}
                                 >
-                                  <span className="font-semibold mr-1">
-                                    {a.key}:
-                                  </span>{" "}
-                                  {Array.isArray(a.values)
-                                    ? a.values.join(", ")
-                                    : a.value || ""}
+                                  {tag}
                                 </span>
                               ))}
-                              {req.attributes.length > 6 && (
+                              {normalizeAttributeTags(req.attributes).length > 6 && (
                                 <span className="text-xs text-gray-500">
-                                  +{req.attributes.length - 6} more
+                                  +{normalizeAttributeTags(req.attributes).length - 6} more
                                 </span>
                               )}
                             </div>
@@ -486,22 +486,16 @@ const CustomMaterialsPage = () => {
                   </div>
                 </div>
               )}
-              {Array.isArray(drawerReq.attributes) &&
-                drawerReq.attributes.length > 0 && (
+              {normalizeAttributeTags(drawerReq.attributes).length > 0 && (
                   <div>
                     <div className="font-semibold">Attributes</div>
-                    <div className="mt-1 grid grid-cols-1 gap-2">
-                      {drawerReq.attributes.map((a, idx) => (
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      {normalizeAttributeTags(drawerReq.attributes).map((tag, idx) => (
                         <div
                           key={idx}
-                          className="flex justify-between items-center border rounded px-2 py-1 text-gray-700"
+                          className="rounded-full border bg-gray-50 px-3 py-1 text-gray-700"
                         >
-                          <span className="font-semibold">{a.key}</span>
-                          <span>
-                            {Array.isArray(a.values)
-                              ? a.values.join(", ")
-                              : a.value || ""}
-                          </span>
+                          {tag}
                         </div>
                       ))}
                     </div>

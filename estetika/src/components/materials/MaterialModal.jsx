@@ -1,7 +1,8 @@
-import { FiPlus, FiTrash2, FiX, FiImage, FiUpload } from "react-icons/fi";
-import { useEffect, useState, useMemo } from "react";
+import { FiPlus, FiSearch, FiTrash2, FiX, FiUpload } from "react-icons/fi";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { normalizeAttributeTags } from "../../utils/validation";
 
 const ROOM_TYPE_OPTIONS = [
   "Living Room",
@@ -13,6 +14,192 @@ const ROOM_TYPE_OPTIONS = [
   "Whole House",
   "Commercial Space",
 ];
+
+const normalizeLookup = (value) =>
+  String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
+
+const uniqueOptions = (values = []) => {
+  const seen = new Set();
+  const out = [];
+
+  values.forEach((value) => {
+    const label = String(value || "").trim().replace(/\s+/g, " ");
+    const key = normalizeLookup(label);
+    if (!label || seen.has(key)) return;
+    seen.add(key);
+    out.push(label);
+  });
+
+  return out.sort((a, b) => a.localeCompare(b));
+};
+
+const SearchableField = ({
+  label,
+  value,
+  onChange,
+  options = [],
+  placeholder,
+  error,
+  required = false,
+  loading = false,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const canonicalOptions = useMemo(() => uniqueOptions(options), [options]);
+  const query = normalizeLookup(value);
+  const filteredOptions = query
+    ? canonicalOptions.filter((option) => normalizeLookup(option).includes(query))
+    : canonicalOptions;
+
+  const applyCanonicalValue = () => {
+    const exact = canonicalOptions.find(
+      (option) => normalizeLookup(option) === normalizeLookup(value)
+    );
+    if (exact && exact !== value) onChange(exact);
+  };
+
+  return (
+    <div className="space-y-2 relative">
+      <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <div className="relative">
+        <input
+          type="text"
+          placeholder={placeholder}
+          value={value}
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => {
+            window.setTimeout(() => {
+              applyCanonicalValue();
+              setIsOpen(false);
+            }, 120);
+          }}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setIsOpen(true);
+          }}
+          className="w-full p-3 pr-11 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] transition-all bg-white"
+          required={required}
+          role="combobox"
+          aria-expanded={isOpen}
+        />
+        <button
+          type="button"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => setIsOpen((open) => !open)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-[#1D3C34]"
+          title={`Search ${label.toLowerCase()}`}
+          aria-label={`Search ${label.toLowerCase()}`}
+        >
+          <FiSearch size={18} />
+        </button>
+      </div>
+      {isOpen && (
+        <div className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+          {loading ? (
+            <div className="px-3 py-2 text-sm text-gray-500">Loading...</div>
+          ) : filteredOptions.length > 0 ? (
+            filteredOptions.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  onChange(option);
+                  setIsOpen(false);
+                }}
+                className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-[#1D3C34]/10"
+              >
+                {option}
+              </button>
+            ))
+          ) : (
+            <div className="px-3 py-2 text-sm text-gray-500">
+              No match. This will be added as new.
+            </div>
+          )}
+        </div>
+      )}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+    </div>
+  );
+};
+
+const AttributeTagInput = ({ value = [], onChange, error }) => {
+  const [draft, setDraft] = useState("");
+  const tags = useMemo(() => normalizeAttributeTags(value), [value]);
+
+  const addTags = (rawValue) => {
+    const nextTags = normalizeAttributeTags([
+      ...tags,
+      ...String(rawValue || "").split(","),
+    ]);
+    onChange(nextTags);
+    setDraft("");
+  };
+
+  const removeTag = (index) => {
+    onChange(tags.filter((_, tagIndex) => tagIndex !== index));
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-[#f8fffe] to-white rounded-xl p-6 border border-gray-200 shadow-sm mt-6">
+      <div className="mb-3">
+        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <div className="w-2 h-6 bg-gradient-to-b from-[#1D3C34] to-[#2a5a47] rounded-full"></div>
+          Attributes
+        </h3>
+      </div>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === ",") {
+              e.preventDefault();
+              addTags(draft);
+            }
+          }}
+          placeholder="Type a tag, then press Enter"
+          className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] bg-white"
+        />
+        <button
+          type="button"
+          onClick={() => addTags(draft)}
+          disabled={!draft.trim()}
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#1D3C34] px-4 py-3 text-sm font-medium text-[#1D3C34] hover:bg-[#1D3C34]/10 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <FiPlus size={16} />
+          Add
+        </button>
+      </div>
+      {tags.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {tags.map((tag, index) => (
+            <span
+              key={`${tag}-${index}`}
+              className="inline-flex items-center gap-2 rounded-full border border-[#1D3C34]/20 bg-[#1D3C34]/10 px-3 py-1.5 text-sm font-medium text-[#1D3C34]"
+            >
+              {tag}
+              <button
+                type="button"
+                onClick={() => removeTag(index)}
+                className="rounded-full p-0.5 hover:bg-[#1D3C34]/15"
+                title={`Remove ${tag}`}
+                aria-label={`Remove ${tag}`}
+              >
+                <FiX size={14} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+    </div>
+  );
+};
 
 const MaterialModal = ({
   isOpen,
@@ -33,207 +220,42 @@ const MaterialModal = ({
   onRemoveOption,
   errors = {},
 }) => {
-  if (!isOpen) return null;
-
   const serverUrl = import.meta.env.VITE_SERVER_URL;
 
-  // Category templates and attribute registries
-  const [templates, setTemplates] = useState([]); // [{category, attributes:[{key}]}]
-  const [isAddingCategory, setIsAddingCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
-  // removed per-line attribute keys when creating new category
-  const [attrValuesMap, setAttrValuesMap] = useState({}); // key -> values[]
-  const [attrInputMap, setAttrInputMap] = useState({}); // key -> currently selected or typed value
-  const [loadingTemplates, setLoadingTemplates] = useState(false);
-  const [loadingValues, setLoadingValues] = useState({}); // key -> boolean
-
-  // Local dialogs to replace alert()/prompt()
-  const [msgDialog, setMsgDialog] = useState({
-    open: false,
-    title: "",
-    message: "",
+  const [fieldOptions, setFieldOptions] = useState({
+    companies: [],
+    categories: [],
   });
-  const [valDialog, setValDialog] = useState({
-    open: false,
-    key: "",
-    value: "",
-    saving: false,
-  });
+  const [loadingFieldOptions, setLoadingFieldOptions] = useState(false);
 
-  // Load templates when modal opens
   useEffect(() => {
     if (!isOpen) return;
     const run = async () => {
-      setLoadingTemplates(true);
+      setLoadingFieldOptions(true);
       try {
         const token = Cookies.get("token");
-        const res = await axios.get(`${serverUrl}/api/category-template`, {
+        const res = await axios.get(`${serverUrl}/api/material/field-options`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setTemplates(res.data.templates || []);
+        setFieldOptions({
+          companies: res.data.companies || [],
+          categories: res.data.categories || [],
+        });
       } catch {
-        setTemplates([]);
+        setFieldOptions({ companies: [], categories: [] });
       } finally {
-        setLoadingTemplates(false);
+        setLoadingFieldOptions(false);
       }
     };
     run();
   }, [isOpen, serverUrl]);
 
-  const selectedCategory = material.category || "";
-
-  // When category changes, fetch template and registries
-  useEffect(() => {
-    const fetchForCategory = async (cat) => {
-      if (!cat) return;
-      const token = Cookies.get("token");
-      try {
-        const tplRes = await axios.get(`${serverUrl}/api/category-template`, {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { category: cat },
-        });
-        const template = tplRes.data?.template;
-        const keys = Array.isArray(template?.attributes)
-          ? template.attributes.map((a) => a.key)
-          : [];
-        // prefill attr inputs from material.attributes when editing
-        if (Array.isArray(material.attributes) && material.attributes.length) {
-          const next = {};
-          material.attributes.forEach((a) => {
-            next[a.key] = a.value;
-          });
-          setAttrInputMap((prev) => ({ ...prev, ...next }));
-        }
-        // fetch values per key (dropdown attributes)
-        for (const key of keys) {
-          if (/^dimensions$/i.test(key)) continue; // text input
-          setLoadingValues((p) => ({ ...p, [key]: true }));
-          try {
-            const valRes = await axios.get(
-              `${serverUrl}/api/attribute-registry`,
-              {
-                headers: { Authorization: `Bearer ${token}` },
-                params: { key },
-              }
-            );
-            const vals = valRes.data?.registry?.values || [];
-            setAttrValuesMap((p) => ({ ...p, [key]: vals }));
-          } catch {
-            setAttrValuesMap((p) => ({ ...p, [key]: [] }));
-          } finally {
-            setLoadingValues((p) => ({ ...p, [key]: false }));
-          }
-        }
-      } catch {
-        // no template; allow free typing via Add New flow
-      }
-    };
-    fetchForCategory(selectedCategory);
-  }, [selectedCategory]);
-
-  // New grouped attributes state: { key, values: [] }
-  const [attrGroups, setAttrGroups] = useState([{ key: "", values: [""] }]);
-
-  // Helper to flatten material.attributes (supports old and new shapes)
-  const flattenMaterialAttributes = useMemo(() => {
-    const attrs = Array.isArray(material.attributes) ? material.attributes : [];
-    const out = [];
-    attrs.forEach((a) => {
-      const k = (a?.key || "").trim();
-      if (!k) return;
-      if (Array.isArray(a.values)) {
-        a.values
-          .filter(Boolean)
-          .forEach((v) => out.push({ key: k, value: String(v).trim() }));
-      } else if (a.value) {
-        out.push({ key: k, value: String(a.value).trim() });
-      }
-    });
-    return out;
-  }, [material.attributes]);
-
-  // Initialize grouped attributes once per open, from current material.attributes
-  const [attrsInitialized, setAttrsInitialized] = useState(false);
-  useEffect(() => {
-    if (!isOpen) return;
-    if (attrsInitialized) return;
-    const map = new Map();
-    flattenMaterialAttributes.forEach(({ key, value }) => {
-      if (!key) return;
-      map.set(key, [...(map.get(key) || []), value]);
-    });
-    const groups = Array.from(map.entries()).map(([key, vals]) => ({
-      key,
-      values: Array.from(new Set(vals)).filter(Boolean),
-    }));
-    setAttrGroups(groups.length ? groups : [{ key: "", values: [""] }]);
-    setAttrsInitialized(true);
-  }, [isOpen, attrsInitialized, flattenMaterialAttributes]);
-
-  // Reset initializer when modal closes
-  useEffect(() => {
-    if (!isOpen) setAttrsInitialized(false);
-  }, [isOpen]);
-
-  // Push flattened attributes up whenever grouped attributes change
-  useEffect(() => {
-    const flattened = [];
-    attrGroups.forEach((g) => {
-      const key = (g.key || "").trim();
-      if (!key) return;
-      const vals = (Array.isArray(g.values) ? g.values : [])
-        .map((v) => String(v || "").trim())
-        .filter(Boolean);
-      vals.forEach((v) => flattened.push({ key, value: v }));
-    });
-    // Only push up if different from current material.attributes flattened
-    const a = JSON.stringify(flattened);
-    const b = JSON.stringify(flattenMaterialAttributes);
-    if (a !== b) {
-      onMaterialChange && onMaterialChange("attributes", flattened);
-    }
-  }, [attrGroups, flattenMaterialAttributes, onMaterialChange]);
-
-  // Attribute group helpers
-  const addAttrGroup = () =>
-    setAttrGroups((prev) => [...prev, { key: "", values: [""] }]);
-  const removeAttrGroup = (idx) =>
-    setAttrGroups((prev) => prev.filter((_, i) => i !== idx));
-  const updateAttrKey = (idx, key) =>
-    setAttrGroups((prev) => {
-      const next = [...prev];
-      next[idx] = { ...next[idx], key };
-      return next;
-    });
-  const addAttrValue = (gIdx) =>
-    setAttrGroups((prev) => {
-      const next = [...prev];
-      const vals = Array.isArray(next[gIdx].values) ? next[gIdx].values : [""];
-      next[gIdx] = { ...next[gIdx], values: [...vals, ""] };
-      return next;
-    });
-  const removeAttrValue = (gIdx, vIdx) =>
-    setAttrGroups((prev) => {
-      const next = [...prev];
-      const vals = (next[gIdx].values || []).filter((_, i) => i !== vIdx);
-      next[gIdx] = { ...next[gIdx], values: vals.length ? vals : [""] };
-      return next;
-    });
-  const updateAttrValue = (gIdx, vIdx, value) =>
-    setAttrGroups((prev) => {
-      const next = [...prev];
-      const vals = [...(next[gIdx].values || [""])];
-      vals[vIdx] = value;
-      next[gIdx] = { ...next[gIdx], values: vals };
-      return next;
-    });
-
-  const templateCategories = templates.map((t) => t.category);
-
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave();
   };
+
+  if (!isOpen) return null;
 
   return (
     <>
@@ -282,43 +304,27 @@ const MaterialModal = ({
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                      Company <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g., ABC Supplies Inc."
-                      value={material.company}
-                      onChange={(e) =>
-                        onMaterialChange("company", e.target.value)
-                      }
-                      className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] transition-all bg-white"
-                      required
-                    />
-                    {errors.company && (
-                      <p className="text-red-500 text-sm">{errors.company}</p>
-                    )}
-                  </div>
+                  <SearchableField
+                    label="Company"
+                    value={material.company || ""}
+                    onChange={(value) => onMaterialChange("company", value)}
+                    options={fieldOptions.companies}
+                    placeholder="e.g., ABC Supplies Inc."
+                    error={errors.company}
+                    required
+                    loading={loadingFieldOptions}
+                  />
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                      Category <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g., Sofa"
-                      value={material.category}
-                      onChange={(e) =>
-                        onMaterialChange("category", e.target.value)
-                      }
-                      className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] bg-white"
-                      required
-                    />
-                    {errors.category && (
-                      <p className="text-red-500 text-sm">{errors.category}</p>
-                    )}
-                  </div>
+                  <SearchableField
+                    label="Category"
+                    value={material.category || ""}
+                    onChange={(value) => onMaterialChange("category", value)}
+                    options={fieldOptions.categories}
+                    placeholder="e.g., Sofa"
+                    error={errors.category}
+                    required
+                    loading={loadingFieldOptions}
+                  />
 
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -391,94 +397,11 @@ const MaterialModal = ({
                 </div>
               </div>
 
-              {/* Attributes Section (free-form groups: Key + multiple Values) */}
-              {selectedCategory && (
-                <div className="bg-gradient-to-br from-[#f8fffe] to-white rounded-xl p-6 border border-gray-200 shadow-sm mt-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                      <div className="w-2 h-6 bg-gradient-to-b from-[#1D3C34] to-[#2a5a47] rounded-full"></div>
-                      Attributes
-                    </h3>
-                    <button
-                      type="button"
-                      onClick={addAttrGroup}
-                      className="text-[#1D3C34] text-sm border px-3 py-1.5 rounded-lg"
-                    >
-                      + Add Attribute
-                    </button>
-                  </div>
-                  {attrGroups.map((g, gi) => (
-                    <div
-                      key={`attr-${gi}`}
-                      className="mb-4 border border-gray-200 rounded-xl p-4 bg-white"
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="flex-1 space-y-2">
-                          <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">
-                            Key <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
-                            placeholder="Key (e.g., Color)"
-                            value={g.key}
-                            onChange={(e) => updateAttrKey(gi, e.target.value)}
-                          />
-                        </div>
-                        {attrGroups.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeAttrGroup(gi)}
-                            className="text-red-600 border border-red-600 rounded px-3 py-2 text-sm"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
-                      <div className="ml-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs text-gray-600">
-                            Values <span className="text-red-500">*</span>
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => addAttrValue(gi)}
-                            className="text-[#1D3C34] text-xs border px-2 py-1 rounded"
-                          >
-                            + Add Value
-                          </button>
-                        </div>
-                        {(g.values || [""]).map((v, vi) => (
-                          <div
-                            key={`val-${gi}-${vi}`}
-                            className="flex items-center gap-2 mb-2"
-                          >
-                            <input
-                              className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
-                              placeholder="Value (e.g., Deep Green)"
-                              value={v}
-                              onChange={(e) =>
-                                updateAttrValue(gi, vi, e.target.value)
-                              }
-                            />
-                            {g.values && g.values.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => removeAttrValue(gi, vi)}
-                                className="text-red-600 border border-red-600 rounded px-3 py-2 text-sm"
-                              >
-                                Remove
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                  {errors.attributes && (
-                    <p className="text-red-500 text-sm">{errors.attributes}</p>
-                  )}
-                </div>
-              )}
+              <AttributeTagInput
+                value={material.attributes || []}
+                onChange={(tags) => onMaterialChange("attributes", tags)}
+                error={errors.attributes}
+              />
 
               {/* Options Section */}
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
@@ -751,118 +674,6 @@ const MaterialModal = ({
         </div>
       </div>
 
-      {/* Message Dialog */}
-      {msgDialog.open && (
-        <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
-            <div className="px-5 py-3 bg-gradient-to-r from-[#1D3C34] to-[#2a5a47] text-white font-semibold">
-              {msgDialog.title || "Notice"}
-            </div>
-            <div className="p-5 text-gray-700 whitespace-pre-line">
-              {msgDialog.message}
-            </div>
-            <div className="px-5 py-4 border-t flex justify-end">
-              <button
-                className="px-4 py-2 bg-[#1D3C34] text-white rounded-lg hover:bg-[#1A332E]"
-                onClick={() =>
-                  setMsgDialog({ open: false, title: "", message: "" })
-                }
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Add Attribute Value Dialog */}
-      {valDialog.open && (
-        <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
-            <div className="px-5 py-3 bg-gradient-to-r from-[#1D3C34] to-[#2a5a47] text-white font-semibold">
-              {`Add new ${valDialog.key} value`}
-            </div>
-            <div className="p-5 space-y-3">
-              <label className="text-sm font-medium text-gray-700">Value</label>
-              <input
-                type="text"
-                autoFocus
-                placeholder={`Enter ${valDialog.key} value`}
-                value={valDialog.value}
-                onChange={(e) =>
-                  setValDialog((p) => ({ ...p, value: e.target.value }))
-                }
-                className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34]"
-              />
-            </div>
-            <div className="px-5 py-4 border-t flex justify-end gap-2">
-              <button
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                onClick={() =>
-                  setValDialog({
-                    open: false,
-                    key: "",
-                    value: "",
-                    saving: false,
-                  })
-                }
-                disabled={valDialog.saving}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-[#1D3C34] text-white rounded-lg hover:bg-[#1A332E] disabled:opacity-50"
-                disabled={valDialog.saving || !valDialog.value.trim()}
-                onClick={async () => {
-                  const value = valDialog.value.trim();
-                  if (!value) return;
-                  try {
-                    setValDialog((p) => ({ ...p, saving: true }));
-                    const token = Cookies.get("token");
-                    await axios.post(
-                      `${serverUrl}/api/attribute-registry`,
-                      { key: valDialog.key, value },
-                      { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    // refresh list
-                    const resp = await axios.get(
-                      `${serverUrl}/api/attribute-registry`,
-                      {
-                        headers: { Authorization: `Bearer ${token}` },
-                        params: { key: valDialog.key },
-                      }
-                    );
-                    const vals = resp.data?.registry?.values || [];
-                    setAttrValuesMap((p) => ({ ...p, [valDialog.key]: vals }));
-                    setAttrInputMap((p) => ({ ...p, [valDialog.key]: value }));
-                    setValDialog({
-                      open: false,
-                      key: "",
-                      value: "",
-                      saving: false,
-                    });
-                  } catch (e) {
-                    setValDialog({
-                      open: false,
-                      key: "",
-                      value: "",
-                      saving: false,
-                    });
-                    setMsgDialog({
-                      open: true,
-                      title: "Add Value Failed",
-                      message:
-                        e?.response?.data?.message || "Failed to add value",
-                    });
-                  }
-                }}
-              >
-                {valDialog.saving ? "Saving…" : "Save"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };

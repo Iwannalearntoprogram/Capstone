@@ -19,13 +19,84 @@ import {
 } from "react-icons/fa";
 import Papa from "papaparse"; // Make sure papaparse is installed
 import {
+  normalizeAttributeTags,
   trimValue,
-  validateAttributeGroups,
+  validateAttributeTags,
   validateIntegerMin,
   validatePositiveNumber,
   validateRequiredText,
 } from "../../utils/validation";
 import { useToast } from "../ToastProvider";
+
+const AttributeTagEditor = ({
+  tags,
+  onChange,
+  error,
+  addLabel = "Add Tag",
+  placeholder = "Type a tag, then press Enter",
+}) => {
+  const [draft, setDraft] = useState("");
+  const normalizedTags = normalizeAttributeTags(tags);
+
+  const addTags = () => {
+    const next = normalizeAttributeTags([
+      ...normalizedTags,
+      ...draft.split(","),
+    ]);
+    onChange(next);
+    setDraft("");
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <input
+          className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+          placeholder={placeholder}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === ",") {
+              e.preventDefault();
+              addTags();
+            }
+          }}
+        />
+        <button
+          type="button"
+          onClick={addTags}
+          disabled={!draft.trim()}
+          className="rounded border border-[#1D3C34] px-3 py-2 text-sm text-[#1D3C34] hover:bg-[#1D3C34]/10 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {addLabel}
+        </button>
+      </div>
+      {normalizedTags.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {normalizedTags.map((tag, index) => (
+            <span
+              key={`${tag}-${index}`}
+              className="inline-flex items-center gap-2 rounded-full border border-[#1D3C34]/20 bg-[#1D3C34]/10 px-3 py-1 text-xs font-medium text-[#1D3C34]"
+            >
+              {tag}
+              <button
+                type="button"
+                onClick={() =>
+                  onChange(normalizedTags.filter((_, i) => i !== index))
+                }
+                className="rounded-full hover:bg-[#1D3C34]/15"
+                aria-label={`Remove ${tag}`}
+              >
+                &times;
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+    </div>
+  );
+};
 
 export default function MaterialsTab() {
   const { project, refreshProject } = useOutletContext();
@@ -50,16 +121,12 @@ export default function MaterialsTab() {
   const [editQuantity, setEditQuantity] = useState(1);
   // Add Material state (new custom material)
   const [materialName, setMaterialName] = useState("");
-  const [materialAttributes, setMaterialAttributes] = useState([
-    { key: "", values: [""] },
-  ]);
+  const [materialAttributes, setMaterialAttributes] = useState([]);
   const [customMaterialErrors, setCustomMaterialErrors] = useState({});
   // Request Material state
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [reqCategory, setReqCategory] = useState("");
-  const [reqAttributes, setReqAttributes] = useState([
-    { key: "", values: [""] },
-  ]);
+  const [reqAttributes, setReqAttributes] = useState([]);
   const [reqBudget, setReqBudget] = useState("");
   const [reqNotes, setReqNotes] = useState("");
   const [isRequesting, setIsRequesting] = useState(false);
@@ -162,6 +229,9 @@ export default function MaterialsTab() {
 
   // Helper to display attributes for designer needs (supports Map or plain object)
   const getNeedAttributesDisplay = (attrs) => {
+    const tags = normalizeAttributeTags(attrs);
+    return tags.length ? tags.join(" - ") : "-";
+    /*
     if (!attrs) return "—";
     let entries = [];
     try {
@@ -180,6 +250,9 @@ export default function MaterialsTab() {
         ([k, vals]) => `${k}: ${Array.isArray(vals) ? vals.join(", ") : vals}`,
       )
       .join(" • ");
+  };
+
+    */
   };
 
   // Helper to get option price
@@ -260,11 +333,7 @@ export default function MaterialsTab() {
 
       // Parallel fetch for each need name (augment query with a hint of attributes if present)
       const requests = needs.map((need) => {
-        const attrHint = need.attributes
-          ? Object.entries(need.attributes)
-              .map(([k, v]) => `${k}:${Array.isArray(v) ? v.join("/") : v}`)
-              .join(", ")
-          : "";
+        const attrHint = normalizeAttributeTags(need.attributes).join(" ");
         const q = attrHint ? `${need.name} ${attrHint}` : need.name;
         return axios
           .get(`${serverUrl}/api/material/match`, {
@@ -365,7 +434,7 @@ export default function MaterialsTab() {
     if (!project || !project._id) return;
     const nextErrors = {
       materialName: validateRequiredText(materialName, "Material name"),
-      attributes: validateAttributeGroups(materialAttributes, {
+      attributes: validateAttributeTags(materialAttributes, {
         required: true,
       }),
       quantity: validateIntegerMin(quantity, "Quantity", 1),
@@ -373,28 +442,14 @@ export default function MaterialsTab() {
     setCustomMaterialErrors(nextErrors);
     if (Object.values(nextErrors).some(Boolean)) return;
 
-    const validAttributes = materialAttributes
-      .map((attr) => ({
-        key: (attr.key || "").trim(),
-        values: (Array.isArray(attr.values) ? attr.values : [""]).map((v) =>
-          (v || "").trim(),
-        ),
-      }))
-      .filter((attr) => attr.key && attr.values.some((v) => v));
+    const attributeTags = normalizeAttributeTags(materialAttributes);
 
     try {
       const token = Cookies.get("token");
 
-      // Format attributes as key-value pairs with arrays
-      const attributesPayload = validAttributes.reduce((acc, attr) => {
-        const vals = attr.values.filter(Boolean);
-        if (vals.length) acc[attr.key] = vals;
-        return acc;
-      }, {});
-
       const body = {
         name: materialName.trim(),
-        attributes: attributesPayload,
+        attributes: attributeTags,
         quantity,
         // Mark as custom material for backend
         isCustom: true,
@@ -415,7 +470,7 @@ export default function MaterialsTab() {
       showToast("Material added to project!", { type: "success" });
       setShowModal(false);
       setMaterialName("");
-      setMaterialAttributes([{ key: "", values: [""] }]);
+      setMaterialAttributes([]);
       setQuantity(1);
       setCustomMaterialErrors({});
       if (refreshProject) refreshProject(); // Refresh project data
@@ -466,117 +521,6 @@ export default function MaterialsTab() {
     setShowAddToSheetModal(true);
   };
 
-  // Add Material helpers (custom materials)
-  const addMaterialAttribute = () => {
-    setMaterialAttributes((prev) => [...prev, { key: "", values: [""] }]);
-  };
-
-  const removeMaterialAttribute = (index) => {
-    setMaterialAttributes((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const updateMaterialAttribute = (index, field, value) => {
-    setMaterialAttributes((prev) => {
-      const next = [...prev];
-      next[index][field] = value;
-      return next;
-    });
-  };
-
-  const addMaterialAttributeValue = (attrIndex) => {
-    setMaterialAttributes((prev) => {
-      const next = prev.map((attr, idx) => {
-        if (idx === attrIndex) {
-          return {
-            ...attr,
-            values: [...attr.values, ""],
-          };
-        }
-        return attr;
-      });
-      return next;
-    });
-  };
-
-  const removeMaterialAttributeValue = (attrIndex, valueIndex) => {
-    setMaterialAttributes((prev) => {
-      const next = prev.map((attr, idx) => {
-        if (idx === attrIndex) {
-          return {
-            ...attr,
-            values: attr.values.filter((_, i) => i !== valueIndex),
-          };
-        }
-        return attr;
-      });
-      return next;
-    });
-  };
-
-  const updateMaterialAttributeValue = (attrIndex, valueIndex, value) => {
-    setMaterialAttributes((prev) => {
-      const next = prev.map((attr, idx) => {
-        if (idx === attrIndex) {
-          const newValues = [...attr.values];
-          newValues[valueIndex] = value;
-          return {
-            ...attr,
-            values: newValues,
-          };
-        }
-        return attr;
-      });
-      return next;
-    });
-  };
-
-  // Recommend Material helpers
-  const updateReqAttribute = (index, field, value) => {
-    setReqAttributes((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
-      return next;
-    });
-  };
-
-  const addReqAttribute = () =>
-    setReqAttributes((p) => [...p, { key: "", values: [""] }]);
-
-  const removeReqAttribute = (idx) =>
-    setReqAttributes((p) => p.filter((_, i) => i !== idx));
-
-  const addReqAttributeValue = (attrIdx) => {
-    setReqAttributes((prev) => {
-      const next = [...prev];
-      next[attrIdx] = {
-        ...next[attrIdx],
-        values: [...(next[attrIdx].values || []), ""],
-      };
-      return next;
-    });
-  };
-
-  const removeReqAttributeValue = (attrIdx, valIdx) => {
-    setReqAttributes((prev) => {
-      const next = [...prev];
-      next[attrIdx] = {
-        ...next[attrIdx],
-        values: next[attrIdx].values.filter((_, i) => i !== valIdx),
-      };
-      return next;
-    });
-  };
-
-  const updateReqAttributeValue = (attrIdx, valIdx, value) => {
-    setReqAttributes((prev) => {
-      const next = [...prev];
-      const vals = [...next[attrIdx].values];
-      vals[valIdx] = value;
-      next[attrIdx] = { ...next[attrIdx], values: vals };
-      return next;
-    });
-  };
-
   const fetchMyRequests = async () => {
     if (!project?._id) return;
     setLoadingRequests(true);
@@ -608,7 +552,7 @@ export default function MaterialsTab() {
     }
     const nextErrors = {
       category: validateRequiredText(reqCategory, "Category"),
-      attributes: validateAttributeGroups(reqAttributes),
+      attributes: validateAttributeTags(reqAttributes),
       budgetMax: reqBudget
         ? validatePositiveNumber(reqBudget, "Budget max")
         : "",
@@ -623,26 +567,10 @@ export default function MaterialsTab() {
     try {
       const token = Cookies.get("token");
 
-      // Format attributes with values array
-      const validAttributes = reqAttributes
-        .map((attr) => ({
-          key: (attr.key || "").trim(),
-          values: (Array.isArray(attr.values) ? attr.values : [""]).map((v) =>
-            (v || "").trim(),
-          ),
-        }))
-        .filter((attr) => attr.key && attr.values.some((v) => v));
-
-      const attributesPayload = validAttributes.reduce((acc, attr) => {
-        const vals = attr.values.filter(Boolean);
-        if (vals.length) acc[attr.key] = vals;
-        return acc;
-      }, {});
-
       const payload = {
         projectId: project._id,
         category: trimValue(reqCategory),
-        attributes: attributesPayload,
+        attributes: normalizeAttributeTags(reqAttributes),
         budgetMax: reqBudget ? Number(reqBudget) : undefined,
         notes: reqNotes || undefined,
       };
@@ -657,7 +585,7 @@ export default function MaterialsTab() {
       });
       setShowRequestModal(false);
       setReqCategory("");
-      setReqAttributes([{ key: "", values: [""] }]);
+      setReqAttributes([]);
       setReqBudget("");
       setReqNotes("");
       setRequestErrors({});
@@ -1931,23 +1859,21 @@ export default function MaterialsTab() {
                               </p>
                             </div>
                           )}
-                          {Array.isArray(req.attributes) &&
-                            req.attributes.length > 0 && (
+                          {normalizeAttributeTags(req.attributes).length > 0 && (
                               <div className="flex flex-wrap gap-2 mt-3">
-                                {req.attributes.slice(0, 4).map((attr, idx) => (
+                                {normalizeAttributeTags(req.attributes)
+                                  .slice(0, 4)
+                                  .map((tag, idx) => (
                                   <span
                                     key={idx}
                                     className="text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 font-medium border border-gray-200"
                                   >
-                                    {attr.key}:{" "}
-                                    {Array.isArray(attr.values)
-                                      ? attr.values.join(", ")
-                                      : attr.value || ""}
+                                    {tag}
                                   </span>
                                 ))}
-                                {req.attributes.length > 4 && (
+                                {normalizeAttributeTags(req.attributes).length > 4 && (
                                   <span className="text-xs text-gray-400 px-3 py-1.5">
-                                    +{req.attributes.length - 4} more
+                                    +{normalizeAttributeTags(req.attributes).length - 4} more
                                   </span>
                                 )}
                               </div>
@@ -1981,7 +1907,7 @@ export default function MaterialsTab() {
                 onClick={() => {
                   setShowModal(false);
                   setMaterialName("");
-                  setMaterialAttributes([{ key: "", values: [""] }]);
+                  setMaterialAttributes([]);
                   setQuantity(1);
                 }}
               >
@@ -2018,100 +1944,24 @@ export default function MaterialsTab() {
                   )}
                 </label>
 
-                {/* Attributes */}
                 <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">
-                      Attributes
-                    </span>
-                    <button
-                      type="button"
-                      onClick={addMaterialAttribute}
-                      className="text-[#1D3C34] text-sm hover:underline border border-[#1D3C34] px-3 py-1 rounded"
-                    >
-                      + Add Attribute
-                    </button>
-                  </div>
-                  {materialAttributes.map((attr, attrIdx) => (
-                    <div
-                      key={attrIdx}
-                      className="mb-4 border border-gray-200 rounded p-3"
-                    >
-                      {/* Attribute Key */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <input
-                          className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
-                          placeholder="Key (e.g., Color)"
-                          value={attr.key}
-                          onChange={(e) =>
-                            updateMaterialAttribute(
-                              attrIdx,
-                              "key",
-                              e.target.value,
-                            )
-                          }
-                        />
-                        {materialAttributes.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeMaterialAttribute(attrIdx)}
-                            className="text-red-600 border border-red-600 rounded px-3 py-2 text-sm hover:bg-red-50"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Attribute Values */}
-                      <div className="ml-4">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-gray-600">Values</span>
-                          <button
-                            type="button"
-                            onClick={() => addMaterialAttributeValue(attrIdx)}
-                            className="text-[#1D3C34] text-xs hover:underline"
-                          >
-                            + Add Value
-                          </button>
-                        </div>
-                        {attr.values.map((val, valIdx) => (
-                          <div
-                            key={valIdx}
-                            className="flex items-center gap-2 mb-2"
-                          >
-                            <input
-                              className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
-                              placeholder="Value (e.g., Deep Green)"
-                              value={val}
-                              onChange={(e) =>
-                                updateMaterialAttributeValue(
-                                  attrIdx,
-                                  valIdx,
-                                  e.target.value,
-                                )
-                              }
-                            />
-                            {attr.values.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removeMaterialAttributeValue(attrIdx, valIdx)
-                                }
-                                className="text-red-600 border border-red-600 rounded px-3 py-2 text-sm hover:bg-red-50"
-                              >
-                                Remove
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                  {customMaterialErrors.attributes && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {customMaterialErrors.attributes}
-                    </p>
-                  )}
+                  <span className="mb-2 block text-sm font-medium text-gray-700">
+                    Attributes
+                  </span>
+                  <AttributeTagEditor
+                    tags={materialAttributes}
+                    onChange={(tags) => {
+                      setMaterialAttributes(tags);
+                      setCustomMaterialErrors((prev) => ({
+                        ...prev,
+                        attributes: validateAttributeTags(tags, {
+                          required: true,
+                        }),
+                      }));
+                    }}
+                    error={customMaterialErrors.attributes}
+                    addLabel="Add Attribute"
+                  />
                 </div>
 
                 {/* Quantity */}
@@ -2366,94 +2216,21 @@ export default function MaterialsTab() {
                 </label>
               </div>
               <div className="mt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    Attributes
-                  </span>
-                  <button
-                    type="button"
-                    onClick={addReqAttribute}
-                    className="text-[#1D3C34] text-sm hover:underline"
-                  >
-                    + Add Attribute
-                  </button>
-                </div>
-                {reqAttributes.map((attr, attrIdx) => (
-                  <div
-                    key={attrIdx}
-                    className="mb-4 border border-gray-200 rounded p-3"
-                  >
-                    {/* Attribute Key */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <input
-                        className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
-                        placeholder="Key (e.g., Color)"
-                        value={attr.key}
-                        onChange={(e) =>
-                          updateReqAttribute(attrIdx, "key", e.target.value)
-                        }
-                      />
-                      {reqAttributes.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeReqAttribute(attrIdx)}
-                          className="text-red-600 border border-red-600 rounded px-3 py-2 text-sm hover:bg-red-50"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Attribute Values */}
-                    <div className="ml-4">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-gray-600">Values</span>
-                        <button
-                          type="button"
-                          onClick={() => addReqAttributeValue(attrIdx)}
-                          className="text-[#1D3C34] text-xs hover:underline"
-                        >
-                          + Add Value
-                        </button>
-                      </div>
-                      {attr.values.map((val, valIdx) => (
-                        <div
-                          key={valIdx}
-                          className="flex items-center gap-2 mb-2"
-                        >
-                          <input
-                            className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
-                            placeholder="Value (e.g., Deep Green)"
-                            value={val}
-                            onChange={(e) =>
-                              updateReqAttributeValue(
-                                attrIdx,
-                                valIdx,
-                                e.target.value,
-                              )
-                            }
-                          />
-                          {attr.values.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                removeReqAttributeValue(attrIdx, valIdx)
-                              }
-                              className="text-red-600 border border-red-600 rounded px-3 py-2 text-sm hover:bg-red-50"
-                            >
-                              Remove
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                {requestErrors.attributes && (
-                  <p className="text-red-500 text-sm mt-2">
-                    {requestErrors.attributes}
-                  </p>
-                )}
+                <span className="mb-2 block text-sm font-medium text-gray-700">
+                  Attributes
+                </span>
+                <AttributeTagEditor
+                  tags={reqAttributes}
+                  onChange={(tags) => {
+                    setReqAttributes(tags);
+                    setRequestErrors((prev) => ({
+                      ...prev,
+                      attributes: validateAttributeTags(tags),
+                    }));
+                  }}
+                  error={requestErrors.attributes}
+                  addLabel="Add Attribute"
+                />
               </div>
               <label className="block text-sm font-medium text-gray-700 mt-2">
                 Notes (optional)

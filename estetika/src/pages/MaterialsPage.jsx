@@ -9,7 +9,8 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import {
   trimValue,
-  validateAttributeGroups,
+  normalizeAttributeTags,
+  validateAttributeTags,
   validateFile,
   validateOptionRows,
   validatePositiveNumber,
@@ -91,7 +92,7 @@ const MaterialsPage = () => {
         });
 
         setMaterialsData(res.data.material || []);
-      } catch (err) {
+      } catch {
         setMaterialsData([]);
       } finally {
         setLoading(false);
@@ -109,22 +110,7 @@ const MaterialsPage = () => {
       price: validatePositiveNumber(newMaterial.price, "Base price"),
       description: validateRequiredText(newMaterial.description, "Description"),
       options: validateOptionRows(newMaterial.options),
-      attributes: validateAttributeGroups(
-        Array.isArray(newMaterial.attributes)
-          ? newMaterial.attributes.reduce((groups, attribute) => {
-              const existing = groups.find((group) => group.key === attribute.key);
-              if (existing) {
-                existing.values.push(attribute.value);
-              } else {
-                groups.push({
-                  key: attribute.key,
-                  values: [attribute.value],
-                });
-              }
-              return groups;
-            }, [])
-          : []
-      ),
+      attributes: validateAttributeTags(newMaterial.attributes),
     };
     setMaterialErrors(nextErrors);
     if (Object.values(nextErrors).some(Boolean)) {
@@ -171,9 +157,7 @@ const MaterialsPage = () => {
         options: newMaterial.options.filter((opt) => trimValue(opt.option) !== ""),
         category: trimValue(newMaterial.category),
         roomType: trimValue(newMaterial.roomType),
-        attributes: Array.isArray(newMaterial.attributes)
-          ? newMaterial.attributes
-          : [],
+        attributes: normalizeAttributeTags(newMaterial.attributes),
       };
 
       const res = await axios.post(`${serverUrl}/api/material`, materialData, {
@@ -211,7 +195,7 @@ const MaterialsPage = () => {
       category: material.category || "",
       roomType: material.roomType || "",
       image: Array.isArray(material.image) ? material.image : [],
-      attributes: Array.isArray(material.attributes) ? material.attributes : [],
+      attributes: normalizeAttributeTags(material.attributes),
     });
     setExistingImageUrls(Array.isArray(material.image) ? material.image : []);
     setSelectedImages([]);
@@ -230,22 +214,7 @@ const MaterialsPage = () => {
       price: validatePositiveNumber(newMaterial.price, "Base price"),
       description: validateRequiredText(newMaterial.description, "Description"),
       options: validateOptionRows(newMaterial.options),
-      attributes: validateAttributeGroups(
-        Array.isArray(newMaterial.attributes)
-          ? newMaterial.attributes.reduce((groups, attribute) => {
-              const existing = groups.find((group) => group.key === attribute.key);
-              if (existing) {
-                existing.values.push(attribute.value);
-              } else {
-                groups.push({
-                  key: attribute.key,
-                  values: [attribute.value],
-                });
-              }
-              return groups;
-            }, [])
-          : []
-      ),
+      attributes: validateAttributeTags(newMaterial.attributes),
     };
     setMaterialErrors(nextErrors);
     if (Object.values(nextErrors).some(Boolean)) {
@@ -289,9 +258,7 @@ const MaterialsPage = () => {
       category: trimValue(newMaterial.category),
       roomType: trimValue(newMaterial.roomType),
       image: [...existingImageUrls, ...uploadedUrls],
-      attributes: Array.isArray(newMaterial.attributes)
-        ? newMaterial.attributes
-        : [],
+      attributes: normalizeAttributeTags(newMaterial.attributes),
     };
 
     try {
@@ -395,24 +362,7 @@ const MaterialsPage = () => {
           : field === "description"
           ? validateRequiredText(value, "Description")
           : field === "attributes"
-          ? validateAttributeGroups(
-              Array.isArray(value)
-                ? value.reduce((groups, attribute) => {
-                    const existing = groups.find(
-                      (group) => group.key === attribute.key
-                    );
-                    if (existing) {
-                      existing.values.push(attribute.value);
-                    } else {
-                      groups.push({
-                        key: attribute.key,
-                        values: [attribute.value],
-                      });
-                    }
-                    return groups;
-                  }, [])
-                : []
-            )
+          ? validateAttributeTags(value)
           : "",
     }));
   };

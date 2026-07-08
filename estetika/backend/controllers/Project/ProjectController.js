@@ -6,6 +6,7 @@ const Material = require("../../models/Project/Material");
 const DeletedProject = require("../../models/Project/DeletedProject");
 const Notification = require("../../models/utils/Notification");
 const notifyMany = require("../../utils/notifyMany");
+const { normalizeAttributeTags } = require("../../utils/attributeTags");
 const {
   getRecommendedMaterialsForProject,
 } = require("../../utils/materialRecommendation");
@@ -730,24 +731,12 @@ const project_add_material = catchAsync(async (req, res, next) => {
       return next(new AppError("Quantity must be at least 1", 400));
     }
 
-    // Ensure attributes is an object of arrays of strings
-    const normalizedAttributes = {};
-    if (attributes && typeof attributes === "object") {
-      for (const [k, v] of Object.entries(attributes)) {
-        if (!k) continue;
-        const values = Array.isArray(v)
-          ? v.filter(Boolean)
-          : [v].filter(Boolean);
-        if (values.length) normalizedAttributes[k] = values;
-      }
-    }
+    const attributeTags = normalizeAttributeTags(attributes);
 
     // Always save to materialsList (designer needs), not to materials
     project.materialsList.push({
       name: name.trim(),
-      attributes: Object.keys(normalizedAttributes).length
-        ? normalizedAttributes
-        : undefined,
+      attributes: attributeTags.length ? attributeTags : undefined,
       quantity: parseInt(quantity),
     });
 

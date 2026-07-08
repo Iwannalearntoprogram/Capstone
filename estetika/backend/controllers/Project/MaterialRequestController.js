@@ -4,6 +4,7 @@ const MaterialRequest = require("../../models/Project/MaterialRequest");
 const Project = require("../../models/Project/Project");
 const notifyMany = require("../../utils/notifyMany");
 const User = require("../../models/User/User");
+const { normalizeAttributeTags } = require("../../utils/attributeTags");
 
 const toTitleCase = (s) =>
   typeof s === "string"
@@ -15,6 +16,15 @@ const toTitleCase = (s) =>
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" ")
     : s;
+
+const serializeRequest = (request) => {
+  if (!request) return request;
+  const plain = typeof request.toObject === "function" ? request.toObject() : request;
+  return {
+    ...plain,
+    attributes: normalizeAttributeTags(plain.attributes),
+  };
+};
 
 // Designers submit new material request for a project
 const request_post = catchAsync(async (req, res, next) => {
@@ -28,24 +38,13 @@ const request_post = catchAsync(async (req, res, next) => {
   const project = await Project.findById(projectId);
   if (!project) return next(new AppError("Project not found.", 404));
 
-  // Convert attributes object { key: [values] } to array [{ key, values }]
-  let attributesArray = [];
-  if (attributes && typeof attributes === "object") {
-    attributesArray = Object.entries(attributes)
-      .filter(
-        ([key, values]) => key && Array.isArray(values) && values.length > 0
-      )
-      .map(([key, values]) => ({
-        key: toTitleCase(key),
-        values: values.map((v) => toTitleCase(v)),
-      }));
-  }
+  const attributeTags = normalizeAttributeTags(attributes);
 
   const doc = await MaterialRequest.create({
     projectId,
     requestedBy,
     category: toTitleCase(category),
-    attributes: attributesArray,
+    attributes: attributeTags,
     budgetMax,
     notes,
   });
@@ -69,9 +68,10 @@ const request_post = catchAsync(async (req, res, next) => {
     console.warn("Notify storage_admin failed:", e?.message);
   }
 
-  return res
-    .status(200)
-    .json({ message: "Material request submitted", request: doc });
+  return res.status(200).json({
+    message: "Material request submitted",
+    request: serializeRequest(doc),
+  });
 });
 
 // storage_admin: list requests (optionally filter by status)
@@ -84,7 +84,10 @@ const request_get = catchAsync(async (req, res, next) => {
   const requests = await MaterialRequest.find(q)
     .populate("requestedBy", "fullName firstName lastName role")
     .populate("projectId", "title");
-  return res.status(200).json({ message: "Requests fetched", requests });
+  return res.status(200).json({
+    message: "Requests fetched",
+    requests: requests.map(serializeRequest),
+  });
 });
 
 // storage_admin: approve/decline request (with optional material linkage)
@@ -130,7 +133,10 @@ const request_put = catchAsync(async (req, res, next) => {
     ]);
   } catch {}
 
-  return res.status(200).json({ message: "Request updated", request: updated });
+  return res.status(200).json({
+    message: "Request updated",
+    request: serializeRequest(updated),
+  });
 });
 
 module.exports = { request_post, request_get, request_put };

@@ -1,12 +1,5 @@
 const mongoose = require("mongoose");
-
-const attributeSchema = new mongoose.Schema(
-  {
-    key: { type: String, required: true },
-    values: { type: [String], required: true },
-  },
-  { _id: false }
-);
+const { normalizeAttributeTags } = require("../../utils/attributeTags");
 
 const materialRequestSchema = new mongoose.Schema(
   {
@@ -21,7 +14,7 @@ const materialRequestSchema = new mongoose.Schema(
       required: true,
     },
     category: { type: String, required: true },
-    attributes: { type: [attributeSchema], default: [] },
+    attributes: { type: [mongoose.Schema.Types.Mixed], default: [] },
     budgetMax: { type: Number },
     notes: { type: String },
     status: {
@@ -42,5 +35,19 @@ const materialRequestSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+materialRequestSchema.pre("validate", function (next) {
+  this.attributes = normalizeAttributeTags(this.attributes);
+  next();
+});
+
+materialRequestSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
+  const target = update?.$set ? update.$set : update;
+  if (target?.attributes !== undefined) {
+    target.attributes = normalizeAttributeTags(target.attributes);
+  }
+  next();
+});
 
 module.exports = mongoose.model("MaterialRequest", materialRequestSchema);

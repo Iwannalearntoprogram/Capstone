@@ -5,6 +5,7 @@ const {
   material_delete,
   material_get,
   material_put,
+  material_field_options,
   vector_search,
   material_search,
   material_similar,
@@ -13,6 +14,7 @@ const {
 router.post("/", material_post);
 router.delete("/", material_delete);
 router.get("/", material_get);
+router.get("/field-options", material_field_options);
 router.get("/search", vector_search);
 router.get("/similar", material_similar);
 router.get("/match", material_search);

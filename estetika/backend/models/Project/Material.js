@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { normalizeAttributeTags } = require("../../utils/attributeTags");
 
 const ROOM_TYPE_OPTIONS = [
   "Living Room",
@@ -71,12 +72,10 @@ const materialSchema = new mongoose.Schema(
       type: [Number],
       default: [],
     },
-    attributes: [
-      {
-        key: { type: String, required: true },
-        value: { type: String, required: true },
-      },
-    ],
+    attributes: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
   },
   {
     timestamps: true,
@@ -119,14 +118,7 @@ materialSchema.pre("validate", function (next) {
   if (this.isModified("roomType") && this.roomType) {
     this.roomType = normalizeRoomType(this.roomType);
   }
-  if (Array.isArray(this.attributes)) {
-    this.attributes = this.attributes
-      .filter((a) => a && a.key && a.value)
-      .map((a) => ({
-        key: toTitleCase(a.key),
-        value: a.value.toString().trim(),
-      }));
-  }
+  this.attributes = normalizeAttributeTags(this.attributes);
   next();
 });
 
@@ -138,13 +130,8 @@ function normalizeUpdate(update) {
   if (target.category) target.category = toTitleCase(target.category);
   if (target.subCategory) target.subCategory = toTitleCase(target.subCategory);
   if (target.roomType) target.roomType = normalizeRoomType(target.roomType);
-  if (Array.isArray(target.attributes)) {
-    target.attributes = target.attributes
-      .filter((a) => a && a.key && a.value)
-      .map((a) => ({
-        key: toTitleCase(a.key),
-        value: a.value.toString().trim(),
-      }));
+  if (target.attributes !== undefined) {
+    target.attributes = normalizeAttributeTags(target.attributes);
   }
 }
 
@@ -168,6 +155,9 @@ materialSchema.pre("insertMany", function (next, docs) {
       if (d.category) d.category = toTitleCase(d.category);
       if (d.subCategory) d.subCategory = toTitleCase(d.subCategory);
       if (d.roomType) d.roomType = normalizeRoomType(d.roomType);
+      if (d.attributes !== undefined) {
+        d.attributes = normalizeAttributeTags(d.attributes);
+      }
     });
   }
   next();

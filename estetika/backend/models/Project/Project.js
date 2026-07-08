@@ -102,8 +102,7 @@ const projectSchema = new mongoose.Schema(
     materialsList: [
       {
         name: { type: String, required: true, trim: true },
-        // Map of attribute key -> array of values
-        attributes: { type: Map, of: [String], default: undefined },
+        attributes: { type: mongoose.Schema.Types.Mixed, default: undefined },
         quantity: { type: Number, required: true, min: 1, default: 1 },
         createdAt: { type: Date, default: Date.now },
       },
