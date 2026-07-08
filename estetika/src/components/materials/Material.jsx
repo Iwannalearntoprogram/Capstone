@@ -9,6 +9,12 @@ export default function Material({
   onDelete,
 }) {
   const { _id, name, company, price, image, roomType } = materialDetails;
+  const roomTypes =
+    Array.isArray(materialDetails.roomTypes) && materialDetails.roomTypes.length > 0
+      ? materialDetails.roomTypes
+      : roomType
+      ? [roomType]
+      : [];
   const navigate = useNavigate();
 
   // Calculate price range if price is an array
@@ -81,10 +87,22 @@ export default function Material({
             {name}
           </h3>
           <p className="text-sm text-gray-600 font-medium">{company}</p>
-          {roomType && (
-            <p className="mt-1 text-xs font-semibold text-[#1D3C34]">
-              {roomType}
-            </p>
+          {roomTypes.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {roomTypes.slice(0, 3).map((type) => (
+                <span
+                  key={type}
+                  className="rounded-full border border-[#1D3C34]/15 bg-[#1D3C34]/10 px-2 py-0.5 text-[11px] font-semibold text-[#1D3C34]"
+                >
+                  {type}
+                </span>
+              ))}
+              {roomTypes.length > 3 && (
+                <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-semibold text-stone-600">
+                  +{roomTypes.length - 3}
+                </span>
+              )}
+            </div>
           )}
         </div>
 

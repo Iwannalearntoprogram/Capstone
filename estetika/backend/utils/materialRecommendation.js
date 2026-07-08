@@ -308,6 +308,7 @@ const buildMaterialTokenSet = (material) => {
     material.name,
     material.company,
     material.roomType,
+    ...(Array.isArray(material.roomTypes) ? material.roomTypes : []),
     material.category,
     material.subCategory,
     material.description,
@@ -498,6 +499,12 @@ const toPublicMaterial = (material) => ({
   company: material.company,
   category: material.category,
   subCategory: material.subCategory,
+  roomTypes:
+    Array.isArray(material.roomTypes) && material.roomTypes.length > 0
+      ? material.roomTypes
+      : material.roomType
+      ? [material.roomType]
+      : [],
   roomType: material.roomType,
   price: material.price,
   description: material.description,
@@ -697,11 +704,19 @@ const rankMaterialsForProjectContext = (
     });
 };
 
+const getMaterialRoomTypes = (material) => {
+  if (Array.isArray(material?.roomTypes) && material.roomTypes.length > 0) {
+    return material.roomTypes.filter(Boolean);
+  }
+  return material?.roomType ? [material.roomType] : [];
+};
+
 const materialMatchesProjectRoom = (material, roomType) => {
   if (!roomType || roomType === "Whole House") return true;
-  if (!material?.roomType) return true;
-  if (material.roomType === "Whole House") return true;
-  return material.roomType === roomType;
+  const materialRoomTypes = getMaterialRoomTypes(material);
+  if (materialRoomTypes.length === 0) return true;
+  if (materialRoomTypes.includes("Whole House")) return true;
+  return materialRoomTypes.includes(roomType);
 };
 
 const getRecommendedMaterialsForProject = async (project, materialsOverride) => {

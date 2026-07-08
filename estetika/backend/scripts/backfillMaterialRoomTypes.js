@@ -79,11 +79,14 @@ async function main() {
 
   const materials = await Material.find({
     $or: [
+      { roomTypes: { $exists: false } },
+      { roomTypes: null },
+      { roomTypes: { $size: 0 } },
       { roomType: { $exists: false } },
       { roomType: null },
       { roomType: "" },
     ],
-  }).select("name category subCategory description attributes roomType");
+  }).select("name category subCategory description attributes roomType roomTypes");
 
   const counts = {};
   let updated = 0;
@@ -93,6 +96,7 @@ async function main() {
     counts[roomType] = (counts[roomType] || 0) + 1;
 
     if (!dryRun) {
+      material.roomTypes = [roomType];
       material.roomType = roomType;
       await material.save();
       updated += 1;

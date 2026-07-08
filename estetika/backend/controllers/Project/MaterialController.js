@@ -16,6 +16,25 @@ const {
 } = require("../../utils/materialRecommendation");
 const { inferProductType } = require("../../utils/materialType");
 
+const getMaterialRoomTypes = (material) => {
+  if (Array.isArray(material?.roomTypes) && material.roomTypes.length > 0) {
+    return material.roomTypes.filter(Boolean);
+  }
+  return material?.roomType ? [material.roomType] : [];
+};
+
+const materialRoomTypesOverlap = (left, right) => {
+  const leftRooms = getMaterialRoomTypes(left);
+  const rightRooms = getMaterialRoomTypes(right);
+
+  if (leftRooms.length === 0 || rightRooms.length === 0) return true;
+  if (leftRooms.includes("Whole House") || rightRooms.includes("Whole House")) {
+    return true;
+  }
+
+  return leftRooms.some((roomType) => rightRooms.includes(roomType));
+};
+
 const getProjectSearchContext = (project) => {
   if (!project || typeof project !== "object") return "";
 
@@ -147,6 +166,7 @@ const material_post = catchAsync(async (req, res, next) => {
     category,
     subCategory,
     roomType,
+    roomTypes,
     attributes,
   } = req.body;
 
@@ -161,11 +181,12 @@ const material_post = catchAsync(async (req, res, next) => {
     price == null ||
     description == null ||
     category == null ||
-    roomType == null
+    (roomType == null &&
+      (!Array.isArray(roomTypes) || roomTypes.length === 0))
   ) {
     return next(
       new AppError(
-        "Missing required fields: name, company, price, description, category, roomType.",
+        "Missing required fields: name, company, price, description, category, roomTypes.",
         400
       )
     );
@@ -225,6 +246,7 @@ const material_post = catchAsync(async (req, res, next) => {
     options: Array.isArray(options) ? options : [],
     category,
     subCategory,
+    roomTypes: roomTypes !== undefined ? roomTypes : roomType,
     roomType,
     attributes: attributeTags,
     embedding,
@@ -250,6 +272,7 @@ const material_put = catchAsync(async (req, res, next) => {
     category,
     subCategory,
     roomType,
+    roomTypes,
     attributes,
   } = req.body;
 
@@ -272,6 +295,7 @@ const material_put = catchAsync(async (req, res, next) => {
     !category &&
     !subCategory &&
     !roomType &&
+    roomTypes === undefined &&
     !attributes
   ) {
     return next(new AppError("No data to update", 400));
@@ -290,7 +314,11 @@ const material_put = catchAsync(async (req, res, next) => {
   if (image) updates.image = image;
   if (category) updates.category = category;
   if (subCategory) updates.subCategory = subCategory;
-  if (roomType) updates.roomType = roomType;
+  if (roomTypes !== undefined) updates.roomTypes = roomTypes;
+  if (roomType && roomTypes === undefined) {
+    updates.roomTypes = [roomType];
+    updates.roomType = roomType;
+  }
 
   if (attributes !== undefined) {
     updates.attributes = normalizeAttributeTags(attributes);
@@ -649,7 +677,7 @@ const material_similar = catchAsync(async (req, res) => {
   const maxInt = Math.min(Math.max(parseInt(max, 10) || 8, 1), 24);
 
   const material = await Material.findById(id)
-    .select("name category subCategory roomType embedding")
+    .select("name category subCategory roomType roomTypes embedding")
     .lean();
 
   if (!material) return res.status(404).json({ error: "Material not found." });
@@ -679,14 +707,7 @@ const material_similar = catchAsync(async (req, res) => {
         .map(({ embedding, ...rest }) => rest)
         .filter((item) => String(item._id) !== String(material._id))
         .filter((item) => !targetType || inferProductType(item) === targetType)
-        .filter(
-          (item) =>
-            !material.roomType ||
-            !item.roomType ||
-            material.roomType === "Whole House" ||
-            item.roomType === "Whole House" ||
-            item.roomType === material.roomType
-        )
+        .filter((item) => materialRoomTypesOverlap(material, item))
         .slice(0, maxInt);
 
       if (sanitized.length > 0) {
@@ -712,14 +733,7 @@ const material_similar = catchAsync(async (req, res) => {
 
   const fallback = candidates
     .filter((item) => !targetType || inferProductType(item) === targetType)
-    .filter(
-      (item) =>
-        !material.roomType ||
-        !item.roomType ||
-        material.roomType === "Whole House" ||
-        item.roomType === "Whole House" ||
-        item.roomType === material.roomType
-    )
+    .filter((item) => materialRoomTypesOverlap(material, item))
     .slice(0, maxInt);
 
   return res.json({

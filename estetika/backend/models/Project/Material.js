@@ -58,9 +58,20 @@ const materialSchema = new mongoose.Schema(
     subCategory: {
       type: String,
     },
+    roomTypes: {
+      type: [
+        {
+          type: String,
+          enum: ROOM_TYPE_OPTIONS,
+        },
+      ],
+      validate: {
+        validator: (value) => Array.isArray(value) && value.length > 0,
+        message: "At least one room type is required",
+      },
+    },
     roomType: {
       type: String,
-      required: [true, "Room type is required"],
       enum: ROOM_TYPE_OPTIONS,
     },
     sales: {
@@ -107,6 +118,44 @@ function normalizeRoomType(value) {
   return aliases[normalized] || normalized;
 }
 
+function normalizeRoomTypes(value) {
+  const values = Array.isArray(value) ? value : value ? [value] : [];
+  const normalized = values
+    .map(normalizeRoomType)
+    .filter((roomType) => ROOM_TYPE_OPTIONS.includes(roomType));
+  const unique = [...new Set(normalized)];
+
+  if (unique.includes("Whole House")) {
+    return ["Whole House"];
+  }
+
+  return unique;
+}
+
+function applyNormalizedRoomTypes(target) {
+  if (!target) return;
+
+  const hasRoomTypes = Object.prototype.hasOwnProperty.call(target, "roomTypes");
+  const hasSelectedRoomTypes =
+    Array.isArray(target.roomTypes) && target.roomTypes.length > 0;
+  const source =
+    hasSelectedRoomTypes
+      ? target.roomTypes
+      : target.roomType !== undefined && target.roomType !== null
+      ? target.roomType
+      : hasRoomTypes
+      ? target.roomTypes
+      : undefined;
+  const roomTypes = normalizeRoomTypes(source);
+
+  if (roomTypes.length > 0 || hasRoomTypes) {
+    target.roomTypes = roomTypes;
+    target.roomType = roomTypes[0];
+  } else if (target.roomType) {
+    target.roomType = normalizeRoomType(target.roomType);
+  }
+}
+
 // Normalize room metadata before validation/save.
 materialSchema.pre("validate", function (next) {
   if (this.isModified("category") && this.category) {
@@ -115,9 +164,7 @@ materialSchema.pre("validate", function (next) {
   if (this.isModified("subCategory") && this.subCategory) {
     this.subCategory = toTitleCase(this.subCategory);
   }
-  if (this.isModified("roomType") && this.roomType) {
-    this.roomType = normalizeRoomType(this.roomType);
-  }
+  applyNormalizedRoomTypes(this);
   this.attributes = normalizeAttributeTags(this.attributes);
   next();
 });
@@ -129,7 +176,7 @@ function normalizeUpdate(update) {
   const target = update.$set ? update.$set : update;
   if (target.category) target.category = toTitleCase(target.category);
   if (target.subCategory) target.subCategory = toTitleCase(target.subCategory);
-  if (target.roomType) target.roomType = normalizeRoomType(target.roomType);
+  applyNormalizedRoomTypes(target);
   if (target.attributes !== undefined) {
     target.attributes = normalizeAttributeTags(target.attributes);
   }
@@ -154,7 +201,7 @@ materialSchema.pre("insertMany", function (next, docs) {
     docs.forEach((d) => {
       if (d.category) d.category = toTitleCase(d.category);
       if (d.subCategory) d.subCategory = toTitleCase(d.subCategory);
-      if (d.roomType) d.roomType = normalizeRoomType(d.roomType);
+      applyNormalizedRoomTypes(d);
       if (d.attributes !== undefined) {
         d.attributes = normalizeAttributeTags(d.attributes);
       }

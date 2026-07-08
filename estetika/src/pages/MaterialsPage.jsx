@@ -28,6 +28,28 @@ const ROOM_TYPE_OPTIONS = [
   "Commercial Space",
 ];
 
+const normalizeRoomTypes = (value) => {
+  const values = Array.isArray(value) ? value : value ? [value] : [];
+  const validRoomTypes = values.filter((roomType) =>
+    ROOM_TYPE_OPTIONS.includes(roomType)
+  );
+  const uniqueRoomTypes = [...new Set(validRoomTypes)];
+
+  return uniqueRoomTypes.includes("Whole House")
+    ? ["Whole House"]
+    : uniqueRoomTypes;
+};
+
+const getMaterialRoomTypes = (material) =>
+  normalizeRoomTypes(
+    Array.isArray(material?.roomTypes) && material.roomTypes.length > 0
+      ? material.roomTypes
+      : material?.roomType
+  );
+
+const validateRoomTypes = (value) =>
+  normalizeRoomTypes(value).length > 0 ? "" : "Room type is required.";
+
 const MaterialsPage = () => {
   const [materialsData, setMaterialsData] = useState([]);
   const [search, setSearch] = useState("");
@@ -43,7 +65,7 @@ const MaterialsPage = () => {
     description: "",
     options: [],
     category: "",
-    roomType: "",
+    roomTypes: [],
     image: [],
     attributes: [],
   });
@@ -106,7 +128,7 @@ const MaterialsPage = () => {
       name: validateRequiredText(newMaterial.name, "Material name"),
       company: validateRequiredText(newMaterial.company, "Company"),
       category: validateRequiredText(newMaterial.category, "Category"),
-      roomType: validateRequiredText(newMaterial.roomType, "Room type"),
+      roomTypes: validateRoomTypes(newMaterial.roomTypes),
       price: validatePositiveNumber(newMaterial.price, "Base price"),
       description: validateRequiredText(newMaterial.description, "Description"),
       options: validateOptionRows(newMaterial.options),
@@ -156,7 +178,7 @@ const MaterialsPage = () => {
         image: imageUrls,
         options: newMaterial.options.filter((opt) => trimValue(opt.option) !== ""),
         category: trimValue(newMaterial.category),
-        roomType: trimValue(newMaterial.roomType),
+        roomTypes: normalizeRoomTypes(newMaterial.roomTypes),
         attributes: normalizeAttributeTags(newMaterial.attributes),
       };
 
@@ -193,7 +215,7 @@ const MaterialsPage = () => {
       description: material.description || "",
       options: Array.isArray(material.options) ? material.options : [],
       category: material.category || "",
-      roomType: material.roomType || "",
+      roomTypes: getMaterialRoomTypes(material),
       image: Array.isArray(material.image) ? material.image : [],
       attributes: normalizeAttributeTags(material.attributes),
     });
@@ -210,7 +232,7 @@ const MaterialsPage = () => {
       name: validateRequiredText(newMaterial.name, "Material name"),
       company: validateRequiredText(newMaterial.company, "Company"),
       category: validateRequiredText(newMaterial.category, "Category"),
-      roomType: validateRequiredText(newMaterial.roomType, "Room type"),
+      roomTypes: validateRoomTypes(newMaterial.roomTypes),
       price: validatePositiveNumber(newMaterial.price, "Base price"),
       description: validateRequiredText(newMaterial.description, "Description"),
       options: validateOptionRows(newMaterial.options),
@@ -256,7 +278,7 @@ const MaterialsPage = () => {
       description: trimValue(newMaterial.description),
       options: newMaterial.options,
       category: trimValue(newMaterial.category),
-      roomType: trimValue(newMaterial.roomType),
+      roomTypes: normalizeRoomTypes(newMaterial.roomTypes),
       image: [...existingImageUrls, ...uploadedUrls],
       attributes: normalizeAttributeTags(newMaterial.attributes),
     };
@@ -355,8 +377,8 @@ const MaterialsPage = () => {
           ? validateRequiredText(value, "Company")
           : field === "category"
           ? validateRequiredText(value, "Category")
-          : field === "roomType"
-          ? validateRequiredText(value, "Room type")
+          : field === "roomTypes"
+          ? validateRoomTypes(value)
           : field === "price"
           ? validatePositiveNumber(value, "Base price")
           : field === "description"
@@ -379,7 +401,7 @@ const MaterialsPage = () => {
       image: [],
       options: [],
       category: "",
-      roomType: "",
+      roomTypes: [],
       attributes: [],
     });
     setSelectedImages([]);
@@ -505,7 +527,8 @@ const MaterialsPage = () => {
       ? toTitleCase(mat.category) === filterCategory
       : true;
     const matchesRoomType = filterRoomType
-      ? mat.roomType === filterRoomType
+      ? getMaterialRoomTypes(mat).includes("Whole House") ||
+        getMaterialRoomTypes(mat).includes(filterRoomType)
       : true;
     const matchesCompany = filterCompany ? mat.company === filterCompany : true;
     const matchesPriceMin =
@@ -529,7 +552,10 @@ const MaterialsPage = () => {
     cheaperAlternatives = materialsData.filter(
       (mat) =>
         (filterCategory ? mat.category === filterCategory : true) &&
-        (filterRoomType ? mat.roomType === filterRoomType : true) &&
+        (filterRoomType
+          ? getMaterialRoomTypes(mat).includes("Whole House") ||
+            getMaterialRoomTypes(mat).includes(filterRoomType)
+          : true) &&
         (filterCompany ? mat.company === filterCompany : true) &&
         priceMin !== "" &&
         Number(mat.price) < Number(priceMin)
@@ -537,7 +563,10 @@ const MaterialsPage = () => {
     expensiveAlternatives = materialsData.filter(
       (mat) =>
         (filterCategory ? mat.category === filterCategory : true) &&
-        (filterRoomType ? mat.roomType === filterRoomType : true) &&
+        (filterRoomType
+          ? getMaterialRoomTypes(mat).includes("Whole House") ||
+            getMaterialRoomTypes(mat).includes(filterRoomType)
+          : true) &&
         (filterCompany ? mat.company === filterCompany : true) &&
         priceMax !== "" &&
         Number(mat.price) > Number(priceMax)

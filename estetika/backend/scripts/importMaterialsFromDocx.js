@@ -547,6 +547,7 @@ function toMaterialPayload(record, imageUrls, embedding) {
     description: record.description,
     category: record.category,
     subCategory: record.subCategory,
+    roomTypes: record.roomType ? [record.roomType] : [],
     roomType: record.roomType,
     options: record.options,
     attributes: record.attributes,
@@ -568,6 +569,7 @@ function publicRecord(record) {
     description: record.description,
     category: record.category,
     subCategory: record.subCategory,
+    roomTypes: record.roomType ? [record.roomType] : [],
     roomType: record.roomType,
     options: record.options,
     attributes: record.attributes,
@@ -630,7 +632,10 @@ async function importRecords(records, args) {
             name: record.name,
             company: record.company,
             category: record.category,
-            roomType: record.roomType,
+            $or: [
+              { roomTypes: record.roomType },
+              { roomType: record.roomType },
+            ],
           })) ||
           (await Material.findOne({
             name: record.name,
@@ -649,6 +654,7 @@ async function importRecords(records, args) {
               name: record.name,
               company: record.company,
               category: record.category,
+              roomTypes: record.roomType ? [record.roomType] : [],
               roomType: record.roomType,
               sourceDocument: record.sourceDocument,
             });

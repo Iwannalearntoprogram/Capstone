@@ -1,4 +1,4 @@
-import { FiPlus, FiSearch, FiTrash2, FiX, FiUpload } from "react-icons/fi";
+import { FiCheck, FiPlus, FiSearch, FiTrash2, FiX, FiUpload } from "react-icons/fi";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -31,6 +31,68 @@ const uniqueOptions = (values = []) => {
   });
 
   return out.sort((a, b) => a.localeCompare(b));
+};
+
+const normalizeRoomTypes = (value) => {
+  const values = Array.isArray(value) ? value : value ? [value] : [];
+  const validRoomTypes = values.filter((roomType) =>
+    ROOM_TYPE_OPTIONS.includes(roomType)
+  );
+  const uniqueRoomTypes = [...new Set(validRoomTypes)];
+
+  return uniqueRoomTypes.includes("Whole House")
+    ? ["Whole House"]
+    : uniqueRoomTypes;
+};
+
+const RoomTypeChipSelector = ({ value = [], onChange, error }) => {
+  const selectedRoomTypes = normalizeRoomTypes(value);
+
+  const toggleRoomType = (roomType) => {
+    if (roomType === "Whole House") {
+      onChange(selectedRoomTypes.includes("Whole House") ? [] : ["Whole House"]);
+      return;
+    }
+
+    const withoutWholeHouse = selectedRoomTypes.filter(
+      (selected) => selected !== "Whole House"
+    );
+    const nextRoomTypes = withoutWholeHouse.includes(roomType)
+      ? withoutWholeHouse.filter((selected) => selected !== roomType)
+      : [...withoutWholeHouse, roomType];
+
+    onChange(nextRoomTypes);
+  };
+
+  return (
+    <div className="space-y-3 md:col-span-2">
+      <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+        Room Type <span className="text-red-500">*</span>
+      </label>
+      <div className="flex flex-wrap gap-2">
+        {ROOM_TYPE_OPTIONS.map((roomType) => {
+          const isSelected = selectedRoomTypes.includes(roomType);
+          return (
+            <button
+              key={roomType}
+              type="button"
+              onClick={() => toggleRoomType(roomType)}
+              className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                isSelected
+                  ? "border-[#1D3C34] bg-[#1D3C34] text-white shadow-sm"
+                  : "border-[#1D3C34]/20 bg-[#f8fffe] text-[#1D3C34] hover:border-[#1D3C34]/45 hover:bg-[#1D3C34]/10"
+              }`}
+              aria-pressed={isSelected}
+            >
+              {roomType}
+              {isSelected ? <FiCheck size={15} /> : <FiPlus size={15} />}
+            </button>
+          );
+        })}
+      </div>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+    </div>
+  );
 };
 
 const SearchableField = ({
@@ -326,29 +388,11 @@ const MaterialModal = ({
                     loading={loadingFieldOptions}
                   />
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                      Room Type <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={material.roomType || ""}
-                      onChange={(e) =>
-                        onMaterialChange("roomType", e.target.value)
-                      }
-                      className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1D3C34] focus:border-[#1D3C34] bg-white"
-                      required
-                    >
-                      <option value="">Select room type</option>
-                      {ROOM_TYPE_OPTIONS.map((roomType) => (
-                        <option key={roomType} value={roomType}>
-                          {roomType}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.roomType && (
-                      <p className="text-red-500 text-sm">{errors.roomType}</p>
-                    )}
-                  </div>
+                  <RoomTypeChipSelector
+                    value={material.roomTypes || material.roomType || []}
+                    onChange={(value) => onMaterialChange("roomTypes", value)}
+                    error={errors.roomTypes}
+                  />
 
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">

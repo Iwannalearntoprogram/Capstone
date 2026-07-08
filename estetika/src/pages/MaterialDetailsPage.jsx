@@ -14,6 +14,29 @@ function Button({ children, className = "", ...props }) {
   );
 }
 
+const getMaterialRoomTypes = (material) =>
+  Array.isArray(material?.roomTypes) && material.roomTypes.length > 0
+    ? material.roomTypes
+    : material?.roomType
+    ? [material.roomType]
+    : [];
+
+const RoomTypeChips = ({ roomTypes = [], compact = false }) =>
+  roomTypes.length > 0 ? (
+    <div className={`flex flex-wrap gap-2 ${compact ? "mb-2" : "mt-2"}`}>
+      {roomTypes.map((roomType) => (
+        <span
+          key={roomType}
+          className={`rounded-full border border-[#1D3C34]/15 bg-[#1D3C34]/10 font-semibold text-[#1D3C34] ${
+            compact ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-sm"
+          }`}
+        >
+          {roomType}
+        </span>
+      ))}
+    </div>
+  ) : null;
+
 export default function MaterialDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -33,6 +56,7 @@ export default function MaterialDetailsPage() {
   const serverUrl = import.meta.env.VITE_SERVER_URL;
   const token = Cookies.get("token");
   const userId = localStorage.getItem("id");
+  const materialRoomTypes = getMaterialRoomTypes(material);
 
   useEffect(() => {
     const role = localStorage.getItem("role");
@@ -92,7 +116,7 @@ export default function MaterialDetailsPage() {
 
           setSelectedOptions(initialOptions);
         }
-      } catch (err) {
+      } catch {
         setMaterial(null);
       } finally {
         setLoading(false);
@@ -128,7 +152,7 @@ export default function MaterialDetailsPage() {
         );
 
         setSimilarProduct(filtered.slice(0, 8));
-      } catch (err) {
+      } catch {
         setSimilarProduct([]);
       } finally {
         setFetchingSimilarProduct(false);
@@ -454,11 +478,7 @@ export default function MaterialDetailsPage() {
         <div>
           <h2 className="text-2xl font-bold">{material.name}</h2>
           <p className="text-sm text-gray-600">COMPANY: {material.company}</p>
-          {material.roomType && (
-            <p className="text-sm text-gray-600">
-              ROOM TYPE: {material.roomType}
-            </p>
-          )}
+          <RoomTypeChips roomTypes={materialRoomTypes} />
           <p className="text-2xl font-semibold mt-4">
             ₱{calculateFinalPrice().toLocaleString()}
           </p>
@@ -577,11 +597,10 @@ export default function MaterialDetailsPage() {
                     <p className="text-xs text-gray-500 mb-2">
                       {product.company}
                     </p>
-                    {product.roomType && (
-                      <p className="text-xs font-semibold text-[#1D3C34] mb-2">
-                        {product.roomType}
-                      </p>
-                    )}
+                    <RoomTypeChips
+                      roomTypes={getMaterialRoomTypes(product)}
+                      compact
+                    />
                     <p className="font-semibold text-[#1D3C34] mb-2">
                       ₱{(product.price || 0).toLocaleString()}
                     </p>
