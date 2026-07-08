@@ -40,6 +40,7 @@ import MaterialList from "./components/materials/MaterialList";
 
 //utils
 import ProtectedRoute from "./components/ProtectedRoute";
+import PublicOnlyRoute from "./components/PublicOnlyRoute";
 
 function App() {
   useEffect(() => {
@@ -61,13 +62,20 @@ function App() {
         {/* Landing Page - Public Route */}
         <Route path="/" element={<LandingPage />} />
         {/*  Login and Signup */}
-        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/login"
+          element={
+            <PublicOnlyRoute>
+              <LoginPage />
+            </PublicOnlyRoute>
+          }
+        />
         <Route
           path="/signup"
           element={
-            <ProtectedRoute>
+            <PublicOnlyRoute>
               <SignupPage />
-            </ProtectedRoute>
+            </PublicOnlyRoute>
           }
         />
         {/* layout */}

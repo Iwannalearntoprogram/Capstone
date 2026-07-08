@@ -167,16 +167,6 @@ export default function ProjectOverviewTab() {
     : [];
   const materialRecommendationSummary =
     project?.materialRecommendationSummary || null;
-  const recommendationConflicts = Array.isArray(
-    materialRecommendationSummary?.conflicts,
-  )
-    ? materialRecommendationSummary.conflicts
-    : [];
-  const uncoveredCategories = Array.isArray(
-    materialRecommendationSummary?.uncoveredCategories,
-  )
-    ? materialRecommendationSummary.uncoveredCategories
-    : [];
   const materialsPerPage = 4;
   const totalMaterialPages = Math.max(
     1,
@@ -508,8 +498,8 @@ export default function ProjectOverviewTab() {
         description="Cost-efficient category recommendations from the warehouse catalog that satisfy room type, budget, and design preference."
       >
         {materialRecommendationSummary ? (
-          <div className="mb-5 space-y-4">
-            <div className="grid gap-3 md:grid-cols-4">
+          <div className="mb-5">
+            <div className="grid gap-3 md:grid-cols-2">
               <MetricCard
                 label="Estimated total"
                 value={formatCurrency(
@@ -522,39 +512,7 @@ export default function ProjectOverviewTab() {
                   materialRecommendationSummary.remainingBudget,
                 )}
               />
-              <MetricCard
-                label="Constraints"
-                value={
-                  materialRecommendationSummary.constraintsSatisfied
-                    ? "Satisfied"
-                    : "Needs review"
-                }
-              />
-              <MetricCard
-                label="Categories covered"
-                value={`${recommendedMaterials.length}`}
-              />
             </div>
-
-            {(recommendationConflicts.length > 0 ||
-              uncoveredCategories.length > 0) && (
-              <div className="rounded-[20px] border border-amber-200 bg-amber-50 px-4 py-4">
-                <p className="text-sm font-semibold text-amber-900">
-                  Recommendation constraints need review
-                </p>
-                <div className="mt-3 space-y-2 text-sm leading-6 text-amber-900/80">
-                  {recommendationConflicts.map((conflict, index) => (
-                    <p key={`conflict-${index}`}>{conflict}</p>
-                  ))}
-                  {uncoveredCategories.map((item, index) => (
-                    <p key={`uncovered-${item.category || index}`}>
-                      {item.category || "Category"} skipped:{" "}
-                      {item.reason || "No valid option fit the remaining budget."}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         ) : null}
 

@@ -303,6 +303,16 @@ const addWeightedTokens = (map, source, weight) => {
   });
 };
 
+const addExactWeightedTokens = (map, source, weight) => {
+  const rawTokens = Array.isArray(source) ? source : tokenize(source);
+
+  rawTokens.forEach((rawToken) => {
+    const token = normalizeToken(rawToken);
+    if (!token || STOP_WORDS.has(token)) return;
+    addWeightedToken(map, token, weight);
+  });
+};
+
 const buildMaterialTokenSet = (material) => {
   const parts = [
     material.name,
@@ -320,6 +330,9 @@ const buildMaterialTokenSet = (material) => {
 
   return new Set(tokenize(parts.join(" ")));
 };
+
+const buildMaterialPreferenceTokenSet = (material) =>
+  new Set(tokenize(normalizeAttributeTags(material?.attributes).join(" ")));
 
 const scoreKeywordMatch = (weightedKeywords, materialTokens) => {
   const totalWeight = [...weightedKeywords.values()].reduce(
@@ -610,12 +623,12 @@ const buildWeightedKeywordsForProject = (
   return weightedKeywords;
 };
 
-const buildStyleKeywordsForProject = (project) => {
+const buildRecommendationKeywordsForProject = (project) => {
   const designRecommendation = getProjectDesignRecommendation(project);
   const weightedKeywords = new Map();
 
-  addWeightedTokens(weightedKeywords, project?.designPreference, 4);
-  addWeightedTokens(
+  addExactWeightedTokens(weightedKeywords, project?.designPreference, 4);
+  addExactWeightedTokens(
     weightedKeywords,
     designRecommendation?.designPreferences,
     3
@@ -835,14 +848,9 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
     return { recommendations: [], summary };
   }
 
-  const weightedKeywords = buildWeightedKeywordsForProject(project);
-  const styleKeywords = buildStyleKeywordsForProject(project);
-  const hasStyleConstraint = [...styleKeywords.values()].some(
+  const preferenceKeywords = buildRecommendationKeywordsForProject(project);
+  const hasStyleConstraint = [...preferenceKeywords.values()].some(
     (weight) => weight > 0
-  );
-  const maxSales = materials.reduce(
-    (max, material) => Math.max(max, Number(material?.sales) || 0),
-    0
   );
   const rejected = {
     roomType: 0,
@@ -870,31 +878,28 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
       continue;
     }
 
-    const materialTokens = buildMaterialTokenSet(material);
-    const styleMatch = scoreKeywordMatch(styleKeywords, materialTokens);
+    const materialPreferenceTokens = buildMaterialPreferenceTokenSet(material);
+    const styleMatch = scoreKeywordMatch(
+      preferenceKeywords,
+      materialPreferenceTokens
+    );
     if (hasStyleConstraint && styleMatch.matchedKeywords.length === 0) {
       rejected.stylePreference += 1;
       continue;
     }
 
-    const keywordMatch = scoreKeywordMatch(weightedKeywords, materialTokens);
-    const roomScore = scoreRoomFit(project?.roomType, materialTokens);
-    const popularityScore = scorePopularity(material, maxSales);
     const item = {
       material: {
         ...material,
         category,
       },
       price,
-      keywordScore: keywordMatch.score,
-      roomScore,
+      keywordScore: styleMatch.score,
+      roomScore: 1,
       budgetScore: 1,
-      popularityScore,
+      popularityScore: 0,
       styleScore: styleMatch.score,
-      matchedKeywords:
-        styleMatch.matchedKeywords.length > 0
-          ? styleMatch.matchedKeywords
-          : keywordMatch.matchedKeywords,
+      matchedKeywords: styleMatch.matchedKeywords,
     };
 
     if (!groupedByCategory.has(category)) {
@@ -909,13 +914,9 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
       if (right.styleScore !== left.styleScore) {
         return right.styleScore - left.styleScore;
       }
-      if (right.keywordScore !== left.keywordScore) {
-        return right.keywordScore - left.keywordScore;
-      }
-      if (right.roomScore !== left.roomScore) {
-        return right.roomScore - left.roomScore;
-      }
-      return right.popularityScore - left.popularityScore;
+      return String(left.material.name || left.material._id || "").localeCompare(
+        String(right.material.name || right.material._id || "")
+      );
     });
   }
 
