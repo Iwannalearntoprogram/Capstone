@@ -44,7 +44,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   // Rating state
   Map<String, dynamic>? _existingRating;
   int _selectedStars = 0;
-  final TextEditingController _ratingCommentController = TextEditingController();
+  final TextEditingController _ratingCommentController =
+      TextEditingController();
   bool _submittingRating = false;
 
   @override
@@ -446,7 +447,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             _buildDetailRow('Project Name', _projectData['title']),
             _buildDetailRow('Room Type', _projectData['roomType']),
             _buildDetailRow('Project Type', _projectData['projectType']),
-            _buildDetailRow('Priority', _projectData['priority']),
             _buildDetailRow('Budget', _buildPesoValue(_projectData['budget'])),
             _buildDetailRow(
                 'Start Date', _formatDate(_projectData['startDate'])),

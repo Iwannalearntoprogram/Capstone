@@ -29,7 +29,6 @@ const getProjectSearchContext = (project) => {
   return [
     project.roomType ? `Room type: ${project.roomType}` : "",
     project.projectType ? `Project type: ${project.projectType}` : "",
-    project.priority ? `Priority: ${project.priority}` : "",
     project.designPreference
       ? `Project preference: ${project.designPreference}`
       : "",

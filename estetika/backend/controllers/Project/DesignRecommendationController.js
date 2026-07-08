@@ -68,7 +68,6 @@ const normalizeAndExpandKeywords = (keywords) => {
 
 const ROOM_TYPE_OPTIONS =
   DesignRecommendation.schema.path("type")?.enumValues || [];
-const PRIORITY_OPTIONS = ["Budget", "Style"];
 const WHOLE_HOUSE_ROOMS = [
   "Living Room",
   "Bedroom",
@@ -367,12 +366,12 @@ const design_recommendation_get = catchAsync(async (req, res, next) => {
 });
 
 const design_recommendation_match = catchAsync(async (req, res, next) => {
-  const { roomType, designPreferences, budget, priority } = req.query;
+  const { roomType, designPreferences, budget } = req.query;
 
-  if (!roomType || !budget || !designPreferences || !priority) {
+  if (!roomType || !budget || !designPreferences) {
     return next(
       new AppError(
-        "Room type, budget, priority, and design preferences are required for matching",
+        "Room type, budget, and design preferences are required for matching",
         400
       )
     );
@@ -385,10 +384,6 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
   const budgetNum = Number(budget);
   if (!Number.isFinite(budgetNum) || budgetNum <= 0) {
     return next(new AppError("Budget must be greater than 0.", 400));
-  }
-
-  if (!PRIORITY_OPTIONS.includes(priority)) {
-    return next(new AppError("Priority is invalid.", 400));
   }
 
   const preferenceError = validatePreferenceText(designPreferences);
@@ -425,7 +420,6 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
               designPreferences,
               normalizedPreferences,
               budget: budgetNum,
-              priority,
             },
           }
         : {
@@ -440,28 +434,18 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
               designPreferences,
               normalizedPreferences,
               budget: budgetNum,
-              priority,
             },
           }
     );
   }
 
   const normalizedRegexPreferences = normalizedPreferences.map(escapeRegex);
-  const normalizedPriority = priority;
-  const scoreWeights =
-    normalizedPriority === "Budget"
-      ? {
-          preference: 4,
-          tag: 2,
-          partial: 1,
-          budget: 5,
-        }
-      : {
-          preference: 7,
-          tag: 4,
-          partial: 2,
-          budget: 1.5,
-        };
+  const scoreWeights = {
+    preference: 4,
+    tag: 2,
+    partial: 1,
+    budget: 5,
+  };
 
   const buildScoringStage = (budgetScoreField, budgetScoreExpression) => ({
     $addFields: {
@@ -567,26 +551,15 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
     budgetScoreField,
     { includeBudgetMax = false } = {}
   ) => {
-    const sort =
-      normalizedPriority === "Budget"
-        ? {
-            totalScore: -1,
-            [budgetScoreField]: -1,
-            preferenceMatchCount: -1,
-            tagMatchCount: -1,
-            partialMatchScore: -1,
-            popularity: -1,
-            createdAt: -1,
-          }
-        : {
-            totalScore: -1,
-            preferenceMatchCount: -1,
-            tagMatchCount: -1,
-            partialMatchScore: -1,
-            popularity: -1,
-            [budgetScoreField]: -1,
-            createdAt: -1,
-          };
+    const sort = {
+      totalScore: -1,
+      [budgetScoreField]: -1,
+      preferenceMatchCount: -1,
+      tagMatchCount: -1,
+      partialMatchScore: -1,
+      popularity: -1,
+      createdAt: -1,
+    };
 
     if (includeBudgetMax) {
       sort["budgetRange.max"] = -1;
@@ -716,10 +689,7 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
 
     let matches = await DesignRecommendation.aggregate(topPipeline);
 
-    const fillStages =
-      normalizedPriority === "Budget"
-        ? [cheaperPipeline, relaxedPipeline]
-        : [relaxedPipeline, cheaperPipeline];
+    const fillStages = [cheaperPipeline, relaxedPipeline];
 
     for (const buildPipeline of fillStages) {
       const remaining = limit - matches.length;
@@ -754,7 +724,6 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
         designPreferences,
         normalizedPreferences,
         budget: budgetNum,
-        priority: normalizedPriority,
       },
     });
   }
@@ -780,7 +749,6 @@ const design_recommendation_match = catchAsync(async (req, res, next) => {
       designPreferences,
       normalizedPreferences,
       budget: budgetNum,
-      priority: normalizedPriority,
     },
   });
 });

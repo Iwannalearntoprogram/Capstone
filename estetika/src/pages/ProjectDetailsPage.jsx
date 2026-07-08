@@ -67,7 +67,6 @@ function ProjectDetailsPage() {
     title: "",
     description: "",
     budget: "",
-    priority: "",
     designPreference: "",
     startDate: "",
     endDate: "",
@@ -84,7 +83,6 @@ function ProjectDetailsPage() {
         title: project.title || "",
         description: project.description || "",
         budget: project.budget || "",
-        priority: project.priority || "",
         designPreference: project.designPreference || "",
         startDate: project.startDate ? project.startDate.slice(0, 10) : "",
         endDate: project.endDate ? project.endDate.slice(0, 10) : "",
@@ -110,9 +108,7 @@ function ProjectDetailsPage() {
             ? validateRequiredText(value, "Description")
             : name === "budget"
               ? validatePositiveNumber(value, "Budget")
-              : name === "priority"
-                ? validateRequiredText(value, "Priority")
-                : "",
+              : "",
       ...(name === "startDate" || name === "endDate"
         ? {
             dates: validateDateOrder(
@@ -148,7 +144,6 @@ function ProjectDetailsPage() {
       title: validateRequiredText(editData.title, "Title"),
       description: validateRequiredText(editData.description, "Description"),
       budget: validatePositiveNumber(editData.budget, "Budget"),
-      priority: validateRequiredText(editData.priority, "Priority"),
       dates: validateDateOrder(editData.startDate, editData.endDate),
     };
     setEditErrors(nextErrors);
@@ -165,7 +160,6 @@ function ProjectDetailsPage() {
           title: trimValue(editData.title),
           description: trimValue(editData.description),
           budget: editData.budget,
-          priority: trimValue(editData.priority),
           designPreference: trimValue(editData.designPreference),
           startDate: editData.startDate,
           endDate: editData.endDate,
@@ -176,7 +170,7 @@ function ProjectDetailsPage() {
       );
       closeEditModal();
       fetchProject();
-    } catch (err) {
+    } catch {
       setEditMessage("Failed to update project.");
     } finally {
       setIsSaving(false);
@@ -211,7 +205,7 @@ function ProjectDetailsPage() {
     {
       label: "Budget",
       value: formatCurrency(project?.budget),
-      helper: project?.priority ? `Priority: ${project.priority}` : "Not prioritized yet",
+      helper: "Budget-first recommendations",
     },
     {
       label: "Timeline",

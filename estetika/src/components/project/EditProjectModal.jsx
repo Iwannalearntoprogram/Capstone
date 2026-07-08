@@ -1,8 +1,6 @@
 import React from "react";
 import { FiX } from "react-icons/fi";
 
-const priorityOptions = ["Budget", "Style"];
-
 const fieldClassName =
   "w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#1d3c34]/35 focus:bg-white focus:ring-4 focus:ring-[#1d3c34]/8";
 
@@ -36,7 +34,7 @@ const EditProjectModal = ({
                 Edit project details
               </h2>
               <p className="mt-1 text-sm leading-7 text-slate-500">
-                Update the project brief, budget, priority, and schedule.
+                Update the project brief, budget, and schedule.
               </p>
             </div>
           </div>
@@ -106,27 +104,6 @@ const EditProjectModal = ({
                     className={fieldClassName}
                   />
                   {errors.budget ? <p className={helperClassName}>{errors.budget}</p> : null}
-                </label>
-
-                <label>
-                  <span className={labelClassName}>Priority</span>
-                  <select
-                    name="priority"
-                    value={editData.priority}
-                    onChange={onChange}
-                    className={`${fieldClassName} appearance-auto`}
-                    required
-                  >
-                    <option value="">Select priority</option>
-                    {priorityOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.priority ? (
-                    <p className={helperClassName}>{errors.priority}</p>
-                  ) : null}
                 </label>
 
                 <label className="md:col-span-2">

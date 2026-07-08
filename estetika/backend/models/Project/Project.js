@@ -42,10 +42,6 @@ const projectSchema = new mongoose.Schema(
         "Renovation",
       ],
     },
-    priority: {
-      type: String,
-      enum: ["Budget", "Style"],
-    },
     projectSize: Number,
     projectLocation: String,
     designPreference: String,

@@ -20,9 +20,6 @@ const formatDate = (value) =>
       }).format(new Date(value))
     : "Not scheduled";
 
-const formatPercent = (value) =>
-  typeof value === "number" ? `${Math.round(value * 100)}%` : "N/A";
-
 const formatBudgetRange = (range) => {
   const hasMin = typeof range?.min === "number";
   const hasMax = typeof range?.max === "number";
@@ -224,7 +221,6 @@ export default function ProjectOverviewTab() {
       label: "Project type",
       value: project.projectType || "Project type not set",
     },
-    { label: "Priority", value: project.priority || "Not set" },
   ];
 
   return (
@@ -497,13 +493,12 @@ export default function ProjectOverviewTab() {
       <SectionPanel
         eyebrow="Materials"
         title="Recommended materials"
-        description="Category-based material recommendations automatically tailored to the priority, preferences, description, and budget."
+        description="Category-based material recommendations automatically tailored to the preferences, description, and budget."
       >
         {recommendedMaterials.length > 0 ? (
           <div className="flex flex-col gap-4">
             {paginatedMaterials.map((rec, index) => {
               const recommendedMaterial = rec.material;
-              const recommendationScore = rec.score;
 
               return (
                 <div 

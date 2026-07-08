@@ -17,7 +17,6 @@ const hasOwn = (object, key) =>
 
 const ROOM_TYPE_OPTIONS = Project.schema.path("roomType")?.enumValues || [];
 const PROJECT_TYPE_OPTIONS = Project.schema.path("projectType")?.enumValues || [];
-const PRIORITY_OPTIONS = Project.schema.path("priority")?.enumValues || [];
 
 const getTextTokens = (value) =>
   String(value || "")
@@ -161,7 +160,6 @@ const validateProjectPayload = (
   validatePositiveNumberField("budget", "Budget");
   validateEnumField("roomType", "Room type", ROOM_TYPE_OPTIONS);
   validateEnumField("projectType", "Project type", PROJECT_TYPE_OPTIONS);
-  validateEnumField("priority", "Priority", PRIORITY_OPTIONS);
   validatePositiveNumberField("projectSize", "Project size");
   validateTextField("projectLocation", "Project location", {
     minLength: 2,
@@ -356,7 +354,6 @@ const project_post = catchAsync(async (req, res, next) => {
     timeline,
     roomType,
     projectType,
-    priority,
     projectSize,
     projectLocation,
     designInspiration,
@@ -392,7 +389,6 @@ const project_post = catchAsync(async (req, res, next) => {
     projectCreator,
     roomType: normalized.roomType,
     projectType: normalized.projectType,
-    priority: normalized.priority,
     projectSize: normalized.projectSize,
     projectLocation: normalized.projectLocation,
     designPreference: normalized.designPreference,
@@ -459,7 +455,6 @@ const project_put = catchAsync(async (req, res, next) => {
     status,
     roomType,
     projectType,
-    priority,
     projectSize,
     projectLocation,
     designInspiration,
@@ -515,7 +510,6 @@ const project_put = catchAsync(async (req, res, next) => {
   if (hasOwn(normalized, "roomType")) updates.roomType = normalized.roomType;
   if (hasOwn(normalized, "projectType"))
     updates.projectType = normalized.projectType;
-  if (hasOwn(normalized, "priority")) updates.priority = normalized.priority;
   if (hasOwn(normalized, "projectSize"))
     updates.projectSize = normalized.projectSize;
   if (hasOwn(normalized, "projectLocation"))

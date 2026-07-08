@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import {
-  FiAlertCircle,
   FiArrowRight,
   FiCalendar,
   FiCheck,
@@ -13,8 +12,6 @@ import {
   FiUsers,
   FiX,
 } from "react-icons/fi";
-
-const priorityOptions = ["Budget", "Style"];
 
 const toDateInputValue = (value) => {
   if (!value) return "";
@@ -49,7 +46,6 @@ const buildBriefFields = (project) => ({
     project?.budget === null || project?.budget === undefined
       ? ""
       : String(project.budget),
-  priority: project?.priority ?? "",
   roomType: project?.roomType ?? "",
   projectType: project?.projectType ?? "",
   designPreference: project?.designPreference ?? "",
@@ -96,7 +92,7 @@ const ProjectDetailsModal = ({ project, onClose, onProjectUpdated }) => {
           });
           const designerList = res.data.filter((u) => u.role === "designer");
           setDesigners(designerList);
-        } catch (err) {
+        } catch {
           setDesigners([]);
         } finally {
           setDesignersLoaded(true);
@@ -189,7 +185,7 @@ const ProjectDetailsModal = ({ project, onClose, onProjectUpdated }) => {
         onClose();
         window.location.reload();
       }, 1200);
-    } catch (err) {
+    } catch {
       setActionMessageType("error");
       setActionMessage("Failed to update project status.");
     } finally {
@@ -255,7 +251,7 @@ const ProjectDetailsModal = ({ project, onClose, onProjectUpdated }) => {
         onClose();
         window.location.reload();
       }, 800);
-    } catch (err) {
+    } catch {
       setActionMessageType("error");
       setActionMessage(
         isApproving
@@ -287,7 +283,6 @@ const ProjectDetailsModal = ({ project, onClose, onProjectUpdated }) => {
           description: editFields.description,
           budget:
             editFields.budget === "" ? undefined : Number(editFields.budget),
-          priority: editFields.priority,
           roomType: editFields.roomType || undefined,
           projectType: editFields.projectType || undefined,
           startDate: editFields.startDate || undefined,
@@ -387,11 +382,6 @@ const ProjectDetailsModal = ({ project, onClose, onProjectUpdated }) => {
       label: "Project Type",
       value: project.projectType || "N/A",
       icon: FiSquare,
-    },
-    {
-      label: "Priority",
-      value: project.priority || "N/A",
-      icon: FiAlertCircle,
     },
   ];
 
@@ -506,25 +496,6 @@ const ProjectDetailsModal = ({ project, onClose, onProjectUpdated }) => {
             onChange={handleBriefFieldChange}
             className="w-full rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
           />
-        </label>
-
-        <label>
-          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
-            Priority
-          </span>
-          <select
-            name="priority"
-            value={editFields.priority}
-            onChange={handleBriefFieldChange}
-            className="w-full rounded-[10px] border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-[#1D3C34] focus:ring-4 focus:ring-[#1D3C34]/10"
-          >
-            <option value="">Select priority</option>
-            {priorityOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
         </label>
 
         <label>

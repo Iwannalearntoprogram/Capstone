@@ -46,7 +46,6 @@ const ProjectCard = ({
     "Commercial Space",
   ];
   const projectTypeOptions = ["Residential", "Commercial", "Renovation"];
-  const priorityOptions = ["Budget", "Style"];
   const formatDateInputValue = (value) => {
     if (!value) return "";
     const date = new Date(value);
@@ -61,7 +60,6 @@ const ProjectCard = ({
     endDate: formatDateInputValue(currentProject.endDate),
     roomType: currentProject.roomType || "",
     projectType: currentProject.projectType || "",
-    priority: currentProject.priority || "",
     projectSize: currentProject.projectSize ?? "",
     projectLocation: currentProject.projectLocation || "",
     designInspiration: currentProject.designInspiration || "",
@@ -232,7 +230,6 @@ const ProjectCard = ({
         pendingProjectForm.projectType,
         "Project type"
       ),
-      priority: validateRequiredText(pendingProjectForm.priority, "Priority"),
       projectSize: validatePositiveNumber(
         pendingProjectForm.projectSize,
         "Project size"
@@ -258,10 +255,9 @@ const ProjectCard = ({
       const token = Cookies.get("token");
       const recommendationCriteriaChanged =
         trimValue(project.description) !==
-          trimValue(pendingProjectForm.description) ||
+        trimValue(pendingProjectForm.description) ||
         Number(project.budget ?? 0) !== Number(pendingProjectForm.budget) ||
-        (project.roomType || "") !== pendingProjectForm.roomType ||
-        (project.priority || "") !== pendingProjectForm.priority;
+        (project.roomType || "") !== pendingProjectForm.roomType;
       const payload = {
         title: trimValue(pendingProjectForm.title),
         description: trimValue(pendingProjectForm.description),
@@ -270,7 +266,6 @@ const ProjectCard = ({
         endDate: pendingProjectForm.endDate,
         roomType: pendingProjectForm.roomType,
         projectType: pendingProjectForm.projectType,
-        priority: pendingProjectForm.priority,
         projectSize: Number(pendingProjectForm.projectSize),
         projectLocation: trimValue(pendingProjectForm.projectLocation),
         designInspiration:
@@ -542,29 +537,6 @@ const ProjectCard = ({
               </label>
 
               <label className="block">
-                Priority
-                <select
-                  name="priority"
-                  className="mt-1 w-full rounded-md border bg-white p-2"
-                  value={pendingProjectForm.priority}
-                  onChange={handlePendingProjectChange}
-                  required
-                >
-                  <option value="">Select priority</option>
-                  {priorityOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                {pendingProjectErrors.priority && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {pendingProjectErrors.priority}
-                  </p>
-                )}
-              </label>
-
-              <label className="block">
                 Project Size (sq ft)
                 <input
                   name="projectSize"
@@ -672,11 +644,6 @@ const ProjectCard = ({
               {project.projectType && (
                 <span className="rounded-lg bg-stone-100 px-2.5 py-1 text-[10px] font-medium text-slate-600">
                   {project.projectType}
-                </span>
-              )}
-              {project.priority && (
-                <span className="rounded-lg bg-amber-50 px-2.5 py-1 text-[10px] font-medium text-amber-700">
-                  {project.priority}
                 </span>
               )}
               {isDesigner && isProjectMember && (

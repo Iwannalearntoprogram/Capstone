@@ -1,4 +1,3 @@
-const { MATERIAL_KEYWORDS, COLOR_KEYWORDS } = require("./materialLexicon");
 const { normalizeAttributeTags } = require("./attributeTags");
 
 const STOP_WORDS = new Set([
@@ -385,20 +384,20 @@ const scoreRoomFit = (roomType, materialTokens) => {
 };
 
 // Per-material budget allowance derived from the project budget, room type,
-// priority, and size. Returns null when the project has no usable budget.
-// Shared by scoreBudgetFit (soft scoring) and the hard budget cap under
-// "Budget" priority in getRecommendedMaterialsForProject.
+// and size. Returns null when the project has no usable budget.
+// Shared by scoreBudgetFit (soft scoring) and the hard budget cap in
+// getRecommendedMaterialsForProject.
 const getBudgetCeilingForProject = (project) => {
   const projectBudget = Number(project?.budget);
   if (!Number.isFinite(projectBudget) || projectBudget <= 0) return null;
 
   const roomFactor = ROOM_BUDGET_FACTORS[project.roomType] || 0.09;
-  const priorityFactor = project.priority === "Budget" ? 0.8 : 1.12;
+  const budgetFactor = 0.8;
   const sizeFactor = project.projectSize
     ? clamp(Math.sqrt(Number(project.projectSize) / 180), 0.85, 1.6)
     : 1;
 
-  return projectBudget * roomFactor * priorityFactor * sizeFactor;
+  return projectBudget * roomFactor * budgetFactor * sizeFactor;
 };
 
 const scoreBudgetFit = (material, project) => {
@@ -422,35 +421,20 @@ const scoreBudgetFit = (material, project) => {
   }
 
   const estimatedCeiling = getBudgetCeilingForProject(project);
-  const estimatedTarget =
-    estimatedCeiling * (project.priority === "Budget" ? 0.52 : 0.82);
+  const estimatedTarget = estimatedCeiling * 0.52;
 
   let score = 0;
 
   if (materialPrice <= estimatedCeiling) {
-    if (project.priority === "Budget") {
-      const savingsScore =
-        1 - materialPrice / Math.max(estimatedCeiling, materialPrice, 1);
-      const proximityScore =
-        1 -
-        Math.min(
-          Math.abs(materialPrice - estimatedTarget) / Math.max(estimatedTarget, 1),
-          1
-        );
-      score = 0.68 + savingsScore * 0.22 + proximityScore * 0.1;
-    } else {
-      const proximityScore =
-        1 -
-        Math.min(
-          Math.abs(materialPrice - estimatedTarget) / Math.max(estimatedTarget, 1),
-          1
-        );
-      const premiumScore = Math.min(
-        materialPrice / Math.max(estimatedTarget, 1),
+    const savingsScore =
+      1 - materialPrice / Math.max(estimatedCeiling, materialPrice, 1);
+    const proximityScore =
+      1 -
+      Math.min(
+        Math.abs(materialPrice - estimatedTarget) / Math.max(estimatedTarget, 1),
         1
       );
-      score = 0.62 + proximityScore * 0.24 + premiumScore * 0.14;
-    }
+    score = 0.68 + savingsScore * 0.22 + proximityScore * 0.1;
   } else {
     const overspendRatio =
       (materialPrice - estimatedCeiling) / Math.max(estimatedCeiling, 1);
@@ -592,68 +576,6 @@ const getStrictContextMatchCount = (materialTokens, strictContextKeywords) => {
   return matches;
 };
 
-// Normalized token forms of every color/material term (e.g. "glass" -> "glas",
-// "stainless steel" -> "stainles","steel") so lookups match tokenized material text.
-const COLOR_MATERIAL_TOKENS = new Set(
-  [...COLOR_KEYWORDS, ...MATERIAL_KEYWORDS].flatMap((term) => tokenize(term))
-);
-
-// For a "Style"-priority project, the color/material terms the brief actually
-// names — scanned across the project design preference/description and the
-// linked design recommendation's preferences/tags — kept to real color/material
-// vocabulary only (e.g. "white", "leather", "walnut"). These are matched against
-// each material's attribute/name/description tokens to decide what qualifies.
-// Deliberately excludes vibe words ("modern", "bright", "functional") and
-// synonym expansions, which would dilute the filter to near-everything.
-const getStyleQualifiersForProject = (project) => {
-  const designRecommendation = getProjectDesignRecommendation(project);
-
-  const styleText = [
-    project?.designPreference,
-    project?.description,
-    project?.designInspiration,
-    ...(Array.isArray(designRecommendation?.designPreferences)
-      ? designRecommendation.designPreferences
-      : []),
-    ...(Array.isArray(designRecommendation?.tags)
-      ? designRecommendation.tags
-      : []),
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const qualifiers = [
-    ...new Set(tokenize(styleText).filter((token) => COLOR_MATERIAL_TOKENS.has(token))),
-  ];
-
-  return {
-    qualifiers,
-    hasColorMaterialTerm: qualifiers.length > 0,
-  };
-};
-
-// How many style qualifiers a material genuinely carries. Stricter than the
-// room-context matcher: the material must contain the color/material word
-// exactly or as a substring (e.g. "white" -> "whitewashed"). It does NOT match
-// the reverse direction (keyword contains token), which would let a common
-// token like "the" spuriously satisfy "lea-THE-r".
-const getStyleMatchCount = (materialTokens, styleQualifiers) => {
-  if (!styleQualifiers.length) return 0;
-
-  let matches = 0;
-  styleQualifiers.forEach((keyword) => {
-    if (!keyword) return;
-    if (
-      materialTokens.has(keyword) ||
-      [...materialTokens].some((token) => token.includes(keyword))
-    ) {
-      matches += 1;
-    }
-  });
-
-  return matches;
-};
-
 const buildWeightedKeywordsForProject = (
   project,
   { extraSources = [] } = {}
@@ -682,12 +604,13 @@ const buildWeightedKeywordsForProject = (
   return weightedKeywords;
 };
 
-const getBaseWeights = (projectPriority, keywordWeightTotal) => {
-  const priority = projectPriority === "Budget" ? "Budget" : "Style";
-  const baseWeights =
-    priority === "Budget"
-      ? { keyword: 0.28, room: 0.18, budget: 0.42, popularity: 0.12 }
-      : { keyword: 0.44, room: 0.22, budget: 0.24, popularity: 0.1 };
+const getBaseWeights = (keywordWeightTotal) => {
+  const baseWeights = {
+    keyword: 0.28,
+    room: 0.18,
+    budget: 0.42,
+    popularity: 0.12,
+  };
 
   if (!keywordWeightTotal) {
     baseWeights.room += baseWeights.keyword * 0.6;
@@ -695,7 +618,7 @@ const getBaseWeights = (projectPriority, keywordWeightTotal) => {
     baseWeights.keyword = 0;
   }
 
-  return { priority, baseWeights };
+  return baseWeights;
 };
 
 const rankMaterialsForProjectContext = (
@@ -714,12 +637,8 @@ const rankMaterialsForProjectContext = (
     (sum, weight) => sum + weight,
     0
   );
-  const { priority, baseWeights } = getBaseWeights(
-    project?.priority,
-    keywordWeightTotal
-  );
+  const baseWeights = getBaseWeights(keywordWeightTotal);
   const strictContextKeywords = getStrictContextKeywordsForProject(project);
-  const styleQualifiers = getStyleQualifiersForProject(project).qualifiers;
   const maxSales = materials.reduce(
     (max, material) => Math.max(max, Number(material?.sales) || 0),
     0
@@ -736,8 +655,6 @@ const rankMaterialsForProjectContext = (
         materialTokens,
         strictContextKeywords
       );
-      const styleMatchCount = getStyleMatchCount(materialTokens, styleQualifiers);
-
       const totalScore =
         keywordMatch.score * baseWeights.keyword +
         roomScore * baseWeights.room +
@@ -752,7 +669,6 @@ const rankMaterialsForProjectContext = (
         budgetScore: budgetMatch.score,
         popularityScore,
         strictContextMatchCount,
-        styleMatchCount,
         estimatedTarget: budgetMatch.estimatedTarget,
         estimatedCeiling: budgetMatch.estimatedCeiling,
         matchedKeywords: keywordMatch.matchedKeywords,
@@ -761,12 +677,6 @@ const rankMaterialsForProjectContext = (
     .sort((left, right) => {
       if (right.strictContextMatchCount !== left.strictContextMatchCount) {
         return right.strictContextMatchCount - left.strictContextMatchCount;
-      }
-      if (
-        priority === "Style" &&
-        right.styleMatchCount !== left.styleMatchCount
-      ) {
-        return right.styleMatchCount - left.styleMatchCount;
       }
       if (right.totalScore !== left.totalScore) {
         return right.totalScore - left.totalScore;
@@ -783,10 +693,7 @@ const rankMaterialsForProjectContext = (
       if (right.popularityScore !== left.popularityScore) {
         return right.popularityScore - left.popularityScore;
       }
-      if (priority === "Budget") {
-        return (left.material.price || 0) - (right.material.price || 0);
-      }
-      return (right.material.sales || 0) - (left.material.sales || 0);
+      return (left.material.price || 0) - (right.material.price || 0);
     });
 };
 
@@ -808,7 +715,6 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
     return null;
   }
 
-  const priority = project?.priority === "Budget" ? "Budget" : "Style";
   const scoredMaterials = rankMaterialsForProjectContext(project, materials);
   const roomFilteredMaterials = scoredMaterials.filter((item) =>
     materialMatchesProjectRoom(item.material, project?.roomType)
@@ -825,35 +731,14 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
       ? contextFilteredMaterials
       : roomScopedMaterials;
 
-  // Priority-aware filtering.
-  const STYLE_MIN_MATCHES = 1; // raise for stricter style matching
-  if (priority === "Style") {
-    // When the brief names a color/material, show only materials that match a
-    // style qualifier (attribute/token) or design-preference tag. Keep a safety
-    // net so an over-picky style never empties the panel.
-    const { qualifiers, hasColorMaterialTerm } =
-      getStyleQualifiersForProject(project);
-    if (hasColorMaterialTerm && qualifiers.length > 0) {
-      const styleFiltered = eligibleMaterials.filter(
-        (item) => item.styleMatchCount >= STYLE_MIN_MATCHES
-      );
-      if (styleFiltered.length > 0) {
-        eligibleMaterials = styleFiltered;
-      }
-    }
-    // Budget is soft under Style — slightly over budget is acceptable, no cap.
-  } else {
-    // Budget priority: STRICTLY exclude anything over the per-item allowance.
-    // No fallback — it is acceptable to recommend nothing if all options are
-    // over budget.
-    const ceiling = getBudgetCeilingForProject(project);
-    if (ceiling != null) {
-      eligibleMaterials = eligibleMaterials.filter(
-        (item) => Number(item.material.price) <= ceiling
-      );
-    }
+  // Strictly exclude anything over the per-item allowance. No fallback: it is
+  // acceptable to recommend nothing if all options are over budget.
+  const ceiling = getBudgetCeilingForProject(project);
+  if (ceiling != null) {
+    eligibleMaterials = eligibleMaterials.filter(
+      (item) => Number(item.material.price) <= ceiling
+    );
   }
-
   if (eligibleMaterials.length === 0) return [];
 
   const INVALID_CATEGORIES = new Set([
@@ -904,7 +789,6 @@ const getRecommendedMaterialsForProject = async (project, materialsOverride) => 
       popularity: Number(topResult.popularityScore.toFixed(3)),
     },
     analysis: {
-      priority,
       matchedKeywords: topResult.matchedKeywords,
       estimatedTarget: topResult.estimatedTarget
         ? Math.round(topResult.estimatedTarget)
@@ -931,5 +815,4 @@ module.exports = {
   getRecommendedMaterialsForProject,
   rankMaterialsForProjectContext,
   getBudgetCeilingForProject,
-  getStyleQualifiersForProject,
 };

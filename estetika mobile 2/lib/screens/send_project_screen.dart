@@ -63,11 +63,10 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
 
   // Track form progress
   double _formProgress = 0.0;
-  final int _totalFormFields = 11;
+  final int _totalFormFields = 10;
 
   String? _roomType;
   String? _projectType;
-  String? _priority;
   final List<String> _roomTypes = [
     'Living Room',
     'Bedroom',
@@ -82,7 +81,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     'Commercial',
     'Renovation',
   ];
-  final List<String> _priorityOptions = ['Budget', 'Style'];
 
   final List<File> _inspirationImages = [];
   final List<String> _inspirationLinks = [];
@@ -128,8 +126,8 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
-      final uri = Uri.parse(
-          '${ApiConfig.apiBaseUrl}/project/recommendation/tags');
+      final uri =
+          Uri.parse('${ApiConfig.apiBaseUrl}/project/recommendation/tags');
       final response = await http.get(
         uri,
         headers: {
@@ -144,8 +142,8 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
             : const [];
         final tokens = <String>{};
         for (final tag in rawTags) {
-          for (final match
-              in RegExp(r'[a-z]{2,}').allMatches(tag.toString().toLowerCase())) {
+          for (final match in RegExp(r'[a-z]{2,}')
+              .allMatches(tag.toString().toLowerCase())) {
             tokens.add(match.group(0)!);
           }
         }
@@ -196,7 +194,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     if (_projectNameController.text.isNotEmpty) filledFields++;
     if (_roomType != null) filledFields++;
     if (_projectType != null) filledFields++;
-    if (_priority != null) filledFields++;
     if (_projectSizeController.text.isNotEmpty) filledFields++;
     if (_locationController.text.isNotEmpty) filledFields++;
     if (_budgetController.text.isNotEmpty) filledFields++;
@@ -261,7 +258,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         RegExp(r'^(.{1,3})\1+$').hasMatch(cleaned);
   }
 
-
   String? _validateProjectName(String? value) {
     final text = _trimmed(value);
     if (text.isEmpty) return 'Please enter project name';
@@ -275,8 +271,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       final letters = word.replaceAll(RegExp(r'[^a-zA-Z]'), '');
       if (letters.length < 5) continue;
 
-      final vowelCount =
-          RegExp(r'[aeiouAEIOUyY]').allMatches(letters).length;
+      final vowelCount = RegExp(r'[aeiouAEIOUyY]').allMatches(letters).length;
       if (vowelCount / letters.length < 0.1) {
         return 'Project name contains unrecognizable words';
       }
@@ -347,8 +342,8 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
     String? invalidMessage,
     String? tooLargeMessage,
   }) {
-    final base = _validatePositiveNumber(value, label,
-        invalidMessage: invalidMessage);
+    final base =
+        _validatePositiveNumber(value, label, invalidMessage: invalidMessage);
     if (base != null) return base;
     final number = double.parse(_trimmed(value));
     if (number >= max) {
@@ -408,10 +403,9 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
 
   String? _validateRecommendationInputs() {
     // Only require the fields the matching actually uses: room type, budget,
-    // priority, and design preferences. Project type, project size, and the
-    // schedule are irrelevant to recommendations and shouldn't block viewing.
+    // and design preferences. Project type, project size, and the schedule are
+    // irrelevant to recommendations and shouldn't block viewing.
     return _validateRequiredDropdown(_roomType, 'room type', _roomTypes) ??
-        _validateRequiredDropdown(_priority, 'priority', _priorityOptions) ??
         _validatePositiveNumber(_budgetController.text, 'budget') ??
         _validateDesignPreferences(_descriptionController.text);
   }
@@ -521,7 +515,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         "roomType": _roomType,
         "designPreferences": _descriptionController.text,
         "budget": double.tryParse(_budgetController.text) ?? 0,
-        "priority": _priority,
       };
       print("Recommendation request body: $requestBody");
       final uri =
@@ -530,7 +523,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         'roomType': _roomType ?? '',
         'designPreferences': _descriptionController.text,
         'budget': _budgetController.text,
-        'priority': _priority ?? '',
       });
 
       final response = await http.get(
@@ -870,8 +862,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                                 final recs =
                                     (group['recommendations'] as List?) ?? [];
                                 return Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.only(
@@ -888,14 +879,12 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                                     ),
                                     ...recs.take(2).map((r) {
                                       final rec = r as Map;
-                                      final recId =
-                                          rec['_id']?.toString();
+                                      final recId = rec['_id']?.toString();
                                       final isSelected =
-                                          _selectedRecByRoom[roomType] ==
-                                              recId;
+                                          _selectedRecByRoom[roomType] == recId;
                                       return Padding(
-                                        padding: const EdgeInsets.only(
-                                            bottom: 12),
+                                        padding:
+                                            const EdgeInsets.only(bottom: 12),
                                         child: _buildRecCard(
                                           rec: rec,
                                           isSelected: isSelected,
@@ -912,18 +901,14 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                             else
                               ListView.separated(
                                 shrinkWrap: true,
-                                physics:
-                                    const NeverScrollableScrollPhysics(),
-                                itemCount: math.min(
-                                    3, _recommendations.length),
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: math.min(3, _recommendations.length),
                                 separatorBuilder: (_, __) =>
                                     const SizedBox(height: 12),
                                 itemBuilder: (context, index) {
-                                  final rec =
-                                      _recommendations[index] as Map;
+                                  final rec = _recommendations[index] as Map;
                                   final isSelected =
-                                      _selectedRecommendationIndex ==
-                                          index;
+                                      _selectedRecommendationIndex == index;
                                   return _buildRecCard(
                                     rec: rec,
                                     isSelected: isSelected,
@@ -935,26 +920,22 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                               ),
                             const SizedBox(height: 8),
                             if (_isGroupedRecommendation &&
-                                _selectedRecByRoom.values
-                                    .any((v) => v != null))
+                                _selectedRecByRoom.values.any((v) => v != null))
                               ..._selectedRecByRoom.entries
                                   .where((e) => e.value != null)
                                   .map((e) {
-                                final group =
-                                    _recommendationGroups.firstWhere(
+                                final group = _recommendationGroups.firstWhere(
                                   (g) => g['roomType'] == e.key,
                                   orElse: () => {},
                                 );
                                 final recs =
-                                    (group['recommendations'] as List?) ??
-                                        [];
+                                    (group['recommendations'] as List?) ?? [];
                                 final rec = recs.cast<Map>().firstWhere(
-                                      (r) =>
-                                          r['_id']?.toString() == e.value,
+                                      (r) => r['_id']?.toString() == e.value,
                                       orElse: () => {},
                                     );
-                                final title = rec['title']?.toString() ??
-                                    'Untitled';
+                                final title =
+                                    rec['title']?.toString() ?? 'Untitled';
                                 return Text(
                                   '${e.key}: $title',
                                   style: const TextStyle(
@@ -1058,9 +1039,8 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF203B32)
-                : const Color(0xFFE2DED6),
+            color:
+                isSelected ? const Color(0xFF203B32) : const Color(0xFFE2DED6),
             width: isSelected ? 1.6 : 1,
           ),
           borderRadius: BorderRadius.circular(18),
@@ -1390,32 +1370,6 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  DropdownButtonFormField<String>(
-                    value: _priority,
-                    decoration: InputDecoration(
-                      labelText: 'Priority',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    items: _priorityOptions.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (newValue) {
-                      setState(() {
-                        _priority = newValue;
-                      });
-                      _resetRecommendationState();
-                      _updateFormProgress();
-                    },
-                    validator: (value) => _validateRequiredDropdown(
-                        value, 'priority', _priorityOptions),
-                  ),
-                  const SizedBox(height: 16),
-
                   // Project Size
                   TextFormField(
                     controller: _projectSizeController,
@@ -1499,8 +1453,7 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
                         'budget',
                         max: 10000000,
                         invalidMessage: 'Please enter valid amount',
-                        tooLargeMessage:
-                            'Budget must be less than ₱10,000,000',
+                        tooLargeMessage: 'Budget must be less than ₱10,000,000',
                       );
                     },
                   ),
@@ -1943,21 +1896,17 @@ class _SendProjectScreenState extends State<SendProjectScreen> {
       "projectCreator": user['_id'] ?? user['id'],
       "roomType": _roomType,
       "projectType": _projectType,
-      "priority": _priority,
       "projectSize": double.tryParse(_projectSizeController.text) ?? 0,
       "projectLocation": _locationController.text,
       "designInspiration": inspirationLink,
       if (_isGroupedRecommendation) ...{
-        "designRecommendations": _selectedRecByRoom.values
-            .where((v) => v != null)
-            .toList(),
+        "designRecommendations":
+            _selectedRecByRoom.values.where((v) => v != null).toList(),
       } else ...{
-        "designRecommendation":
-            (_selectedRecommendationIndex != null &&
-                    _selectedRecommendationIndex! < _recommendations.length)
-                ? ((_recommendations[_selectedRecommendationIndex!]
-                    as Map)['_id'])
-                : null,
+        "designRecommendation": (_selectedRecommendationIndex != null &&
+                _selectedRecommendationIndex! < _recommendations.length)
+            ? ((_recommendations[_selectedRecommendationIndex!] as Map)['_id'])
+            : null,
       },
     };
 
