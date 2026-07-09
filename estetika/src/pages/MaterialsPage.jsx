@@ -590,6 +590,10 @@ const MaterialsPage = () => {
     filteredMaterials = [...filteredMaterials].sort(
       (a, b) => (a.price || 0) - (b.price || 0)
     );
+  } else {
+    filteredMaterials = [...filteredMaterials].sort((a, b) =>
+      (a.name || "").localeCompare(b.name || "")
+    );
   }
 
   const canAddMaterial = userRole === "storage_admin";
@@ -671,12 +675,12 @@ const MaterialsPage = () => {
         {/* Filters - always visible */}
         <div className="mb-4 grid grid-cols-1 items-end gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-6">
           {/* Category Filter (dropdown) */}
-          <div className="flex flex-col items-start">
+          <div className="flex min-w-0 flex-col items-start">
             <span className="font-semibold text-gray-700 mb-1">Category</span>
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+              className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
             >
               <option value="">All Categories</option>
               {categories.map((cat) => (
@@ -687,12 +691,12 @@ const MaterialsPage = () => {
             </select>
           </div>
           {/* Room Type Filter (dropdown) */}
-          <div className="flex flex-col items-start">
+          <div className="flex min-w-0 flex-col items-start">
             <span className="font-semibold text-gray-700 mb-1">Room Type</span>
             <select
               value={filterRoomType}
               onChange={(e) => setFilterRoomType(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+              className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
             >
               <option value="">All Room Types</option>
               {ROOM_TYPE_OPTIONS.map((roomType) => (
@@ -703,12 +707,12 @@ const MaterialsPage = () => {
             </select>
           </div>
           {/* Company Filter (dropdown) */}
-          <div className="flex flex-col items-start">
+          <div className="flex min-w-0 flex-col items-start">
             <span className="font-semibold text-gray-700 mb-1">Company</span>
             <select
               value={filterCompany}
               onChange={(e) => setFilterCompany(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
+              className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
             >
               <option value="">All Companies</option>
               {companies.map((comp) => (
@@ -719,17 +723,17 @@ const MaterialsPage = () => {
             </select>
           </div>
           {/* Price Range Filter */}
-          <div className="flex flex-col items-start">
+          <div className="flex min-w-0 flex-col items-start">
             <span className="font-semibold text-gray-700 mb-1">
               Price Range
             </span>
-            <div className="flex w-full flex-col gap-2 sm:flex-row">
+            <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
               <input
                 type="number"
                 value={priceMin}
                 onChange={(e) => setPriceMin(e.target.value)}
                 placeholder="Min"
-                className="w-full rounded-xl border border-gray-300 bg-gray-100 px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34] sm:w-36"
+                className="w-full min-w-0 rounded-xl border border-gray-300 bg-gray-100 px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
                 min="0"
                 max="100000000"
               />
@@ -739,14 +743,14 @@ const MaterialsPage = () => {
                 value={priceMax}
                 onChange={(e) => setPriceMax(e.target.value)}
                 placeholder="Max"
-                className="w-full rounded-xl border border-gray-300 bg-gray-100 px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34] sm:w-36"
+                className="w-full min-w-0 rounded-xl border border-gray-300 bg-gray-100 px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1D3C34]"
                 min="0"
                 max="100000000"
               />
             </div>
           </div>
           {/* Sales/Price Sort Toggle */}
-          <div className="flex flex-col items-start">
+          <div className="flex min-w-0 flex-col items-start">
             <span className="font-semibold text-gray-700 mb-1">Sort By</span>
             <div className="flex flex-wrap gap-2">
               <button
@@ -782,7 +786,7 @@ const MaterialsPage = () => {
             </div>
           </div>
           {/* Clear Filters Button - aligned */}
-          <div className="flex flex-col items-start justify-end">
+          <div className="flex min-w-0 flex-col items-start justify-end">
             <span className="invisible mb-1">Clear</span>
             <button
               onClick={() => {
