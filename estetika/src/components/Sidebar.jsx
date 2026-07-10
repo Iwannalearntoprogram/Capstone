@@ -95,7 +95,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </Link>
         </li>
         {/* )} */}
-        {role === "storage_admin" && (
+        {/* Temporarily disabled — Materials Management page.
+            Restore this block to re-enable the sidebar link. */}
+        {false && role === "storage_admin" && (
           <li
             className={`px-5 py-3 cursor-pointer transition-transform duration-300 mb-4 ${
               location.pathname === "/dashboard/materials-custom"

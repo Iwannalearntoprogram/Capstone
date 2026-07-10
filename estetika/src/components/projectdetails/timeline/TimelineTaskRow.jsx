@@ -41,7 +41,7 @@ const TimelineTaskRow = ({
 
   return (
     <div
-      className={`items-center h-8 ${taskRowColor} cursor-pointer`}
+      className={`items-center min-h-8 ${taskRowColor} cursor-pointer`}
       style={gridStyle}
       onMouseMove={(e) =>
         handleMouseMove(e, {

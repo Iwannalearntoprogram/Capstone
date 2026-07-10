@@ -247,11 +247,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* Temporarily disabled — Materials Management page.
+              Restore <CustomMaterialsPage /> below to re-enable. */}
           <Route
             path="materials-custom"
             element={
               <ProtectedRoute>
-                <CustomMaterialsPage />
+                {/* <CustomMaterialsPage /> */}
+                <Navigate to="/dashboard/home" replace />
               </ProtectedRoute>
             }
           />

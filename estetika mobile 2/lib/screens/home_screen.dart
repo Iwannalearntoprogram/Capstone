@@ -20,11 +20,55 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   bool _isDesignersLoading = true;
 
+  // Content managed from the web "Mobile App Content Manager".
+  List<String> _managedCarouselImages = [];
+  String? _managedAboutText;
+  bool _isContentLoading = true;
+
   @override
   void initState() {
     super.initState();
     _fetchProjects();
     _fetchDesigners();
+    _fetchMobileContent();
+  }
+
+  // Fetch the home content (carousel images + about text) configured by admins
+  // in the web app. This is a public endpoint, so no auth token is required.
+  Future<void> _fetchMobileContent() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConfig.apiBaseUrl}/mobile-home-content'),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final content = data['data']?['content'];
+
+        final images = <String>[];
+        if (content != null && content['carouselImages'] is List) {
+          for (final img in content['carouselImages']) {
+            if (img is Map && img['url'] is String) {
+              images.add(_getDirectImageLink(img['url'] as String));
+            }
+          }
+        }
+
+        setState(() {
+          _managedCarouselImages = images;
+          _managedAboutText =
+              content != null ? content['aboutText'] as String? : null;
+          _isContentLoading = false;
+        });
+      } else {
+        setState(() {
+          _isContentLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isContentLoading = false;
+      });
+    }
   }
 
   Future<void> _fetchProjects() async {
@@ -176,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CustomAppBar(actions: [], title: ''),
-      body: _isLoading || _isDesignersLoading
+      body: _isLoading || _isDesignersLoading || _isContentLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
@@ -250,10 +294,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 // interior photos when no project images are available).
                 Builder(
                   builder: (context) {
-                    final projectImages = _projectImageUrls();
-                    final useNetwork = projectImages.isNotEmpty;
+                    // Prefer images configured in the web content manager;
+                    // fall back to project images, then bundled static assets.
+                    final networkImages = _managedCarouselImages.isNotEmpty
+                        ? _managedCarouselImages
+                        : _projectImageUrls();
+                    final useNetwork = networkImages.isNotEmpty;
                     final slides =
-                        useNetwork ? projectImages : _fallbackCarouselAssets;
+                        useNetwork ? networkImages : _fallbackCarouselAssets;
                     return SizedBox(
                       height: 200.0,
                       child: CarouselSlider(
@@ -289,9 +337,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontSize: 16, fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 10),
-                      const Text(
-                        'Welcome to our Interior Design Studio in Quezon City, where creativity meets functionality. We specialize in creating standout interiors that perfectly capture those special moments that call for exceptional design.\n\nOur team combines innovative thinking with timeless elegance, ensuring every space we touch becomes a reflection of our clients\' unique vision and lifestyle. From residential sanctuaries to commercial marvels, we bring dreams to life.',
-                        style: TextStyle(fontSize: 14),
+                      Text(
+                        (_managedAboutText != null &&
+                                _managedAboutText!.trim().isNotEmpty)
+                            ? _managedAboutText!
+                            : 'Welcome to our Interior Design Studio in Quezon City, where creativity meets functionality. We specialize in creating standout interiors that perfectly capture those special moments that call for exceptional design.\n\nOur team combines innovative thinking with timeless elegance, ensuring every space we touch becomes a reflection of our clients\' unique vision and lifestyle. From residential sanctuaries to commercial marvels, we bring dreams to life.',
+                        style: const TextStyle(fontSize: 14),
                       ),
                     ],
                   ),

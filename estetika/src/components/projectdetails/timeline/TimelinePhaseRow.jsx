@@ -81,7 +81,7 @@ const TimelinePhaseRow = ({
 
   return (
     <div
-      className={`items-center h-16 ${phaseRowColor} cursor-pointer`}
+      className={`items-center min-h-16 ${phaseRowColor} cursor-pointer`}
       style={gridStyle}
       onMouseMove={(e) =>
         handleMouseMove(e, {
