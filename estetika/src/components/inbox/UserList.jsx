@@ -80,7 +80,7 @@ const UserList = ({ users, selectedUser, onSelect, userId, token }) => {
   };
 
   return (
-    <div className="h-full overflow-y-auto ">
+    <div className="min-h-full">
       {sorted.map((user) => {
         const userName = user.firstName || user.fullName || user.username;
         const isSelected = selectedUser?._id === user._id;

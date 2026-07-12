@@ -12,12 +12,14 @@ const Layout = () => {
 
   return (
     <div
-      className={`flex min-h-screen flex-col overflow-x-hidden ${
-        isInbox ? "bg-white" : "bg-[#F2EBE7]"
+      className={`flex flex-col overflow-x-hidden ${
+        isInbox
+          ? "h-dvh overflow-y-hidden bg-white"
+          : "min-h-screen bg-[#F2EBE7]"
       }`}
     >
       <Navbar toggleSidebar={toggleSidebar} />
-      <div className="flex min-w-0 flex-1">
+      <div className="flex min-h-0 min-w-0 flex-1">
         <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
         {sidebarOpen && (
           <button
@@ -30,7 +32,7 @@ const Layout = () => {
         <main
           className={`min-w-0 flex-1 overflow-x-hidden text-black ${
             isInbox
-              ? "pt-[50px]"
+              ? "h-full overflow-y-hidden pt-[50px]"
               : "px-1.5 py-6 pt-[74px] sm:px-6 lg:px-8 xl:px-12"
           }`}
         >

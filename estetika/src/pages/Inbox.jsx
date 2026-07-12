@@ -284,11 +284,11 @@ function Inbox() {
   }, []);
 
   return (
-    <div className="flex min-h-[calc(100vh-50px)] bg-gray-50 font-sans lg:overflow-hidden">
+    <div className="flex h-full min-h-0 overflow-hidden bg-gray-50 font-sans">
       <div
         className={`${
           !selectedUser || showMobileList ? "flex" : "hidden"
-        } min-h-[calc(100vh-50px)] w-full flex-col bg-white border-r border-gray-200 lg:flex lg:w-[320px] lg:max-w-[320px]`}
+        } h-full min-h-0 w-full flex-col overflow-hidden bg-white border-r border-gray-200 lg:flex lg:w-[320px] lg:max-w-[320px]`}
       >
         <div className="p-4 border-b border-gray-100">
           <input
@@ -300,7 +300,7 @@ function Inbox() {
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <UserList
             users={filteredUsers}
             selectedUser={selectedUser}
@@ -314,7 +314,7 @@ function Inbox() {
       <div
         className={`${
           selectedUser ? "flex" : "hidden"
-        } min-h-[calc(100vh-50px)] min-w-0 flex-1 flex-col bg-gray-50 lg:flex`}
+        } h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-gray-50 lg:flex`}
       >
         {selectedUser ? (
           <>
@@ -344,7 +344,7 @@ function Inbox() {
               </div>
             </div>
 
-            <div className="flex-1 min-h-0 px-3 py-4 sm:px-6 sm:py-5">
+            <div className="min-h-0 flex-1 overflow-hidden px-3 py-4 sm:px-6 sm:py-5">
               <ChatWindow messages={messages} userId={userId} />
             </div>
 
